@@ -1,0 +1,101 @@
+# Task 0: Quick Task
+
+Use this procedure for small, low-risk implementation work that does not justify the full PRD → optional Research → Architecture → Epics → Stories workflow.
+
+Quick Task is an escape hatch, not a shortcut around quality. Search, acceptance criteria, verification, review, logging, and knowledge capture still apply.
+
+---
+
+## When to Use
+
+Use Quick Task only when all are true:
+
+- The user asked for a concrete fix, change, or small addition.
+- Scope is narrow and can be completed in one focused session.
+- Acceptance criteria are obvious or can be stated in a few bullets.
+- The change is low risk and does not need product or architecture discussion.
+- The work does not introduce a new feature area, data model, public API, security boundary, or broad user-facing workflow.
+
+If any item is false or uncertain, use Task 5: Create Spec instead.
+
+---
+
+## Do Not Use For
+
+- New feature areas
+- Multi-module product behavior
+- Architecture decisions or ADR-worthy tradeoffs
+- Database, persistence, or data model changes
+- Public API or protocol changes
+- Security-sensitive behavior
+- Requirements that need user discovery or approval gates
+
+---
+
+## Quick Task File
+
+Create one file per quick task:
+
+```text
+{VAULT}/Projects/{TARGET}/specs/quick-tasks/{YYYY-MM-DD}-{slug}.md
+```
+
+Create the `quick-tasks/` directory if missing.
+
+Use `references/templates/template-quick-task.md`.
+
+---
+
+## Procedure
+
+1. **Search first**
+   - Run Task 3: Search for relevant notes and specs.
+   - Read related code before planning the change.
+
+2. **Create Quick Task record**
+   - Write the quick task file using `references/templates/template-quick-task.md`.
+   - Set `Status: draft`.
+   - Define scope, out of scope, and acceptance criteria.
+
+3. **Approval gate**
+   - If the user already explicitly asked to implement the change, set `Status: approved` and proceed.
+   - Otherwise present the quick task and wait for approval.
+
+4. **Implement**
+   - Set `Status: in_progress`.
+   - Make the minimal change that satisfies acceptance criteria.
+   - Add or update tests when the codebase has a relevant test pattern.
+
+5. **Verify and review**
+   - Run diagnostics on changed files.
+   - Run focused tests or an equivalent manual check.
+   - Review the diff against scope and acceptance criteria.
+   - Set `Status: review` while reviewing.
+
+6. **Complete**
+   - Set `Status: done` only after verification and review pass.
+   - Update `{VAULT}/Projects/{TARGET}/specs/INDEX.md`.
+   - Update the log.
+   - Add notes for durable knowledge learned during the work.
+
+---
+
+## Status Lifecycle
+
+```text
+draft → approved → in_progress → review → done
+         ↑             ↓           │
+         └─────────────┴───────────┘ (changes requested)
+```
+
+---
+
+## Log Entry
+
+Add a log entry with:
+
+- Quick Task file path
+- Summary of the change
+- Verification performed
+- Specs index update
+- Links to any notes created or updated
