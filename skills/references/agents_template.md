@@ -16,7 +16,7 @@ This project uses **Kosmic** for persistent memory and knowledge management.
 
 ### Skill
 
-The `kosmic` skill is available in OpenCode. It loads automatically when referenced, or can be loaded explicitly via the skill tool.
+The `kosmic` skill/workflow is available to the coding agent. If the agent supports named skills, load or invoke `kosmic` through that mechanism. If not, use the installed Markdown instructions as persistent project guidance.
 
 ### When to Use Kosmic Tasks
 

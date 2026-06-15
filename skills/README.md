@@ -1,6 +1,6 @@
 # Kosmic Skill (v2.0.0)
 
-Spec-driven knowledge management for software development projects. Integrates persistent memory with spec-driven workflow for bullet-proof code.
+Spec-driven knowledge management for software development projects. Integrates persistent memory with a spec-driven workflow for reliable AI-assisted coding across agents.
 
 ## Features
 
@@ -15,7 +15,7 @@ Spec-driven knowledge management for software development projects. Integrates p
 ## Quick Start
 
 ```
-# Load the skill (in OpenCode)
+# Load or invoke the skill (OpenCode example)
 /skill kosmic
 
 # First time? Initialize
@@ -36,6 +36,8 @@ Task R: Research → Architecture
 # Build a feature (spec-driven)
 Create PRD → Review PRD → optional Task R → Create Architecture → Review Architecture → Create Stories → Review Story → Implement Story → Code Review
 ```
+
+If your agent does not support named skills, use `SKILL.md` as persistent instructions and keep this `README.md` plus `references/` available for task details and templates.
 
 ## Directory Structure
 

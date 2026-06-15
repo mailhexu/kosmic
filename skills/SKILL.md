@@ -3,14 +3,14 @@ name: kosmic
 description: Spec-driven knowledge management with BMAD-method workflow. Atomic notes, quick tasks, optional research, PRD→Architecture→Epics→Stories, TDD implementation, mandatory code review.
 version: 2.0.0
 license: MIT
-compatibility: opencode
+compatibility: markdown-agent-skill
 ---
 
 # Kosmic
 
 ## Overview
 
-Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages a `memnotes` knowledge base with spec-driven development support. Each task is independent - load only what you need.
+Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages a `memnotes` knowledge base with spec-driven development support. It is written as Markdown so it can be used by OpenCode, Claude Code, Codex, or any agent that supports custom skills or persistent project instructions. Each task is independent - load only what you need.
 
 **Documentation**: See `README.md` for complete guide.
 
