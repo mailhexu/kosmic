@@ -1,4 +1,4 @@
-# Kosmic Skill (v2.0.0)
+# Kosmic Skill (v2.0.1)
 
 Spec-driven knowledge management for software development projects. Integrates persistent memory with a spec-driven workflow for reliable AI-assisted coding across agents.
 
@@ -219,6 +219,15 @@ $$
 ```
 
 Use inline `$...$` only for short symbols or expressions inside prose.
+
+## File Hygiene
+
+- Classify new files before creating them: commit artifact, scratch/runtime output, recoverable pending tests, or generated output.
+- Use `.tmp/<task-slug>/` only for disposable scratch and runtime output.
+- Use `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` for tests awaiting later commit.
+- Add `MANIFEST.md` with restore command and contents, and commit pending-test packages before ending the session.
+- Delete generated ABINIT outputs (`*.nc`, `*_DDB`, `*.agr`, run-output `*.abo`) and patch scratch unless explicitly promoted.
+- Finish by running `git status --short` and classifying every remaining file.
 
 ## Spec Status Lifecycle
 

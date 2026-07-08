@@ -1,7 +1,7 @@
 ---
 name: kosmic
 description: Spec-driven knowledge management with BMAD-method workflow. Atomic notes, quick tasks, optional research, PRD→Architecture→Epics→Stories, TDD implementation, mandatory code review.
-version: 2.0.0
+version: 2.0.1
 license: MIT
 compatibility: markdown-agent-skill
 ---
@@ -64,6 +64,30 @@ $$
 ```
 
 Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Use inline `$...$` only for short symbols or expressions embedded in prose.
+
+---
+
+## File Hygiene Before Coding and Before Final Status
+
+1. **Classify every new file before creating it**:
+   - source/docs intended for commit → create in the project tree;
+   - temporary scratch/runtime output → create under the workspace `.tmp/` area, not inside the project Git repo;
+   - tests awaiting a later commit → create or move under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>`;
+   - generated ABINIT outputs (`*.nc`, `*_DDB`, `*.agr`, run-output `*.abo`) → keep under `.tmp/` and delete when no longer needed.
+
+2. **Never run experiments from the source root**. Use a named `.tmp/<task-slug>/` run directory and redirect logs there.
+
+3. **Patch scratch is disposable**. Files such as `patch_*.py`, `*_tmp.F90`, and empty untracked source files must be deleted before review unless explicitly promoted to source.
+
+4. **Tests awaiting later commit must be recoverable and committed before finishing**.
+   - Use the visible path `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>`; never hide recoverable tests in `.tmp/`.
+   - Preserve original paths exactly under `original-paths/` so restore is a single copy operation.
+   - Add `MANIFEST.md` with purpose, status, exact restore command, and contents.
+   - Commit the pending-test package before ending the session.
+
+5. **Pre-finish gate**: run `git status --short`; every untracked/modified file must be classified as commit, preserved outside the project repo, or deleted. Do not leave mystery files.
+
+6. **Kosmic log entry**: when files are moved or deleted, record the cleanup/recovery path and reason in the project log.
 
 ---
 
