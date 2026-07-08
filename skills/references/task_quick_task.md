@@ -65,6 +65,7 @@ Use `references/templates/template-quick-task.md`.
    - Set `Status: in_progress`.
    - Make the minimal change that satisfies acceptance criteria.
    - Add or update tests when the codebase has a relevant test pattern.
+   - Follow SKILL.md "File Hygiene Before Coding and Before Final Status" for scratch files, generated outputs, and tests awaiting a later commit.
 
 5. **Verify and review**
    - Run diagnostics on changed files.
@@ -74,6 +75,7 @@ Use `references/templates/template-quick-task.md`.
 
 6. **Complete**
    - Set `Status: done` only after verification and review pass.
+   - Run `git status --short`; classify every modified/untracked file as committed, recoverably preserved, or deleted.
    - Update `{VAULT}/Projects/{TARGET}/specs/INDEX.md`.
    - Update the log.
    - Add notes for durable knowledge learned during the work.

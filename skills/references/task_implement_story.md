@@ -257,6 +257,12 @@ Use patterns discovered in research phase:
 - Reuse existing utilities
 - Apply architectural decisions from ADRs
 
+Apply SKILL.md "File Hygiene Before Coding and Before Final Status" while implementing:
+- create scratch/runtime output outside the project repo under `.tmp/<task-slug>/`;
+- keep tests awaiting later commit under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`;
+- commit pending-test packages before finishing;
+- delete generated ABINIT outputs and patch scratch unless explicitly promoted.
+
 ### 3.2 Run Tests Continuously
 
 ```bash
