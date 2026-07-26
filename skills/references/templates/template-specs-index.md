@@ -10,40 +10,40 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 
 ## Overview
 
-- PRD: [[prd|PRD]]
-- Architecture: [[architecture|Architecture]]
+- PRD: [PRD](prd.md)
+- Architecture: [Architecture](architecture.md)
 - Current focus: {current work}
 
 ## Active Specs
 
 | Type | Link | Status | Notes |
 |------|------|--------|-------|
-| PRD | [[prd|PRD]] | draft | {summary} |
-| Architecture | [[architecture|Architecture]] | draft | {summary} |
+| PRD | [PRD](prd.md) | draft | {summary} |
+| Architecture | [Architecture](architecture.md) | draft | {summary} |
 
 ## Research Memos
 
 | Research | Status | Linked PRD | Linked Architecture | Recommendation |
 |----------|--------|------------|---------------------|----------------|
-| [[research/{YYYY-MM-DD}-{slug}|{topic}]] | draft | [[prd|PRD]] | [[architecture|Architecture]] | {summary} |
+| [Research {topic}](research/{YYYY-MM-DD}-{slug}.md) | draft | [PRD](prd.md) | [Architecture](architecture.md) | {summary} |
 
 ## Quick Tasks
 
 | Quick Task | Status | Scope | Verification |
 |------------|--------|-------|--------------|
-| [[quick-tasks/{YYYY-MM-DD}-{slug}|{title}]] | draft | {scope} | {verification} |
+| [{title}](quick-tasks/{YYYY-MM-DD}-{slug}.md) | draft | {scope} | {verification} |
 
 ## Epics
 
 | Epic | Status | Stories | Notes |
 |------|--------|---------|-------|
-| [[epics/epic-001-{slug}|Epic 001]] | draft | 0/{N} done | {summary} |
+| [Epic 001](epics/epic-001-{slug}.md) | draft | 0/{N} done | {summary} |
 
 ## Stories
 
 | Story | Status | Epic | Notes |
 |-------|--------|------|-------|
-| [[stories/story-001-{slug}|Story 001]] | draft | [[epics/epic-001-{slug}|Epic 001]] | {summary} |
+| [Story 001](stories/story-001-{slug}.md) | draft | [Epic 001](epics/epic-001-{slug}.md) | {summary} |
 
 ## Completed or Archived
 

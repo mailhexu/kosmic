@@ -56,6 +56,9 @@ Use `references/templates/template-quick-task.md`.
    - Write the quick task file using `references/templates/template-quick-task.md`.
    - Set `Status: draft`.
    - Define scope, out of scope, and acceptance criteria.
+   - Declare `consumer_interface_change: true` when supported CLI, API, configuration, integration, or troubleshooting behavior changes; otherwise explicitly keep `false`.
+   - For `true`, list the current stable Consumer knowledge in `related_notes`.
+   - Pin `review_base` before implementation and set `review_round: 0`; do not move the baseline during re-review.
 
 3. **Approval gate**
    - If the user already explicitly asked to implement the change, set `Status: approved` and proceed.
@@ -68,10 +71,13 @@ Use `references/templates/template-quick-task.md`.
    - Follow SKILL.md "File Hygiene Before Coding and Before Final Status" for scratch files, generated outputs, and tests awaiting a later commit.
 
 5. **Verify and review**
-   - Run diagnostics on changed files.
-   - Run focused tests or an equivalent manual check.
-   - Review the diff against scope and acceptance criteria.
-   - Set `Status: review` while reviewing.
+   - Run diagnostics and focused tests or an equivalent manual check.
+   - Run the `check-completion` command from `references/task_project_skills.md`.
+   - Set `Status: review` and run Task 7's complete two-axis Round 1 against `review_base`.
+   - Record all Standards and Spec findings in one stable ledger with Blocking or Non-blocking disposition.
+   - If changes are requested, preserve finding IDs; later rounds inspect only open findings, changed code, and regressions.
+   - A Consumer Interface change cannot pass while related Consumer knowledge or the canonical pair is stale.
+   - Approve when all Blocking findings are resolved even if Non-blocking suggestions remain.
 
 6. **Complete**
    - Set `Status: done` only after verification and review pass.

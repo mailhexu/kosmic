@@ -19,10 +19,13 @@ Ask the user only when multiple plausible vaults or targets exist.
 - **Target**: {TARGET}
 ```
 
-## Determine Context
+## Determine Project Boundary and Identity
 
-- **Single Project**: Target = `basename $PWD`
-- **Multi-Package**: Target = specific package name (ask user if needed)
+- **Single Project**: Target = configured vault folder or the current package name.
+- **Multi-Package**: Each independently managed package is a Project with its own vault folder and Skill Pair.
+- Assign an explicit immutable, globally unique lowercase slug as `{PROJECT_ID}` (for example, `acme-billing-api`).
+- Check sibling vault Projects and installed skills for collisions before recording the identifier.
+- Skill names are `{PROJECT_ID}-usage` and `{PROJECT_ID}-development`.
 
 ## Create Structure
 
@@ -31,8 +34,8 @@ Create the following:
 ```
 {VAULT}/Projects/{TARGET}/
 ├── ProjectEntry.md
-├── notes/
-│   ├── TOC.md
+├── notes/                       # Obsidian-compatible OKF v0.2 bundle
+│   ├── index.md
 │   └── notation.md
 ├── specs/
 │   ├── INDEX.md
@@ -40,16 +43,24 @@ Create the following:
 │   ├── quick-tasks/
 │   ├── epics/
 │   └── stories/
-└── log/
+├── log/
+└── skills/                       # generated atomically after real notes exist
+    ├── {PROJECT_ID}-usage/
+    └── {PROJECT_ID}-development/
 ```
 
 ### ProjectEntry.md
 
 ```markdown
+---
+project_id: {PROJECT_ID}
+working_state: working-tree
+---
+
 # {TARGET}
 
 ## Overview
-{Brief description of the project}
+{Brief description of the Project}
 
 ## Tech Stack
 - {Technology 1}
@@ -57,34 +68,46 @@ Create the following:
 
 ## Directory structure
 {Project directory}
-├── README.md 
-├── {dir 1} : {short description to dir 1}
-│   └──{file 1}
-....
+├── README.md
+├── {dir 1}: {short description}
+│   └── {file 1}
 
 ## Knowledge Base
-- [[notes/TOC|Table of Contents]]
-- [[notes/notation|Notation Reference]]
+- [Project Knowledge index](notes/index.md)
+- [Notation Reference](notes/notation.md)
+
+## Project Skills
+- Usage: `skills/{PROJECT_ID}-usage/`
+- Development: `skills/{PROJECT_ID}-development/`
 
 ## Recent Activity
-- [[log/{TARGET}-{DATE}|Latest Session]]
+- [Latest Session](log/{TARGET}-{DATE}.md)
 ```
 
-### TOC.md
+### index.md
 
 ```markdown
-# Table of Contents
+---
+okf_version: "0.2"
+---
 
-## Overview
-{Add categories as notes are created}
+# Project Knowledge
 
 ## Reference
-- [[notation]] - Standard variable notations and symbols.
+* [Notation](notation.md) - Standard variable notations and symbols.
 ```
 
 ### notation.md
 
 ```markdown
+---
+type: Project Notation
+title: Project Notation
+status: draft
+audience: both
+tags: [notation]
+---
+
 # Notation
 
 This file defines the standard notations used across all atomic notes.
@@ -120,39 +143,45 @@ When adding new notation:
 4. If changing existing notation, update ALL related notes
 ```
 
-## Commands
+## Seed Real Projection-Eligible Knowledge
+
+Before publishing skills, inspect the Project and create:
+
+1. At least one stable note with `audience: usage` or `audience: both` describing a real Consumer task through a supported Consumer Interface.
+2. At least one stable note with `audience: development` describing real Contributor workflow or conventions.
+
+Do not mark identity-only, placeholder, inferred, or unverified guidance `stable` merely to satisfy publication.
+
+Every concept under `notes/` must start on line 1 with YAML frontmatter, declare a non-empty `type`, use `status: draft | stable | deprecated`, and use relative standard Markdown links. Keep Project workflow logs in the sibling `log/` directory; `log.md` is reserved by OKF.
+
+## Initialize and Publish the Skill Pair
+
+Resolve the Projection CLI from the installed Kosmic skill directory, then run:
 
 ```bash
-TARGET="my_project"
-VAULT="./memnotes"
-
-# Create directories
-mkdir -p "$VAULT/Projects/$TARGET/notes"
-mkdir -p "$VAULT/Projects/$TARGET/log"
-mkdir -p "$VAULT/Projects/$TARGET/specs/research"
-mkdir -p "$VAULT/Projects/$TARGET/specs/quick-tasks"
-mkdir -p "$VAULT/Projects/$TARGET/specs/epics"
-mkdir -p "$VAULT/Projects/$TARGET/specs/stories"
-
-# Create files (use write tool with templates above)
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py init \
+  --project "{VAULT}/Projects/{TARGET}" \
+  --project-id "{PROJECT_ID}"
 ```
 
-Create `{VAULT}/Projects/{TARGET}/specs/INDEX.md` from `references/templates/template-specs-index.md`.
+Initialization succeeds only after it validates and atomically publishes exactly `{PROJECT_ID}-usage` and `{PROJECT_ID}-development`. A failure leaves no partial pair.
 
-## Update AGENTS.md
+## Update Project Instructions
 
-Add Kosmic integration section to the project's AGENTS.md.
+Add the Kosmic integration section to the Project's persistent instructions.
 
 **Template**: Use `references/agents_template.md`
 
 **Process**:
-1. Check if AGENTS.md exists in project root
-2. Check if "## Kosmic Integration" section already exists
-3. If not, append the template content to AGENTS.md
+1. Check whether the Project instruction file exists.
+2. Check whether a Kosmic Integration section already exists.
+3. Add or update the section from the template.
 4. Replace placeholders:
    - `{KOSMIC_VAULT}` → actual vault path
-   - `{TARGET}` → current target name
+   - `{TARGET}` → current vault Project folder
+   - `{PROJECT_ID}` → immutable Project Identifier
+   - `{USAGE_SKILL}` → `{PROJECT_ID}-usage`
+   - `{DEVELOPMENT_SKILL}` → `{PROJECT_ID}-development`
+5. Install the atomic pair through the selected adapter, or install persistent pointers for an agent without named skills.
 
-**If AGENTS.md doesn't exist**: Create it with the Kosmic integration section
-
-**Note**: The template uses `##` as the top-level header to fit as a section within existing AGENTS.md.
+If no Project instruction file exists, create it with the Kosmic integration section.

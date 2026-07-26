@@ -1,11 +1,20 @@
 # Installing Kosmic
 
-Kosmic is distributed as a Markdown-based AI-agent skill/workflow. The install target is the `skills/` directory in this repository, copied into the place where your agent loads custom skills, reusable instructions, or persistent project workflows.
+Kosmic is distributed as Markdown workflows plus a deterministic Python 3.11+ Projection CLI. Install the entire `skills/` directory wherever your agent loads custom skills, reusable instructions, or persistent project workflows.
 
-The canonical skill name is `kosmic`. Agents with named skills should expose it under that name. In OpenCode, load it with:
+The orchestrator skill name is `kosmic`. After Project initialization, Kosmic generates one `{project}-usage` and one `{project}-development` skill under the Project vault. In OpenCode, load the orchestrator with:
 
 ```text
 /skill kosmic
+```
+
+## Runtime requirement
+
+The Projection CLI requires Python 3.11 or newer and uses only the standard library:
+
+```bash
+python3 --version
+python3 skills/scripts/kosmic_project_skills.py --help
 ```
 
 ## Option 1: Install with an AI agent
@@ -16,14 +25,15 @@ Use this when you are already working inside an AI coding agent such as Claude C
 Install the Kosmic skill from this repository.
 
 Requirements:
-1. Treat ./skills as the source skill directory. It contains SKILL.md, README.md, and references/.
-2. Install it as a skill named kosmic in the current AI agent's custom skill directory.
-   - For OpenCode, use ~/.config/opencode/skill/kosmic/ unless this environment has a different configured skill path.
-   - For Claude Code, Codex, or another agent, detect the local convention for user skills or persistent project instructions and use the closest equivalent. If the agent does not support named skills, copy or reference the Markdown instructions from skills/SKILL.md and skills/README.md in the agent's persistent instruction mechanism.
-3. Preserve the full directory structure under ./skills, especially references/ and references/templates/.
-4. Do not modify the source repository except to report what you did.
-5. After installing, verify that the installed directory contains SKILL.md, README.md, and references/.
-6. Tell me the exact install path and how to load or invoke kosmic.
+1. Treat `./skills` as the source skill directory. It contains `SKILL.md`, `README.md`, `references/`, and `scripts/`.
+2. Install it as a skill named `kosmic` in the current AI agent's custom skill directory.
+   - For OpenCode, use `~/.config/opencode/skill/kosmic/` unless this environment has another configured path.
+   - For Claude Code, Codex, or another agent, detect its user-skill or persistent-instruction convention.
+3. Preserve the full directory structure, especially `references/`, `references/templates/`, and `scripts/`.
+4. Verify Python 3.11+ and run `python3 scripts/kosmic_project_skills.py --help` from the installed skill directory.
+5. Do not modify the source repository except to report what you did.
+6. Verify that the installed directory contains `SKILL.md`, `README.md`, `references/`, and `scripts/`.
+7. Tell me the exact install path and how to load or invoke `kosmic`.
 ```
 
 After the agent reports success, load or invoke `kosmic` using that agent's normal mechanism. In OpenCode, test with:
@@ -59,6 +69,7 @@ You should see at least:
 SKILL.md
 README.md
 references/
+scripts/
 ```
 
 Load the skill in OpenCode:
@@ -77,11 +88,14 @@ The installed directory should keep this structure:
 kosmic/
 ├── SKILL.md
 ├── README.md
+├── scripts/
+│   └── kosmic_project_skills.py
 └── references/
     ├── agents_template.md
     ├── task_init.md
     ├── task_search.md
     ├── task_add_note.md
+    ├── task_project_skills.md
     ├── task_quick_task.md
     ├── task_research.md
     ├── task_create_spec.md
@@ -123,25 +137,27 @@ This project uses **Kosmic** for persistent memory and knowledge management.
 
 ### Configuration
 - **Vault**: `./memnotes`
-- **Target**: `{project-name}`
-```
+- **Target**: `{vault-project-folder}`
+- **Project ID**: `{immutable-project-id}`
+- **Usage Skill**: `{immutable-project-id}-usage`
+- **Development Skill**: `{immutable-project-id}-development`
 
 The initialized vault structure is:
 
 ```text
 {VAULT}/Projects/{TARGET}/
 ├── ProjectEntry.md
-├── notes/
-│   ├── TOC.md
+├── notes/                       # Obsidian-compatible OKF v0.2 bundle
+│   ├── index.md
 │   └── notation.md
 ├── specs/
-│   ├── INDEX.md
-│   ├── research/
-│   ├── quick-tasks/
-│   ├── epics/
-│   └── stories/
-└── log/
+├── log/
+└── skills/
+    ├── {PROJECT_ID}-usage/
+    └── {PROJECT_ID}-development/
 ```
+
+Initialization validates line-1 frontmatter, OKF lifecycle values, the reserved index, and portable links; it then requires real stable Contributor and Consumer notes before atomically publishing the pair. Existing Projects use Task 8: Migrate Project Skills; migration is transactional, and Unscoped Knowledge remains Development-only until reviewed.
 
 ## Updating Kosmic
 

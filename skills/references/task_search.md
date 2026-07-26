@@ -4,25 +4,31 @@
 
 Find existing knowledge and specs before implementing new features.
 
+## Load the Audience Skill First
+
+- Contributor search: load `{PROJECT_ID}-development`; follow its required `{PROJECT_ID}-usage` reference for shared and consumer-facing behavior.
+- Consumer-only search: load `{PROJECT_ID}-usage` directly and do not enter implementation workflow.
+- If either canonical projection is missing or stale, stop and run the validation or migration procedure in `references/task_project_skills.md`.
+
 ## Strategy
 
-1. **Quick**: Search TOC first
+1. **Quick**: Search the OKF index first
 2. **Deep**: If not found, search all notes
 3. **Specs**: Also search specs for existing PRDs, architecture, epics, stories
 
-## 1. Search TOC
+## 1. Search the Knowledge Index
 
-TOC can be long, use grep instead of reading entire file:
+`index.md` is the OKF progressive-disclosure entry point. Search it before opening concepts:
 
 ```bash
-# Search TOC for keywords (case-insensitive)
-grep -i "keyword\|another_keyword" {VAULT}/Projects/{TARGET}/notes/TOC.md
+# Search the index for keywords (case-insensitive)
+grep -i "keyword\|another_keyword" {VAULT}/Projects/{TARGET}/notes/index.md
 
 # Example: search for "interface" and "batch"
-grep -i "interface\|batch" {VAULT}/Projects/{TARGET}/notes/TOC.md
+grep -i "interface\|batch" {VAULT}/Projects/{TARGET}/notes/index.md
 
 # List all categories
-grep "^## " {VAULT}/Projects/{TARGET}/notes/TOC.md
+grep "^# " {VAULT}/Projects/{TARGET}/notes/index.md
 ```
 
 ## 2. Deep Search (Notes)
@@ -80,8 +86,8 @@ git grep "confidence: 0\.[0-5]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 # Draft notes
 git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
-# Stale notes
-git grep "usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+# Stale or Usage-stale notes
+git grep -E "stale_after:|usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
 # Recently created
 git grep "created: 2025-02" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
@@ -90,7 +96,7 @@ git grep "created: 2025-02" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 ## Workflow
 
 ```
-1. grep -i "keywords" TOC.md
+1. grep -i "keywords" index.md
    ↓ Found?
    → Read specific note(s)
    ↓ Not found?

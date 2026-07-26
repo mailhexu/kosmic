@@ -38,7 +38,7 @@ The knowledge base is not a side artifact. It is what makes the next task safer 
 - **Research before coding.** Search the vault, read the relevant code, and write notes before implementation. No unjustified assumptions.
 - **Decompose before implementing.** Break features into small stories, each with a clear goal, a bounded context, and an acceptance check.
 - **Tests define the target.** For each story, write the checks first; AI output is accepted or rejected by evidence, not by whether it compiles.
-- **Knowledge is atomic and validated.** One concept per note. Every note carries a status (`draft`, `validated`, `stale`, `deprecated`) and is updated when implementation or review changes what is true.
+- **Knowledge is atomic and portable.** One concept per note. The authoritative `notes/` tree is both Obsidian-readable and an OKF v0.2 bundle: line-1 YAML, non-empty `type`, `draft | stable | deprecated`, and relative Markdown links. Staleness uses `stale_after`.
 - **Mandatory review.** No story is marked `done` without code review. AI proposals are first-class input, not automatic answers.
 
 ## What it gives you
@@ -59,7 +59,7 @@ For human developers and maintainers:
 
 ## Installation
 
-Kosmic is installed as a Markdown-based AI-agent skill. The source skill directory is [`skills/`](skills/), and the installed skill name should be `kosmic`.
+Kosmic is installed as an AI-agent skill with Markdown workflows and a deterministic Python 3.11+ Projection CLI. The source skill directory is [`skills/`](skills/), and the installed orchestrator skill name is `kosmic`.
 
 There are two supported paths:
 
@@ -81,9 +81,9 @@ The skill identity is `kosmic`. In agents with named skills, load or invoke `kos
 /skill kosmic
 ```
 
-The knowledge vault directory is `memnotes` by default, so existing notes, specs, and logs keep their location. Kosmic organizes work per project under `{VAULT}/Projects/{TARGET}/`, with `notes/`, `log/`, and `specs/` subdirectories.
+The knowledge vault directory is `memnotes` by default. Kosmic organizes each Project under `{VAULT}/Projects/{TARGET}/`, assigns an immutable Project Identifier, keeps one authoritative Obsidian-compatible OKF v0.2 knowledge bundle under `notes/`, and generates exactly `{project}-usage` plus `{project}-development` under the Project's `skills/` directory.
 
-For the full task catalogue (Task 0: Quick Task through Task 7: Review Spec), templates, the spec-approval gate flow, and the directory layout, see the [docs](docs/README.md), [skills/README.md](skills/README.md), and [skills/SKILL.md](skills/SKILL.md).
+For the full task catalogue (Task 0: Quick Task through Task 8: Migrate Project Skills), Projection CLI lifecycle, templates, approval gates, and directory layout, see the [docs](docs/README.md), [skills/README.md](skills/README.md), and [skills/SKILL.md](skills/SKILL.md).
 
 ## Scope of this repository
 

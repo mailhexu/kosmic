@@ -17,7 +17,7 @@ date: {DATE}
 - {Decision made and rationale}
 
 ### Notes Created/Updated
-- Created: [[{topic}]] - {brief description}
+- Created: [{topic}](../notes/{topic}.md) - {brief description}
 
 ### Open Questions
 - {Question that needs resolution}

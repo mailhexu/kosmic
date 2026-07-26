@@ -1,6 +1,6 @@
-# Kosmic Skill (v2.0.1)
+# Kosmic Skill (v3.0.0)
 
-Spec-driven knowledge management for software development projects. Integrates persistent memory with a spec-driven workflow for reliable AI-assisted coding across agents.
+Spec-driven Project knowledge for reliable AI-assisted development and usage across agents. Kosmic remains the workflow orchestrator while a deterministic Projection CLI generates each Project's atomic Usage and Development Skill Pair.
 
 ## Features
 
@@ -11,6 +11,9 @@ Spec-driven knowledge management for software development projects. Integrates p
 - **Test-Driven Implementation**: Research → Tests → Code → Review pipeline
 - **Mandatory Code Review**: No story is "done" without review
 - **Progress Tracking**: Status lifecycle and daily logging
+- **Project Skill Pair**: Exactly `{project}-usage` and `{project}-development` generated from stable notes
+- **Dual-Native Knowledge**: One authoritative notes tree works directly in Obsidian and as an OKF v0.2 bundle
+- **Deterministic Projection CLI**: OKF validation, audience filtering, provenance, drift checks, atomic publication, migration, and Install Adapters
 
 ## Quick Start
 
@@ -20,6 +23,9 @@ Spec-driven knowledge management for software development projects. Integrates p
 
 # First time? Initialize
 Task 1: Initialize
+
+# Existing Project? Migrate identity and audience-scoped knowledge
+Task 8: Migrate Project Skills
 
 # Before implementing anything
 Task 3: Search
@@ -43,25 +49,24 @@ If your agent does not support named skills, use `SKILL.md` as persistent instru
 
 ```
 {VAULT}/Projects/{TARGET}/
-├── ProjectEntry.md          # Project overview
-├── notes/                    # Knowledge base
-│   ├── TOC.md               # Table of contents
-│   ├── notation.md          # Standard notations
-│   └── {topic}.md           # Atomic notes
-├── log/                      # Session logs
-│   └── {TARGET}-{DATE}.md   # Daily entries
-└── specs/                    # Specifications
-    ├── INDEX.md             # Navigation and status summary
-    ├── prd.md               # Product requirements
-    ├── research/
-    │   └── {DATE}-{slug}.md
-    ├── architecture.md      # Technical design + ADRs
-    ├── quick-tasks/
-    │   └── {DATE}-{slug}.md
-    ├── epics/
-    │   └── epic-{N}-{slug}.md
-    └── stories/
-        └── story-{N}-{slug}.md
+├── ProjectEntry.md              # overview + immutable project_id
+├── notes/                       # authoritative Obsidian + OKF v0.2 bundle
+│   ├── index.md                 # reserved OKF progressive-disclosure index
+│   ├── notation.md
+│   └── {topic}.md               # line-1 YAML; stable notes declare Audience Scope
+├── log/
+│   └── {TARGET}-{DATE}.md
+├── specs/
+│   ├── INDEX.md
+│   ├── prd.md
+│   ├── research/
+│   ├── architecture.md
+│   ├── quick-tasks/
+│   ├── epics/
+│   └── stories/
+└── skills/                      # generated atomically; never hand-edit
+    ├── {PROJECT_ID}-usage/
+    └── {PROJECT_ID}-development/
 ```
 
 ## Tasks
@@ -70,7 +75,8 @@ If your agent does not support named skills, use `SKILL.md` as persistent instru
 
 | Situation | Use Task | Required Output | Gate Behavior |
 |-----------|----------|-----------------|---------------|
-| New project/package or missing Kosmic structure | Task 1: Initialize | Project structure, AGENTS.md integration, specs index | Ask only if vault/target is ambiguous |
+| New project/package or missing Kosmic structure | Task 1: Initialize | Project identity, real audience-scoped notes, canonical Skill Pair, instructions, specs index | Block publication until useful Usage exists |
+| Existing Project missing identity, Audience Scope, or canonical pair | Task 8: Migrate Project Skills | Immutable identity, classification report, valid pair when Usage exists | Unscoped Knowledge remains Development-only |
 | Need existing knowledge or context | Task 3: Search | Relevant notes/specs read | Mandatory before implementation |
 | Small, low-risk implementation | Task 0: Quick Task | Quick task record, verification, log/notes | Approval unless user explicitly requested implementation |
 | Uncertain direction after PRD | Task R: Research | Research memo linked from Architecture | No new gate; feeds PRD/Architecture review |
@@ -178,6 +184,23 @@ Review specifications and code.
 
 **Status**: `draft → approved → in_progress → review → done`
 
+### Task 8: Migrate Project Skills
+Assign or validate immutable Project identity, transactionally normalize Project Knowledge to dual-native Obsidian/OKF Markdown, report Unscoped Knowledge, and publish the Skill Pair after reviewed Usage knowledge exists.
+
+**Reference**: `references/task_project_skills.md`
+
+**Gate**: Never infer Consumer guidance, guess ambiguous Wikilinks, or publish an empty Usage Skill.
+
+## Project Knowledge Format
+
+`notes/` is one authoritative Obsidian-readable OKF v0.2 bundle—not an authoring tree plus an export tree. Its `index.md` contains only the required `okf_version: "0.2"` frontmatter. Every other concept starts with YAML on line 1, declares `type`, uses `status: draft | stable | deprecated`, and links with relative standard Markdown. Kosmic-specific fields such as `audience`, confidence, validation procedure, and provenance remain valid extension fields.
+
+## Project Skill Pair Lifecycle
+
+Stable notes declare `audience: development`, `usage`, or `both`. Usage receives `usage` and `both`; Development receives `development` and requires Usage for shared behavior. Run the Projection CLI through the commands in `references/task_project_skills.md` to generate, validate, review, migrate, check completion, or install the pair.
+
+Canonical packages remain in the Project vault and are themselves OKF v0.2 bundles. OpenCode, Claude Code, and Codex adapters expose them through native skill directories; the pointer adapter supports agents without named skills.
+
 
 ## Typical Session Flow
 
@@ -252,7 +275,7 @@ draft → approved → in_progress → review → done
 | Specs and stories | `draft`, `approved`, `in_progress`, `review`, `done` | Approval gates apply to PRD, Architecture, Stories, and code review. |
 | Quick tasks | `draft`, `approved`, `in_progress`, `review`, `done` | Lightweight implementation lifecycle with mandatory verification. |
 | Research memos | `draft`, `done` | No approval gate; feeds PRD or Architecture review. |
-| Notes | `draft`, `validated`, `stale`, `deprecated` | Knowledge lifecycle only. |
+| Notes | `draft`, `stable`, `deprecated` | OKF knowledge lifecycle; use `stale_after` for currentness. |
 
 Blocked work should stay in its current status with a blocker note and log entry; do not use an undocumented `blocked` status.
 
@@ -263,7 +286,10 @@ In your project's `AGENTS.md`:
 ```markdown
 ### Kosmic Integration
 - **Vault**: `./memnotes` (or custom path)
-- **Target**: `{project-name}`
+- **Target**: `{vault-project-folder}`
+- **Project ID**: `{immutable-project-id}`
+- **Usage Skill**: `{immutable-project-id}-usage`
+- **Development Skill**: `{immutable-project-id}-development`
 ```
 
 
@@ -273,7 +299,7 @@ In your project's `AGENTS.md`:
 - **One concept per note**: Keep notes focused
 - **Self-contained**: Understandable without external context
 - **Full sentences**: Clear explanations, not just bullets
-- **Link related notes**: Use `[[note_name]]` syntax
+- **Link related notes**: Use relative Markdown links such as `[Note](./note_name.md)`
 - **Document variables**: Use `notation.md` for consistency
 
 ### Spec-Driven Development

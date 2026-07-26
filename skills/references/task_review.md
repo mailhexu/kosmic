@@ -32,7 +32,7 @@ For each log entry:
 
 3. **Process each item**:
    - Create/update atomic note (see task_add_note.md)
-   - Mark in log entry: `- [Extracted] [[note_name]]`
+   - Mark in log entry: `- [Extracted] [Note Name](../notes/note_name.md)`
 
 ### Example
 
@@ -46,8 +46,8 @@ Before:
 After:
 ```markdown
 ## Session 1
-- [Extracted] [[interface_batch_processing]] - Discovered that interface requires batch processing
-- [Extracted] [[memory_leak_converter]] - Found memory leak in converter
+- [Extracted] [Interface Batch Processing](../notes/interface_batch_processing.md) - Discovered that interface requires batch processing
+- [Extracted] [Memory Leak Converter](../notes/memory_leak_converter.md) - Found memory leak in converter
 ```
 
 ## 2. Review Stale Notes
@@ -55,11 +55,11 @@ After:
 Find and review notes that haven't been used recently:
 
 ```bash
-# Find stale notes
-git grep "usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+# Find notes with explicit staleness or audience-specific staleness
+git grep -E "stale_after:|usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
-# Find notes not validated recently
-git grep "last_validated: 2025-0[12]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+# Find notes not updated recently
+git grep "updated: '2025-0[12]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
 # Find draft notes
 git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
@@ -69,8 +69,9 @@ git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
 1. **Read the note**
 2. **Verify**: Is the knowledge still accurate?
-3. **Update**: If changed, update content and `last_validated`
+3. **Update**: If corrected, update content and `updated`; remove or advance `stale_after` only with evidence
 4. **Deprecate**: If obsolete, move to `deprecated/` and set `status: deprecated`
+5. **Trust**: Add `verified` only when the actor and timestamp are both known
 
 ## 3. Review Notation Consistency
 
@@ -94,7 +95,16 @@ git grep "x_i" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 3. **Update all related notes**
 4. **Log change in log entry**
 
-## 4. Review Schedule
+## 4. Review the Project Skill Pair
+
+Run the review command in `references/task_project_skills.md`.
+
+- Resolve every Unscoped Knowledge report by explicitly reviewing its Audience Scope; until then it remains Development-only.
+- Fix missing source, provenance drift, stale generated content, and broken Development-to-Usage relationships at the source note.
+- Regenerate after any eligible note change, then rerun review.
+- Never edit canonical or installed projection output.
+
+## 5. Review Schedule
 
 - **Daily**: Quick scan at end of session
 - **Weekly**: Review all notes from past week
@@ -111,13 +121,15 @@ ls -t {VAULT}/Projects/{TARGET}/log/ | head -1
 # If more than 7 days since last review, do a weekly review first
 ```
 
-## 5. End-of-Session Checklist
+## 6. End-of-Session Checklist
 
 Before finishing:
 - [ ] Log entry exists for today
 - [ ] Discoveries extracted to atomic notes
-- [ ] TOC updated
+- [ ] Knowledge index updated
 - [ ] Log has session summary
+- [ ] Authoritative `notes/` OKF bundle validation passed
+- [ ] Project Skill Pair review passed
 
 ## Commands Summary
 
@@ -129,7 +141,7 @@ ls -t {VAULT}/Projects/{TARGET}/log/ | head -5
 grep -L "\[Extracted\]" {VAULT}/Projects/{TARGET}/log/*.md
 
 # Stale notes
-git grep "usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+git grep -E "stale_after:|usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
 # Draft notes
 git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"

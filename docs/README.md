@@ -1,6 +1,6 @@
 # Kosmic docs
 
-This directory contains user-facing Markdown documentation for installing and using Kosmic.
+This directory documents Kosmic's Markdown workflows, deterministic Projection CLI, and per-Project Usage and Development Skill Pair.
 
 ## Start here
 
@@ -24,14 +24,17 @@ Then initialize Kosmic once per project:
 Task 1: Initialize
 ```
 
-Kosmic will create or use a Markdown vault, defaulting to `./memnotes`, and organize project knowledge under:
+Kosmic creates or uses a Markdown vault, defaults to `./memnotes`, assigns an immutable Project Identifier, and keeps one authoritative Obsidian-compatible OKF v0.2 knowledge bundle plus generated skills under:
 
 ```text
 {VAULT}/Projects/{TARGET}/
 ├── ProjectEntry.md
-├── notes/
+├── notes/                 # index.md + line-1 YAML concept notes
 ├── log/
-└── specs/
+├── specs/
+└── skills/
+    ├── {PROJECT_ID}-usage/
+    └── {PROJECT_ID}-development/
 ```
 
 For normal work, use this loop:
@@ -41,5 +44,6 @@ For normal work, use this loop:
 3. **Implement** with tests/checks before code whenever possible.
 4. **Review** before marking work done.
 5. **Capture** durable knowledge as atomic notes.
+6. **Project** stable notes through the atomic Skill Pair and run the Consumer Interface completion gate when applicable.
 
 See [../skills/README.md](../skills/README.md) for the full task list.

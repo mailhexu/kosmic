@@ -1,16 +1,16 @@
 ---
 name: kosmic
-description: Spec-driven knowledge management with BMAD-method workflow. Atomic notes, quick tasks, optional research, PRD→Architecture→Epics→Stories, TDD implementation, mandatory code review.
-version: 2.0.1
+description: Spec-driven Project knowledge with atomic Usage and Development Skill Projections, quick tasks, PRD→Architecture→Stories, TDD implementation, and mandatory review.
+version: 3.0.0
 license: MIT
-compatibility: markdown-agent-skill
+compatibility: markdown-agent-skill, python>=3.11
 ---
 
 # Kosmic
 
 ## Overview
 
-Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages a `memnotes` knowledge base with spec-driven development support. It is written as Markdown so it can be used by OpenCode, Claude Code, Codex, or any agent that supports custom skills or persistent project instructions. Each task is independent - load only what you need.
+Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages authoritative Project Knowledge and uses a deterministic Python Projection CLI to generate an atomic Usage and Development Skill Pair for each Project. Kosmic works with OpenCode, Claude Code, Codex, or agents using persistent project instructions. Each task is independent—load only what you need.
 
 **Documentation**: See `README.md` for complete guide.
 
@@ -18,17 +18,21 @@ Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages a `mem
 
 ## Vault Detection (MANDATORY FIRST STEP)
 
-Before any task, resolve `{VAULT}` and `{TARGET}`:
+Before any task, resolve `{VAULT}`, `{TARGET}`, and `{PROJECT_ID}`:
 
 ```
-1. grep -i "vault\|kosmic\|memnotes" AGENTS.md → extract path after "Vault:" or "KOSMIC_VAULT:"
-2. If not found: check env $KOSMIC_VAULT
-3. If not found: default to ./memnotes
-4. TARGET = basename of current project directory (or ask user for multi-package)
-5. Verify: ls {VAULT}/Projects/{TARGET}/    → if missing, run Task 1: Initialize
+1. Search project instructions for the Kosmic Vault, Target, and Project ID fields.
+2. If Vault is absent: check env $KOSMIC_VAULT, then default to ./memnotes.
+3. TARGET = configured vault Project folder; otherwise use the current package name.
+4. Verify {VAULT}/Projects/{TARGET}/.
+   - Missing → run Task 1: Initialize.
+   - Present but ProjectEntry.md has no project_id → run the migration in references/task_project_skills.md.
+5. PROJECT_ID = immutable project_id from ProjectEntry.md.
+6. USAGE_SKILL = {PROJECT_ID}-usage.
+7. DEVELOPMENT_SKILL = {PROJECT_ID}-development.
 ```
 
-**STOP**: Do not proceed with any task until `{VAULT}` and `{TARGET}` are resolved.
+**STOP**: Do not proceed until the vault Project and immutable Project Identifier resolve. Contributor workflows must also resolve the canonical Skill Pair.
 
 ---
 
@@ -38,8 +42,13 @@ Before any task, resolve `{VAULT}` and `{TARGET}`:
 |------|------|
 | Vault | `{VAULT}` |
 | Target | `{TARGET}` |
+| Project ID | `project_id` in `{VAULT}/Projects/{TARGET}/ProjectEntry.md` |
+| Canonical Skill Pair | `{VAULT}/Projects/{TARGET}/skills/` |
+| Usage Skill | `{VAULT}/Projects/{TARGET}/skills/{PROJECT_ID}-usage/` |
+| Development Skill | `{VAULT}/Projects/{TARGET}/skills/{PROJECT_ID}-development/` |
+| Projection CLI | `scripts/kosmic_project_skills.py` in the installed Kosmic skill |
 | Notes | `{VAULT}/Projects/{TARGET}/notes/{TOPIC}.md` |
-| TOC | `{VAULT}/Projects/{TARGET}/notes/TOC.md` |
+| Knowledge Index | `{VAULT}/Projects/{TARGET}/notes/index.md` |
 | Notation | `{VAULT}/Projects/{TARGET}/notes/notation.md` |
 | Log | `{VAULT}/Projects/{TARGET}/log/{TARGET}-{YYYY-MM-DD}.md` |
 | Specs | `{VAULT}/Projects/{TARGET}/specs/` |
@@ -50,6 +59,19 @@ Before any task, resolve `{VAULT}` and `{TARGET}`:
 | Quick Tasks | `{VAULT}/Projects/{TARGET}/specs/quick-tasks/{YYYY-MM-DD}-{slug}.md` |
 | Epics | `{VAULT}/Projects/{TARGET}/specs/epics/epic-{N}-{slug}.md` |
 | Stories | `{VAULT}/Projects/{TARGET}/specs/stories/story-{N}-{slug}.md` |
+
+## Project Skill Routing (MANDATORY)
+
+Kosmic remains the workflow orchestrator; Project skills provide audience-specific knowledge.
+
+1. **Contributor work** — before planning, changing, testing, reviewing, or releasing Project code, load `{DEVELOPMENT_SKILL}`. Follow its required reference to `{USAGE_SKILL}` whenever the work invokes or changes a Consumer Interface.
+2. **Consumer work** — when the request only invokes, configures, integrates, or troubleshoots the Project without changing its implementation, load `{USAGE_SKILL}` directly. Do not enter the spec or implementation workflow.
+3. **Knowledge/spec maintenance** — use Kosmic tasks and load the Project skill matching the knowledge audience.
+4. Missing, stale, mismatched, or unresolved pair → stop and run validation or migration. Never continue contributor work without Project guidance.
+
+## Project Knowledge Format (MANDATORY)
+
+`{VAULT}/Projects/{TARGET}/notes/` is one authoritative bundle that is both Obsidian-readable and OKF v0.2 conformant. `index.md` is the reserved progressive-disclosure entry point. Every other note starts with YAML frontmatter on line 1, declares a non-empty `type`, uses `status: draft | stable | deprecated`, and links with relative standard Markdown. Do not create a separate OKF export tree.
 
 ---
 
@@ -97,7 +119,8 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 | Situation | Use Task | Required Output | Gate Behavior |
 |-----------|----------|-----------------|---------------|
-| New project/package or missing Kosmic structure | Task 1: Initialize | Project structure, AGENTS.md integration, specs index | Ask only if vault/target is ambiguous |
+| New project/package or missing Kosmic structure | Task 1: Initialize | Project structure, immutable Project Identifier, dual-native OKF/Obsidian notes, canonical Skill Pair, AGENTS.md integration, specs index | Block completion until real stable Usage knowledge exists |
+| Existing Project missing identity, OKF conformance, Audience Scope, or canonical pair | Task 8: Migrate Project Skills | Immutable Project Identifier, transactional note migration, migration report, valid pair when Usage knowledge exists | Unscoped Knowledge remains Development-only; block publication rather than infer Usage |
 | Need existing knowledge or context | Task 3: Search | Relevant notes/specs read | Mandatory before implementation |
 | Small, low-risk implementation | Task 0: Quick Task | Quick task record, verification, log/notes | Approval unless user explicitly requested implementation |
 | Uncertain direction after PRD | Task R: Research | Research memo linked from Architecture | No new gate; feeds PRD/Architecture review |
@@ -127,9 +150,9 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 **Load**: `references/task_init.md`
 
-**When**: Starting work on a NEW project, adding a NEW package, or no Kosmic structure exists.
+**When**: Starting work on a NEW Project, adding a NEW package, or no Kosmic structure or Project Identifier exists.
 
-**Check**: `ls {VAULT}/Projects/{TARGET}/` → if not found, run this task.
+**Check**: Verify the vault Project, `ProjectEntry.md` identity, and canonical Skill Pair. Run this task if any is missing.
 
 ---
 
@@ -210,6 +233,18 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 **Status transitions**: `draft → approved` (spec review), `review → done` (code review)
 
 ---
+### Task 8: Migrate Project Skills
+
+**Load**: `references/task_project_skills.md`
+
+**When**: An existing vault Project lacks an immutable Project Identifier, contains nonconformant or Unscoped Knowledge, or has no canonical Skill Pair.
+
+**Flow**: Assign/validate identity → normalize `notes/` to dual-native OKF/Obsidian Markdown → report Unscoped Knowledge → add reviewed Usage scope → validate pair → install adapter
+
+**Gate**: Migration may record identity, but must not publish either skill until real stable Usage knowledge exists. Ambiguous Wikilinks stop migration without partial note edits.
+
+---
+
 
 
 ## Spec-Driven Development Workflow
@@ -245,8 +280,11 @@ RULE 2: NEVER implement feature work without an approved story.
         Story must be status: approved before writing feature code.
         Small, low-risk work may use an approved Quick Task instead.
 
-RULE 3: NEVER mark a story "done" without code review.
-        Task 7 (Review Spec) is MANDATORY before status: done.
+RULE 3: NEVER mark a story "done" without convergent code review.
+        Task 7 is MANDATORY. Pin one review base, run complete Standards and Spec axes,
+        preserve stable finding IDs, and restrict re-review to fixes and regressions.
+        Non-blocking suggestions do not prevent approval. After three automated rounds,
+        escalate the remaining ledger instead of starting a fresh review.
 
 RULE 4: ALWAYS pause for user approval at gate points.
         Gate points: PRD review, Architecture review, Story approval.
@@ -348,28 +386,31 @@ draft → approved → in_progress → review → done
 ## Quick Decision Tree
 
 ```
-Is this a NEW project/package?
+Is this a NEW Project/package?
 ├─ YES → Task 1: Initialize
-└─ NO → 
-    Do I need to FIND existing knowledge?
-    ├─ YES → Task 3: Search
+└─ NO →
+    Is identity, Audience Scope, or the canonical Skill Pair missing?
+    ├─ YES → Task 8: Migrate Project Skills
     └─ NO →
-        Is this a SMALL, LOW-RISK implementation task?
-        ├─ YES → Task 0: Quick Task
+        Do I need to FIND existing knowledge?
+        ├─ YES → Task 3: Search
         └─ NO →
-            Do I need to CREATE/IMPLEMENT a spec?
-            ├─ YES →
-            │   Create spec? → Task 5: Create Spec
-            │   Research before architecture? → Task R: Research
-            │   Implement story? → Task 6: Implement Story
-            │   Review spec/code? → Task 7: Review Spec
+            Is this a SMALL, LOW-RISK implementation task?
+            ├─ YES → Task 0: Quick Task
             └─ NO →
-                Did I UNDERSTAND something?
-                ├─ YES → Task 2: Add Note
+                Do I need to CREATE/IMPLEMENT a spec?
+                ├─ YES →
+                │   Create spec? → Task 5: Create Spec
+                │   Research before architecture? → Task R: Research
+                │   Implement story? → Task 6: Implement Story
+                │   Review spec/code? → Task 7: Review Spec
                 └─ NO →
-                    Is it time to REVIEW (end of session/week)?
-                    ├─ YES → Task 4: Review
-                    └─ NO → Continue working
+                    Did I UNDERSTAND something?
+                    ├─ YES → Task 2: Add Note
+                    └─ NO →
+                        Is it time to REVIEW (end of session/week)?
+                        ├─ YES → Task 4: Review
+                        └─ NO → Continue working
 ```
 
 ## Typical Session Flow
@@ -412,7 +453,7 @@ Is this a NEW project/package?
 | Specs and stories | `draft`, `approved`, `in_progress`, `review`, `done` | Approval gates apply to PRD, Architecture, Stories, and code review. |
 | Quick tasks | `draft`, `approved`, `in_progress`, `review`, `done` | Lightweight implementation lifecycle; review and verification are still mandatory. |
 | Research memos | `draft`, `done` | No approval gate; findings feed PRD or Architecture review. |
-| Notes | `draft`, `validated`, `stale`, `deprecated` | Knowledge lifecycle only; separate from spec/story statuses. |
+| Notes | `draft`, `stable`, `deprecated` | OKF knowledge lifecycle; currentness is represented by `stale_after`, not a fourth status. |
 
 If work is blocked, keep the current status and add a blocker note in the artifact plus a log entry. Do not invent an undocumented `blocked` status.
 
@@ -421,3 +462,4 @@ If work is blocked, keep the current status and add a blocker note in the artifa
 ## Distribution
 
 When initializing a new project, use `references/agents_template.md` to add the Kosmic Integration section to that project's AGENTS.md.
+The canonical Project Skill Pair is generated in the vault and exposed through an Install Adapter. Never hand-maintain installed or canonical projection output.

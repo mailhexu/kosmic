@@ -12,18 +12,26 @@ This project uses **Kosmic** for persistent memory and knowledge management.
 
 ### Configuration
 - **Vault**: `{KOSMIC_VAULT}`
-- **Target**: `{TARGET}` (current project/package name)
+- **Target**: `{TARGET}` (vault Project folder)
+- **Project ID**: `{PROJECT_ID}` (immutable)
+- **Usage Skill**: `{USAGE_SKILL}`
+- **Development Skill**: `{DEVELOPMENT_SKILL}`
+- **Canonical Pair**: `{KOSMIC_VAULT}/Projects/{TARGET}/skills/`
 
-### Skill
+### Skills
 
-The `kosmic` skill/workflow is available to the coding agent. If the agent supports named skills, load or invoke `kosmic` through that mechanism. If not, use the installed Markdown instructions as persistent project guidance.
+The `kosmic` skill is the workflow orchestrator. Contributor work loads `{DEVELOPMENT_SKILL}`, which in turn requires `{USAGE_SKILL}` for consumer and shared behavior. Consumers may invoke `{USAGE_SKILL}` directly. If named skills are unsupported, persistent instructions must point to both canonical packages.
+
+### Project Knowledge Format
+
+`{KOSMIC_VAULT}/Projects/{TARGET}/notes/` is the authoritative Obsidian-compatible OKF v0.2 bundle. Use `index.md` for discovery. Concept notes require YAML frontmatter on line 1, non-empty `type`, `status: draft | stable | deprecated`, and relative Markdown links. Do not create or hand-maintain a second OKF export.
 
 ### When to Use Kosmic Tasks
 
 #### Use Task: Initialize
-**When**: First time working on this project (no Kosmic structure exists)
+**When**: The vault Project, immutable Project Identifier, conformant Knowledge bundle, or canonical Skill Pair is missing
 **Reference**: `references/task_init.md`
-**Check**: Does `{KOSMIC_VAULT}/Projects/{TARGET}/` exist?
+**Check**: Does `{KOSMIC_VAULT}/Projects/{TARGET}/ProjectEntry.md` define `{PROJECT_ID}`, does `notes/index.md` declare OKF v0.2, and does `skills/` contain both valid projections?
 
 #### Use Task: Search
 **When**: 
@@ -127,10 +135,10 @@ When planning a task, always integrate knowledge retrieval:
     Planning: Implement user authentication
     
     1. Search notes for: "authentication", "user", "session"
-    2. Found: [[auth_flow]], [[session_management]]
+    2. Found: [Authentication Flow](./memnotes/Projects/{TARGET}/notes/auth_flow.md), [Session Management](./memnotes/Projects/{TARGET}/notes/session_management.md)
     3. Read notes → understand existing patterns
     4. Research codebase for: password hashing, token generation
-    5. Add notes: [[password_hashing_convention]] if new discovery
+    5. Add note `password_hashing_convention.md` if a new discovery
     6. Create plan with context from notes
 
 ### Typical Session

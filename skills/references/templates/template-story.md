@@ -5,6 +5,10 @@ updated: {DATE}
 linked_epic: ../epics/epic-{N}-{slug}.md
 linked_architecture: ../architecture.md
 linked_prd: ../prd.md
+related_notes: []
+consumer_interface_change: false
+review_base: ""
+review_round: 0
 ---
 
 # Story {N}: {Story Title}

@@ -20,7 +20,7 @@ Create or update atomic notes, and log daily progress.
 
 Read `{VAULT}/Projects/{TARGET}/notes/{TOPIC}.md`
 
-- **Exists & Consistent**: Update content, set `last_validated: now`
+- **Exists & Consistent**: Update content and `updated`; record trustworthy verification metadata when available
 - **Exists & Conflict**: Append `## Conflict` section or create `{TOPIC}_conflict.md`
 - **Not Exists**: Create new note
 
@@ -39,18 +39,22 @@ Before writing, check notation.md for existing variable definitions:
 
 ### Template
 
-    # {Topic Title}
-    
     ---
+    type: Project Knowledge
+    title: {Topic Title}
+    description: {One-sentence description}
     confidence: 0.8
-    created: {TIMESTAMP}
-    last_validated: {TIMESTAMP}
+    created: '{TIMESTAMP}'
+    updated: '{TIMESTAMP}'
     validation_procedure: "How to verify"
     project: {TARGET}
-    status: validated
-    validated_by: automatic
+    status: draft
+    audience: {development|usage|both}
+    usage_stale: false
     tags: []
     ---
+
+    # {Topic Title}
     
     ## Overview
     This note describes {brief description of the concept and its purpose}.
@@ -63,10 +67,10 @@ Before writing, check notation.md for existing variable definitions:
     ## Details
     {Main content written in full sentences explaining the concept clearly. 
     Break into paragraphs for readability. Include examples where helpful.
-    Use inline links like [[note_name|display text]] when referencing related concepts.}
+    Use relative Markdown links such as [display text](./note_name.md) when referencing related concepts.}
     
     ## Variables
-    The following variables are used in this note (see [[notation]] for full definitions):
+    The following variables are used in this note (see [Notation](./notation.md) for full definitions):
     
     | Symbol | Description | Units |
     |--------|-------------|-------|
@@ -95,8 +99,8 @@ Before writing, check notation.md for existing variable definitions:
     - {Convention 1}: {Explanation of why and how}
     
     ## Linked Concepts
-    - [[related_note]]: {Brief explanation of how this note relates}
-    - [[notation]]: Standard variable notations used in this note
+    - [Related note](./related_note.md): {Brief explanation of how this note relates}
+    - [Notation](./notation.md): Standard variable notations used in this note
 
 ### Principles
 
@@ -106,31 +110,35 @@ Before writing, check notation.md for existing variable definitions:
 - **Explicit Variables**: All variables, subscripts, superscripts documented
 - **Equations**: Always use Markdown display math with `$$` delimiters for standalone equations. Do not leave raw LaTeX equation paragraphs without `$$`.
 - **Workflows**: Use Mermaid diagrams for processes
-- **Links**: 
-  - Use `[[note_name]]` for section-level links
-  - Use `[[note_name|display text]]` for inline links
-  - Do NOT use `![[]]` (that's for images)
+- **Links**:
+  - Use relative standard Markdown links: `[Note](./note_name.md)`
+  - URL-encode spaces and preserve explicit heading fragments
+  - Do not use Wikilinks, Obsidian embeds, or block references in Project Knowledge
 
-## Step 4: Update TOC
+## Step 4: Update the OKF Index
 
-Add entry to `{VAULT}/Projects/{TARGET}/notes/TOC.md`:
+Add an entry under the appropriate heading in `{VAULT}/Projects/{TARGET}/notes/index.md`:
 
     ## Category
-    - [[{TOPIC}]] - This note explains {brief description of what it covers}.
+    * [{Topic Title}]({TOPIC}.md) - This note explains {brief description of what it covers}.
 
 ## Step 5: Update Daily Log
 
 Append to `{VAULT}/Projects/{TARGET}/log/{TARGET}-{DATE}.md`:
 
     ## Session {N}
-    - Created/Updated: [[{TOPIC}]] - {Brief description}
+    - Created/Updated: [{TOPIC}](../notes/{TOPIC}.md) - {Brief description}
     - {Other activities}
 
-Also ensure the project log `{VAULT}/Projects/{TARGET}/log/{TARGET}-{DATE}.md` links to any notes created or updated:
+Also ensure the Project log links to every note created or updated using a standard relative Markdown link.
 
-    - Created/Updated: [[notes/{TOPIC}|{TOPIC}]] - {Brief description}
+## Step 6: Validate and Refresh the Skill Pair
 
-## Step 6: Review
+After review succeeds, change `status: draft` to `status: stable`. A newly detected stale fact remains `status: stable` with the real effective `stale_after: 'YYYY-MM-DD'`; deprecated knowledge uses `status: deprecated`. Never fabricate a stale date or `verified` actor.
+
+Any change to a stable note's content, status, Audience Scope, or staleness can change a Skill Projection. Run `generate` and `validate` from `references/task_project_skills.md`. Both the authoritative `notes/` bundle and generated Skill Pair must pass; publication is atomic.
+
+## Step 7: Review
 
 ### Checklist
 
@@ -138,18 +146,16 @@ Also ensure the project log `{VAULT}/Projects/{TARGET}/log/{TARGET}-{DATE}.md` l
 2. **Clarity**: Sentences complete and clear?
 3. **Variables**: All documented with units?
 4. **Equations**: Are all standalone equations wrapped with `$$` display-math delimiters?
-5. **Links**: Do all `[[links]]` point to existing notes?
+5. **Links**: Do all relative Markdown links resolve to their intended concepts?
 6. **Workflows**: Mermaid diagrams syntactically correct?
-7. **Metadata**: Frontmatter correct?
-8. **TOC**: Updated with this note?
+7. **Metadata**: Does line-1 frontmatter contain `type`, a valid OKF status, and explicit Audience Scope?
+8. **Index**: Is `notes/index.md` updated using its reserved OKF structure?
 9. **Notation**: Consistent with notation.md?
+10. **Projection**: Did the atomic Skill Pair regenerate and validate?
 
-### Check Commands
+### Check Command
 
-    # Check for broken links
-    grep -oP '\[\[\K[^\]]+' {VAULT}/Projects/{TARGET}/notes/{TOPIC}.md | while read link; do
-        [ ! -f "{VAULT}/Projects/{TARGET}/notes/$link.md" ] && echo "Missing: $link"
-    done
+Run the Projection CLI's `validate` command from `references/task_project_skills.md`. It checks line-1 YAML, non-empty `type`, lifecycle values, the reserved `index.md`, portable links, provenance, and projection drift.
 
 ### If Issues Found
 

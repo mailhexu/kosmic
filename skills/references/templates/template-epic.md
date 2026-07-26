@@ -28,8 +28,8 @@ linked_stories: []
 
 | Story | Title | Status |
 |-------|-------|--------|
-| [[../stories/story-001-{slug}|story-001]] | {title} | draft |
-| [[../stories/story-002-{slug}|story-002]] | {title} | draft |
+| [story-001](../stories/story-001-{slug}.md) | {title} | draft |
+| [story-002](../stories/story-002-{slug}.md) | {title} | draft |
 
 ## Success Criteria
 

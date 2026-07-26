@@ -82,17 +82,21 @@ STOP CHECK before starting:
 
 This is story-level implementation research. It is mandatory for approved stories and is separate from optional pre-architecture Research in `references/task_research.md`.
 
-Update story status to `in_progress` and bump the date:
+Before changing code, pin a stable review fixed point. Update story status, date, and review metadata:
 ```yaml
 status: in_progress
 updated: {DATE}
+review_base: {commit, branch, tag, or implementation-start snapshot}
+review_round: 0
 ```
+
+Do not change `review_base` during fix/re-review cycles.
 
 ### 1.1 Search Kosmic
 
 ```bash
-# Search TOC for relevant topics
-grep -i "keyword" {VAULT}/Projects/{TARGET}/notes/TOC.md
+# Search the OKF Knowledge index for relevant topics
+grep -i "keyword" {VAULT}/Projects/{TARGET}/notes/index.md
 
 # Deep search in notes
 git grep -i "pattern\|concept" -- "{VAULT}/Projects/{TARGET}/notes/"
@@ -159,7 +163,7 @@ Update story file's Technical Notes section:
 - Pattern Y: Used for handling errors
 
 ### Relevant Knowledge
-- [[note-name]]: Key insight about X
+- [Note Name](../../notes/note-name.md): Key insight about X
 
 ### Implementation Approach
 1. Create module Z following pattern X
@@ -335,22 +339,17 @@ pytest  # or project's test command
 pytest --cov
 ```
 
-### 4.2 Code Review (MANDATORY - NO EXCEPTIONS)
+### 4.2 Convergent Code Review (MANDATORY - NO EXCEPTIONS)
 
 ```
-STOP: Story CANNOT be marked "done" without code review.
-  → Perform code review using Task 7 (Review Spec)
-  → Or request human review
+STOP: Story CANNOT be marked "done" without Task 7's convergent review.
+  → Round 1 performs one complete Standards axis and one complete Spec axis.
+  → Record every finding in the stable ledger before requesting changes.
+  → Later rounds verify open findings, changed code, and fix-introduced regressions.
+  → Non-blocking suggestions do not prevent approval.
 ```
 
-Perform code review (or request human review):
-
-1. **Functionality**: Does it meet acceptance criteria?
-2. **Tests**: Are all cases covered?
-3. **Code Quality**: Is it readable and maintainable?
-4. **Patterns**: Does it follow project conventions?
-5. **Security**: Any security concerns?
-6. **Performance**: Any performance issues?
+Use Task 7 (`references/task_review_spec.md`) rather than starting an ad hoc fresh review. Preserve finding IDs and update the same ledger each round. After the maximum automated round, escalate the remaining ledger instead of beginning another unrestricted review.
 
 ### 4.3 Update Knowledge
 
@@ -359,6 +358,9 @@ If you learned something during implementation:
 1. Create/update atomic notes (Task 2: Add Note)
 2. Update notation if new terms introduced
 3. Link notes from story file
+4. Assign each changed note an explicit Audience Scope and regenerate the atomic Skill Pair.
+5. If the story changes a Consumer Interface, set `consumer_interface_change: true` and list its current stable `usage` or `both` notes in `related_notes`.
+6. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done.
 
 ### 4.4 Update Story
 
@@ -439,7 +441,7 @@ Open the linked epic file (from `linked_epic:` in story frontmatter). Update the
 
 | Story | Title | Status |
 |-------|-------|--------|
-| [[../stories/story-{N}-{slug}|story-{N}]] | {title} | done |
+| [story-{N}](../stories/story-{N}-{slug}.md) | {title} | done |
 
 ## Progress
 
@@ -451,8 +453,8 @@ Open the linked epic file (from `linked_epic:` in story frontmatter). Update the
 
 ```markdown
 ## Session {N}
-- Completed: [[specs/stories/story-{N}-{slug}|Story {N}]] - {brief description}
-- Added notes: [[notes/{note}|{note}]]   ← only if knowledge notes were created
+- Completed: [Story {N}](../specs/stories/story-{N}-{slug}.md) - {brief description}
+- Added notes: [{note}](../notes/{note}.md)   ← only if knowledge notes were created
 ```
 
 ---
@@ -523,6 +525,12 @@ Open the linked epic file (from `linked_epic:` in story frontmatter). Update the
 
 ### Before Marking Done
 - [ ] Code review completed (MANDATORY)
+- [ ] Review fixed point recorded before implementation
+- [ ] Complete Round 1 finding ledger recorded
+- [ ] All Blocking findings resolved or escalated at the convergence limit
 - [ ] Knowledge notes updated
+- [ ] Consumer Interface impact declared
+- [ ] Completion gate passed
+- [ ] Canonical Skill Pair regenerated after eligible knowledge changes
 - [ ] Epic progress updated
 - [ ] Log updated

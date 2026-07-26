@@ -285,7 +285,7 @@ After creating any spec, update log:
 
 ```markdown
 ## Session {N}
-- Created: [[specs/prd|PRD]] - {brief description}
-- Created: [[specs/epics/epic-001-{slug}|Epic 001]] - {brief description}
-- Updated: [[specs/INDEX|Specs Index]] - {brief description}
+- Created: [PRD](../specs/prd.md) - {brief description}
+- Created: [Epic 001](../specs/epics/epic-001-{slug}.md) - {brief description}
+- Updated: [Specs Index](../specs/INDEX.md) - {brief description}
 ```

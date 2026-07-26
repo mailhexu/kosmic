@@ -96,61 +96,72 @@ Research review does not approve or block the main spec lifecycle. It checks whe
 
 ## Part 2: Code Review
 
-**MANDATORY**: Story cannot reach `done` status without code review.
+**MANDATORY**: Story cannot reach `done` status without one convergent code-review session.
 
-### When to Review Code
+### 2.1 Pin the Review Scope
 
-- Story implementation complete (all tests pass)
-- Story status is `review`
-- Before marking story as `done`
+Before reviewing, record a stable `review_base` in the work item and resolve it. Review the complete change between that fixed point and the current implementation. Also identify:
 
-### Code Review Process
+1. **Spec sources** — originating story, acceptance criteria, PRD, and Architecture.
+2. **Standards sources** — Project contribution guidance, documented conventions, and applicable ADRs.
+3. **Verification evidence** — focused tests, completion gate, diagnostics, and relevant smoke checks.
 
-#### 2.1 Preparation
+An invalid base, empty change, or missing originating spec stops the review. Do not let successive rounds silently change the baseline or acceptance criteria.
 
-```bash
-# Check which files changed
-git diff --name-only
+### 2.2 Round 1: Complete Two-Axis Review
 
-# Check tests pass
-pytest  # or project's test command
+Round 1 must report the complete known finding inventory in one pass. Review both axes independently, then present them side by side without allowing one axis to mask the other.
 
-# Review test coverage
-pytest --cov  # if configured
-```
+#### Standards axis
 
-#### 2.2 Review Checklist
+Check the entire scoped change against documented Project standards. Also identify judgement-call smells: mysterious names, duplication, feature envy, data clumps, primitive obsession, repeated switches, shotgun surgery, divergent change, speculative generality, message chains, middle men, and refused bequests.
 
-| Category | Check |
-|----------|-------|
-| **Functionality** | |
-| | Does code meet all acceptance criteria? |
-| | Are edge cases handled? |
-| | Are error cases handled? |
-| **Tests** | |
-| | Do tests cover all acceptance criteria? |
-| | Are edge cases tested? |
-| | Are tests clear and maintainable? |
-| | Do all tests pass? |
-| **Code Quality** | |
-| | Is code readable? |
-| | Are names descriptive? |
-| | Is code DRY (no unnecessary duplication)? |
-| | Is code simple (no unnecessary complexity)? |
-| | Are functions focused (single responsibility)? |
-| **Patterns** | |
-| | Does code follow project conventions? |
-| | Does code match architectural decisions? |
-| | Are existing utilities reused? |
-| **Security** | |
-| | Are inputs validated? |
-| | Are secrets handled properly? |
-| | Are there injection risks? |
-| **Performance** | |
-| | Are there obvious performance issues? |
-| | Are resources properly managed? |
+- Cite the standard and location for a hard violation.
+- Label smells as judgement calls; they are non-blocking unless they demonstrate a concrete correctness, security, performance, or maintainability failure required by the spec.
+- Skip concerns already enforced and passed by deterministic tooling.
 
-#### 2.3 Decision
+#### Spec axis
+
+Check the entire scoped change against the originating requirements:
+
+- missing or partial requirements;
+- unrequested behavior or scope creep;
+- behavior that appears implemented but is incorrect.
+
+Every finding must cite the requirement and concrete implementation evidence.
+
+### 2.3 Stable Finding Ledger
+
+Before requesting changes, publish the complete issue inventory in a persistent ledger. IDs never change between rounds:
+
+- `STD-{NNN}` for Standards findings;
+- `SPEC-{NNN}` for Spec findings;
+- `REG-{NNN}` for regressions introduced by a fix;
+- `LATE-{NNN}` only for a critical correctness or security issue missed in Round 1.
+
+Each finding records axis, blocking disposition, evidence, required resolution, introduced round, and status. Classify findings as:
+
+- **Blocking** — incorrect behavior, unmet acceptance criterion, regression, security/data-loss risk, failing required verification, or a documented standard violation that makes the change unacceptable.
+- **Non-blocking** — optional refactor, style preference, speculative hardening, or smell without a demonstrated contract failure.
+
+Only Blocking findings can produce `Changes Requested`. Non-blocking suggestions remain visible but do not prevent approval.
+
+### 2.4 Re-review Contract
+
+Later rounds are verification rounds, not fresh reviews. They may inspect only:
+
+1. unresolved Blocking findings;
+2. code changed since the previous reviewed revision;
+3. tests and behavior affected by those changes;
+4. regressions introduced by a fix.
+
+Do not open a new finding against unchanged code. The only exception is a critical correctness or security defect supported by new concrete evidence; record it as `LATE-{NNN}` with why Round 1 missed it. A fix-introduced defect is `REG-{NNN}` and must link to the finding whose resolution caused it.
+
+Resolve each prior ledger row as `resolved`, `still-open`, or `regressed`; never replace the ledger with a new list. Suggestions cannot be promoted to Blocking without new contract evidence.
+
+### 2.5 Preparation and Decision
+
+Run required tests, the Consumer Interface completion gate, diagnostics, and focused smoke checks. Approve when all Blocking findings are resolved and verification passes, even if Non-blocking suggestions remain.
 
 **Approve**:
 ```markdown
@@ -176,19 +187,23 @@ Update story status to `done`.
 ## Review Result
 
 **Status**: ⚠️ Changes Requested
+**Round**: {N}
+**Reviewed Revision**: {revision or working-tree fingerprint}
 
-**Required Changes**:
-1. [Critical] {issue}: {location} - {fix needed}
-2. [Important] {issue}: {location} - {fix needed}
+**Open Blocking Findings**:
+- {stable finding IDs}
 
-**Suggestions** (optional):
-- {suggestion}
+**Resolved This Round**:
+- {stable finding IDs}
+
+**Non-blocking Suggestions**:
+- {stable finding IDs; do not block approval}
 
 **Reviewer**: {name/ai}
 **Date**: {DATE}
 ```
 
-Update story status back to `in_progress`.
+Update story status back to `in_progress` without discarding the ledger.
 
 **Reject** (rare, major issues):
 ```markdown
@@ -210,33 +225,32 @@ Update story status to `draft` or create new story.
 
 ## Review Output Format
 
-Add review section to story file:
+Keep one ledger in the story or quick-task record and update it in place:
 
 ```markdown
 ## Code Review
 
-### Review 1
+**Review Base**: {fixed point}
+**Current Round**: {N}
 
-**Date**: {DATE}
-**Reviewer**: {name}
+### Standards
 
-**Status**: ✅ Approved / ⚠️ Changes Requested / ❌ Rejected
+| ID | Disposition | Evidence | Required Resolution | Introduced | Status |
+|----|-------------|----------|---------------------|------------|--------|
+| STD-001 | Blocking | {standard + location} | {required fix} | Round 1 | open |
+| STD-002 | Non-blocking | {smell + location} | {optional improvement} | Round 1 | suggested |
 
-**Checklist**:
-- [x] Functionality: Meets acceptance criteria
-- [x] Tests: All tests pass, good coverage
-- [x] Code Quality: Clean and readable
-- [x] Patterns: Follows project conventions
-- [x] Security: No issues
-- [x] Performance: No issues
+### Spec
 
-**Comments**:
-- {comment 1}
-- {comment 2}
+| ID | Disposition | Evidence | Required Resolution | Introduced | Status |
+|----|-------------|----------|---------------------|------------|--------|
+| SPEC-001 | Blocking | {requirement + location} | {required fix} | Round 1 | open |
 
-**Required Changes** (if any):
-1. {change 1}
-2. {change 2}
+### Re-review History
+
+| Round | Reviewed Revision | Findings Checked | New REG/LATE Evidence | Decision |
+|-------|-------------------|------------------|-----------------------|----------|
+| 1 | {revision} | complete first-pass inventory | n/a | changes requested |
 ```
 
 ---
@@ -258,14 +272,18 @@ review ──[changes]──→ in_progress
 review ──[reject]───→ draft (rare)
 ```
 
+### Convergence Limit
+
+Allow at most three automated rounds: one complete initial review and two re-review rounds. If Blocking findings remain after Round 3, stop autonomous review cycling. Keep the story `in_progress` and escalate the existing ledger for a human scope or design decision; do not start another unrestricted review.
+
 ---
 
 ## Update Log
 
 ```markdown
 ## Session {N}
-- Reviewed: [[specs/stories/story-001|Story 001]] - ✅ Approved
-- Reviewed: [[specs/prd|PRD]] - ⚠️ Changes requested
+- Reviewed: [Story 001](../specs/stories/story-001-{slug}.md) - ✅ Approved
+- Reviewed: [PRD](../specs/prd.md) - ⚠️ Changes requested
 ```
 
 ---

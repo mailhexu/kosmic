@@ -5,6 +5,9 @@ updated: {DATE}
 related_notes: []
 related_specs: []
 related_files: []
+consumer_interface_change: false
+review_base: ""
+review_round: 0
 ---
 
 # Quick Task: {Title}
