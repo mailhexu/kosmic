@@ -1395,6 +1395,8 @@ def adapter_root(adapter: str, home: Path) -> Path:
         return home / ".claude" / "skills"
     if adapter == "codex":
         return home / ".agents" / "skills"
+    if adapter == "omp":
+        return home / ".omp" / "agent" / "skills"
     raise KosmicError(f"unsupported Install Adapter: {adapter}", exit_code=4)
 
 
@@ -1687,7 +1689,7 @@ def build_parser() -> argparse.ArgumentParser:
     install_parser = subparsers.add_parser("install", help="expose a canonical Skill Pair")
     install_parser.add_argument("--project", type=path_argument, required=True)
     install_parser.add_argument(
-        "--adapter", choices=("opencode", "claude-code", "codex", "pointer"), required=True
+        "--adapter", choices=("opencode", "claude-code", "codex", "omp", "pointer"), required=True
     )
     install_parser.add_argument("--home", type=path_argument, default=Path.home())
     install_parser.add_argument("--instructions", type=path_argument)

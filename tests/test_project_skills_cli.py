@@ -310,6 +310,7 @@ class ProjectionCliTest(unittest.TestCase):
             "opencode": Path(".config/opencode/skill"),
             "claude-code": Path(".claude/skills"),
             "codex": Path(".agents/skills"),
+            "omp": Path(".omp/agent/skills"),
         }
         for adapter, relative_root in adapter_roots.items():
             with self.subTest(adapter=adapter):

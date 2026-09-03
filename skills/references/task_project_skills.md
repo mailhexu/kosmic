@@ -89,7 +89,7 @@ Install into an isolated or real agent home with:
 ```bash
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py install \
   --project "{VAULT}/Projects/{TARGET}" \
-  --adapter opencode | claude-code | codex \
+  --adapter opencode | claude-code | codex | omp \
   --home "{HOME}"
 ```
 
