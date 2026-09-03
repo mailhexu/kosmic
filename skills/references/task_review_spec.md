@@ -98,6 +98,8 @@ Research review does not approve or block the main spec lifecycle. It checks whe
 
 **MANDATORY**: Story cannot reach `done` status without one convergent code-review session.
 
+Use `code-review` for the method: pin the fixed base, review Standards and Spec independently, and preserve both axes in the Kosmic ledger. The local Story or Quick Task is the Spec-axis source; do not require an external issue tracker.
+
 ### 2.1 Pin the Review Scope
 
 Before reviewing, record a stable `review_base` in the work item and resolve it. Review the complete change between that fixed point and the current implementation. Also identify:

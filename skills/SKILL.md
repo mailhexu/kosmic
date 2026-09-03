@@ -34,6 +34,16 @@ Before any task, resolve `{VAULT}`, `{TARGET}`, and `{PROJECT_ID}`:
 
 **STOP**: Do not proceed until the vault Project and immutable Project Identifier resolve. Contributor workflows must also resolve the canonical Skill Pair.
 
+## Required Procedure Skills (MANDATORY)
+
+Before Contributor work, verify the required procedure-skill set for the active Install Adapter:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex}
+```
+
+Missing skills or an unsupported adapter → stop and follow the required-procedure-skills section of the installed `README.md`. Kosmic is the sole workflow orchestrator: the required skills supply bounded methods and never replace Kosmic's vault records, approval gates, Project Skill Pair, or Projection CLI.
+
 ---
 
 ## Paths
@@ -129,6 +139,7 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 | Review or approval requested | Task 7: Review Spec | Spec decision, research completeness check, or code review | Required for spec approval and story completion |
 | Durable knowledge learned | Task 2: Add Note | Atomic note, TOC update, log entry | Required after learning durable knowledge |
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
+| Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` fails until every declared pack has a linking draft-or-stable note |
 
 ---
 
@@ -242,6 +253,16 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 **Flow**: Assign/validate identity → normalize `notes/` to dual-native OKF/Obsidian Markdown → report Unscoped Knowledge → add reviewed Usage scope → validate pair → install adapter
 
 **Gate**: Migration may record identity, but must not publish either skill until real stable Usage knowledge exists. Ambiguous Wikilinks stop migration without partial note edits.
+
+---
+
+### Task 9: Distill
+
+**Load**: `references/task_distill.md`
+
+**When**: A work item declared `evidence_packs` (gated — `check-completion` enforces linkage), or captured experience should become knowledge.
+
+**Rule**: Evidence → root-cause analysis → draft notes. Never duplicate an existing note; update it. Promotion to stable is human-gated.
 
 ---
 

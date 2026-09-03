@@ -104,6 +104,18 @@ Run the review command in `references/task_project_skills.md`.
 - Regenerate after any eligible note change, then rerun review.
 - Never edit canonical or installed projection output.
 
+## 4b. Review Evidence Packs and the Impact Ledger
+
+**Retention (flag-only)**: list packs under `{VAULT}/Projects/{TARGET}/evidence/` that (a) are referenced by no note's `evidence:` frontmatter and (b) carry a directory date older than 3 months. Flag them in the log for distillation or explicit dismissal — never delete or archive them automatically.
+
+**Ledger hygiene**: `impact.md` is append-only and machine-validated (`validate` fails malformed entries). Never rewrite, reorder, or delete entries. `generate` appends publication entries itself; accept/reject decisions for knowledge changes come from Task 7 review, not from this task.
+
+Review decisions on knowledge changes (Task 7) append one entry:
+
+```markdown
+- date: {YYYY-MM-DD} | kind: decision | targets: [{note paths}] | refs: {story id} | outcome: {accepted|rejected} | reason: "{≤1 line}"
+```
+
 ## 5. Review Schedule
 
 - **Daily**: Quick scan at end of session

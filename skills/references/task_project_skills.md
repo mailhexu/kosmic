@@ -70,7 +70,17 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-completion \
   --work-item "{WORK_ITEM}"
 ```
 
-Work items must declare `consumer_interface_change: true | false`. When true, `related_notes` must name current stable `usage` or `both` notes, and the canonical pair must pass drift validation.
+Work items must declare `consumer_interface_change: true | false`. When true, `related_notes` must name current stable `usage` or `both` notes, and the canonical pair must pass drift validation. Work items may additionally declare `evidence_packs: [{slugs}]`; every declared pack must exist under `evidence/` and have at least one draft-or-stable note linking it via `evidence:` frontmatter, or the gate fails naming the slug.
+
+`validate` additionally checks the Experience layer: every Evidence Pack's `MANIFEST.md` (kind `execution|research`, `produced_by`, ISO `date`, non-empty `summary`, and a body file-role list matching the pack contents exactly) and the `impact.md` ledger's fixed six-field entries. Evidence packs and the ledger live outside `notes/` and never project into the Skill Pair; `generate` appends publication entries to the ledger after each atomic publication.
+
+MANIFEST frontmatter may optionally carry code provenance: `git_head` (commit
+hash) and `worktree_tree` (tree hash or `clean`). Present ⇒ both required and
+shape-checked (40/64 lowercase hex). Use the `provenance` command
+(`--repo PATH`, default cwd) to print paste-ready lines computed via a
+temporary index — no working-tree or index side effects.
+
+Projected reference bodies are package-consistent: a Markdown link whose target is not projected into the same Skill Pair package (draft target, other-audience target) is demoted to bold plain text, and `generate` warns on stderr naming each demoted link. Links inside code fences, external URLs, and non-Markdown targets are untouched.
 
 ## Install Adapters
 

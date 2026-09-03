@@ -1,0 +1,24 @@
+{
+  "generator_version": 2,
+  "name": "kosmic-development",
+  "project_id": "kosmic",
+  "requires": [
+    "kosmic-usage"
+  ],
+  "role": "development",
+  "sources": [
+    {
+      "audience": "development",
+      "path": "notes/cli-extension-conventions.md",
+      "reference": "references/cli-extension-conventions.md",
+      "sha256": "12370f1ca4c1405e7062fa0338d3a80ea4661d19cb90676cad38cc2a94e3fc6d"
+    },
+    {
+      "audience": "development",
+      "path": "notes/projection-audience-routing.md",
+      "reference": "references/projection-audience-routing.md",
+      "sha256": "603b60733a105aac6b3c7c0025d6e52a1faaf2f3234b3db60ad5bbcb62b9a3d8"
+    }
+  ],
+  "working_state": "working-tree"
+}

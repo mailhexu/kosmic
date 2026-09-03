@@ -1,0 +1,22 @@
+{
+  "generator_version": 2,
+  "name": "kosmic-usage",
+  "project_id": "kosmic",
+  "requires": [],
+  "role": "usage",
+  "sources": [
+    {
+      "audience": "usage",
+      "path": "notes/cli-projection-commands.md",
+      "reference": "references/cli-projection-commands.md",
+      "sha256": "744e5ee064b5902a97e428daec800ffe6a1f880e12d8d25a899144b672425254"
+    },
+    {
+      "audience": "both",
+      "path": "notes/notation.md",
+      "reference": "references/notation.md",
+      "sha256": "61a4caa86b77acb8fd58e3d160d6b79de18e34bc15248d1f795923b827bba37e"
+    }
+  ],
+  "working_state": "working-tree"
+}

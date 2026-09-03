@@ -82,6 +82,8 @@ STOP CHECK before starting:
 
 This is story-level implementation research. It is mandatory for approved stories and is separate from optional pre-architecture Research in `references/task_research.md`.
 
+If the Story corrects a defect, invoke `diagnosing-bugs` before Phase 2. Establish and minimize a reproducible failure, discriminate cause hypotheses with evidence, and add the regression test at the agreed seam before implementation can complete.
+
 Before changing code, pin a stable review fixed point. Update story status, date, and review metadata:
 ```yaml
 status: in_progress
@@ -198,6 +200,8 @@ updated: {DATE}
 ## Step 2: Write Tests (TDD)
 
 **Goal**: Define expected behavior before implementation.
+
+Invoke `tdd` for the red-green implementation method. Before the first test, agree the highest external test seam; invoke `codebase-design` when a seam, module boundary, or module interface changes, and `domain-modeling` when terminology changes. Keep one vertical slice at a time and do not replace Kosmic research, review, or completion gates.
 
 ### 2.1 Map Acceptance Criteria to Tests
 
@@ -360,7 +364,8 @@ If you learned something during implementation:
 3. Link notes from story file
 4. Assign each changed note an explicit Audience Scope and regenerate the atomic Skill Pair.
 5. If the story changes a Consumer Interface, set `consumer_interface_change: true` and list its current stable `usage` or `both` notes in `related_notes`.
-6. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done.
+6. If the work captured raw experience (review findings, test-run summaries, debug transcripts), write an Evidence Pack under `{VAULT}/Projects/{TARGET}/evidence/{YYYY-MM-DD}-{slug}/` with a `MANIFEST.md`, declare its slug in the story's `evidence_packs:` frontmatter, and run Task 9: Distill (`references/task_distill.md`) over it.
+7. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done — it fails when any declared evidence pack lacks a draft-or-stable note linking it via `evidence:`.
 
 ### 4.4 Update Story
 

@@ -59,18 +59,26 @@ Use `references/templates/template-quick-task.md`.
    - Declare `consumer_interface_change: true` when supported CLI, API, configuration, integration, or troubleshooting behavior changes; otherwise explicitly keep `false`.
    - For `true`, list the current stable Consumer knowledge in `related_notes`.
    - Pin `review_base` before implementation and set `review_round: 0`; do not move the baseline during re-review.
+   - When the work produces raw experience worth keeping (review findings, test runs, debug transcripts), capture it as an Evidence Pack (`evidence/{YYYY-MM-DD}-{slug}/` with `MANIFEST.md`), declare the slug in `evidence_packs:`, and distill it with Task 9 before completion — `check-completion` enforces the linkage.
 
 3. **Approval gate**
    - If the user already explicitly asked to implement the change, set `Status: approved` and proceed.
    - Otherwise present the quick task and wait for approval.
 
-4. **Implement**
+   - If the task exposes a material design trade-off, invoke `grill-with-docs` before approval. An ADR-worthy trade-off is not a Quick Task; promote it to Task 5: Create Spec.
+
+4. **Diagnose bug fixes**
+   - For a reported defect, invoke `diagnosing-bugs` before changing code.
+   - Establish a reproducible failure, minimize it, distinguish hypotheses with evidence, and add a regression test at the agreed seam.
+   - Do not complete a symptom-only patch.
+
+5. **Implement**
    - Set `Status: in_progress`.
    - Make the minimal change that satisfies acceptance criteria.
    - Add or update tests when the codebase has a relevant test pattern.
    - Follow SKILL.md "File Hygiene Before Coding and Before Final Status" for scratch files, generated outputs, and tests awaiting a later commit.
 
-5. **Verify and review**
+6. **Verify and review**
    - Run diagnostics and focused tests or an equivalent manual check.
    - Run the `check-completion` command from `references/task_project_skills.md`.
    - Set `Status: review` and run Task 7's complete two-axis Round 1 against `review_base`.
@@ -79,7 +87,7 @@ Use `references/templates/template-quick-task.md`.
    - A Consumer Interface change cannot pass while related Consumer knowledge or the canonical pair is stale.
    - Approve when all Blocking findings are resolved even if Non-blocking suggestions remain.
 
-6. **Complete**
+7. **Complete**
    - Set `Status: done` only after verification and review pass.
    - Run `git status --short`; classify every modified/untracked file as committed, recoverably preserved, or deleted.
    - Update `{VAULT}/Projects/{TARGET}/specs/INDEX.md`.
