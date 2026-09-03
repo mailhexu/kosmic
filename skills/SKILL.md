@@ -1,7 +1,7 @@
 ---
 name: kosmic
 description: Spec-driven Project knowledge with atomic Usage and Development Skill Projections, quick tasks, PRD→Architecture→Stories, TDD implementation, and mandatory review.
-version: 3.0.0
+version: 3.1.0
 license: MIT
 compatibility: markdown-agent-skill, python>=3.11
 ---
