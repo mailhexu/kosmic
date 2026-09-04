@@ -137,6 +137,8 @@ STOP CHECK: Is PRD approved?
 1. Read the approved PRD
 2. Read any linked Research memos
 3. Identify key technical decisions
+   - If material alternatives or unresolved trade-offs remain, invoke `grill-with-docs` before drafting the decision; invoke `codebase-design` for module boundaries or interfaces and `domain-modeling` for domain terminology or ADRs.
+   - If research and reasoning cannot resolve a design question, invoke `prototype`. Run it under `.tmp/`, capture the question, verdict, and evidence in the relevant Research memo or Story Technical Notes, link that record from Architecture, then delete the prototype. It is never production implementation.
 4. Write Architecture doc with ADRs using the template
 5. Link relevant Research memos in the Architecture frontmatter
 6. Set `status: draft`

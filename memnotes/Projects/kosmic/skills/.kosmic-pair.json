@@ -1,0 +1,14 @@
+{
+  "development": {
+    "name": "kosmic-development",
+    "requires": "kosmic-usage",
+    "sha256": "1b66c7d877f0e55fc8b4dadd48efd663531e9e1a74fdc0d7ae900629f4c69d28"
+  },
+  "generator_version": 2,
+  "project_id": "kosmic",
+  "usage": {
+    "name": "kosmic-usage",
+    "sha256": "76220cff21aae2039dba2e1e7f82005776b12e712aa679aae2c67a4d1ba3c3ec"
+  },
+  "working_state": "working-tree"
+}

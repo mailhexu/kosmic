@@ -17,6 +17,22 @@ python3 --version
 python3 skills/scripts/kosmic_project_skills.py --help
 ```
 
+## Required procedure skills
+
+Kosmic requires independently installed Matt Pocock skills: `tdd`, `code-review`, `diagnosing-bugs`, `research`, `domain-modeling`, `codebase-design`, `grill-with-docs`, `grilling`, and `prototype`. Kosmic does not vendor them and supports only the global named-skill locations for OpenCode, Claude Code, and Codex.
+
+Install the reviewed upstream `mattpocock/skills` revision globally through its standalone named-skill installer. Do not use the managed Claude plugin or a project-local installation: those layouts are intentionally unsupported by Kosmic's deterministic verifier. Record the exact upstream revision in a Kosmic release and review compatibility before any update.
+
+After installation, verify from the installed Kosmic skill directory:
+
+```bash
+python3 scripts/kosmic_project_skills.py check-required-skills --adapter opencode
+python3 scripts/kosmic_project_skills.py check-required-skills --adapter claude-code
+python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
+```
+
+Then smoke-load `kosmic` and one required skill through the adapter's native interaction. The check uses each adapter's global skill location and reports every missing skill. An unsupported adapter or an incomplete set blocks Kosmic initialization and Contributor workflows.
+
 ## Option 1: Install with an AI agent
 
 Use this when you are already working inside an AI coding agent such as Claude Code, Codex, OpenCode, or another agent that supports persistent instructions. Paste the following prompt into the agent from the root of this repository:

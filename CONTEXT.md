@@ -79,3 +79,23 @@ _Avoid_: Developer, maintainer
 **Consumer**:
 An agent or person using the Project through its supported interfaces without changing its implementation.
 _Avoid_: User, operator
+
+**Evidence Pack**:
+The immutable, append-only record of one work item or investigation that motivates knowledge; it never projects into a Skill Pair. Research discovery and execution outcome are two kinds of the same concept.
+_Avoid_: Research memo, raw trace, wiki page
+
+**Distillation**:
+The gated post-work procedure in which a Maintainer analyzes Evidence Packs into root-cause knowledge expressed as draft atomic notes, updates, or deprecations.
+_Avoid_: Wiki maintenance, note extraction, summarization
+
+**Maintainer**:
+The agent executing Distillation over Evidence Packs; a role within contribution, not a separate audience.
+_Avoid_: Contributor (the audience), Wiki Maintainer agent
+
+**Pattern**:
+The role of an atomic note distilled from evidence: what happens, why (root cause), and the fix, stated so relevance is judgeable from its index entry alone.
+_Avoid_: Wiki pattern page, separate artifact from an atomic note
+
+**Impact Ledger**:
+The machine-appended, append-only record of knowledge-state transitions — publications and accept/reject decisions — kept separate from session narrative.
+_Avoid_: Session log, review ledger, skill-impact tracker

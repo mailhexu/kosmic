@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import os
 import subprocess
 import sys
@@ -309,6 +310,7 @@ class ProjectionCliTest(unittest.TestCase):
             "opencode": Path(".config/opencode/skill"),
             "claude-code": Path(".claude/skills"),
             "codex": Path(".agents/skills"),
+            "omp": Path(".omp/agent/skills"),
         }
         for adapter, relative_root in adapter_roots.items():
             with self.subTest(adapter=adapter):
@@ -341,6 +343,65 @@ class ProjectionCliTest(unittest.TestCase):
                 )
                 self.assertIn("injected adapter failure", result.stderr)
                 self.assertEqual(before, self.snapshot(installed))
+
+    def test_check_required_skills_reports_missing_and_complete_adapter_sets(self) -> None:
+        adapter_roots = {
+            "opencode": Path(".config/opencode/skill"),
+            "claude-code": Path(".claude/skills"),
+            "codex": Path(".agents/skills"),
+        }
+        required_skills = (
+            "tdd",
+            "code-review",
+            "diagnosing-bugs",
+            "research",
+            "domain-modeling",
+            "codebase-design",
+            "grill-with-docs",
+            "grilling",
+            "prototype",
+        )
+        for adapter, relative_root in adapter_roots.items():
+            with self.subTest(adapter=adapter):
+                home = self.root / f"required-{adapter}"
+                result = self.run_cli(
+                    "check-required-skills",
+                    "--adapter",
+                    adapter,
+                    "--home",
+                    str(home),
+                    expected=4,
+                )
+                self.assertIn("missing required skills", result.stderr)
+                self.assertIn("prototype", result.stderr)
+
+                skill_root = home / relative_root
+                for skill in required_skills:
+                    (skill_root / skill).mkdir(parents=True, exist_ok=True)
+                    (skill_root / skill / "SKILL.md").write_text(
+                        f"---\nname: {skill}\n---\n",
+                        encoding="utf-8",
+                    )
+
+                result = self.run_cli(
+                    "check-required-skills",
+                    "--adapter",
+                    adapter,
+                    "--home",
+                    str(home),
+                )
+                self.assertIn("required skills available", result.stdout)
+
+    def test_check_required_skills_rejects_unsupported_adapter(self) -> None:
+        result = self.run_cli(
+            "check-required-skills",
+            "--adapter",
+            "pointer",
+            "--home",
+            str(self.root / "unsupported"),
+            expected=2,
+        )
+        self.assertIn("invalid choice", result.stderr)
 
     def test_pointer_adapter_updates_managed_section_without_copying_notes(self) -> None:
         project = self.generate_ready_project()
@@ -583,6 +644,441 @@ class ProjectionCliTest(unittest.TestCase):
             "validate", "--project", str(project), expected=2
         )
         self.assertIn("index.md frontmatter", result.stderr)
+
+class ExperienceCompilationTest(ProjectionCliTest):
+    """Stories 1-7: evidence layer, note linkage, impact ledger, completion gate."""
+
+    def make_pack(
+        self,
+        project: Path,
+        slug: str = "2026-09-02-demo",
+        kind: str = "execution",
+        payload: tuple[str, ...] = ("findings.md",),
+        manifest_frontmatter: str | None = None,
+        manifest_body: str | None = None,
+    ) -> Path:
+        pack = project / "evidence" / slug
+        pack.mkdir(parents=True, exist_ok=True)
+        for name in payload:
+            (pack / name).write_text(f"# {name}\n\npack payload\n", encoding="utf-8")
+        if manifest_frontmatter is None:
+            manifest_frontmatter = (
+                f"kind: {kind}\nproduced_by: story-001\ndate: 2026-09-02\n"
+                'summary: "Demo pack for tests"'
+            )
+        if manifest_body is None:
+            manifest_body = "\n".join(f"- {name}: role of {name}" for name in payload)
+        (pack / "MANIFEST.md").write_text(
+            f"---\n{manifest_frontmatter}\n---\n\n# Manifest\n\n{manifest_body}\n",
+            encoding="utf-8",
+        )
+        return pack
+
+    def write_note_with_evidence(
+        self, project: Path, name: str, status: str, evidence: str
+    ) -> Path:
+        note = project / "notes" / f"{name}.md"
+        note.write_text(
+            "---\n"
+            "type: Project Knowledge\n"
+            f"status: {status}\n"
+            "audience: development\n"
+            f"evidence: {evidence}\n"
+            "---\n\n"
+            f"# {name}\n\nBody.\n",
+            encoding="utf-8",
+        )
+        return note
+
+    def write_work_item(
+        self, project: Path, extra_frontmatter: str = ""
+    ) -> Path:
+        item = project / "specs" / "stories" / "story-001-demo.md"
+        item.parent.mkdir(parents=True, exist_ok=True)
+        item.write_text(
+            "---\n"
+            "status: approved\n"
+            "consumer_interface_change: false\n"
+            f"{extra_frontmatter}"
+            "---\n\n# Story\n",
+            encoding="utf-8",
+        )
+        return item
+
+    def append_ledger(self, project: Path, text: str) -> Path:
+        ledger = project / "impact.md"
+        ledger.parent.mkdir(parents=True, exist_ok=True)
+        if not ledger.is_file():
+            ledger.write_text("# Impact Ledger\n\n", encoding="utf-8")
+        with ledger.open("a", encoding="utf-8") as handle:
+            handle.write(text)
+        return ledger
+
+    # Story 1: root-walk tolerance
+
+    def test_validate_and_generate_tolerate_evidence_layer(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, payload=("findings.md", "transcript.jsonl"))
+        self.append_ledger(
+            project,
+            "- date: 2026-09-02 | kind: publication | targets: [notes/using.md] | "
+            'refs: "null->abc" | outcome: published | reason: ""\n',
+        )
+        self.run_cli("generate", "--project", str(project))
+        self.run_cli("validate", "--project", str(project))
+
+    def test_generate_output_contains_no_evidence(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project)
+        self.run_cli("generate", "--project", str(project))
+        published = project / "skills"
+        for path in published.rglob("*"):
+            self.assertNotIn("evidence", path.relative_to(published).parts)
+
+    # Story 2: MANIFEST validation
+
+    def test_valid_packs_of_both_kinds_pass(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, "2026-09-02-run", kind="execution")
+        self.make_pack(project, "2026-09-02-paper", kind="research")
+        self.run_cli("validate", "--project", str(project))
+
+    def test_manifest_invalid_kind_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, manifest_frontmatter=(
+            "kind: experiment\nproduced_by: story-001\ndate: 2026-09-02\n"
+            'summary: "bad kind"'
+        ))
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("kind", result.stderr)
+
+    def test_manifest_missing_field_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, manifest_frontmatter=(
+            "kind: execution\ndate: 2026-09-02\nsummary: \"no producer\""
+        ))
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("produced_by", result.stderr)
+
+    def test_manifest_body_disk_mismatch_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(
+            project,
+            payload=("findings.md", "unlisted.md"),
+            manifest_body="- findings.md: the only listed file",
+        )
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("unlisted.md", result.stderr)
+
+    # Story 4: evidence frontmatter
+
+    def test_stable_note_resolvable_evidence_passes(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project)
+        self.write_note_with_evidence(
+            project, "linked", "stable", "[evidence/2026-09-02-demo/findings.md]"
+        )
+        self.run_cli("generate", "--project", str(project))
+        self.run_cli("validate", "--project", str(project))
+
+    def test_stable_note_dangling_evidence_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.write_note_with_evidence(
+            project, "dangling", "stable", "[evidence/2026-09-02-missing/findings.md]"
+        )
+        result = self.run_cli("generate", "--project", str(project), expected=2)
+        self.assertIn("evidence/2026-09-02-missing/findings.md", result.stderr)
+
+    def test_deprecated_note_does_not_satisfy_linkage(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, "2026-09-02-demo")
+        self.write_note_with_evidence(
+            project, "retired", "deprecated", "[evidence/2026-09-02-demo/findings.md]"
+        )
+        item = self.write_work_item(project, "evidence_packs: [2026-09-02-demo]\n")
+        result = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            expected=2,
+        )
+        self.assertIn("2026-09-02-demo", result.stderr)
+
+    def test_draft_note_dangling_evidence_passes(self) -> None:
+        project = self.generate_ready_project()
+        self.write_note_with_evidence(
+            project, "pending", "draft", "[evidence/2026-09-02-missing/findings.md]"
+        )
+        self.run_cli("generate", "--project", str(project))
+
+    # Story 5: ledger validation
+
+    def test_valid_ledger_entries_pass(self) -> None:
+        project = self.generate_ready_project()
+        self.append_ledger(
+            project,
+            "- date: 2026-09-02 | kind: publication | targets: [notes/using.md] | "
+            'refs: "null->abc" | outcome: published | reason: ""\n'
+            "- date: 2026-09-02 | kind: decision | targets: [notes/old.md] | "
+            'refs: story-002 | outcome: rejected | reason: "contradicts finding"\n',
+        )
+        self.run_cli("validate", "--project", str(project))
+
+    def test_malformed_ledger_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.append_ledger(
+            project,
+            "- date: 2026-09-02 | kind: mutation | targets: [notes/using.md] | "
+            'refs: "null" | outcome: published | reason: ""\n',
+        )
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("kind", result.stderr)
+
+    def test_ledger_missing_field_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.append_ledger(
+            project,
+            "- date: 2026-09-02 | kind: decision | targets: [notes/old.md]\n",
+        )
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("impact.md", result.stderr)
+
+    # Story 6: generate appends publication entries
+
+    def test_generate_appends_publication_entry_with_hashes(self) -> None:
+        project = self.generate_ready_project()
+        ledger = project / "impact.md"
+        entries = lambda: [
+            line
+            for line in ledger.read_text(encoding="utf-8").splitlines()
+            if line.startswith("- ")
+        ]
+        first = entries()
+        self.assertEqual(2, len(first))  # notes/using.md + notes/developing.md
+        for line in first:
+            self.assertIn("kind: publication", line)
+            self.assertIn("outcome: published", line)
+            self.assertIn("null->", line)
+        note = project / "notes" / "using.md"
+        note.write_text(
+            "---\ntype: Project Knowledge\nstatus: stable\naudience: usage\n---\n\n"
+            "# Use Demo\n\nRun `demo` differently.\n",
+            encoding="utf-8",
+        )
+        self.run_cli("generate", "--project", str(project))
+        changed = [line for line in entries() if "notes/using.md" in line]
+        self.assertEqual(2, len(changed))
+        self.assertIn("->", changed[-1])
+        self.assertNotIn("null->", changed[-1])
+        self.assertEqual(
+            1, len([line for line in entries() if "notes/developing.md" in line])
+        )
+        self.run_cli("validate", "--project", str(project))
+
+    def test_generate_without_changes_appends_nothing(self) -> None:
+        project = self.generate_ready_project()
+        self.run_cli("generate", "--project", str(project))
+        ledger = project / "impact.md"
+        before = ledger.read_text(encoding="utf-8")
+        self.run_cli("generate", "--project", str(project))
+        self.assertEqual(before, ledger.read_text(encoding="utf-8"))
+
+    # Story 7: completion gate
+
+    def test_completion_gate_linked_draft_passes(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, "2026-09-02-demo")
+        self.write_note_with_evidence(
+            project, "distilled", "draft", "[evidence/2026-09-02-demo/findings.md]"
+        )
+        item = self.write_work_item(project, "evidence_packs: [2026-09-02-demo]\n")
+        self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item)
+        )
+
+    def test_completion_gate_unlinked_pack_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, "2026-09-02-demo")
+        item = self.write_work_item(project, "evidence_packs: [2026-09-02-demo]\n")
+        result = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            expected=2,
+        )
+        self.assertIn("2026-09-02-demo", result.stderr)
+
+    def test_completion_gate_nonexistent_slug_fails(self) -> None:
+        project = self.generate_ready_project()
+        item = self.write_work_item(project, "evidence_packs: [2026-09-02-ghost]\n")
+        result = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            expected=2,
+        )
+        self.assertIn("2026-09-02-ghost", result.stderr)
+
+    def test_completion_gate_absent_declaration_passes(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, "2026-09-02-orphan")
+        item = self.write_work_item(project)
+        self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item)
+        )
+
+
+class LinkRewriteTest(ProjectionCliTest):
+    """Quick task: package-consistent link rewriting in projected references."""
+
+    def test_same_package_links_survive(self) -> None:
+        project = self.make_project()
+        self.write_note(
+            project, "alpha", "usage", "# Alpha\n\nSee [Beta](./beta.md).\n"
+        )
+        self.write_note(
+            project, "beta", "usage", "# Beta\n\nSee [Alpha](./alpha.md).\n"
+        )
+        self.run_cli("generate", "--project", str(project))
+        references = project / "skills" / "acme-demo-usage" / "references"
+        alpha = (references / "alpha.md").read_text(encoding="utf-8")
+        beta = (references / "beta.md").read_text(encoding="utf-8")
+        self.assertIn("[Beta](./beta.md)", alpha)
+        self.assertIn("[Alpha](./alpha.md)", beta)
+
+    def test_unprojected_target_is_demoted(self) -> None:
+        project = self.make_project()
+        self.write_note(
+            project,
+            "published",
+            "usage",
+            "# Published\n\nSee [Draft](./draft.md) and [Dev](./dev.md).\n",
+        )
+        self.write_note(
+            project, "draft", "draft", "# Draft\n\nPending.\n", status="draft"
+        )
+        self.write_note(
+            project, "dev", "development", "# Dev\n\nContributor only.\n"
+        )
+        result = self.run_cli("generate", "--project", str(project))
+        reference = (
+            project / "skills" / "acme-demo-usage" / "references" / "published.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("**Draft**", reference)
+        self.assertIn("**Dev**", reference)
+        self.assertNotIn("(./draft.md)", reference)
+        self.assertNotIn("(./dev.md)", reference)
+        self.assertIn("draft.md", result.stderr)
+        self.assertIn("dev.md", result.stderr)
+
+    def test_no_demotion_warning_when_all_targets_projected(self) -> None:
+        project = self.make_project()
+        self.write_note(project, "solo", "usage", "# Solo\n\nNo links.\n")
+        result = self.run_cli("generate", "--project", str(project))
+        self.assertNotIn("demoted", result.stderr)
+
+    def test_links_inside_code_fences_are_untouched(self) -> None:
+        project = self.make_project()
+        self.write_note(
+            project,
+            "fenced",
+            "usage",
+            "# Fenced\n\nSee [Draft](./draft.md).\n\n"
+            "```markdown\n[Draft](./draft.md)\n```\n",
+        )
+        self.write_note(project, "draft", "draft", "# Draft\n\nPending.\n", status="draft")
+        self.run_cli("generate", "--project", str(project))
+        reference = (
+            project / "skills" / "acme-demo-usage" / "references" / "fenced.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("**Draft**", reference)
+        self.assertIn("[Draft](./draft.md)\n```", reference)
+
+
+
+
+class CodeProvenanceTest(ExperienceCompilationTest):
+    """Quick task: optional code provenance keys in evidence pack manifests."""
+
+    PROVENANCE_FM = (
+        "kind: execution\nproduced_by: story-001\ndate: 2026-09-02\n"
+        'summary: "provenance pack"\n'
+        "git_head: {hex_40}\n"
+        "worktree_tree: {tree}"
+    )
+
+    def test_manifest_valid_provenance_passes(self) -> None:
+        project = self.generate_ready_project()
+        hex_40 = "0123456789abcdef0123456789abcdef01234567"
+        self.make_pack(project, manifest_frontmatter=self.PROVENANCE_FM.format(
+            hex_40=hex_40, tree=hex_40
+        ))
+        self.make_pack(
+            project,
+            slug="2026-09-02-clean",
+            manifest_frontmatter=self.PROVENANCE_FM.format(
+                hex_40=hex_40, tree="clean"
+            ),
+        )
+        self.run_cli("validate", "--project", str(project))
+
+    def test_manifest_bad_provenance_hash_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, manifest_frontmatter=self.PROVENANCE_FM.format(
+            hex_40="0123456789abcdef0123456789abcdef01234567", tree="not-a-hash"
+        ))
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("worktree_tree", result.stderr)
+
+    def test_manifest_tree_without_head_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.make_pack(project, manifest_frontmatter=(
+            "kind: execution\nproduced_by: story-001\ndate: 2026-09-02\n"
+            'summary: "partial provenance"\n'
+            "worktree_tree: 0123456789abcdef0123456789abcdef01234567"
+        ))
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("git_head", result.stderr)
+
+    def test_provenance_command_reports_clean_then_dirty(self) -> None:
+        import subprocess
+
+        repo = self.make_project()
+        def git(*args: str) -> str:
+            return subprocess.run(
+                ["git", "-C", str(repo), *args],
+                capture_output=True, text=True, check=True,
+            ).stdout.strip()
+
+        git("init", "-q")
+        git("config", "user.email", "test@example.com")
+        git("config", "user.name", "Test")
+        (repo / "notes").mkdir(exist_ok=True)
+        (repo / "notes" / "seed.md").write_text("seed\n", encoding="utf-8")
+        git("add", "-A")
+        git("commit", "-q", "-m", "seed")
+
+        clean = self.run_cli("provenance", "--repo", str(repo)).stdout
+        self.assertIn("git_head: ", clean)
+        self.assertIn("worktree_tree: clean", clean)
+        # no side effects on the real index or working tree
+        self.assertEqual(git("status", "--porcelain"), "")
+
+        (repo / "dirty.txt").write_text("dirty\n", encoding="utf-8")
+        dirty = self.run_cli("provenance", "--repo", str(repo)).stdout
+        head = git("rev-parse", "HEAD")
+        self.assertIn(f"git_head: {head}", dirty)
+        match = re.search(r"worktree_tree: ([0-9a-f]{40})", dirty)
+        self.assertIsNotNone(match)
+        self.assertNotEqual(match.group(1), git("rev-parse", f"{head}^{{tree}}"))
+        # untracked file did not enter the real index
+        self.assertEqual(git("status", "--porcelain"), "?? dirty.txt")
 
 
 if __name__ == "__main__":

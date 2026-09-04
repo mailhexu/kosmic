@@ -47,6 +47,7 @@ Use `references/templates/template-research.md`.
    - Read relevant code and existing patterns.
    - Check external documentation or examples when libraries/services are involved.
    - Compare viable options and document tradeoffs.
+   - Invoke `research`: investigate through primary sources and capture citations in the Kosmic research memo.
 
 4. **Document findings**
    - Write the research memo.

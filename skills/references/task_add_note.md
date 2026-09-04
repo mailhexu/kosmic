@@ -51,7 +51,7 @@ Before writing, check notation.md for existing variable definitions:
     status: draft
     audience: {development|usage|both}
     usage_stale: false
-    tags: []
+    evidence: []
     ---
 
     # {Topic Title}
@@ -132,11 +132,27 @@ Append to `{VAULT}/Projects/{TARGET}/log/{TARGET}-{DATE}.md`:
 
 Also ensure the Project log links to every note created or updated using a standard relative Markdown link.
 
+When a session's claims depend on an exact code state (reproducible results,
+behavior tied to uncommitted changes), append a Code state line for the session
+(format in `notation.md`): repository directory, machine (`local` or
+`user@host`), git HEAD, working-tree hash (`provenance` command), and jj
+change id when colocated.
+
 ## Step 6: Validate and Refresh the Skill Pair
 
 After review succeeds, change `status: draft` to `status: stable`. A newly detected stale fact remains `status: stable` with the real effective `stale_after: 'YYYY-MM-DD'`; deprecated knowledge uses `status: deprecated`. Never fabricate a stale date or `verified` actor.
 
 Any change to a stable note's content, status, Audience Scope, or staleness can change a Skill Projection. Run `generate` and `validate` from `references/task_project_skills.md`. Both the authoritative `notes/` bundle and generated Skill Pair must pass; publication is atomic.
+
+If the note was distilled from captured experience (Task 9), its `evidence:` frontmatter must list Project-root-relative paths into the motivating Evidence Pack (for example `evidence: [evidence/2026-09-02-debug-socket/evidence.md]`). `validate` fails a **stable** note whose evidence paths do not resolve; drafts may reference pending packs. Evidence packs themselves live outside `notes/`, are append-only, and never project into the Skill Pair.
+
+When creating an Evidence Pack, record the code state it was produced under:
+run the Projection CLI's `provenance` command in the source repo and paste its
+`git_head:` / `worktree_tree:` lines into the pack's `MANIFEST.md` frontmatter.
+`worktree_tree: clean` marks a clean checkout; a hash pins the exact dirty
+tree (tracked + untracked, ignoring `.gitignore`). In a jj-colocated repo,
+the current working-copy snapshot (`jj log -r @`) gives the same guarantee
+with a stable change id.
 
 ## Step 7: Review
 

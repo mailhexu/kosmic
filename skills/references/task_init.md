@@ -27,6 +27,16 @@ Ask the user only when multiple plausible vaults or targets exist.
 - Check sibling vault Projects and installed skills for collisions before recording the identifier.
 - Skill names are `{PROJECT_ID}-usage` and `{PROJECT_ID}-development`.
 
+## Verify Required Procedure Skills
+
+Before creating or migrating a Project, verify the active Install Adapter:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex}
+```
+
+Missing skills or an unsupported adapter stop initialization. Follow the required-procedure-skills section of the installed `README.md`; do not substitute persistent instructions or a native fallback.
+
 ## Create Structure
 
 Create the following:
