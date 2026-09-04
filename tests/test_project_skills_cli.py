@@ -5,6 +5,7 @@ import json
 import re
 import os
 import subprocess
+import shutil
 import sys
 import tempfile
 import unittest
@@ -62,6 +63,11 @@ class ProjectionCliTest(unittest.TestCase):
             "---\n\n"
             "# Demo\n",
             encoding="utf-8",
+        )
+        mathdocs = project / "mathdocs"
+        mathdocs.mkdir()
+        (mathdocs / "index.md").write_text(
+            MathDocsLayerTest.EMPTY_MATH_INDEX, encoding="utf-8"
         )
         return project
 
@@ -349,6 +355,7 @@ class ProjectionCliTest(unittest.TestCase):
             "opencode": Path(".config/opencode/skill"),
             "claude-code": Path(".claude/skills"),
             "codex": Path(".agents/skills"),
+            "omp": Path(".omp/agent/skills"),
         }
         required_skills = (
             "tdd",
@@ -441,6 +448,10 @@ class ProjectionCliTest(unittest.TestCase):
 
         invalid_audience = self.root / "vault" / "Projects" / "invalid-audience"
         (invalid_audience / "notes").mkdir(parents=True)
+        (invalid_audience / "mathdocs").mkdir()
+        (invalid_audience / "mathdocs" / "index.md").write_text(
+            MathDocsLayerTest.EMPTY_MATH_INDEX, encoding="utf-8"
+        )
         (invalid_audience / "notes" / "index.md").write_text(
             '---\nokf_version: "0.2"\n---\n\n# Project Knowledge\n',
             encoding="utf-8",
@@ -1080,6 +1091,588 @@ class CodeProvenanceTest(ExperienceCompilationTest):
         # untracked file did not enter the real index
         self.assertEqual(git("status", "--porcelain"), "?? dirty.txt")
 
+
+
+
+class MathDocsLayerTest(ExperienceCompilationTest):
+    EMPTY_MATH_INDEX = (
+        "# Math Derivations\n\n"
+        "| Derivation | Status | Result summary |\n"
+        "|------------|--------|----------------|\n"
+    )
+
+
+    def write_math_pair(
+        self,
+        project: Path,
+        slug: str = "force",
+        status: str = "stable",
+        include_metadata: bool = True,
+    ) -> tuple[Path, Path]:
+        mathdocs = project / "mathdocs"
+        script = mathdocs / f"{slug}.py"
+        script.write_text("print('{}')\n", encoding="utf-8")
+        metadata = [
+            "type: Math Derivation",
+            f"status: {status}",
+            f"derivation: {slug}.py",
+        ]
+        if include_metadata:
+            metadata.extend(
+                [
+                    f"source_sha256: {hashlib.sha256(script.read_bytes()).hexdigest()}",
+                    "python_version: 3.13.7",
+                    "sympy_version: 1.14.0",
+                    "verified_at: 2026-09-05T12:00:00Z",
+                    "verified_host: test-host",
+                    f"verified_directory: {project.parent.resolve()}",
+                ]
+            )
+        note = mathdocs / f"{slug}.md"
+        body = f"# {slug.title()}\n\n## Corrections\n"
+        if status == "stable":
+            body += (
+                "\n<!-- KOSMIC-MATH-RESULTS:START -->\n"
+                "## Verified Results\n\n"
+                f"<!-- MathDoc: acme-demo/{slug}#value -->\n"
+                "$$\n1\n$$\n"
+                "<!-- KOSMIC-SREPR: Integer(1) -->\n"
+                "<!-- KOSMIC-MATH-RESULTS:END -->\n"
+            )
+        note.write_text(
+            "---\n" + "\n".join(metadata) + "\n---\n\n" + body,
+            encoding="utf-8",
+        )
+        if status != "deprecated":
+            with (mathdocs / "index.md").open("a", encoding="utf-8") as handle:
+                handle.write(f"| [{slug}]({slug}.md) | {status} | {slug} result |\n")
+        return script, note
+
+    def test_stable_math_note_requires_metadata_and_current_hash(self) -> None:
+        project = self.generate_ready_project()
+        self.write_math_pair(project, include_metadata=False)
+        missing = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("source_sha256", missing.stderr)
+
+        shutil.rmtree(project / "mathdocs")
+        self.make_mathdocs(project)
+        script, _ = self.write_math_pair(project)
+        self.run_cli("validate", "--project", str(project))
+        script.write_text("print('{\"changed\": true}')\n", encoding="utf-8")
+        stale = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("source_sha256", stale.stderr)
+        self.assertIn("force.py", stale.stderr)
+
+    def test_draft_metadata_may_be_pending_and_deprecated_is_not_indexed(self) -> None:
+        project = self.generate_ready_project()
+        self.write_math_pair(
+            project, slug="draft-force", status="draft", include_metadata=False
+        )
+        self.write_math_pair(project, slug="old-force", status="deprecated")
+        self.run_cli("validate", "--project", str(project))
+
+    def write_protocol_pair(
+        self,
+        project: Path,
+        slug: str,
+        *,
+        results: list[dict[str, str]] | None = None,
+        python_version: str = "3.13.7",
+        sympy_version: str = "1.14.0",
+        script_suffix: str = "",
+    ) -> tuple[Path, Path]:
+        results = results or [
+            {"name": "value", "srepr": "Integer(1)", "latex": "1"}
+        ]
+        payload = {
+            "schema_version": 1,
+            "python_version": python_version,
+            "sympy_version": sympy_version,
+            "results": results,
+        }
+        script_text = (
+            "import json\n"
+            f"print(json.dumps({payload!r}, sort_keys=True))\n"
+            + script_suffix
+        )
+        mathdocs = project / "mathdocs"
+        script = mathdocs / f"{slug}.py"
+        project_id_match = re.search(
+            r"^project_id:\s*(\S+)",
+            (project / "ProjectEntry.md").read_text(encoding="utf-8"),
+            re.MULTILINE,
+        )
+        assert project_id_match is not None
+        project_id = project_id_match.group(1)
+        script.write_text(script_text, encoding="utf-8")
+        digest = hashlib.sha256(script.read_bytes()).hexdigest()
+        result_blocks = "".join(
+            f"<!-- MathDoc: {project_id}/{slug}#{result['name']} -->\n"
+            f"$$\n{result['latex']}\n$$\n"
+            f"<!-- KOSMIC-SREPR: {result['srepr']} -->\n"
+            for result in results
+        )
+        note = mathdocs / f"{slug}.md"
+        note.write_text(
+            "---\n"
+            "type: Math Derivation\n"
+            "status: stable\n"
+            f"derivation: {slug}.py\n"
+            f"source_sha256: {digest}\n"
+            f"python_version: {python_version}\n"
+            f"sympy_version: {sympy_version}\n"
+            "verified_at: 2026-09-05T12:00:00Z\n"
+            "verified_host: test-host\n"
+            f"verified_directory: {project.parent.resolve()}\n"
+            "---\n\n"
+            f"# {slug.title()}\n\n"
+            "<!-- KOSMIC-MATH-RESULTS:START -->\n"
+            "## Verified Results\n\n"
+            f"{result_blocks}"
+            "<!-- KOSMIC-MATH-RESULTS:END -->\n",
+            encoding="utf-8",
+        )
+        with (mathdocs / "index.md").open("a", encoding="utf-8") as handle:
+            handle.write(f"| [{slug}]({slug}.md) | stable | checked |\n")
+        return script, note
+
+    def test_check_math_valid_protocol_selection_and_read_only(self) -> None:
+        project = self.generate_ready_project()
+        self.write_protocol_pair(project, "beta")
+        self.write_protocol_pair(project, "alpha")
+        before = self.snapshot(project / "mathdocs")
+        result = self.run_cli("check-math", "--project", str(project))
+        self.assertIn("alpha, beta", result.stdout)
+        self.assertIn("without an OS sandbox", result.stderr)
+        self.assertEqual(before, self.snapshot(project / "mathdocs"))
+        self.assertIn("alpha: PASS", result.stdout)
+        self.assertIn("beta: PASS", result.stdout)
+
+        selected = self.run_cli(
+            "check-math", "--project", str(project), "--slug", "beta"
+        )
+        self.assertIn("beta", selected.stdout)
+        self.assertNotIn("alpha", selected.stdout)
+
+    def test_check_math_reports_each_file_before_failure_summary(self) -> None:
+        project = self.generate_ready_project()
+        alpha, _ = self.write_protocol_pair(project, "alpha")
+        self.write_protocol_pair(project, "beta")
+        alpha.write_text("print('not json')\n", encoding="utf-8")
+        alpha_note = project / "mathdocs" / "alpha.md"
+        alpha_note.write_text(
+            re.sub(
+                r"source_sha256: [0-9a-f]{64}",
+                f"source_sha256: {hashlib.sha256(alpha.read_bytes()).hexdigest()}",
+                alpha_note.read_text(encoding="utf-8"),
+            ),
+            encoding="utf-8",
+        )
+
+        result = self.run_cli("check-math", "--project", str(project), expected=2)
+        self.assertIn("alpha: FAIL", result.stderr)
+        self.assertIn("beta: PASS", result.stdout)
+        self.assertIn("1 passed, 1 failed", result.stderr)
+
+    def test_check_math_rejects_protocol_process_and_environment_failures(self) -> None:
+        cases = {
+            "malformed": "print('not json')\n",
+            "nonzero": "raise SystemExit(7)\n",
+            "extra": "print('noise')\n",
+        }
+        for index, (kind, suffix) in enumerate(cases.items()):
+            with self.subTest(kind=kind):
+                project = self.generate_ready_project(f"case-{index}")
+                self.write_protocol_pair(project, kind, script_suffix=suffix)
+                result = self.run_cli(
+                    "check-math", "--project", str(project), expected=2
+                )
+                self.assertIn(kind, result.stderr)
+                self.assertIn("remedy", result.stderr)
+                shutil.rmtree(project)
+
+        project = self.generate_ready_project("stale")
+        self.write_protocol_pair(project, "stale", python_version="0.0.0")
+        _, note = self.write_protocol_pair(
+            project, "current", python_version="3.13.7"
+        )
+        note.write_text(
+            note.read_text(encoding="utf-8").replace(
+                "python_version: 3.13.7", "python_version: 9.9.9"
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_cli(
+            "check-math", "--project", str(project), "--slug", "current", expected=2
+        )
+        self.assertIn("python_version", result.stderr)
+
+    def test_check_math_update_rewrites_only_metadata_and_generated_region(self) -> None:
+        project = self.generate_ready_project()
+        script, note = self.write_protocol_pair(project, "force")
+        original = note.read_text(encoding="utf-8")
+        prose = "\n## Assumptions\n\nKeep this exactly.\n\n## Corrections\n\nHuman history.\n"
+        note.write_text(original + prose, encoding="utf-8")
+        updated_results = [
+            {"name": "value", "srepr": "Integer(2)", "latex": "2"}
+        ]
+        updated_payload = {
+            "schema_version": 1,
+            "python_version": "3.13.7",
+            "sympy_version": "1.14.0",
+            "results": updated_results,
+        }
+        script.write_text(
+            "import json\n"
+            f"print(json.dumps({updated_payload!r}, sort_keys=True))\n",
+            encoding="utf-8",
+        )
+
+        self.run_cli(
+            "check-math",
+            "--project",
+            str(project),
+            "--update",
+            "--source-root",
+            str(project.parent),
+        )
+        updated = note.read_text(encoding="utf-8")
+        self.assertIn("<!-- KOSMIC-SREPR: Integer(2) -->", updated)
+        self.assertIn("$$\n2\n$$", updated)
+        self.assertTrue(updated.endswith(prose))
+        self.assertIn(
+            f"source_sha256: {hashlib.sha256(script.read_bytes()).hexdigest()}",
+            updated,
+        )
+        self.run_cli("check-math", "--project", str(project))
+
+    def test_check_math_update_precedes_dependent_note_corrections(self) -> None:
+        project = self.generate_ready_project()
+        script, paired_note = self.write_protocol_pair(project, "force")
+        note = self.write_note(
+            project,
+            "physics",
+            "development",
+            "# Physics\n\n"
+            "<!-- MathDoc: acme-demo/force#value -->\n"
+            "$$\n1\n$$\n",
+        )
+        note.write_text(
+            note.read_text(encoding="utf-8").replace(
+                "audience: development\n",
+                "audience: development\nderivations: [mathdocs/force.py]\n",
+            ),
+            encoding="utf-8",
+        )
+        script.write_text(
+            script.read_text(encoding="utf-8")
+            .replace("'srepr': 'Integer(1)'", "'srepr': 'Integer(2)'")
+            .replace("'latex': '1'", "'latex': '2'"),
+            encoding="utf-8",
+        )
+
+        self.run_cli(
+            "check-math",
+            "--project",
+            str(project),
+            "--update",
+            "--source-root",
+            str(self.root),
+        )
+        self.assertIn("$$\n2\n$$", paired_note.read_text(encoding="utf-8"))
+        stale = self.run_cli("generate", "--project", str(project), expected=2)
+        self.assertIn("physics.md", stale.stderr)
+        note.write_text(
+            note.read_text(encoding="utf-8").replace("$$\n1\n$$", "$$\n2\n$$"),
+            encoding="utf-8",
+        )
+        self.run_cli("generate", "--project", str(project))
+
+
+    def test_check_math_update_is_all_or_none(self) -> None:
+        project = self.generate_ready_project()
+        alpha_script, _ = self.write_protocol_pair(project, "alpha")
+        beta_script, _ = self.write_protocol_pair(project, "beta")
+        alpha_script.write_text(
+            alpha_script.read_text(encoding="utf-8").replace("Integer(1)", "Integer(2)"),
+            encoding="utf-8",
+        )
+        beta_script.write_text("raise SystemExit(9)\n", encoding="utf-8")
+        before = self.snapshot(project / "mathdocs")
+        result = self.run_cli(
+            "check-math", "--project", str(project), "--update", expected=2
+        )
+        self.assertIn("beta", result.stderr)
+        self.assertEqual(before, self.snapshot(project / "mathdocs"))
+
+    def test_stable_note_math_markers_resolve_and_match_results(self) -> None:
+        project = self.generate_ready_project()
+        self.write_protocol_pair(project, "force")
+        note = self.write_note(
+            project,
+            "physics",
+            "development",
+            "# Physics\n\n"
+            "<!-- MathDoc: acme-demo/force#value -->\n"
+            "$$\n1\n$$\n\n"
+            "<!-- MathDoc-Exposition: acme-demo/force -->\n"
+            "$$\nx + 1\n$$\n",
+        )
+        note.write_text(
+            note.read_text(encoding="utf-8").replace(
+                "audience: development\n",
+                "audience: development\nderivations: [mathdocs/force.py]\n",
+            ),
+            encoding="utf-8",
+        )
+        self.run_cli("generate", "--project", str(project))
+        self.run_cli("validate", "--project", str(project))
+
+        note.write_text(
+            note.read_text(encoding="utf-8").replace("$$\n1\n$$", "$$\n2\n$$", 1),
+            encoding="utf-8",
+        )
+        mismatch = self.run_cli("generate", "--project", str(project), expected=2)
+        self.assertIn("physics.md", mismatch.stderr)
+        self.assertIn("force#value", mismatch.stderr)
+
+    def test_stable_note_marker_requires_declared_derivation(self) -> None:
+        project = self.generate_ready_project()
+        self.write_protocol_pair(project, "force")
+        self.write_note(
+            project,
+            "physics",
+            "development",
+            "# Physics\n\n"
+            "<!-- MathDoc: acme-demo/force#value -->\n"
+            "$$\n1\n$$\n",
+        )
+        result = self.run_cli("generate", "--project", str(project), expected=2)
+        self.assertIn("derivations", result.stderr)
+
+    def test_stable_note_unmarked_display_math_fails(self) -> None:
+        project = self.generate_ready_project()
+        self.write_note(
+            project,
+            "physics",
+            "development",
+            "# Physics\n\n$$\n1\n$$\n",
+        )
+        result = self.run_cli("generate", "--project", str(project), expected=2)
+        self.assertIn("MathDoc marker", result.stderr)
+
+    def test_draft_dangling_and_fenced_markers_do_not_block(self) -> None:
+        project = self.generate_ready_project()
+        self.write_note(
+            project,
+            "draft-math",
+            "development",
+            "# Draft\n\n<!-- MathDoc: acme-demo/missing#value -->\n$$\n9\n$$\n",
+            status="draft",
+        )
+        self.write_note(
+            project,
+            "literal",
+            "development",
+            "# Literal\n\n```markdown\n"
+            "<!-- MathDoc: acme-demo/missing#value -->\n$$\n9\n$$\n```\n",
+        )
+        self.run_cli("generate", "--project", str(project))
+        self.run_cli("validate", "--project", str(project))
+    def write_math_work_item(
+        self,
+        project: Path,
+        derivations: str | None,
+        files: str | None,
+    ) -> Path:
+        item = project / "specs" / "quick-tasks" / "math-work.md"
+        item.parent.mkdir(parents=True, exist_ok=True)
+        fields = ["consumer_interface_change: false"]
+        if derivations is not None:
+            fields.append(f"derivations: {derivations}")
+        if files is not None:
+            fields.append(f"math_implementation_files: {files}")
+        item.write_text(
+            "---\n" + "\n".join(fields) + "\n---\n\n# Math work\n",
+            encoding="utf-8",
+        )
+        return item
+
+    def test_completion_math_gate_accepts_finite_source_references(self) -> None:
+        project = self.generate_ready_project()
+        self.write_protocol_pair(project, "force")
+        source_root = self.root / "source"
+        source = source_root / "src" / "model.py"
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "# MathDoc: acme-demo/force#value\nforce = 1\n", encoding="utf-8"
+        )
+        item = self.write_math_work_item(
+            project, "[force]", "[src/model.py]"
+        )
+        self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            "--source-root",
+            str(source_root),
+        )
+
+    def test_completion_math_gate_requires_both_fields_and_known_results(self) -> None:
+        project = self.generate_ready_project()
+        self.write_protocol_pair(project, "force")
+        source_root = self.root / "source"
+        source_root.mkdir()
+        source = source_root / "model.py"
+        source.write_text(
+            "# MathDoc: acme-demo/force#missing\nforce = 1\n", encoding="utf-8"
+        )
+        partial = self.write_math_work_item(project, "[force]", None)
+        missing_field = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(partial),
+            "--source-root",
+            str(source_root),
+            expected=2,
+        )
+        self.assertIn("math_implementation_files", missing_field.stderr)
+
+        item = self.write_math_work_item(project, "[force]", "[model.py]")
+        unknown = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            "--source-root",
+            str(source_root),
+            expected=2,
+        )
+        self.assertIn("missing", unknown.stderr)
+
+    def test_completion_math_gate_rejects_escaping_and_uncovered_files(self) -> None:
+        project = self.generate_ready_project()
+        self.write_protocol_pair(project, "force")
+        source_root = self.root / "source"
+        source_root.mkdir()
+        (source_root / "plain.py").write_text("force = 1\n", encoding="utf-8")
+
+        for path in ("../escape.py", "/tmp/absolute.py", "plain.py"):
+            with self.subTest(path=path):
+                item = self.write_math_work_item(project, "[force]", f"[{path}]")
+                result = self.run_cli(
+                    "check-completion",
+                    "--project",
+                    str(project),
+                    "--work-item",
+                    str(item),
+                    "--source-root",
+                    str(source_root),
+                    expected=2,
+                )
+                self.assertRegex(result.stderr, "path|reference")
+
+
+
+    def make_mathdocs(self, project: Path) -> Path:
+        root = project / "mathdocs"
+        root.mkdir(exist_ok=True)
+        (root / "index.md").write_text(self.EMPTY_MATH_INDEX, encoding="utf-8")
+        return root
+
+    def test_migrate_creates_mathdocs_index_without_overwrite(self) -> None:
+        project = self.make_project()
+        shutil.rmtree(project / "mathdocs")
+        self.write_note(project, "using", "usage", "# Use\n\nRun it.\n")
+        self.assertFalse((project / "mathdocs").exists())
+        self.run_cli(
+            "migrate", "--project", str(project), "--project-id", "acme-demo"
+        )
+        index = project / "mathdocs" / "index.md"
+        self.assertEqual(self.EMPTY_MATH_INDEX, index.read_text(encoding="utf-8"))
+
+        custom = self.EMPTY_MATH_INDEX + "\n<!-- retained -->\n"
+        index.write_text(custom, encoding="utf-8")
+        self.run_cli(
+            "migrate", "--project", str(project), "--project-id", "acme-demo"
+        )
+        self.assertEqual(custom, index.read_text(encoding="utf-8"))
+    def test_migrate_rejects_invalid_math_notes_before_publication(self) -> None:
+        project = self.make_project()
+        self.write_note(
+            project,
+            "physics",
+            "development",
+            "# Physics\n\n$$\n1\n$$\n",
+        )
+        before = self.snapshot(project / "notes")
+        result = self.run_cli(
+            "migrate",
+            "--project",
+            str(project),
+            "--project-id",
+            "acme-demo",
+            expected=2,
+        )
+        self.assertIn("MathDoc marker", result.stderr)
+        self.assertEqual(before, self.snapshot(project / "notes"))
+
+
+    def test_validate_rejects_unpaired_mathdocs_files(self) -> None:
+        project = self.generate_ready_project()
+        mathdocs = self.make_mathdocs(project)
+        (mathdocs / "force.py").write_text("print('x')\n", encoding="utf-8")
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("unpaired", result.stderr)
+        self.assertIn("force.py", result.stderr)
+
+    def test_validate_rejects_missing_unknown_and_status_mismatch_rows(self) -> None:
+        project = self.generate_ready_project()
+        mathdocs = self.make_mathdocs(project)
+        (mathdocs / "force.py").write_text("print('{}')\n", encoding="utf-8")
+        (mathdocs / "force.md").write_text(
+            "---\ntype: Math Derivation\nstatus: draft\nderivation: force.py\n"
+            "---\n\n# Force\n",
+            encoding="utf-8",
+        )
+
+        missing = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("index", missing.stderr)
+        self.assertIn("force", missing.stderr)
+
+        (mathdocs / "index.md").write_text(
+            self.EMPTY_MATH_INDEX
+            + "| [force](force.md) | stable | force result |\n"
+            + "| [ghost](ghost.md) | draft | absent |\n",
+            encoding="utf-8",
+        )
+        invalid = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertRegex(invalid.stderr, "status|unknown")
+    def test_task_m_workflow_and_templates_are_shipped(self) -> None:
+        skill_root = REPO_ROOT / "skills"
+        task = (skill_root / "references" / "task_math_note.md").read_text(
+            encoding="utf-8"
+        )
+        skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("executable file is the authority", task)
+        self.assertIn("check-math --update", task)
+        self.assertIn("Task M: Math Note", skill)
+        self.assertTrue(
+            (skill_root / "references" / "templates" / "template-math-index.md").is_file()
+        )
+        self.assertTrue(
+            (skill_root / "references" / "templates" / "template-math-derivation.md").is_file()
+        )
+        script = (
+            skill_root / "references" / "templates" / "template-math-derivation.py"
+        )
+        self.assertTrue(script.is_file())
+        self.assertTrue(os.access(script, os.X_OK))
 
 if __name__ == "__main__":
     unittest.main()

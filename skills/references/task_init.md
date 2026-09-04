@@ -47,6 +47,8 @@ Create the following:
 ├── notes/                       # Obsidian-compatible OKF v0.2 bundle
 │   ├── index.md
 │   └── notation.md
+├── mathdocs/                   # vault-only executable SymPy authorities
+│   └── index.md                # reserved empty registry on initialization
 ├── specs/
 │   ├── INDEX.md
 │   ├── research/

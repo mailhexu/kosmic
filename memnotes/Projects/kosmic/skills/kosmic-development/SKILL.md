@@ -19,6 +19,7 @@ Load `kosmic-usage` before contributor work that invokes, configures, integrates
 
 ## Topics
 
+- [Atomic Skill Publication](references/atomic-skill-publication.md)
 - [Projection CLI extension conventions](references/cli-extension-conventions.md)
 - [Projection audience routing](references/projection-audience-routing.md)
 

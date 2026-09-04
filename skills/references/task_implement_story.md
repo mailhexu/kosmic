@@ -12,15 +12,21 @@ Execute story implementation following TDD with mandatory research phase.
 ```
 STOP CHECK before starting:
   1. Story file exists at {VAULT}/Projects/{TARGET}/specs/stories/story-{N}-{slug}.md
-  2. Story status is "approved" (NOT draft, NOT in_progress)
+  2. Story status is "approved" OR "in_progress"
      → grep "status:" {story_file}
+     → If approved: transition it to in_progress and begin at Phase 1.
+     → If in_progress: a resumed session — skip phases already recorded as done in
+       the story's checklist, re-verify the last completed step still holds, and
+       address any review findings recorded in the story or its evidence packs
+       before writing new code.
      → If draft: "Story must be approved first. Run Task 7 (Review Spec)."
-     → If in_progress: "Story is already being worked on. Check progress."
   3. Linked epic, architecture, and PRD exist
      → Check linked_epic, linked_architecture, linked_prd in frontmatter
 ```
 
 **Do NOT write any code until all prerequisites are verified.**
+
+If the story implements mathematical functionality, load Task M before Phase 1. Require both `derivations` and `math_implementation_files` in story frontmatter, run the derivation before writing implementation code, and preserve adjacent `MathDoc:` identifiers in every declared source file.
 
 ---
 

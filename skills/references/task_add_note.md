@@ -14,15 +14,20 @@ Create or update atomic notes, and log daily progress.
 | Write docs | Core concepts |
 | Finish session | Session summary |
 
-**Rule**: Knowledge in your head → must be in notes.
+**Rule**: Capture only durable, reusable knowledge not already represented; session summaries and one-off activity belong in the log, not notes.
 
 ## Step 1: Check Existing
 
-Read `{VAULT}/Projects/{TARGET}/notes/{TOPIC}.md`
+Search first by concept, not just by filename — the same knowledge may live
+under a different slug:
 
-- **Exists & Consistent**: Update content and `updated`; record trustworthy verification metadata when available
+```bash
+grep -rni "{keywords}" "{VAULT}/Projects/{TARGET}/notes/" && grep -i "{keywords}" "{VAULT}/Projects/{TARGET}/notes/index.md"
+```
+
+- **Concept already covered** (any slug): update that note and `updated`; record trustworthy verification metadata when available. Choose `{TOPIC}` only when no existing note covers the concept.
 - **Exists & Conflict**: Append `## Conflict` section or create `{TOPIC}_conflict.md`
-- **Not Exists**: Create new note
+- **Not covered**: Create new note
 
 ## Step 2: Check Notation
 
@@ -160,10 +165,10 @@ with a stable change id.
 
 1. **Completeness**: All required sections present?
 2. **Clarity**: Sentences complete and clear?
-3. **Variables**: All documented with units?
-4. **Equations**: Are all standalone equations wrapped with `$$` display-math delimiters?
+3. **Variables** (when present): All documented with units?
+4. **Equations** (when present): Are all standalone equations wrapped with `$$` display-math delimiters?
 5. **Links**: Do all relative Markdown links resolve to their intended concepts?
-6. **Workflows**: Mermaid diagrams syntactically correct?
+6. **Workflows** (when present): Mermaid diagrams syntactically correct?
 7. **Metadata**: Does line-1 frontmatter contain `type`, a valid OKF status, and explicit Audience Scope?
 8. **Index**: Is `notes/index.md` updated using its reserved OKF structure?
 9. **Notation**: Consistent with notation.md?

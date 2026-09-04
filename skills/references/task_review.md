@@ -56,13 +56,13 @@ Find and review notes that haven't been used recently:
 
 ```bash
 # Find notes with explicit staleness or audience-specific staleness
-git grep -E "stale_after:|usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+grep -rln -E "stale_after:|usage_stale: true" "{VAULT}/Projects/{TARGET}/notes/"
 
-# Find notes not updated recently
-git grep "updated: '2025-0[12]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+# Find notes not updated recently (dynamic cutoff, e.g. last 90 days)
+find "{VAULT}/Projects/{TARGET}/notes" -name "*.md" -mtime +90
 
 # Find draft notes
-git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+grep -rln "status: draft" "{VAULT}/Projects/{TARGET}/notes/"
 ```
 
 ### For each stale note:

@@ -12,9 +12,10 @@ Find existing knowledge and specs before implementing new features.
 
 ## Strategy
 
-1. **Quick**: Search the OKF index first
-2. **Deep**: If not found, search all notes
-3. **Specs**: Also search specs for existing PRDs, architecture, epics, stories
+1. **Math authority**: Search `mathdocs/index.md` first when equations, symbols, or formula-derived implementation are involved
+2. **Quick**: Search the OKF notes index
+3. **Deep**: Search all notes by concept, then filename
+4. **Specs**: Also search specs for existing PRDs, architecture, epics, stories
 
 ## 1. Search the Knowledge Index
 
@@ -33,27 +34,28 @@ grep "^# " {VAULT}/Projects/{TARGET}/notes/index.md
 
 ## 2. Deep Search (Notes)
 
-Use `git grep` (faster in git repos):
+Search the vault filesystem directly — the vault may live outside any git
+repository, and git-index search misses untracked or ignored notes:
 
 ```bash
-# Search all notes
-git grep -i "query" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
-
-# With line numbers
-git grep -ni "keyword" -- "{VAULT}/Projects/{TARGET}/notes/"
+# Search all notes (recursive, index-independent)
+grep -rni "query" "{VAULT}/Projects/{TARGET}/notes/"
 
 # Search by tag
-git grep "tags:.*api" -- "{VAULT}/Projects/{TARGET}/notes/"
+grep -rn "tags:.*api" "{VAULT}/Projects/{TARGET}/notes/"
 
 # Search for file references
-git grep "related_files:.*auth.ts" -- "{VAULT}/Projects/{TARGET}/notes/"
+grep -rn "related_files:.*auth.ts" "{VAULT}/Projects/{TARGET}/notes/"
 
 # Cross-project search
-git grep -i "keyword" -- "{VAULT}/Projects/*/notes/*.md"
+grep -rni "keyword" "{VAULT}/Projects/*/notes/"
 
 # Search notation
-git grep "symbol.*x" -- "{VAULT}/Projects/{TARGET}/notes/notation.md"
+grep -n "symbol.*x" "{VAULT}/Projects/{TARGET}/notes/notation.md"
 ```
+
+Only when the vault is verified to be a tracked directory inside the current
+git repository may `git grep` be used as a faster equivalent.
 
 ## 3. Search Specs
 

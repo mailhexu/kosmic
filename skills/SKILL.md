@@ -1,7 +1,7 @@
 ---
 name: kosmic
-description: Spec-driven Project knowledge with atomic Usage and Development Skill Projections, quick tasks, PRD→Architecture→Stories, TDD implementation, and mandatory review.
-version: 3.1.0
+description: Orchestrate project knowledge and spec-driven work when the user wants durable notes captured or maintained, a small low-risk change executed, a feature specified (PRD→Architecture→Stories), a story implemented or reviewed, or a Project Skill Pair initialized, migrated, generated, or installed.
+version: 4.0.0
 license: MIT
 compatibility: markdown-agent-skill, python>=3.11
 ---
@@ -32,14 +32,14 @@ Before any task, resolve `{VAULT}`, `{TARGET}`, and `{PROJECT_ID}`:
 7. DEVELOPMENT_SKILL = {PROJECT_ID}-development.
 ```
 
-**STOP**: Do not proceed until the vault Project and immutable Project Identifier resolve. Contributor workflows must also resolve the canonical Skill Pair.
+**STOP**: Do not proceed until the vault Project and immutable Project Identifier resolve. Contributor workflows must also resolve the canonical Skill Pair. **Exception (bootstrap)**: Task 1: Initialize and the migration in `references/task_project_skills.md` run precisely when these prerequisites are missing — they are exempt from this STOP, from the Search-before-any-task checkpoint, and from the canonical-pair requirement, which they establish.
 
 ## Required Procedure Skills (MANDATORY)
 
 Before Contributor work, verify the required procedure-skill set for the active Install Adapter:
 
 ```bash
-python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex}
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex|omp}
 ```
 
 Missing skills or an unsupported adapter → stop and follow the required-procedure-skills section of the installed `README.md`. Kosmic is the sole workflow orchestrator: the required skills supply bounded methods and never replace Kosmic's vault records, approval gates, Project Skill Pair, or Projection CLI.
@@ -140,6 +140,7 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 | Durable knowledge learned | Task 2: Add Note | Atomic note, TOC update, log entry | Required after learning durable knowledge |
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
 | Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` fails until every declared pack has a linking draft-or-stable note |
+| Reusable symbolic result or equation-level defect | Task M: Math Note | Executable SymPy derivation, paired note, index row, verified links | Derivation-first; `check-math`, structural validation, review, and completion linkage gate |
 
 ---
 
@@ -171,9 +172,9 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 **Load**: `references/task_add_note.md`
 
-**When**: Any time knowledge is found -- reading code, fixing bugs, making decisions, writing docs, end of session.
+**When**: Verified knowledge emerges that is durable, reusable, and not already represented — a root cause, a convention, a decision, a correction to an existing note.
 
-**Rule**: Knowledge in your head → must be in notes.
+**Rule**: One-off activity, session state, and bare error text stay in the log or an Evidence Pack (Task 9), never in notes. One concept = one authoritative note; update rather than duplicate.
 
 **Always do**: Update log + Update TOC.
 
@@ -265,6 +266,18 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 **Rule**: Evidence → root-cause analysis → draft notes. Never duplicate an existing note; update it. Promotion to stable is human-gated.
 
 ---
+### Task M: Math Note
+
+**Load**: `references/task_math_note.md`
+
+**When**: A reusable symbolic result is created or corrected, a note or implementation relies on a mathematical equation, or an equation-level discrepancy appears.
+
+**Rule**: Derivation first. The executable SymPy file is authoritative; generated results are never hand-edited. Human review remains mandatory for assumptions, units, domains, and physical conventions.
+
+**Gate**: Stable dependent notes require exact result/exposition markers. Math-derived implementation requires declared derivations and finite implementation files before completion.
+
+---
+
 
 
 
@@ -272,21 +285,12 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 **This section defines the mandatory workflow for feature development. The agent MUST follow these steps in order. Skipping steps is not allowed for feature work.** Small, low-risk work may use Task 0: Quick Task when it satisfies the Quick Task guardrails.
 
-### User Guide: How to Use the Spec Workflow
+### User Guide
 
-When you want to build a new feature or project, tell the agent:
-
-1. **"Create a PRD for {feature}"** → Agent creates PRD, presents it for your review
-2. **"Approve the PRD"** (or request changes) → Agent updates status
-3. **"Research {topic} before architecture"** (optional, Task R) → Agent writes a research memo with findings and recommendations
-4. **"Create architecture"** → Agent creates architecture doc with ADRs
-5. **"Approve architecture"** → Agent updates status
-6. **"Break into epics and stories"** → Agent creates epics and stories
-7. **"Approve story {N}"** → Agent marks story ready for implementation
-8. **"Implement story {N}"** → Agent follows TDD workflow
-9. **"Review story {N}"** → Agent performs code review
-
-You can also say **"Plan and build {feature}"** and the agent will walk you through each step, pausing for your approval at each gate.
+Human-facing walkthroughs, example prompts, and gate-by-gate session scripts
+live in the installed `README.md` — load them only when guiding a user through
+the workflow. Gate points and compliance rules below are the authoritative
+agent contract.
 
 ### Agent Compliance Rules
 
@@ -329,62 +333,16 @@ Use Task 0 when the user explicitly asks for a simple fix/change or when the tas
 
 ### Workflow with Gate Points
 
-```
-┌──────────────────────────────────────────────────┐
-│  STEP 1: Create PRD (Task 5)                     │
-│  → Write PRD from user's feature description     │
-│  → Present to user                               │
-└──────────────────┬───────────────────────────────┘
-                   │
-            ┌──────▼──────┐
-            │  GATE: User  │
-            │  approves    │ ← Agent MUST wait here
-            │  PRD?        │
-            └──────┬──────┘
-                   │ yes
-┌──────────────────▼───────────────────────────────┐
-│  OPTIONAL: Research (Task R)                     │
-│  → Investigate open questions and options        │
-│  → Link findings from Architecture               │
-└──────────────────┬───────────────────────────────┘
-                   │
-┌──────────────────▼───────────────────────────────┐
-│  STEP 2: Create Architecture (Task 5)            │
-│  → Document ADRs, system design, test strategy   │
-│  → Present to user                               │
-└──────────────────┬───────────────────────────────┘
-                   │
-            ┌──────▼──────┐
-            │  GATE: User  │
-            │  approves    │ ← Agent MUST wait here
-            │  Arch?       │
-            └──────┬──────┘
-                   │ yes
-┌──────────────────▼───────────────────────────────┐
-│  STEP 3: Create Epics + Stories (Task 5)         │
-│  → Break into epics, then stories                │
-│  → Present story list to user                    │
-└──────────────────┬───────────────────────────────┘
-                   │
-            ┌──────▼──────┐
-            │  GATE: User  │
-            │  approves    │ ← Agent MUST wait here
-            │  Stories?    │
-            └──────┬──────┘
-                   │ yes (per story)
-┌──────────────────▼───────────────────────────────┐
-│  STEP 4: Implement Story (Task 6)                │
-│  → Research → Tests (TDD) → Code → Review        │
-└──────────────────┬───────────────────────────────┘
-                   │
-            ┌──────▼──────┐
-            │  GATE: Code  │
-            │  review      │ ← MANDATORY, no exceptions
-            │  passes?     │
-            └──────┬──────┘
-                   │ yes
-              Story: done
-```
+Feature work proceeds strictly in order; each numbered gate requires the
+user's explicit decision before the next step (procedure detail lives in the
+task references — load only the one you are executing):
+
+1. **PRD** (Task 5) → GATE: user approves the PRD (or requests changes)
+2. **Research** (Task R, optional, post-PRD) → feeds Architecture, no new gate
+3. **Architecture** (Task 5) → GATE: user approves
+4. **Epics + Stories** (Task 5) → GATE: user approves (per story)
+5. **Implement Story** (Task 6: Research → TDD → Code) → GATE: convergent code
+   review (Task 7) passes — mandatory, no exceptions → story `done`
 
 ### Status Lifecycle
 
@@ -424,6 +382,7 @@ Is this a NEW Project/package?
                 │   Create spec? → Task 5: Create Spec
                 │   Research before architecture? → Task R: Research
                 │   Implement story? → Task 6: Implement Story
+                │   Create/correct reusable math? → Task M: Math Note
                 │   Review spec/code? → Task 7: Review Spec
                 └─ NO →
                     Did I UNDERSTAND something?
@@ -434,28 +393,10 @@ Is this a NEW Project/package?
                         └─ NO → Continue working
 ```
 
-## Typical Session Flow
-
-### For Knowledge Work
-1. **Start**: Search (Task 3) for relevant knowledge
-2. **Work**: Add Note (Task 2) whenever you understand something
-3. **End**: Review (Task 4) session notes, update log
-
-### For Feature Development (Spec-Driven)
-1. **Plan**: Create Spec (Task 5) - PRD → optional Research → Architecture → Epic → Story
-2. **Gate**: Present each spec to user, wait for approval (Task 7)
-3. **Implement**: Implement Story (Task 6) - Research → Tests → Code → Review
-4. **Capture**: Add Note (Task 2) - Document what you learned
-
-### For Simple Implementation Work (Quick Task)
-1. **Scope**: Create Quick Task (Task 0) with acceptance criteria
-2. **Gate**: Get user approval unless the user already gave explicit implementation approval
-3. **Implement**: Make the minimal change, test, and review
-4. **Capture**: Update log and add notes for durable knowledge
 
 ## Mandatory Checkpoints
 
-**Before ANY task**: Search (Task 3) for keywords
+**Before ANY task** (except bootstrap Task 1 / migration): Search (Task 3) for keywords
 
 **After ANY task**: 
 - Did you learn something? → Add Note (Task 2)
@@ -464,6 +405,7 @@ Is this a NEW Project/package?
 **Before finishing session**: Review (Task 4) - verify notes extracted
 
 **For Story completion**: Code review (Task 7) is MANDATORY - no exceptions
+**For mathematical work**: Task M runs derivation-first; `check-math` and source linkage must pass before completion
 
 **For Quick Task completion**: Review and verification are MANDATORY before status: done
 

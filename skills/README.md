@@ -1,4 +1,4 @@
-# Kosmic Skill (v3.0.0)
+# Kosmic Skill
 
 Spec-driven Project knowledge for reliable AI-assisted development and usage across agents. Kosmic remains the workflow orchestrator while a deterministic Projection CLI generates each Project's atomic Usage and Development Skill Pair.
 
@@ -43,7 +43,7 @@ Task R: Research → Architecture
 Create PRD → Review PRD → optional Task R → Create Architecture → Review Architecture → Create Stories → Review Story → Implement Story → Code Review
 ```
 
-Kosmic requires named-skill adapters; agents without them are unsupported.
+Contributor workflows require a named-skill adapter (opencode, claude-code, codex, omp); agents without named skills are supported as consumers through the pointer adapter (`install --adapter pointer`).
 
 ## Required procedure skills
 
@@ -66,6 +66,10 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 │   ├── index.md                 # reserved OKF progressive-disclosure index
 │   ├── notation.md
 │   └── {topic}.md               # line-1 YAML; stable notes declare Audience Scope
+├── mathdocs/                   # vault-only executable SymPy authorities
+│   ├── index.md
+│   ├── {slug}.py
+│   └── {slug}.md
 ├── log/
 │   └── {TARGET}-{DATE}.md
 ├── specs/
@@ -98,6 +102,7 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 | Durable knowledge learned | Task 2: Add Note | Atomic note, TOC update, log entry | Required after learning durable knowledge |
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
 | Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` enforces evidence linkage |
+| Reusable symbolic result or equation defect | Task M: Math Note | Executable derivation, paired note, registry row, source links | Derivation-first; check, review, and completion gates |
 
 ### Task 0: Quick Task
 Plan and execute a small, low-risk implementation task.
@@ -211,13 +216,20 @@ Consolidate captured Evidence Packs (`evidence/{YYYY-MM-DD}-{slug}/`, append-onl
 
 **Gate**: Draft-only output; `check-completion` fails until every declared pack has a linking draft-or-stable note; promotion to stable is human-gated. `generate` records publications in the `impact.md` ledger automatically.
 
+### Task M: Math Note
+Create and maintain one executable SymPy derivation plus its paired Math Derivation note. Search `mathdocs/index.md` first, execute trusted code through `check-math`, review assumptions/units/conventions, and link dependent notes and implementation with stable `MathDoc:` identifiers.
+
+**Reference**: `references/task_math_note.md`
+
+**Gate**: The executable file is authoritative. `check-math --update` alone does not establish physical correctness; human review precedes stable promotion.
+
 ## Project Knowledge Format
 
 `notes/` is one authoritative Obsidian-readable OKF v0.2 bundle—not an authoring tree plus an export tree. Its `index.md` contains only the required `okf_version: "0.2"` frontmatter. Every other concept starts with YAML on line 1, declares `type`, uses `status: draft | stable | deprecated`, and links with relative standard Markdown. Kosmic-specific fields such as `audience`, confidence, validation procedure, and provenance remain valid extension fields.
 
 ## Project Skill Pair Lifecycle
 
-Stable notes declare `audience: development`, `usage`, or `both`. Usage receives `usage` and `both`; Development receives `development` and requires Usage for shared behavior. Run the Projection CLI through the commands in `references/task_project_skills.md` to generate, validate, review, migrate, check completion, or install the pair.
+Stable notes declare `audience: development`, `usage`, or `both`. Usage receives `usage` and `both`; Development receives `development` and requires Usage for shared behavior. Vault-only `mathdocs/` pairs remain outside both projections. Run the Projection CLI through the commands in `references/task_project_skills.md` to generate, validate, review, migrate, execute math checks, check completion, or install the pair.
 
 Canonical packages remain in the Project vault and are themselves OKF v0.2 bundles. OpenCode, Claude Code, and Codex adapters expose them through native skill directories; the pointer adapter supports agents without named skills.
 

@@ -15,14 +15,16 @@ import os
 import re
 import shutil
 import sys
+import socket
+import subprocess
 import tempfile
-from datetime import date
+from datetime import date, datetime, timezone
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Iterable, Sequence
 from urllib.parse import quote, unquote
 
-GENERATOR_VERSION = 2
+GENERATOR_VERSION = 3
 OKF_VERSION = "0.2"
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -40,6 +42,49 @@ PROVENANCE_HASH_RE = re.compile(r"^[0-9a-f]{40}$|^[0-9a-f]{64}$")
 LEDGER_KEYS = ("date", "kind", "targets", "refs", "outcome", "reason")
 LEDGER_KINDS = {"publication", "decision"}
 LEDGER_OUTCOMES = {"published", "accepted", "rejected"}
+MATHDOCS_DIR_NAME = "mathdocs"
+MATH_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+MATH_INDEX_HEADER = (
+    "# Math Derivations\n\n"
+    "| Derivation | Status | Result summary |\n"
+    "|------------|--------|----------------|\n"
+)
+MATH_INDEX_ROW_RE = re.compile(
+    r"^\|\s*\[([a-z0-9]+(?:-[a-z0-9]+)*)\]\(([^)]+)\)\s*"
+    r"\|\s*(draft|stable|deprecated)\s*\|\s*([^|\n]+?)\s*\|$"
+)
+SHA256_RE = re.compile(r"^[0-9a-f]{64}$")
+VERSION_RE = re.compile(r"^\d+\.\d+(?:\.\d+)?(?:[A-Za-z0-9.+-]*)$")
+UTC_TIMESTAMP_RE = re.compile(
+    r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$"
+)
+MATH_RESULT_NAME_RE = re.compile(r"^[a-z][a-z0-9_]*$")
+MATH_RESULTS_START = "<!-- KOSMIC-MATH-RESULTS:START -->"
+MATH_RESULTS_END = "<!-- KOSMIC-MATH-RESULTS:END -->"
+MATH_RESULT_RE = re.compile(
+    r"<!-- MathDoc: ([a-z0-9]+(?:-[a-z0-9]+)*)/"
+    r"([a-z0-9]+(?:-[a-z0-9]+)*)#([a-z][a-z0-9_]*) -->\n"
+    r"\$\$\n(.*?)\n\$\$\n"
+    r"<!-- KOSMIC-SREPR: (.*?) -->\n",
+    re.DOTALL,
+)
+NOTE_MATH_RESULT_RE = re.compile(
+    r"<!-- MathDoc: ([a-z0-9]+(?:-[a-z0-9]+)*)/"
+    r"([a-z0-9]+(?:-[a-z0-9]+)*)#([a-z][a-z0-9_]*) -->\n"
+    r"\$\$\n(.*?)\n\$\$",
+    re.DOTALL,
+)
+NOTE_MATH_EXPOSITION_RE = re.compile(
+    r"<!-- MathDoc-Exposition: ([a-z0-9]+(?:-[a-z0-9]+)*)/"
+    r"([a-z0-9]+(?:-[a-z0-9]+)*) -->\n"
+    r"\$\$\n(.*?)\n\$\$",
+    re.DOTALL,
+)
+IMPLEMENTATION_MATHDOC_RE = re.compile(
+    r"MathDoc:\s*([a-z0-9]+(?:-[a-z0-9]+)*)/"
+    r"([a-z0-9]+(?:-[a-z0-9]+)*)"
+    r"(?:#([a-z][a-z0-9_]*))?(?![A-Za-z0-9_-])"
+)
 
 REQUIRED_PROCEDURE_SKILLS = (
     "tdd",
@@ -103,6 +148,10 @@ class Project:
     def ledger_path(self) -> Path:
         return self.root / LEDGER_NAME
 
+    @property
+    def mathdocs_dir(self) -> Path:
+        return self.root / MATHDOCS_DIR_NAME
+
 
 @dataclass(frozen=True)
 class Note:
@@ -121,6 +170,35 @@ class ProjectionPlan:
     usage_notes: tuple[Note, ...]
     development_notes: tuple[Note, ...]
     unscoped_notes: tuple[str, ...]
+
+
+@dataclass(frozen=True)
+class MathResult:
+    name: str
+    srepr: str
+    latex: str
+
+
+@dataclass(frozen=True)
+class MathEntry:
+    slug: str
+    script_path: Path
+    note_path: Path
+    status: str
+    document: MarkdownDocument
+
+
+    source_sha256: str | None
+    python_version: str | None
+    sympy_version: str | None
+    verified_at: str | None
+    verified_host: str | None
+    verified_directory: str | None
+    results: tuple[MathResult, ...]
+@dataclass(frozen=True)
+class MathRegistry:
+    project_id: str
+    entries: dict[str, MathEntry]
 
 
 def sha256_bytes(content: bytes) -> str:
@@ -373,7 +451,86 @@ def validate_note_evidence_paths(value: Any, relative_path: str, project_root: P
             )
 
 
-def validate_notes_bundle(notes_dir: Path) -> None:
+def validate_note_math_markers(
+    document: MarkdownDocument,
+    relative: str,
+    registry: MathRegistry,
+) -> None:
+    declared_paths = as_path_list(document.metadata.get("derivations"))
+    declared: set[str] = set()
+    for path in declared_paths:
+        match = re.fullmatch(
+            r"mathdocs/([a-z0-9]+(?:-[a-z0-9]+)*)\.py", path
+        )
+        if match is None:
+            raise KosmicError(
+                f"{relative} derivations entry must be mathdocs/<slug>.py: {path}"
+            )
+        slug = match.group(1)
+        entry = registry.entries.get(slug)
+        if entry is None or entry.status == "deprecated":
+            raise KosmicError(
+                f"{relative} derivations references unknown active MathDoc: {path}"
+            )
+        declared.add(slug)
+
+    outside_lines: list[str] = []
+
+    def collect(line: str) -> str:
+        outside_lines.append(line)
+        return line
+
+    rewrite_outside_fences(document.body, collect)
+    outside = "".join(outside_lines)
+    result_matches = list(NOTE_MATH_RESULT_RE.finditer(outside))
+    exposition_matches = list(NOTE_MATH_EXPOSITION_RE.finditer(outside))
+    display_delimiters = len(re.findall(r"(?m)^\s*\$\$\s*$", outside))
+    if display_delimiters % 2:
+        raise KosmicError(f"{relative} contains an unmatched display-math delimiter")
+    if display_delimiters // 2 != len(result_matches) + len(exposition_matches):
+        raise KosmicError(
+            f"{relative} display math requires one MathDoc marker per equation"
+        )
+    if outside.count("<!-- MathDoc:") != len(result_matches):
+        raise KosmicError(f"{relative} contains a malformed MathDoc result marker")
+    if outside.count("<!-- MathDoc-Exposition:") != len(exposition_matches):
+        raise KosmicError(f"{relative} contains a malformed MathDoc exposition marker")
+
+    for match in result_matches:
+        project_id, slug, name, latex = match.groups()
+        if project_id != registry.project_id:
+            raise KosmicError(
+                f"{relative} MathDoc project id must be {registry.project_id}"
+            )
+        if slug not in declared:
+            raise KosmicError(
+                f"{relative} MathDoc {slug} requires derivations: [mathdocs/{slug}.py]"
+            )
+        entry = registry.entries[slug]
+        result = next((item for item in entry.results if item.name == name), None)
+        if result is None:
+            raise KosmicError(f"{relative} references unknown MathDoc {slug}#{name}")
+        if latex.replace("\r\n", "\n") != result.latex:
+            raise KosmicError(
+                f"{relative} MathDoc {slug}#{name} LaTeX differs from verified result"
+            )
+
+    for match in exposition_matches:
+        project_id, slug, _ = match.groups()
+        if project_id != registry.project_id:
+            raise KosmicError(
+                f"{relative} MathDoc exposition project id must be {registry.project_id}"
+            )
+        if slug not in declared:
+            raise KosmicError(
+                f"{relative} MathDoc exposition {slug} requires "
+                f"derivations: [mathdocs/{slug}.py]"
+            )
+
+
+def validate_notes_bundle(
+    notes_dir: Path, math_registry: MathRegistry | None = None
+) -> None:
     validate_okf_bundle(notes_dir, require_index=True, forbid_log=True)
     project_root = notes_dir.parent
     for path in sorted(notes_dir.rglob("*.md")):
@@ -393,8 +550,254 @@ def validate_notes_bundle(notes_dir: Path) -> None:
             validate_note_evidence_paths(
                 document.metadata.get("evidence"), relative, project_root
             )
+            if math_registry is not None:
+                validate_note_math_markers(document, relative, math_registry)
         if has_nonportable_wikilink(document.body):
             raise KosmicError(f"non-portable Wikilink in Project Knowledge: {relative}")
+
+
+def validate_math_metadata(
+    slug: str,
+    script_path: Path,
+    status: str,
+    metadata: dict[str, Any],
+    require_current_source: bool,
+) -> dict[str, str | None]:
+    fields = (
+        "source_sha256",
+        "python_version",
+        "sympy_version",
+        "verified_at",
+        "verified_host",
+        "verified_directory",
+    )
+    values = {
+        field: str(metadata.get(field) or "").strip() or None for field in fields
+    }
+    if status == "stable":
+        missing = [field for field in fields if values[field] is None]
+        if missing:
+            raise KosmicError(
+                f"stable Math Derivation {slug} requires metadata: "
+                + ", ".join(missing)
+            )
+    source_sha256 = values["source_sha256"]
+    if source_sha256 is not None:
+        if not SHA256_RE.fullmatch(source_sha256):
+            raise KosmicError(
+                f"Math Derivation {slug} source_sha256 must be lowercase SHA-256"
+            )
+        if (
+            require_current_source
+            and source_sha256 != sha256_bytes(script_path.read_bytes())
+        ):
+            raise KosmicError(
+                f"Math Derivation {slug} source_sha256 does not match {slug}.py"
+            )
+    for field in ("python_version", "sympy_version"):
+        value = values[field]
+        if value is not None and not VERSION_RE.fullmatch(value):
+            raise KosmicError(
+                f"Math Derivation {slug} {field} is not a valid version"
+            )
+    verified_at = values["verified_at"]
+    if verified_at is not None and not UTC_TIMESTAMP_RE.fullmatch(verified_at):
+        raise KosmicError(
+            f"Math Derivation {slug} verified_at must be an ISO-8601 UTC timestamp"
+        )
+    verified_directory = values["verified_directory"]
+    if verified_directory is not None and not Path(verified_directory).is_absolute():
+        raise KosmicError(
+            f"Math Derivation {slug} verified_directory must be absolute"
+        )
+    return values
+
+
+
+
+def render_math_results(
+    project_id: str, slug: str, results: Sequence[MathResult]
+) -> str:
+    blocks = "".join(
+        f"<!-- MathDoc: {project_id}/{slug}#{result.name} -->\n"
+        f"$$\n{result.latex}\n$$\n"
+        f"<!-- KOSMIC-SREPR: {result.srepr} -->\n"
+        for result in results
+    )
+    return (
+        f"{MATH_RESULTS_START}\n"
+        "## Verified Results\n\n"
+        f"{blocks}"
+        f"{MATH_RESULTS_END}"
+    )
+
+
+def parse_math_results(
+    body: str, project_id: str, slug: str, status: str
+) -> tuple[MathResult, ...]:
+    starts = body.count(MATH_RESULTS_START)
+    ends = body.count(MATH_RESULTS_END)
+    if starts == 0 and ends == 0 and status != "stable":
+        return ()
+    if starts != 1 or ends != 1:
+        raise KosmicError(
+            f"Math Derivation {slug} must contain exactly one generated result region"
+        )
+    start = body.index(MATH_RESULTS_START)
+    end = body.index(MATH_RESULTS_END, start) + len(MATH_RESULTS_END)
+    region = body[start:end]
+    matches = list(MATH_RESULT_RE.finditer(region))
+    results = tuple(
+        MathResult(
+            name=match.group(3),
+            latex=match.group(4).replace("\r\n", "\n"),
+            srepr=match.group(5).replace("\r\n", "\n"),
+        )
+        for match in matches
+        if match.group(1) == project_id and match.group(2) == slug
+    )
+    if not results:
+        raise KosmicError(f"Math Derivation {slug} has no verified results")
+    names = [result.name for result in results]
+    if names != sorted(names) or len(names) != len(set(names)):
+        raise KosmicError(
+            f"Math Derivation {slug} result names must be sorted and unique"
+        )
+    if region != render_math_results(project_id, slug, results):
+        raise KosmicError(
+            f"Math Derivation {slug} generated result region is malformed"
+        )
+    return results
+
+
+def load_math_registry(
+    project: Project,
+    mathdocs_dir: Path | None = None,
+    *,
+    require_current_source: bool = True,
+) -> MathRegistry:
+    root = mathdocs_dir or project.mathdocs_dir
+    index_path = root / "index.md"
+    if not root.is_dir() or not index_path.is_file():
+        raise KosmicError(
+            f"missing Project mathdocs index: {index_path}; run init or migrate"
+        )
+
+    scripts: dict[str, Path] = {}
+    notes: dict[str, Path] = {}
+    for path in sorted(root.iterdir()):
+        if not path.is_file() or path.name == "index.md":
+            continue
+        if path.suffix not in {".py", ".md"}:
+            continue
+        slug = path.stem
+        if not MATH_SLUG_RE.fullmatch(slug):
+            raise KosmicError(f"invalid mathdocs slug in {path.name}")
+        target = scripts if path.suffix == ".py" else notes
+        target[slug] = path
+
+    missing_notes = sorted(set(scripts) - set(notes))
+    missing_scripts = sorted(set(notes) - set(scripts))
+    if missing_notes or missing_scripts:
+        details = [f"{slug}.py" for slug in missing_notes]
+        details.extend(f"{slug}.md" for slug in missing_scripts)
+        raise KosmicError(
+            "unpaired mathdocs files: " + ", ".join(details)
+        )
+
+    entries: dict[str, MathEntry] = {}
+    for slug in sorted(scripts):
+        note_path = notes[slug]
+        document = require_frontmatter(
+            note_path.read_text(encoding="utf-8"), f"mathdocs/{note_path.name}"
+        )
+        if str(document.metadata.get("type") or "").strip() != "Math Derivation":
+            raise KosmicError(
+                f"mathdocs/{note_path.name} type must be Math Derivation"
+            )
+        status = str(document.metadata.get("status") or "").strip().lower()
+        if status not in NOTE_STATUSES:
+            raise KosmicError(
+                f"invalid Math Derivation status '{status}' in {note_path.name}"
+            )
+        if str(document.metadata.get("derivation") or "").strip() != f"{slug}.py":
+            raise KosmicError(
+                f"mathdocs/{note_path.name} derivation must be {slug}.py"
+            )
+        metadata = validate_math_metadata(
+            slug,
+            scripts[slug],
+            status,
+            document.metadata,
+            require_current_source,
+        )
+        results = parse_math_results(
+            document.body, project.project_id, slug, status
+        )
+        entries[slug] = MathEntry(
+            slug=slug,
+            script_path=scripts[slug],
+            note_path=note_path,
+            status=status,
+            document=document,
+            source_sha256=metadata["source_sha256"],
+            python_version=metadata["python_version"],
+            sympy_version=metadata["sympy_version"],
+            verified_at=metadata["verified_at"],
+            verified_host=metadata["verified_host"],
+            verified_directory=metadata["verified_directory"],
+            results=results,
+        )
+
+    index_text = index_path.read_text(encoding="utf-8")
+    if not index_text.startswith(MATH_INDEX_HEADER):
+        raise KosmicError(
+            "mathdocs/index.md must start with the reserved Math Derivations table"
+        )
+    rows: dict[str, tuple[str, str]] = {}
+    for line in index_text.splitlines()[4:]:
+        if not line.strip() or line.lstrip().startswith("<!--"):
+            continue
+        if not line.lstrip().startswith("|"):
+            raise KosmicError(f"invalid mathdocs index line: {line}")
+        match = MATH_INDEX_ROW_RE.fullmatch(line.strip())
+        if match is None:
+            raise KosmicError(f"invalid mathdocs index row: {line}")
+        slug, href, status, summary = match.groups()
+        if slug in rows:
+            raise KosmicError(f"duplicate mathdocs index row: {slug}")
+        if href != f"{slug}.md":
+            raise KosmicError(
+                f"mathdocs index link for {slug} must be {slug}.md"
+            )
+        rows[slug] = (status, summary.strip())
+
+    active = {slug for slug, entry in entries.items() if entry.status != "deprecated"}
+    unknown = sorted(set(rows) - active)
+    missing = sorted(active - set(rows))
+    if unknown:
+        raise KosmicError(
+            "mathdocs index references unknown or deprecated derivations: "
+            + ", ".join(unknown)
+        )
+    if missing:
+        raise KosmicError(
+            "mathdocs index is missing derivations: " + ", ".join(missing)
+        )
+    for slug in sorted(active):
+        row_status, _ = rows[slug]
+        if row_status != entries[slug].status:
+            raise KosmicError(
+                f"mathdocs index status for {slug} is {row_status}; "
+                f"note status is {entries[slug].status}"
+            )
+    return MathRegistry(project_id=project.project_id, entries=entries)
+
+
+def validate_project_content(project: Project) -> MathRegistry:
+    registry = load_math_registry(project)
+    validate_notes_bundle(project.notes_dir, registry)
+    return registry
 
 def validate_evidence_pack(pack_dir: Path) -> None:
     slug = pack_dir.name
@@ -660,7 +1063,7 @@ def normalize_audience(value: Any, relative_path: str) -> tuple[str, bool]:
 def collect_projection_plan(project: Project) -> ProjectionPlan:
     if not project.notes_dir.is_dir():
         raise KosmicError(f"missing Project notes directory: {project.notes_dir}")
-    validate_notes_bundle(project.notes_dir)
+    validate_project_content(project)
 
     usage: list[Note] = []
     development: list[Note] = []
@@ -1006,6 +1409,7 @@ def validate_current_projection(project: Project, output: Path) -> None:
             raise KosmicError("canonical Skill Pair is stale; regenerate it from Project Knowledge")
 
 
+# MathDoc: kosmic/atomic-publication-state
 def publish_directory(staged: Path, destination: Path) -> None:
     destination.parent.mkdir(parents=True, exist_ok=True)
     backup = destination.parent / f".{destination.name}.backup"
@@ -1324,12 +1728,20 @@ def migrate_notes_bundle(project: Project) -> None:
                 newline="\n",
             )
 
-        validate_notes_bundle(temporary)
+        validate_notes_bundle(temporary, load_math_registry(project))
         publish_directory(temporary, notes_dir)
     except Exception:
         if temporary.exists():
             shutil.rmtree(temporary)
         raise
+
+
+def ensure_mathdocs_index(root: Path) -> None:
+    mathdocs = root / MATHDOCS_DIR_NAME
+    mathdocs.mkdir(parents=True, exist_ok=True)
+    index = mathdocs / "index.md"
+    if not index.exists():
+        atomic_write(index, MATH_INDEX_HEADER)
 
 
 def ensure_project_structure(root: Path) -> None:
@@ -1342,7 +1754,7 @@ def ensure_project_structure(root: Path) -> None:
         root / "specs" / "stories",
     ):
         path.mkdir(parents=True, exist_ok=True)
-
+    ensure_mathdocs_index(root)
 
 def assign_project_id(root: Path, project_id: str) -> Project:
     root = root.expanduser().resolve()
@@ -1580,11 +1992,434 @@ def note_links_evidence_pack(notes_dir: Path, slug: str) -> bool:
     return False
 
 
-def check_completion(project: Project, work_item: Path) -> None:
+def parse_math_protocol(stdout: str, slug: str) -> tuple[str, str, tuple[MathResult, ...]]:
+    try:
+        payload = json.loads(stdout)
+    except (json.JSONDecodeError, UnicodeError) as error:
+        raise KosmicError(
+            f"check-math {slug} protocol: stdout is not exactly one JSON object; "
+            "remedy: emit only the version-1 JSON payload"
+        ) from error
+    if not isinstance(payload, dict) or set(payload) != {
+        "schema_version",
+        "python_version",
+        "sympy_version",
+        "results",
+    }:
+        raise KosmicError(
+            f"check-math {slug} protocol: invalid top-level schema; "
+            "remedy: emit exactly schema_version, python_version, sympy_version, results"
+        )
+    if type(payload["schema_version"]) is not int or payload["schema_version"] != 1:
+        raise KosmicError(
+            f"check-math {slug} protocol: unsupported schema_version; "
+            "remedy: emit schema_version 1"
+        )
+    python_version = payload["python_version"]
+    sympy_version = payload["sympy_version"]
+    if (
+        not isinstance(python_version, str)
+        or not VERSION_RE.fullmatch(python_version)
+        or not isinstance(sympy_version, str)
+        or not VERSION_RE.fullmatch(sympy_version)
+    ):
+        raise KosmicError(
+            f"check-math {slug} protocol: invalid Python/SymPy versions; "
+            "remedy: emit dotted version strings"
+        )
+    raw_results = payload["results"]
+    if not isinstance(raw_results, list) or not raw_results:
+        raise KosmicError(
+            f"check-math {slug} protocol: results must be non-empty; "
+            "remedy: emit at least one named result"
+        )
+    results: list[MathResult] = []
+    for raw_result in raw_results:
+        if not isinstance(raw_result, dict) or set(raw_result) != {
+            "name",
+            "srepr",
+            "latex",
+        }:
+            raise KosmicError(
+                f"check-math {slug} protocol: invalid result schema; "
+                "remedy: emit exactly name, srepr, and latex"
+            )
+        name = raw_result["name"]
+        srepr = raw_result["srepr"]
+        latex = raw_result["latex"]
+        if not isinstance(name, str) or not MATH_RESULT_NAME_RE.fullmatch(name):
+            raise KosmicError(
+                f"check-math {slug} protocol: invalid result name; "
+                "remedy: use [a-z][a-z0-9_]*"
+            )
+        if not isinstance(srepr, str) or not srepr:
+            raise KosmicError(
+                f"check-math {slug} protocol: empty srepr for {name}; "
+                "remedy: emit the canonical SymPy srepr"
+            )
+        if not isinstance(latex, str) or not latex:
+            raise KosmicError(
+                f"check-math {slug} protocol: empty latex for {name}; "
+                "remedy: emit the rendered LaTeX"
+            )
+        results.append(
+            MathResult(
+                name=name,
+                srepr=srepr.replace("\r\n", "\n"),
+                latex=latex.replace("\r\n", "\n"),
+            )
+        )
+    names = [result.name for result in results]
+    if names != sorted(names) or len(names) != len(set(names)):
+        raise KosmicError(
+            f"check-math {slug} protocol: result names are not sorted and unique; "
+            "remedy: sort and deduplicate results by name"
+        )
+    return python_version, sympy_version, tuple(results)
+
+
+def execute_math_entry(entry: MathEntry, timeout: float) -> tuple[str, str, tuple[MathResult, ...]]:
+    environment = os.environ.copy()
+    environment.update(
+        {
+            "PYTHONHASHSEED": "0",
+            "PYTHONIOENCODING": "utf-8",
+            "LC_ALL": "C.UTF-8",
+            "LANG": "C.UTF-8",
+        }
+    )
+    try:
+        process = subprocess.run(
+            [sys.executable, entry.script_path.name, "--kosmic-json"],
+            cwd=entry.script_path.parent,
+            env=environment,
+            text=True,
+            encoding="utf-8",
+            capture_output=True,
+            timeout=timeout,
+            check=False,
+        )
+    except subprocess.TimeoutExpired as error:
+        raise KosmicError(
+            f"check-math {entry.slug} process: timed out after {timeout:g}s; "
+            "remedy: optimize the derivation or increase --timeout"
+        ) from error
+    if process.returncode != 0:
+        diagnostic = process.stderr.strip()
+        detail = f" ({diagnostic})" if diagnostic else ""
+        raise KosmicError(
+            f"check-math {entry.slug} process: exited {process.returncode}{detail}; "
+            "remedy: run the derivation directly and fix its error"
+        )
+    return parse_math_protocol(process.stdout, entry.slug)
+
+
+def selected_math_entries(
+    registry: MathRegistry, slugs: Sequence[str]
+) -> tuple[MathEntry, ...]:
+    selected = sorted(set(slugs)) if slugs else sorted(
+        slug for slug, entry in registry.entries.items() if entry.status != "deprecated"
+    )
+    if not selected:
+        raise KosmicError("check-math found no active derivations")
+    entries: list[MathEntry] = []
+    for slug in selected:
+        entry = registry.entries.get(slug)
+        if entry is None or entry.status == "deprecated":
+            raise KosmicError(
+                f"check-math selection: unknown active derivation {slug}; "
+                "remedy: choose a slug from mathdocs/index.md"
+            )
+        entries.append(entry)
+    return tuple(entries)
+
+
+def execute_math_entries(
+    entries: Sequence[MathEntry], timeout: float
+) -> tuple[
+    dict[str, tuple[str, str, tuple[MathResult, ...]]],
+    dict[str, str],
+]:
+    executed: dict[str, tuple[str, str, tuple[MathResult, ...]]] = {}
+    failures: dict[str, str] = {}
+    for entry in entries:
+        try:
+            executed[entry.slug] = execute_math_entry(entry, timeout)
+        except KosmicError as error:
+            failures[entry.slug] = str(error)
+    return executed, failures
+
+
+def report_math_statuses(
+    entries: Sequence[MathEntry], failures: dict[str, str]
+) -> None:
+    for entry in entries:
+        if entry.slug in failures:
+            print(f"{entry.slug}: FAIL - {failures[entry.slug]}", file=sys.stderr)
+        else:
+            print(f"{entry.slug}: PASS")
+    if failures:
+        passed = len(entries) - len(failures)
+        raise KosmicError(
+            f"check-math summary: {passed} passed, {len(failures)} failed"
+        )
+
+
+def update_math_note(
+    text: str,
+    project_id: str,
+    slug: str,
+    results: Sequence[MathResult],
+    metadata_updates: dict[str, str],
+) -> str:
+    lines = text.splitlines(keepends=True)
+    delimiters = [index for index, line in enumerate(lines) if line.strip() == "---"]
+    if len(delimiters) < 2:
+        raise KosmicError(f"mathdocs/{slug}.md is missing frontmatter")
+    start, end = delimiters[0], delimiters[1]
+    found: set[str] = set()
+    for index in range(start + 1, end):
+        if ":" not in lines[index]:
+            continue
+        key = lines[index].split(":", 1)[0].strip()
+        if key in metadata_updates:
+            newline = "\n" if lines[index].endswith("\n") else ""
+            lines[index] = f"{key}: {metadata_updates[key]}{newline}"
+            found.add(key)
+    missing = [
+        f"{key}: {value}\n"
+        for key, value in metadata_updates.items()
+        if key not in found
+    ]
+    lines[end:end] = missing
+    updated = "".join(lines)
+
+    rendered = render_math_results(project_id, slug, results)
+    if MATH_RESULTS_START in updated or MATH_RESULTS_END in updated:
+        if updated.count(MATH_RESULTS_START) != 1 or updated.count(MATH_RESULTS_END) != 1:
+            raise KosmicError(
+                f"Math Derivation {slug} must contain exactly one generated result region"
+            )
+        region_start = updated.index(MATH_RESULTS_START)
+        region_end = updated.index(MATH_RESULTS_END, region_start) + len(MATH_RESULTS_END)
+        return updated[:region_start] + rendered + updated[region_end:]
+
+    insertion = f"\n{rendered}\n"
+    corrections = updated.find("\n## Corrections")
+    if corrections >= 0:
+        return updated[:corrections] + insertion + updated[corrections:]
+    return updated.rstrip("\n") + insertion
+
+
+def update_mathdocs(
+    project: Project,
+    slugs: Sequence[str],
+    timeout: float,
+    source_root: Path,
+) -> tuple[str, ...]:
+    registry = load_math_registry(project, require_current_source=False)
+    validate_notes_bundle(project.notes_dir, registry)
+    entries = selected_math_entries(registry, slugs)
+    executed, failures = execute_math_entries(entries, timeout)
+    report_math_statuses(entries, failures)
+
+    timestamp = (
+        datetime.now(timezone.utc)
+        .isoformat(timespec="seconds")
+        .replace("+00:00", "Z")
+    )
+    source_directory = str(source_root.expanduser().resolve())
+    host = socket.gethostname()
+    temporary = Path(
+        tempfile.mkdtemp(prefix=".kosmic-mathdocs-", dir=project.root)
+    )
+    try:
+        shutil.copytree(project.mathdocs_dir, temporary, dirs_exist_ok=True)
+        for entry in entries:
+            python_version, sympy_version, results = executed[entry.slug]
+            staged_note = temporary / entry.note_path.name
+            staged_script = temporary / entry.script_path.name
+            updates = {
+                "source_sha256": sha256_bytes(staged_script.read_bytes()),
+                "python_version": python_version,
+                "sympy_version": sympy_version,
+                "verified_at": timestamp,
+                "verified_host": host,
+                "verified_directory": source_directory,
+            }
+            atomic_write(
+                staged_note,
+                update_math_note(
+                    staged_note.read_text(encoding="utf-8"),
+                    project.project_id,
+                    entry.slug,
+                    results,
+                    updates,
+                ),
+            )
+        load_math_registry(project, temporary)
+        publish_directory(temporary, project.mathdocs_dir)
+    finally:
+        if temporary.exists():
+            shutil.rmtree(temporary, ignore_errors=True)
+    load_math_registry(project)
+    return tuple(entry.slug for entry in entries)
+
+
+def check_math(
+    project: Project,
+    slugs: Sequence[str],
+    timeout: float,
+    *,
+    update: bool = False,
+    source_root: Path | None = None,
+) -> tuple[str, ...]:
+    if timeout <= 0:
+        raise KosmicError("check-math timeout must be positive")
+    print(
+        "warning: executing trusted Project derivation code without an OS sandbox",
+        file=sys.stderr,
+    )
+    if update:
+        return update_mathdocs(project, slugs, timeout, source_root or Path.cwd())
+
+    registry = validate_project_content(project)
+    entries = selected_math_entries(registry, slugs)
+    executable: list[MathEntry] = []
+    failures: dict[str, str] = {}
+    for entry in entries:
+        if entry.status != "stable":
+            failures[entry.slug] = (
+                f"check-math {entry.slug} note: status is {entry.status}; "
+                "remedy: verify and promote the Math Derivation note"
+            )
+        else:
+            executable.append(entry)
+    executed, process_failures = execute_math_entries(executable, timeout)
+    failures.update(process_failures)
+    for entry in executable:
+        if entry.slug in failures:
+            continue
+        python_version, sympy_version, results = executed[entry.slug]
+        if python_version != entry.python_version:
+            failures[entry.slug] = (
+                f"check-math {entry.slug} environment: python_version is "
+                f"{python_version}, recorded {entry.python_version}; "
+                "remedy: run check-math --update"
+            )
+        elif sympy_version != entry.sympy_version:
+            failures[entry.slug] = (
+                f"check-math {entry.slug} environment: sympy_version is "
+                f"{sympy_version}, recorded {entry.sympy_version}; "
+                "remedy: run check-math --update"
+            )
+        elif results != entry.results:
+            failures[entry.slug] = (
+                f"check-math {entry.slug} result: execution differs from "
+                "verified results; remedy: review the derivation and run "
+                "check-math --update"
+            )
+    report_math_statuses(entries, failures)
+    return tuple(entry.slug for entry in entries)
+
+
+def validate_math_implementation(
+    project: Project,
+    registry: MathRegistry,
+    document: MarkdownDocument,
+    source_root: Path,
+) -> None:
+    has_derivations = "derivations" in document.metadata
+    has_files = "math_implementation_files" in document.metadata
+    if not has_derivations and not has_files:
+        return
+    if not has_derivations or not has_files:
+        missing = "derivations" if not has_derivations else "math_implementation_files"
+        raise KosmicError(
+            f"math completion gate requires {missing} when either math field is declared"
+        )
+    slugs = as_string_list(document.metadata.get("derivations"))
+    file_references = as_path_list(document.metadata.get("math_implementation_files"))
+    if not slugs or not file_references:
+        raise KosmicError(
+            "math completion gate requires non-empty derivations and "
+            "math_implementation_files"
+        )
+    if len(slugs) != len(set(slugs)):
+        raise KosmicError("math completion gate derivations must be unique")
+    for slug in slugs:
+        if not MATH_SLUG_RE.fullmatch(slug):
+            raise KosmicError(f"invalid derivation slug in work item: {slug}")
+        entry = registry.entries.get(slug)
+        if entry is None or entry.status != "stable":
+            raise KosmicError(
+                f"work-item derivation is not stable and current: {slug}"
+            )
+
+    root = source_root.expanduser().resolve()
+    covered: set[str] = set()
+    for reference in file_references:
+        relative = Path(reference)
+        if relative.is_absolute() or ".." in relative.parts:
+            raise KosmicError(
+                f"math implementation path must be relative and non-traversing: {reference}"
+            )
+        candidate = (root / relative).resolve()
+        try:
+            candidate.relative_to(root)
+        except ValueError as error:
+            raise KosmicError(
+                f"math implementation path escapes source root: {reference}"
+            ) from error
+        if not candidate.is_file():
+            raise KosmicError(
+                f"math implementation path is not a file: {reference}"
+            )
+        try:
+            text = candidate.read_text(encoding="utf-8")
+        except UnicodeError as error:
+            raise KosmicError(
+                f"math implementation file is not UTF-8 text: {reference}"
+            ) from error
+        file_covered: set[str] = set()
+        for match in IMPLEMENTATION_MATHDOC_RE.finditer(text):
+            project_id, slug, result_name = match.groups()
+            if project_id != project.project_id:
+                raise KosmicError(
+                    f"math implementation reference uses another Project: "
+                    f"{project_id}/{slug}"
+                )
+            if slug not in slugs:
+                raise KosmicError(
+                    f"math implementation reference is not declared: {slug}"
+                )
+            if result_name is not None:
+                known = {result.name for result in registry.entries[slug].results}
+                if result_name not in known:
+                    raise KosmicError(
+                        f"unknown MathDoc result in implementation: {slug}#{result_name}"
+                    )
+            file_covered.add(slug)
+        if not file_covered:
+            raise KosmicError(
+                f"math implementation file has no declared MathDoc reference: {reference}"
+            )
+        covered.update(file_covered)
+    missing_coverage = sorted(set(slugs) - covered)
+    if missing_coverage:
+        raise KosmicError(
+            "declared derivations have no implementation reference: "
+            + ", ".join(missing_coverage)
+        )
+
+
+def check_completion(
+    project: Project, work_item: Path, source_root: Path = Path.cwd()
+) -> None:
     if not work_item.is_file():
         raise KosmicError(f"missing work item: {work_item}")
     document = parse_markdown(work_item.read_text(encoding="utf-8"))
-    validate_notes_bundle(project.notes_dir)
+    registry = validate_project_content(project)
     if "consumer_interface_change" not in document.metadata:
         raise KosmicError(
             "work item must declare consumer_interface_change: true or false before completion"
@@ -1592,6 +2427,7 @@ def check_completion(project: Project, work_item: Path) -> None:
     affects_interface = document.metadata["consumer_interface_change"]
     if not isinstance(affects_interface, bool):
         raise KosmicError("consumer_interface_change must be true or false")
+    validate_math_implementation(project, registry, document, source_root)
     for slug in as_string_list(document.metadata.get("evidence_packs")):
         pack_dir = project.evidence_dir / slug
         if not pack_dir.is_dir():
@@ -1678,6 +2514,18 @@ def build_parser() -> argparse.ArgumentParser:
     )
     completion_parser.add_argument("--project", type=path_argument, required=True)
     completion_parser.add_argument("--work-item", type=path_argument, required=True)
+    completion_parser.add_argument(
+        "--source-root", type=path_argument, default=Path.cwd()
+    )
+
+    math_parser = subparsers.add_parser(
+        "check-math", help="execute and verify Project Math Derivations"
+    )
+    math_parser.add_argument("--project", type=path_argument, required=True)
+    math_parser.add_argument("--slug", action="append", default=[])
+    math_parser.add_argument("--timeout", type=float, default=30.0)
+    math_parser.add_argument("--update", action="store_true")
+    math_parser.add_argument("--source-root", type=path_argument, default=Path.cwd())
 
 
     provenance_parser = subparsers.add_parser(
@@ -1699,7 +2547,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="verify required Matt Pocock procedure skills for an Install Adapter",
     )
     required_skills_parser.add_argument(
-        "--adapter", choices=("opencode", "claude-code", "codex"), required=True
+        "--adapter", choices=("opencode", "claude-code", "codex", "omp"), required=True
     )
     required_skills_parser.add_argument("--home", type=path_argument, default=Path.home())
 
@@ -1749,8 +2597,21 @@ def run(arguments: Sequence[str] | None = None) -> int:
         review(project)
         print(f"Project Skill Pair is current: {project.project_id}")
     elif args.command == "check-completion":
-        check_completion(project, args.work_item.expanduser().resolve())
+        check_completion(
+            project,
+            args.work_item.expanduser().resolve(),
+            args.source_root,
+        )
         print("completion gate passed")
+    elif args.command == "check-math":
+        checked = check_math(
+            project,
+            args.slug,
+            args.timeout,
+            update=args.update,
+            source_root=args.source_root,
+        )
+        print("math check passed: " + ", ".join(checked))
     elif args.command == "install":
         if args.adapter == "pointer":
             if args.instructions is None:

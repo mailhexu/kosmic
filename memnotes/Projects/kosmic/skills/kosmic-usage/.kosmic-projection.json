@@ -1,5 +1,5 @@
 {
-  "generator_version": 2,
+  "generator_version": 3,
   "name": "kosmic-usage",
   "project_id": "kosmic",
   "requires": [],
@@ -9,13 +9,13 @@
       "audience": "usage",
       "path": "notes/cli-projection-commands.md",
       "reference": "references/cli-projection-commands.md",
-      "sha256": "744e5ee064b5902a97e428daec800ffe6a1f880e12d8d25a899144b672425254"
+      "sha256": "4924b4151e91d3a5da72204a180224b0a5540e443b141c46c383ca32a52cbf9c"
     },
     {
       "audience": "both",
       "path": "notes/notation.md",
       "reference": "references/notation.md",
-      "sha256": "61a4caa86b77acb8fd58e3d160d6b79de18e34bc15248d1f795923b827bba37e"
+      "sha256": "5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3"
     }
   ],
   "working_state": "working-tree"

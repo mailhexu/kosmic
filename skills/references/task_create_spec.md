@@ -6,9 +6,10 @@ Create specification documents following BMAD-method workflow: PRD → optional 
 
 - Starting a NEW project (create all specs)
 - Adding a NEW feature (create feature-level specs)
-- Investigating uncertainty before Architecture
 - User requests: "create PRD", "create architecture", "create epics", "create story"
-- User requests: "research", "do discovery", "spike", "investigate options", "validate assumptions" before Architecture
+
+Pre-Architecture uncertainty, discovery, spikes, and option investigation are
+Task R's bounded research branch (`references/task_research.md`), not this task.
 
 ## Spec Hierarchy
 

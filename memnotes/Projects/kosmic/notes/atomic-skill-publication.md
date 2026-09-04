@@ -1,0 +1,58 @@
+---
+type: Concept
+status: stable
+audience: development
+confidence: high
+derivations: [mathdocs/atomic-publication-state.py]
+evidence: [evidence/2026-09-05-math-derivation-layer-impl/session-record.md]
+---
+
+# Atomic Skill Publication
+
+Kosmic builds a Project Skill Pair in temporary storage, validates it there, and only then replaces the canonical pair. If replacement fails, the previous valid pair is restored.
+
+## State invariant
+
+Let the binary outcome indicator `s` be one on commit and zero on rollback. The visible-tree indicators are:
+
+<!-- MathDoc: kosmic/atomic-publication-state#commit_indicator -->
+$$
+s
+$$
+
+<!-- MathDoc: kosmic/atomic-publication-state#rollback_indicator -->
+$$
+1 - s
+$$
+
+The binary constraint underlying the transition is explanatory rather than a separately asserted output:
+
+<!-- MathDoc-Exposition: kosmic/atomic-publication-state -->
+$$
+s^{2} = s
+$$
+
+Reduction modulo that constraint proves that the old and new trees are never simultaneously visible:
+
+<!-- MathDoc: kosmic/atomic-publication-state#mixed_visibility -->
+$$
+0
+$$
+
+and that exactly one canonical tree remains visible:
+
+<!-- MathDoc: kosmic/atomic-publication-state#visible_count -->
+$$
+1
+$$
+
+These results prove the publication state transition, not the semantic correctness of generated skill content. Content validity is established before replacement by bundle, provenance, and source-link checks.
+
+## Implementation consequence
+
+All generated files must be written and validated under the temporary root. Canonical paths are mutation targets only inside the replacement transaction; no caller may update a projected file in place.
+
+## Related concepts
+
+- [CLI extension conventions](./cli-extension-conventions.md)
+- [CLI projection commands](./cli-projection-commands.md)

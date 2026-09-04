@@ -1,5 +1,5 @@
 {
-  "generator_version": 2,
+  "generator_version": 3,
   "name": "kosmic-development",
   "project_id": "kosmic",
   "requires": [
@@ -7,6 +7,12 @@
   ],
   "role": "development",
   "sources": [
+    {
+      "audience": "development",
+      "path": "notes/atomic-skill-publication.md",
+      "reference": "references/atomic-skill-publication.md",
+      "sha256": "d06c6bbc8c67b7cad7db199df5697b75e92f38876233029c828a54682a71fe65"
+    },
     {
       "audience": "development",
       "path": "notes/cli-extension-conventions.md",

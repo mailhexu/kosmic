@@ -121,6 +121,7 @@ Check the entire scoped change against documented Project standards. Also identi
 - Cite the standard and location for a hard violation.
 - Label smells as judgement calls; they are non-blocking unless they demonstrate a concrete correctness, security, performance, or maintainability failure required by the spec.
 - Skip concerns already enforced and passed by deterministic tooling.
+- For mathematical changes, inspect the executable derivation before dependent prose or code. Verify assumptions, domains, units, conventions, generated-result currency, and adjacency of each source `MathDoc:` reference. A green `check-math` proves consistency, not physical correctness.
 
 #### Spec axis
 

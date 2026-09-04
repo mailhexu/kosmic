@@ -20,6 +20,9 @@ This file defines the standard notations used across all atomic notes.
 | `{PROJECT_ID}-usage` | Usage Skill Projection name | slug | — |
 | `{PROJECT_ID}-development` | Development Skill Projection name | slug | — |
 | `working_state` | Checked-out state both pair members describe | — | — |
+| `{slug}` | Lowercase hyphenated identifier shared by one Math Derivation `.py`/`.md` pair | slug | `mathdocs/index.md` |
+| `MathDoc: {PROJECT_ID}/{slug}#{result-name}` | Stable identifier for an exact verified result used by a note or source file | identifier | Math-derived notes and implementation |
+| `MathDoc-Exposition: {PROJECT_ID}/{slug}` | Stable identifier for explanatory display math not asserted as an exact result | identifier | Math-derived notes |
 
 ## Controlled Vocabularies
 
@@ -27,6 +30,8 @@ This file defines the standard notations used across all atomic notes.
 |------------|--------|---------|
 | Audience Scope | `usage`, `development`, `both` | note frontmatter `audience` |
 | Note status | `draft`, `stable`, `deprecated` | note frontmatter `status` |
+| Math Derivation | Executable SymPy `.py` authority plus same-slug explanatory `.md`; status is `draft`, `stable`, or `deprecated` | `mathdocs/` |
+| Verified result | Named, sorted `srepr` and LaTeX pair emitted by the derivation protocol and recorded in the generated note region | `check-math` |
 
 ## Conventions
 
@@ -35,6 +40,7 @@ This file defines the standard notations used across all atomic notes.
 - **Code state line**: when a log entry, note, or evidence record makes claims that depend on an exact code state, record it on one line:
   `Code state: {dir} ({host}) — git {head}, tree {tree|clean}, jj {change-id}`.
   `{dir}` is the repository path; `{host}` is `local` or `user@host` for remote machines; `tree` is the working-tree hash from the `provenance` command (`clean` if unmodified); `jj` is the colocated working-copy change id (omit git-only fields when not applicable).
+- **Derivation-first debugging**: for an equation-level discrepancy, inspect and rerun the `{slug}.py` authority before changing notes or implementation. Update generated results through `check-math --update`; unresolved discrepancies block code changes.
 
 ## Notes
 

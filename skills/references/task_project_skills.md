@@ -14,6 +14,7 @@ Use this shared contract whenever a Kosmic task initializes, migrates, refreshes
 - Specs and logs never project directly. Distill durable behavior into stable notes first.
 - Both skills describe the same `working_state` from `ProjectEntry.md`.
 - The generated `skills/` tree is also OKF v0.2 conformant. Publication and installation are atomic; never edit canonical or installed projections.
+- Every Project has a vault-only `mathdocs/` directory with the reserved `index.md`; paired derivations never project into Usage or Development skills.
 
 ## Projection-Eligible Note Metadata
 
@@ -26,6 +27,7 @@ usage_stale: false
 ```
 
 `usage_stale: true`, `draft`, `deprecated`, a reached `stale_after`, or material outside `notes/` excludes the document. The Projection CLI copies eligible note bodies under fresh OKF frontmatter and records source path and SHA-256 provenance in each topic reference.
+Stable regular notes may declare `derivations: [mathdocs/{slug}.py]`; their authoritative display equations must match checked MathDoc result markers. Use Task M and `check-math` rather than hand-editing generated results.
 
 ## Commands
 
@@ -62,15 +64,27 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py migrate \
 
 Migration is restartable and transactional for `notes/`. It moves frontmatter to line 1, adds `type`, maps legacy `validated` to `stable`, conservatively maps undated legacy `stale` to `draft`, renames `TOC.md` to `index.md`, and converts unambiguous Wikilinks to relative Markdown links. Ambiguous links, embeds, and block references stop migration without partial note edits. Publication remains blocked until real stable Usage knowledge exists.
 
+Execute and compare active Math Derivations without changing files:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-math \
+  --project "{VAULT}/Projects/{TARGET}" [--slug "{SLUG}"] [--timeout 30]
+```
+
+After reviewing a derivation change, add `--update --source-root "{SOURCE_ROOT}"` to refresh all selected paired-note metadata and generated result regions atomically.
+
 Check a story or quick task before completion:
 
 ```bash
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-completion \
   --project "{VAULT}/Projects/{TARGET}" \
-  --work-item "{WORK_ITEM}"
+  --work-item "{WORK_ITEM}" \
+  --source-root "{SOURCE_ROOT}"
 ```
 
 Work items must declare `consumer_interface_change: true | false`. When true, `related_notes` must name current stable `usage` or `both` notes, and the canonical pair must pass drift validation. Work items may additionally declare `evidence_packs: [{slugs}]`; every declared pack must exist under `evidence/` and have at least one draft-or-stable note linking it via `evidence:` frontmatter, or the gate fails naming the slug.
+
+Math-derived work items declare both `derivations: [{slug}, ...]` and `math_implementation_files: [relative/path, ...]`. Each listed file must remain under `--source-root` and contain a matching `MathDoc: {project_id}/{slug}[#result-name]` identifier.
 
 `validate` additionally checks the Experience layer: every Evidence Pack's `MANIFEST.md` (kind `execution|research`, `produced_by`, ISO `date`, non-empty `summary`, and a body file-role list matching the pack contents exactly) and the `impact.md` ledger's fixed six-field entries. Evidence packs and the ledger live outside `notes/` and never project into the Skill Pair; `generate` appends publication entries to the ledger after each atomic publication.
 

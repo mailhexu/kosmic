@@ -6,6 +6,9 @@ related_notes: []
 related_specs: []
 related_files: []
 consumer_interface_change: false
+# For math-derived implementation, uncomment and populate both:
+# derivations: [{slug}]
+# math_implementation_files: [relative/source/path.py]
 review_base: ""
 review_round: 0
 ---
