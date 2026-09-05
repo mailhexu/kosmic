@@ -1,5 +1,5 @@
 ---
-status: in_progress
+status: done
 created: 2026-09-05
 updated: 2026-09-05
 linked_prd: ../prd-math-derivation-layer.md
@@ -33,7 +33,7 @@ real SymPy derivation, and distribute the updated skill.
 
 ## Success Criteria
 
-- [ ] Agent instructions make derivation-first behavior unavoidable
-- [ ] Templates produce valid structures by construction
-- [ ] Real SymPy smoke path and every gate pass
-- [ ] Skill installed and diff-verified in all homes
+- [x] Agent instructions make derivation-first behavior unavoidable
+- [x] Templates produce valid structures by construction
+- [x] Real SymPy smoke path and every gate pass
+- [x] Skill installed and diff-verified in all acceptance-criterion homes

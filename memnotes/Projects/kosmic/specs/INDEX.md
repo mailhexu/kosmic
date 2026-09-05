@@ -49,7 +49,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Epic 6 Mathdocs substrate](epics/epic-6-mathdocs-substrate.md) | done | 2 | Structure, registry, metadata, source hash |
 | [Epic 7 Math execution](epics/epic-7-math-execution-verification.md) | done | 2 | Protocol verification and atomic update |
 | [Epic 8 Math linkage gates](epics/epic-8-math-linkage-gates.md) | done | 2 | Note markers and implementation references |
-| [Epic 9 Math workflow/release](epics/epic-9-math-workflow-release.md) | in_progress | 2 | Task M done; release commit/push pending |
+| [Epic 9 Math workflow/release](epics/epic-9-math-workflow-release.md) | done | 2 | Task M, templates, reviewed dogfood, v4.0.0 distribution |
 
 ## Stories
 
@@ -71,7 +71,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [story-014 equation markers](stories/story-014-equation-marker-validation.md) | done | 8 | Regular-note result/exposition validation |
 | [story-015 implementation gate](stories/story-015-math-implementation-gate.md) | done | 8 | Source-root MathDoc traceability |
 | [story-016 Task M](stories/story-016-task-math-note-workflow.md) | done | 9 | Procedures, templates, routing |
-| [story-017 dogfood/release](stories/story-017-mathdocs-dogfood-release.md) | in_progress | 9 | Verification/install done; commit/push pending |
+| [story-017 dogfood/release](stories/story-017-mathdocs-dogfood-release.md) | done | 9 | Real SymPy proof, review, gates, install, push |
 
 ## Completed or Archived
 
@@ -80,6 +80,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Route-Graph PRD](archive/2026-09-02-prd-route-graph.md) | 2026-09-02 (abandoned) | Direction abandoned by user before stories; superseded by WikiSkill adaptation PRD |
 | [Route-Graph Architecture](archive/2026-09-02-architecture-route-graph.md) | 2026-09-02 (abandoned) | ADRs 0002-0006 never approved or implemented; retained for reference |
 | [Experience Compilation (PRD + Architecture + 5 epics + 9 stories)](prd.md) | 2026-09-02 | Implemented, reviewed (self-review round 1, disclosed), 67/67 tests; first Skill Pair published; ledger live |
+| [Math Derivation Layer (PRD + Architecture + 4 epics + 8 stories)](prd-math-derivation-layer.md) | 2026-09-05 | Implemented, independently reviewed, 205 tests; real SymPy dogfood; v4.0.0 pushed and installed |
 
 ## Maintenance Notes
 
