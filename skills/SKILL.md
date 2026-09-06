@@ -141,6 +141,7 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
 | Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` fails until every declared pack has a linking draft-or-stable note |
 | Reusable symbolic result or equation-level defect | Task M: Math Note | Executable SymPy derivation, paired note, index row, verified links | Derivation-first; `check-math`, structural validation, review, and completion linkage gate |
+| Distillation yields or materially updates a reusable Pattern | Task P: Propose Skill Change | One validated create/update/no_action proposal | Fresh-context subagent required for shared/global scope; human approval and behavioral evidence before publication |
 
 ---
 
@@ -266,6 +267,18 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 **Rule**: Evidence → root-cause analysis → draft notes. Never duplicate an existing note; update it. Promotion to stable is human-gated.
 
 ---
+### Task P: Propose Skill Change
+
+**Load**: `references/task_propose_skill.md`
+
+**When**: Task 9 yields or materially updates a reusable Pattern, or a work item declares `proposal_required: true`.
+
+**Rule**: A curated, fresh-context proposer emits exactly one atomic `create`, `update`, or `no_action` artifact. It never edits canonical or installed skills. Shared/global proposals require a separate proposer subagent; accepted procedural proposals require behavioral evidence, human approval, and Task 7 review.
+
+**Gate**: New work declares `proposal_required`. A true value requires one valid proposal before completion; rejected equivalent interventions require materially new evidence before reconsideration.
+
+---
+
 ### Task M: Math Note
 
 **Load**: `references/task_math_note.md`
@@ -383,6 +396,7 @@ Is this a NEW Project/package?
                 │   Research before architecture? → Task R: Research
                 │   Implement story? → Task 6: Implement Story
                 │   Create/correct reusable math? → Task M: Math Note
+                │   Reusable Pattern warrants skill evolution? → Task P: Propose Skill Change
                 │   Review spec/code? → Task 7: Review Spec
                 └─ NO →
                     Did I UNDERSTAND something?
@@ -406,6 +420,7 @@ Is this a NEW Project/package?
 
 **For Story completion**: Code review (Task 7) is MANDATORY - no exceptions
 **For mathematical work**: Task M runs derivation-first; `check-math` and source linkage must pass before completion
+**For reusable Patterns**: Task P records create/update/no_action; shared/global scope requires a fresh-context proposer subagent
 
 **For Quick Task completion**: Review and verification are MANDATORY before status: done
 

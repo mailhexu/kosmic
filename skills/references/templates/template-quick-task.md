@@ -6,6 +6,8 @@ related_notes: []
 related_specs: []
 related_files: []
 consumer_interface_change: false
+proposal_required: false
+# When true, add: skill_proposal: ../skill-proposals/YYYY-MM-DD-slug.md
 # For math-derived implementation, uncomment and populate both:
 # derivations: [{slug}]
 # math_implementation_files: [relative/source/path.py]

@@ -3,7 +3,7 @@ type: Agent Skill
 title: kosmic Development Skill
 status: stable
 name: kosmic-development
-description: Contribute to the implementation and development infrastructure of kosmic.
+description: Use when changing, testing, reviewing, or releasing kosmic implementation or development infrastructure.
 audience: development
 ---
 

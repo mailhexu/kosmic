@@ -1674,5 +1674,350 @@ class MathDocsLayerTest(ExperienceCompilationTest):
         self.assertTrue(script.is_file())
         self.assertTrue(os.access(script, os.X_OK))
 
+
+class SkillProposalTest(ExperienceCompilationTest):
+    def test_task_p_workflow_and_templates_are_shipped(self) -> None:
+        skill_root = REPO_ROOT / "skills"
+        task = (skill_root / "references" / "task_propose_skill.md").read_text(
+            encoding="utf-8"
+        )
+        template = (
+            skill_root / "references" / "templates" / "template-skill-proposal.md"
+        ).read_text(encoding="utf-8")
+        skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
+        self.assertIn("fresh-context", task)
+        self.assertIn("exactly one atomic result", task)
+        self.assertIn("Task P: Propose Skill Change", skill)
+        self.assertIn("target_sha256:", template)
+        self.assertIn("## Behavioral Validation", template)
+        distill = (skill_root / "references" / "task_distill.md").read_text(
+            encoding="utf-8"
+        )
+        story = (
+            skill_root / "references" / "templates" / "template-story.md"
+        ).read_text(encoding="utf-8")
+        quick = (
+            skill_root / "references" / "templates" / "template-quick-task.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("proposal_required: false", story)
+        self.assertIn("proposal_required: false", quick)
+        self.assertIn("reusable Pattern", distill)
+        self.assertIn("Task P", distill)
+
+    def write_proposal(
+        self,
+        project: Path,
+        *,
+        result: str = "create",
+        decision: str = "pending",
+        fingerprint: str = "",
+        extra: str = "",
+    ) -> Path:
+        inputs = project / "specs" / "skill-proposals" / "inputs" / "demo.md"
+        inputs.parent.mkdir(parents=True, exist_ok=True)
+        source = project / "notes" / "index.md"
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        inputs.write_text(f"- notes/index.md: {digest}\n", encoding="utf-8")
+        proposal = inputs.parent.parent / "2026-09-06-demo.md"
+        target = "demo-skill" if result != "no_action" else ""
+        target_ref = "skill://demo-skill" if result != "no_action" else ""
+        target_hash = "empty" if result == "create" else digest if result == "update" else ""
+        proposed = (
+            "## No-Action Reason\n\nProject facts only; no reusable procedure.\n"
+            if result == "no_action"
+            else "## Proposed Change\n\nCreate one repeatable diagnostic procedure.\n"
+        )
+        proposal.write_text(
+            "---\n"
+            "status: draft\ncreated: 2026-09-06\nupdated: 2026-09-06\n"
+            f"result: {result}\nscope: project-procedure\n"
+            f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
+            "proposer_mode: same-agent\nproposer_ref: agent://test\n"
+            'proposer_reason: \"Project-local test fixture\"\n'
+            "input_manifest: [specs/skill-proposals/inputs/demo.md]\n"
+            "related_notes: [notes/index.md]\nevidence_packs: []\n"
+            "behavioral_evidence: []\n"
+            f"decision: {decision}\nfingerprint: {fingerprint}\nreconsiders: \"\"\n"
+            f"{extra}---\n\n# Skill Proposal: Demo\n\n"
+            "## Problem\n\nRepeated diagnostic work.\n\n"
+            "## Evidence\n\nObserved in maintained knowledge.\n\n"
+            f"{proposed}\n## Applicability\n\nProject-local procedure.\n\n"
+            "## Behavioral Validation\n\nPending approval.\n\nCandidate paths: [.scratch/candidate-skill]\n\n"
+            "## Risks\n\nPossible overfitting.\n\n"
+            "## New Evidence\n\nNone.\n",
+            encoding="utf-8",
+        )
+        return proposal
+
+    def test_validate_proposal_accepts_valid_create(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project)
+        result = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+        )
+        self.assertIn("valid Skill Proposal", result.stdout)
+
+    def test_validate_pending_proposal_prints_canonical_fingerprint(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project)
+        result = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        self.assertRegex(result.stdout, r"fingerprint: [0-9a-f]{64}")
+
+    def write_proposal_work_item(
+        self, project: Path, required: str, reference: str | None
+    ) -> Path:
+        item = project / "specs" / "stories" / "proposal-work.md"
+        item.parent.mkdir(parents=True, exist_ok=True)
+        lines = [
+            "consumer_interface_change: false",
+            f"proposal_required: {required}",
+        ]
+        if reference is not None:
+            lines.append(f"skill_proposal: {reference}")
+        item.write_text(
+            "---\n" + "\n".join(lines) + "\n---\n\n# Proposal work\n",
+            encoding="utf-8",
+        )
+        return item
+
+    def test_completion_requires_one_finished_proposal_when_declared(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project, result="no_action")
+        item = self.write_proposal_work_item(
+            project, "true", "../skill-proposals/2026-09-06-demo.md"
+        )
+        pending = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            expected=2,
+        )
+        self.assertIn("pending", pending.stderr)
+
+        validated = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        fingerprint = re.search(r"fingerprint: ([0-9a-f]{64})", validated.stdout).group(1)
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8")
+            .replace("status: draft", "status: done")
+            .replace("decision: pending", "decision: accepted")
+            .replace("fingerprint: \n", f"fingerprint: {fingerprint}\n"),
+            encoding="utf-8",
+        )
+        self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+        )
+
+    def test_completion_rejects_proposal_path_when_not_required(self) -> None:
+        project = self.make_project()
+        item = self.write_proposal_work_item(
+            project, "false", "../skill-proposals/2026-09-06-demo.md"
+        )
+        result = self.run_cli(
+            "check-completion",
+            "--project",
+            str(project),
+            "--work-item",
+            str(item),
+            expected=2,
+        )
+        self.assertIn("proposal_required: false", result.stderr)
+
+    def test_rejected_fingerprint_blocks_equivalent_proposal(self) -> None:
+        project = self.make_project()
+        rejected = self.write_proposal(project)
+        checked = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(rejected)
+        )
+        fingerprint = re.search(r"fingerprint: ([0-9a-f]{64})", checked.stdout).group(1)
+        rejected.write_text(
+            rejected.read_text(encoding="utf-8")
+            .replace("status: draft", "status: done")
+            .replace("decision: pending", "decision: rejected")
+            .replace("fingerprint: \n", f"fingerprint: {fingerprint}\n"),
+            encoding="utf-8",
+        )
+        duplicate = rejected.with_name("2026-09-07-demo-again.md")
+        duplicate.write_text(
+            rejected.read_text(encoding="utf-8")
+            .replace("status: done", "status: draft")
+            .replace("decision: rejected", "decision: pending")
+            .replace(f"fingerprint: {fingerprint}", "fingerprint: "),
+            encoding="utf-8",
+        )
+        result = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(duplicate),
+            expected=2,
+        )
+        self.assertIn("equivalent rejected", result.stderr)
+
+    def test_generated_descriptions_use_concrete_activation_triggers(self) -> None:
+        project = self.generate_ready_project()
+        self.run_cli("generate", "--project", str(project))
+        usage = (project / "skills" / "acme-demo-usage" / "SKILL.md").read_text(
+            encoding="utf-8"
+        )
+        development = (
+            project / "skills" / "acme-demo-development" / "SKILL.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn(
+            "Use when invoking, configuring, integrating, validating, installing, or troubleshooting acme-demo consumer interfaces.",
+            usage,
+        )
+        self.assertIn(
+            "Use when changing, testing, reviewing, or releasing acme-demo implementation or development infrastructure.",
+            development,
+        )
+
+    def test_check_installation_detects_current_and_stale_pair(self) -> None:
+        project = self.generate_ready_project()
+        self.run_cli("generate", "--project", str(project))
+        home = self.root / "home"
+        installed = self.run_cli(
+            "install",
+            "--project",
+            str(project),
+            "--adapter",
+            "codex",
+            "--home",
+            str(home),
+        )
+        self.assertIn("installed on disk", installed.stdout)
+        self.assertIn("active-session discovery unverified", installed.stdout)
+        self.run_cli(
+            "check-installation",
+            "--project",
+            str(project),
+            "--adapter",
+            "codex",
+            "--home",
+            str(home),
+        )
+        skill = home / ".agents" / "skills" / "acme-demo-usage" / "SKILL.md"
+        skill.write_text(skill.read_text(encoding="utf-8") + "\nstale\n", encoding="utf-8")
+        stale = self.run_cli(
+            "check-installation",
+            "--project",
+            str(project),
+            "--adapter",
+            "codex",
+            "--home",
+            str(home),
+            expected=2,
+        )
+        self.assertIn("installed Skill Pair", stale.stderr)
+
+    def test_proposal_validation_rejects_stale_inputs_and_missing_independence(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(
+            project, extra="scope_override: ignored\n"
+        )
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8")
+            .replace("scope: project-procedure", "scope: global-procedure"),
+            encoding="utf-8",
+        )
+        independence = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("requires proposer_mode: subagent", independence.stderr)
+
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8")
+            .replace("scope: global-procedure", "scope: project-procedure"),
+            encoding="utf-8",
+        )
+        (project / "notes" / "index.md").write_text("# changed\n", encoding="utf-8")
+        stale = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("missing or stale", stale.stderr)
+
+    def test_approved_pending_proposal_is_valid(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project)
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8").replace(
+                "status: draft", "status: approved"
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        self.assertIn("valid Skill Proposal", result.stdout)
+
+    def test_fenced_heading_does_not_satisfy_required_section(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project)
+        text = proposal.read_text(encoding="utf-8").replace(
+            "## Proposed Change\n\nCreate one repeatable diagnostic procedure.",
+            "## Missing Change\n\n```markdown\n## Proposed Change\nfake\n```",
+        )
+        proposal.write_text(text, encoding="utf-8")
+        result = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("Proposed Change", result.stderr)
+
+    def test_candidate_path_cannot_be_canonical(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project)
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8").replace(
+                ".scratch/candidate-skill", "skills/demo-usage"
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("candidate path is canonical", result.stderr)
+
+    def test_project_local_update_allows_same_agent_with_reason(self) -> None:
+        project = self.make_project()
+        proposal = self.write_proposal(project, result="update")
+        result = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        self.assertIn("valid Skill Proposal", result.stdout)
+
 if __name__ == "__main__":
     unittest.main()

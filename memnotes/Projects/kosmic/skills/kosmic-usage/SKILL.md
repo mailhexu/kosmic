@@ -3,7 +3,7 @@ type: Agent Skill
 title: kosmic Usage Skill
 status: stable
 name: kosmic-usage
-description: Use kosmic through its supported Consumer Interfaces.
+description: Use when invoking, configuring, integrating, validating, installing, or troubleshooting kosmic consumer interfaces.
 audience: usage
 ---
 

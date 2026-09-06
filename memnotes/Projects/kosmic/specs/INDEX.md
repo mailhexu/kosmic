@@ -1,7 +1,7 @@
 ---
 project: kosmic
 created: 2026-09-02
-updated: 2026-09-05
+updated: 2026-09-06
 ---
 
 # Specs Index: kosmic
@@ -12,7 +12,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 
 - PRD: [PRD](prd.md) (approved 2026-09-02)
 - Architecture: [Architecture](architecture.md) (approved 2026-09-02)
-- Current focus: designing the Math Derivation Layer (`mathdocs/`) for SymPy-backed, reproducible equations
+- Current focus: explicit WikiSkill-inspired Skill Proposal loop with fresh-context proposer and human-gated behavioral validation
 
 ## Active Specs
 
@@ -22,6 +22,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Architecture | [Architecture](architecture.md) | approved | Evidence layer, Task 9 distillation, impact ledger, completion gate — grounded in ADRs 0002-0003 |
 | Feature PRD | [Math Derivation Layer](prd-math-derivation-layer.md) | approved 2026-09-05 | Seven Task 7 findings resolved; ready for Architecture |
 | Feature Architecture | [Math Derivation Layer](architecture-math-derivation-layer.md) | approved 2026-09-05 | AD-M1..M8: registry, protocol, markers, atomic updates, validation, completion linkage |
+| Feature PRD | [Skill Proposal Loop](prd-skill-proposer.md) | approved 2026-09-06 | Task P, fresh-context proposer policy, behavioral gate, activation diagnostics |
+| Feature Architecture | [Skill Proposal Loop](architecture-skill-proposer.md) | approved 2026-09-06 | AD-P1..P8: proposer role, artifact, gates, behavior, rejection memory, activation |
 
 ## Research Memos
 
@@ -50,6 +52,10 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Epic 7 Math execution](epics/epic-7-math-execution-verification.md) | done | 2 | Protocol verification and atomic update |
 | [Epic 8 Math linkage gates](epics/epic-8-math-linkage-gates.md) | done | 2 | Note markers and implementation references |
 | [Epic 9 Math workflow/release](epics/epic-9-math-workflow-release.md) | done | 2 | Task M, templates, reviewed dogfood, v4.0.0 distribution |
+| [Epic 10 Proposer contract](epics/epic-10-proposer-contract.md) | done | 2 | Task P, artifact template, deterministic validation |
+| [Epic 11 Proposal governance](epics/epic-11-proposal-governance.md) | done | 2 | Completion gate, lifecycle, fingerprints, rejection memory |
+| [Epic 12 Proposal behavior](epics/epic-12-proposal-behavior.md) | done | 1 | Baseline/candidate evidence and review |
+| [Epic 13 Activation/release](epics/epic-13-proposal-activation-release.md) | done | 2 | Installation diagnostics, dogfood, distribution |
 
 ## Stories
 
@@ -72,6 +78,13 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [story-015 implementation gate](stories/story-015-math-implementation-gate.md) | done | 8 | Source-root MathDoc traceability |
 | [story-016 Task M](stories/story-016-task-math-note-workflow.md) | done | 9 | Procedures, templates, routing |
 | [story-017 dogfood/release](stories/story-017-mathdocs-dogfood-release.md) | done | 9 | Real SymPy proof, review, gates, install, push |
+| [story-018 Task P](stories/story-018-task-p-procedure.md) | done | 10 | Fresh-context procedure and template |
+| [story-019 proposal validation](stories/story-019-proposal-validation.md) | done | 10 | Deep SkillProposal loader and CLI |
+| [story-020 proposal completion](stories/story-020-proposal-completion-gate.md) | done | 11 | Additive work-item gate |
+| [story-021 rejection memory](stories/story-021-rejection-memory.md) | done | 11 | Fingerprint, reconsideration, ledger |
+| [story-022 behavioral gate](stories/story-022-proposal-behavioral-gate.md) | done | 12 | Isolated baseline/candidate evidence |
+| [story-023 activation diagnostics](stories/story-023-installation-activation-diagnostics.md) | done | 13 | Descriptions, installed bytes, honest discovery |
+| [story-024 dogfood/release](stories/story-024-proposer-dogfood-release.md) | done | 13 | Real proposal, review, release |
 
 ## Completed or Archived
 

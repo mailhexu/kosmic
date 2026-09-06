@@ -24,7 +24,7 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 from urllib.parse import quote, unquote
 
-GENERATOR_VERSION = 3
+GENERATOR_VERSION = 4
 OKF_VERSION = "0.2"
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 ISO_DATE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}$")
@@ -44,6 +44,11 @@ LEDGER_KINDS = {"publication", "decision"}
 LEDGER_OUTCOMES = {"published", "accepted", "rejected"}
 MATHDOCS_DIR_NAME = "mathdocs"
 MATH_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
+PROPOSAL_RESULTS = {"create", "update", "no_action"}
+PROPOSAL_SCOPES = {"project-knowledge", "project-procedure", "global-procedure"}
+PROPOSAL_DECISIONS = {"pending", "accepted", "rejected"}
+PROPOSAL_STATUSES = {"draft", "approved", "done"}
+PROPOSAL_FILE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 MATH_INDEX_HEADER = (
     "# Math Derivations\n\n"
     "| Derivation | Status | Result summary |\n"
@@ -149,6 +154,10 @@ class Project:
         return self.root / LEDGER_NAME
 
     @property
+    def proposals_dir(self) -> Path:
+        return self.root / "specs" / "skill-proposals"
+
+    @property
     def mathdocs_dir(self) -> Path:
         return self.root / MATHDOCS_DIR_NAME
 
@@ -199,6 +208,25 @@ class MathEntry:
 class MathRegistry:
     project_id: str
     entries: dict[str, MathEntry]
+
+@dataclass(frozen=True)
+class SkillProposal:
+    path: Path
+    status: str
+    result: str
+    scope: str
+    target: str
+    target_ref: str
+    target_sha256: str
+    proposer_mode: str
+    proposer_ref: str
+    input_manifest: tuple[str, ...]
+    evidence_packs: tuple[str, ...]
+    related_notes: tuple[str, ...]
+    behavioral_evidence: tuple[str, ...]
+    decision: str
+    fingerprint: str
+    reconsiders: str
 
 
 def sha256_bytes(content: bytes) -> str:
@@ -1178,9 +1206,11 @@ def demote_unshipped_links(
 def router_text(project: Project, role: str, notes: Sequence[Note]) -> str:
     name = project.usage_name if role == "usage" else project.development_name
     description = (
-        f"Use {project.project_id} through its supported Consumer Interfaces."
+        f"Use when invoking, configuring, integrating, validating, installing, or "
+        f"troubleshooting {project.project_id} consumer interfaces."
         if role == "usage"
-        else f"Contribute to the implementation and development infrastructure of {project.project_id}."
+        else f"Use when changing, testing, reviewing, or releasing "
+        f"{project.project_id} implementation or development infrastructure."
     )
     lines = [
         "---",
@@ -1890,6 +1920,29 @@ def install_named_adapter(project: Project, adapter: str, home: Path) -> Path:
         shutil.rmtree(backup, ignore_errors=True)
     return destination_root
 
+def check_installation(project: Project, adapter: str, home: Path) -> Path:
+    destination_root = adapter_root(adapter, home.expanduser().resolve())
+    for name in (project.usage_name, project.development_name):
+        canonical = project.canonical_root / name
+        installed = destination_root / name
+        if not installed.is_dir():
+            raise KosmicError(f"installed Skill Pair is missing package: {installed}")
+        if installed_project_id(installed) != project.project_id:
+            raise KosmicError(f"installed Skill Pair identity mismatch: {installed}")
+        if directory_digest(installed) != directory_digest(canonical):
+            raise KosmicError(f"installed Skill Pair is stale or modified: {installed}")
+    return destination_root
+
+
+def adapter_reload_action(adapter: str) -> str:
+    if adapter == "opencode":
+        return "start a new OpenCode session and inspect its skill inventory"
+    if adapter == "claude-code":
+        return "restart Claude Code and inspect its available skills"
+    if adapter == "codex":
+        return "start a new Codex session and inspect its available skills"
+    return "start a new OMP session and inspect its available skills"
+
 
 def collect_provenance(repo: Path) -> tuple[str, str]:
     """Return (git_head, worktree_tree) for the exact current code state.
@@ -2413,6 +2466,289 @@ def validate_math_implementation(
         )
 
 
+def contained_project_path(project: Project, reference: str, field: str) -> Path:
+    relative = Path(reference)
+    if relative.is_absolute():
+        raise KosmicError(f"Skill Proposal {field} must be Project-relative: {reference}")
+    resolved = (project.root / relative).resolve()
+    try:
+        resolved.relative_to(project.root)
+    except ValueError as error:
+        raise KosmicError(f"Skill Proposal {field} escapes Project: {reference}") from error
+    return resolved
+
+
+def proposal_section(body: str, heading: str) -> str:
+    lines = body.splitlines(keepends=True)
+    collecting = False
+    collected: list[str] = []
+    fence: str | None = None
+    for line in lines:
+        marker = line.lstrip()[:3]
+        if marker in {"```", "~~~"}:
+            fence = None if fence == marker else marker
+        if fence is None and re.fullmatch(r"## .+?\s*\n?", line):
+            current = line.strip()[3:]
+            if collecting:
+                break
+            collecting = current == heading
+            continue
+        if collecting:
+            collected.append(line)
+    return "".join(collected).strip()
+
+
+def proposal_fingerprint(
+    result: str, scope: str, target: str, related_notes: Sequence[str], body: str
+) -> str:
+    change = proposal_section(
+        body, "No-Action Reason" if result == "no_action" else "Proposed Change"
+    )
+    payload = {
+        "result": result,
+        "scope": scope,
+        "target": target,
+        "related_notes": sorted(related_notes),
+        "change": change,
+    }
+    return sha256_bytes(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    )
+
+
+def validate_input_manifest(project: Project, references: Sequence[str]) -> dict[str, str]:
+    if not references:
+        raise KosmicError("Skill Proposal input_manifest must not be empty")
+    entries: dict[str, str] = {}
+    for reference in references:
+        path = contained_project_path(project, reference, "input_manifest")
+        if not path.is_file():
+            raise KosmicError(f"Skill Proposal input_manifest is missing: {reference}")
+        for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            line = raw.strip()
+            if not line or line.startswith("#"):
+                continue
+            match = re.fullmatch(r"- ([^:]+): ([0-9a-f]{64})", line)
+            if not match:
+                raise KosmicError(
+                    f"Skill Proposal input_manifest line {number} must be '- path: sha256'"
+                )
+            source = contained_project_path(project, match.group(1), "input_manifest path")
+            if not source.is_file() or sha256_bytes(source.read_bytes()) != match.group(2):
+                raise KosmicError(
+                    f"Skill Proposal input_manifest source missing or stale: {match.group(1)}"
+                )
+            entries[match.group(1)] = match.group(2)
+    if not entries:
+        raise KosmicError("Skill Proposal input_manifest must list at least one input")
+    return entries
+
+
+def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
+    path = path.expanduser().resolve()
+    try:
+        path.relative_to(project.proposals_dir.resolve())
+    except ValueError as error:
+        raise KosmicError(f"Skill Proposal path is outside specs/skill-proposals: {path}") from error
+    if path.parent != project.proposals_dir.resolve() or not PROPOSAL_FILE_RE.fullmatch(path.name):
+        raise KosmicError(
+            f"Skill Proposal path must be specs/skill-proposals/YYYY-MM-DD-slug.md: {path}"
+        )
+    if not path.is_file():
+        raise KosmicError(f"missing Skill Proposal: {path}")
+    document = require_frontmatter(path.read_text(encoding="utf-8"), str(path))
+    metadata = document.metadata
+    required = (
+        "status", "created", "updated", "result", "scope", "target",
+        "target_ref", "target_sha256", "proposer_mode", "proposer_ref",
+        "proposer_reason", "input_manifest", "related_notes", "evidence_packs",
+        "behavioral_evidence", "decision", "fingerprint", "reconsiders",
+    )
+    missing = [field for field in required if field not in metadata]
+    if missing:
+        raise KosmicError(
+            f"Skill Proposal {path.name} is missing fields: {', '.join(missing)}"
+        )
+    result = str(metadata["result"]).strip()
+    target = str(metadata["target"]).strip()
+    scope = str(metadata["scope"]).strip()
+    status = str(metadata["status"]).strip()
+    decision = str(metadata["decision"]).strip()
+    if result not in PROPOSAL_RESULTS:
+        raise KosmicError("Skill Proposal result must be create, update, or no_action")
+    if scope not in PROPOSAL_SCOPES:
+        raise KosmicError(f"invalid Skill Proposal scope: {scope}")
+    if status not in PROPOSAL_STATUSES or decision not in PROPOSAL_DECISIONS:
+        raise KosmicError("invalid Skill Proposal status or decision")
+    lifecycle_valid = (
+        (status == "draft" and decision == "pending")
+        or (status == "approved" and decision == "pending")
+        or (status == "done" and decision in {"accepted", "rejected"})
+    )
+    if not lifecycle_valid:
+        raise KosmicError(
+            "Skill Proposal lifecycle requires draft|approved with pending, "
+            "or done with accepted|rejected"
+        )
+    for field in ("created", "updated"):
+        if not ISO_DATE_RE.fullmatch(str(metadata[field])):
+            raise KosmicError(f"Skill Proposal {field} must be YYYY-MM-DD")
+    related_notes = as_string_list(metadata["related_notes"])
+    evidence_packs = as_string_list(metadata["evidence_packs"])
+    behavioral_evidence = as_string_list(metadata["behavioral_evidence"])
+    for reference in related_notes:
+        note = contained_project_path(project, reference, "related_notes")
+        if not note.is_file() or note.suffix != ".md":
+            raise KosmicError(f"Skill Proposal related note is missing: {reference}")
+    for slug in evidence_packs:
+        if not (project.evidence_dir / slug).is_dir():
+            raise KosmicError(f"Skill Proposal evidence pack is missing: {slug}")
+    for reference in behavioral_evidence:
+        evidence_path = contained_project_path(project, reference, "behavioral_evidence")
+        if not evidence_path.is_file():
+            raise KosmicError(f"Skill Proposal behavioral evidence is missing: {reference}")
+        try:
+            pack_relative = evidence_path.relative_to(project.evidence_dir.resolve())
+        except ValueError as error:
+            raise KosmicError(
+                f"Skill Proposal behavioral_evidence must be inside evidence/: {reference}"
+            ) from error
+        if len(pack_relative.parts) < 2:
+            raise KosmicError(
+                f"Skill Proposal behavioral_evidence must name a pack payload: {reference}"
+            )
+        pack = project.evidence_dir / pack_relative.parts[0]
+        validate_evidence_pack(pack)
+        manifest = parse_markdown((pack / "MANIFEST.md").read_text(encoding="utf-8"))
+        if manifest.metadata.get("kind") != "execution":
+            raise KosmicError(
+                f"Skill Proposal behavioral_evidence requires an execution pack: {reference}"
+            )
+    input_manifest = as_string_list(metadata["input_manifest"])
+    input_entries = validate_input_manifest(project, input_manifest)
+    proposer_mode = str(metadata["proposer_mode"]).strip()
+    if scope == "global-procedure" and proposer_mode != "subagent":
+        raise KosmicError("global-procedure Skill Proposal requires proposer_mode: subagent")
+    if proposer_mode not in {"subagent", "same-agent"}:
+        raise KosmicError("Skill Proposal proposer_mode must be subagent or same-agent")
+    if not str(metadata["proposer_ref"]).strip():
+        raise KosmicError("Skill Proposal proposer_ref must be non-empty")
+    if proposer_mode == "same-agent" and not str(metadata["proposer_reason"]).strip():
+        raise KosmicError("same-agent Skill Proposal requires proposer_reason")
+    target_ref = str(metadata["target_ref"]).strip()
+    target_sha256 = str(metadata["target_sha256"]).strip()
+    if result == "create":
+        if not target or target_ref != f"skill://{target}" or target_sha256 != "empty":
+            raise KosmicError(
+                "create Skill Proposal requires target, matching target_ref, "
+                "and target_sha256: empty"
+            )
+    elif result == "update":
+        if not target or target_ref != f"skill://{target}" or not SHA256_RE.fullmatch(target_sha256):
+            raise KosmicError(
+                "update Skill Proposal requires target, matching target_ref, and a SHA-256 pin"
+            )
+        if target_sha256 not in input_entries.values():
+            raise KosmicError(
+                "update Skill Proposal target_sha256 is not pinned by input_manifest"
+            )
+    elif target or target_ref or target_sha256:
+        raise KosmicError("no_action Skill Proposal requires empty target fields")
+    if scope == "project-knowledge" and result != "no_action":
+        raise KosmicError(
+            "project-knowledge findings continue through note review and require result: no_action"
+        )
+    sections = ["Problem", "Evidence", "Applicability", "Behavioral Validation", "Risks"]
+    sections.append("No-Action Reason" if result == "no_action" else "Proposed Change")
+    empty_sections = [heading for heading in sections if not proposal_section(document.body, heading)]
+    if empty_sections:
+        raise KosmicError(
+            f"Skill Proposal {path.name} has missing or empty sections: {', '.join(empty_sections)}"
+        )
+    computed = proposal_fingerprint(result, scope, target, related_notes, document.body)
+    recorded = str(metadata["fingerprint"]).strip()
+    if decision != "pending" and recorded != computed:
+        raise KosmicError(f"Skill Proposal fingerprint mismatch; expected {computed}")
+    if decision == "accepted" and result != "no_action" and not behavioral_evidence:
+        raise KosmicError("accepted create/update Skill Proposal requires behavioral_evidence")
+    if result != "no_action":
+        validation = proposal_section(document.body, "Behavioral Validation")
+        candidate_match = re.search(
+            r"(?m)^Candidate paths:\s*\[([^\]]+)\]\s*$", validation
+        )
+        if not candidate_match:
+            raise KosmicError(
+                "create/update Skill Proposal Behavioral Validation requires "
+                "Candidate paths: [project-relative/path]"
+            )
+        for raw_candidate in candidate_match.group(1).split(","):
+            candidate = contained_project_path(
+                project, raw_candidate.strip(), "candidate path"
+            )
+            try:
+                candidate.relative_to(project.canonical_root.resolve())
+            except ValueError:
+                continue
+            raise KosmicError(
+                f"Skill Proposal candidate path is canonical: {raw_candidate.strip()}"
+            )
+    for prior_path in sorted(project.proposals_dir.glob("*.md")):
+        if prior_path.resolve() == path:
+            continue
+        prior = parse_markdown(prior_path.read_text(encoding="utf-8"))
+        if str(prior.metadata.get("decision") or "") != "rejected":
+            continue
+        prior_result = str(prior.metadata.get("result") or "")
+        prior_scope = str(prior.metadata.get("scope") or "")
+        prior_target = str(prior.metadata.get("target") or "")
+        prior_related = as_string_list(prior.metadata.get("related_notes"))
+        prior_fingerprint = proposal_fingerprint(
+            prior_result, prior_scope, prior_target, prior_related, prior.body
+        )
+        if str(prior.metadata.get("fingerprint") or "") != prior_fingerprint:
+            raise KosmicError(f"rejected Skill Proposal fingerprint mismatch: {prior_path.name}")
+        if prior_fingerprint != computed:
+            continue
+        reconsiders = str(metadata["reconsiders"]).strip()
+        new_evidence = proposal_section(document.body, "New Evidence")
+        allowed = False
+        if reconsiders:
+            reconsidered = contained_project_path(project, reconsiders, "reconsiders")
+            allowed = reconsidered == prior_path.resolve() and bool(
+                new_evidence and new_evidence.lower() != "none."
+            )
+        if not allowed:
+            raise KosmicError(
+                f"equivalent rejected Skill Proposal already exists: {prior_path.name}; "
+                "set reconsiders and provide New Evidence"
+            )
+    return SkillProposal(
+        path=path,
+        status=status,
+        result=result,
+        scope=scope,
+        target=target,
+        target_ref=target_ref,
+        target_sha256=target_sha256,
+        proposer_mode=proposer_mode,
+        proposer_ref=str(metadata["proposer_ref"]).strip(),
+        input_manifest=tuple(input_manifest),
+        evidence_packs=tuple(evidence_packs),
+        related_notes=tuple(related_notes),
+        behavioral_evidence=tuple(behavioral_evidence),
+        decision=decision,
+        fingerprint=computed,
+        reconsiders=str(metadata["reconsiders"]).strip(),
+    )
+
+
+def validate_skill_proposals(project: Project) -> None:
+    if not project.proposals_dir.is_dir():
+        return
+    for path in sorted(project.proposals_dir.glob("*.md")):
+        load_skill_proposal(project, path)
+
+
 def check_completion(
     project: Project, work_item: Path, source_root: Path = Path.cwd()
 ) -> None:
@@ -2436,6 +2772,25 @@ def check_completion(
             raise KosmicError(
                 f"evidence pack has no draft-or-stable note linking it: evidence/{slug}"
             )
+    if "proposal_required" in document.metadata:
+        proposal_required = document.metadata["proposal_required"]
+        if not isinstance(proposal_required, bool):
+            raise KosmicError("proposal_required must be true or false")
+        proposal_value = document.metadata.get("skill_proposal")
+        if not proposal_required:
+            if proposal_value not in (None, "", []):
+                raise KosmicError(
+                    "proposal_required: false work item must not declare skill_proposal"
+                )
+        else:
+            if not isinstance(proposal_value, str) or not proposal_value.strip():
+                raise KosmicError(
+                    "proposal_required: true requires exactly one skill_proposal path"
+                )
+            candidate = (work_item.parent / proposal_value).resolve()
+            proposal = load_skill_proposal(project, candidate)
+            if proposal.decision == "pending":
+                raise KosmicError("Skill Proposal decision is still pending")
     if not affects_interface:
         return
     references = as_string_list(document.metadata.get("related_notes"))
@@ -2494,6 +2849,12 @@ def build_parser() -> argparse.ArgumentParser:
     validate_parser.add_argument("--project", type=path_argument, required=True)
     validate_parser.add_argument("--output", type=path_argument)
 
+    proposal_parser = subparsers.add_parser(
+        "validate-proposal", help="validate one Skill Proposal artifact"
+    )
+    proposal_parser.add_argument("--project", type=path_argument, required=True)
+    proposal_parser.add_argument("--proposal", type=path_argument, required=True)
+
     init_parser = subparsers.add_parser(
         "init", help="initialize identity, migrate notes to OKF, and publish a Project pair"
     )
@@ -2541,6 +2902,15 @@ def build_parser() -> argparse.ArgumentParser:
     )
     install_parser.add_argument("--home", type=path_argument, default=Path.home())
     install_parser.add_argument("--instructions", type=path_argument)
+
+    installation_parser = subparsers.add_parser(
+        "check-installation", help="verify an installed named-adapter Skill Pair"
+    )
+    installation_parser.add_argument("--project", type=path_argument, required=True)
+    installation_parser.add_argument(
+        "--adapter", choices=("opencode", "claude-code", "codex", "omp"), required=True
+    )
+    installation_parser.add_argument("--home", type=path_argument, default=Path.home())
 
     required_skills_parser = subparsers.add_parser(
         "check-required-skills",
@@ -2591,8 +2961,12 @@ def run(arguments: Sequence[str] | None = None) -> int:
         output = (args.output or project.canonical_root).expanduser().resolve()
         validate_evidence_packs(project)
         validate_impact_ledger(project)
+        validate_skill_proposals(project)
         validate_current_projection(project, output)
         print(f"valid Skill Pair: {output}")
+    elif args.command == "validate-proposal":
+        proposal = load_skill_proposal(project, args.proposal)
+        print(f"valid Skill Proposal: {proposal.path}\nfingerprint: {proposal.fingerprint}")
     elif args.command == "review":
         review(project)
         print(f"Project Skill Pair is current: {project.project_id}")
@@ -2619,7 +2993,16 @@ def run(arguments: Sequence[str] | None = None) -> int:
             installed = install_pointer(project, args.instructions)
         else:
             installed = install_named_adapter(project, args.adapter, args.home)
-        print(f"exposed atomic Skill Pair via {args.adapter}: {installed}")
+        if args.adapter == "pointer":
+            print(f"exposed atomic Skill Pair via pointer: {installed}")
+        else:
+            print(
+                f"installed on disk via {args.adapter}: {installed}; "
+                f"active-session discovery unverified; {adapter_reload_action(args.adapter)}"
+            )
+    elif args.command == "check-installation":
+        installed = check_installation(project, args.adapter, args.home)
+        print(f"installed Skill Pair bytes and identity verified: {installed}")
     else:
         parser.error(f"unknown command: {args.command}")
     return 0

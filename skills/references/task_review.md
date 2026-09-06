@@ -116,6 +116,14 @@ Review decisions on knowledge changes (Task 7) append one entry:
 - date: {YYYY-MM-DD} | kind: decision | targets: [{note paths}] | refs: {story id} | outcome: {accepted|rejected} | reason: "{≤1 line}"
 ```
 
+Skill Proposal decisions use the same fixed schema; do not add ledger fields:
+
+```markdown
+- date: {YYYY-MM-DD} | kind: decision | targets: [{skill target or proposal path}] | refs: proposal:{Project-relative proposal path}#{fingerprint} | outcome: {accepted|rejected} | reason: "{≤1 line}"
+```
+
+Before accepting a `create` or `update`, independently confirm: exact target pin, candidate isolation from canonical/installed paths, one invariant baseline/candidate scenario, resolvable execution Evidence, and no equivalent rejected fingerprint without `reconsiders` plus non-empty New Evidence. A `no_action` decision needs a reviewable reason, not fabricated behavioral output.
+
 ## 5. Review Schedule
 
 - **Daily**: Quick scan at end of session

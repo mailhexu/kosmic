@@ -103,6 +103,7 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
 | Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` enforces evidence linkage |
 | Reusable symbolic result or equation defect | Task M: Math Note | Executable derivation, paired note, registry row, source links | Derivation-first; check, review, and completion gates |
+| Distillation yields or updates a reusable Pattern | Task P: Propose Skill Change | One validated create/update/no_action proposal | Fresh-context proposer for shared/global scope; human and behavioral gates |
 
 ### Task 0: Quick Task
 Plan and execute a small, low-risk implementation task.
@@ -215,6 +216,13 @@ Consolidate captured Evidence Packs (`evidence/{YYYY-MM-DD}-{slug}/`, append-onl
 **Reference**: `references/task_distill.md`
 
 **Gate**: Draft-only output; `check-completion` fails until every declared pack has a linking draft-or-stable note; promotion to stable is human-gated. `generate` records publications in the `impact.md` ledger automatically.
+
+### Task P: Propose Skill Change
+Classify a reusable Pattern as one skill creation, one skill update, or `no_action` using a curated fresh-context package. Proposal artifacts remain reviewable under `specs/skill-proposals/`; they never mutate canonical or installed skills before approval and behavioral comparison.
+
+**Reference**: `references/task_propose_skill.md`
+
+**Gate**: Shared/global scope requires a dedicated proposer subagent. Accepted procedural changes require execution Evidence, human approval, and Task 7 review; equivalent rejected fingerprints require materially new evidence.
 
 ### Task M: Math Note
 Create and maintain one executable SymPy derivation plus its paired Math Derivation note. Search `mathdocs/index.md` first, execute trusted code through `check-math`, review assumptions/units/conventions, and link dependent notes and implementation with stable `MathDoc:` identifiers.

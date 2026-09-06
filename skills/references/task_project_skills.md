@@ -47,6 +47,14 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py validate \
   --project "{VAULT}/Projects/{TARGET}"
 ```
 
+Validate one Skill Proposal and print its canonical fingerprint:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py validate-proposal \
+  --project "{VAULT}/Projects/{TARGET}" \
+  --proposal "{VAULT}/Projects/{TARGET}/specs/skill-proposals/{DATE}-{SLUG}.md"
+```
+
 Review Unscoped Knowledge and projection drift:
 
 ```bash
@@ -82,7 +90,7 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-completion \
   --source-root "{SOURCE_ROOT}"
 ```
 
-Work items must declare `consumer_interface_change: true | false`. When true, `related_notes` must name current stable `usage` or `both` notes, and the canonical pair must pass drift validation. Work items may additionally declare `evidence_packs: [{slugs}]`; every declared pack must exist under `evidence/` and have at least one draft-or-stable note linking it via `evidence:` frontmatter, or the gate fails naming the slug.
+Work items must declare `consumer_interface_change: true | false`. New templates also declare `proposal_required: false`; set it true and add exactly one `skill_proposal` path when Task P is required. The proposal must validate and have a non-pending decision before completion. When Consumer Interface change is true, `related_notes` must name current stable `usage` or `both` notes, and the canonical pair must pass drift validation. Work items may additionally declare `evidence_packs: [{slugs}]`; every declared pack must exist under `evidence/` and have at least one draft-or-stable note linking it via `evidence:` frontmatter, or the gate fails naming the slug.
 
 Math-derived work items declare both `derivations: [{slug}, ...]` and `math_implementation_files: [relative/path, ...]`. Each listed file must remain under `--source-root` and contain a matching `MathDoc: {project_id}/{slug}[#result-name]` identifier.
 
@@ -106,6 +114,17 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py install \
   --adapter opencode | claude-code | codex | omp \
   --home "{HOME}"
 ```
+
+Named-adapter installation reports only on-disk success. It always labels active-session discovery unverified and names the required reload/new-session action. Verify installed bytes and Project identity separately:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-installation \
+  --project "{VAULT}/Projects/{TARGET}" \
+  --adapter opencode | claude-code | codex | omp \
+  --home "{HOME}"
+```
+
+Where the host exposes a supported skill inventory, inspect it after reload and confirm both `{PROJECT_ID}-usage` and `{PROJECT_ID}-development`. Without that observation, record activation as unverified—not successful.
 
 For an agent without named skills, update its persistent instruction file with canonical pointers:
 

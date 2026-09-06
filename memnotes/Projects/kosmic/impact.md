@@ -18,3 +18,7 @@
 - date: 2026-09-05 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 456eb92727f2fe0ddb40110377dec959b5066c4c6788ea22718d31a865622b87->4924b4151e91d3a5da72204a180224b0a5540e443b141c46c383ca32a52cbf9c | outcome: published | reason: ""
 - date: 2026-09-05 | kind: publication | targets: [notes/notation.md] | refs: 61a4caa86b77acb8fd58e3d160d6b79de18e34bc15248d1f795923b827bba37e->5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3 | outcome: published | reason: ""
 - date: 2026-09-05 | kind: decision | targets: [stories/story-010..017] | refs: math-derivation-layer-task7 | outcome: accepted | reason: "Independent Standards and Spec re-reviews passed after six findings were resolved."
+
+- date: 2026-09-06 | kind: decision | targets: [specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md] | refs: proposal:specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md#89bcc7de7c82648874b87a27942b90135bf8fa4a6546bbcc9dbba454c01f0b73 | outcome: accepted | reason: "Existing generated development topic already exposes the Pattern; no separate procedural skill is warranted."
+
+- date: 2026-09-06 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 4924b4151e91d3a5da72204a180224b0a5540e443b141c46c383ca32a52cbf9c->9e5bcdc66e14fe39c028a3066d7d39ae4bd0e8ab6cafc58c10a312d6dd20813f | outcome: published | reason: ""

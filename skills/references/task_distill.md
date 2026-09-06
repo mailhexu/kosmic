@@ -32,6 +32,7 @@ A Maintainer (any capable coding agent executing this task) analyzes Evidence Pa
 8. **Environment anchoring.** When distilled findings depend on exact code or machine state, carry a Code state line (see `notation.md`) into the distilled note or the pack's session record; the MANIFEST provenance keys (`git_head`/`worktree_tree`) remain the authoritative record for packs.
 9. **Index entry quality.** Each new note's entry in `notes/index.md` states problem + root cause + fix in one or two sentences, specific enough to judge relevance without opening the note.
 10. **Deprecation.** When evidence contradicts a stable note, do not delete it: add a draft update and flag the contradiction for review; deprecation is a human-gated outcome.
+11. **Classify reusable Patterns.** If Distillation creates or materially updates a reusable Pattern with a repeatable trigger, stable inputs, ordered actions, decision points, expected output, and failure handling, set the work item's `proposal_required: true` and run Task P. Project facts, vocabulary, and one-off observations stay `proposal_required: false`; Task P records `no_action` when classification remains uncertain.
 
 ## Output
 
