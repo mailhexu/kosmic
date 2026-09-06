@@ -1,7 +1,7 @@
 ---
 name: kosmic
-description: Orchestrate project knowledge and spec-driven work when the user wants durable notes captured or maintained, a small low-risk change executed, a feature specified (PRD→Architecture→Stories), a story implemented or reviewed, or a Project Skill Pair initialized, migrated, generated, or installed.
-version: 4.0.0
+description: Orchestrate Project knowledge and spec-driven work, and maintain a vault-level Shared Skill Library with bounded dynamic domain routing, governed proposals, migration, and installation.
+version: 5.0.0
 license: MIT
 compatibility: markdown-agent-skill, python>=3.11
 ---
@@ -10,7 +10,7 @@ compatibility: markdown-agent-skill, python>=3.11
 
 ## Overview
 
-Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages authoritative Project Knowledge and uses a deterministic Python Projection CLI to generate an atomic Usage and Development Skill Pair for each Project. Kosmic works with OpenCode, Claude Code, Codex, or agents using persistent project instructions. Each task is independent—load only what you need.
+Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages authoritative Project Knowledge and a vault-level Shared Skill Library. One installed library router dynamically loads compact Domain Skills and only the bounded Usage/Development topics required for a task. Kosmic works with OpenCode, Claude Code, Codex, or OMP. Each task is independent—load only what you need.
 
 **Documentation**: See `README.md` for complete guide.
 
@@ -32,7 +32,7 @@ Before any task, resolve `{VAULT}`, `{TARGET}`, and `{PROJECT_ID}`:
 7. DEVELOPMENT_SKILL = {PROJECT_ID}-development.
 ```
 
-**STOP**: Do not proceed until the vault Project and immutable Project Identifier resolve. Contributor workflows must also resolve the canonical Skill Pair. **Exception (bootstrap)**: Task 1: Initialize and the migration in `references/task_project_skills.md` run precisely when these prerequisites are missing — they are exempt from this STOP, from the Search-before-any-task checkpoint, and from the canonical-pair requirement, which they establish.
+**STOP**: Do not proceed until the vault Project and immutable Project Identifier resolve. Contributor workflows must also resolve a valid Shared Skill Library. **Exception (bootstrap)**: Task 1 initializes a Project, and the migration procedure in `references/task_project_skills.md` establishes the library; those exact operations are exempt from the prerequisite they establish.
 
 ## Required Procedure Skills (MANDATORY)
 
@@ -42,7 +42,7 @@ Before Contributor work, verify the required procedure-skill set for the active 
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex|omp}
 ```
 
-Missing skills or an unsupported adapter → stop and follow the required-procedure-skills section of the installed `README.md`. Kosmic is the sole workflow orchestrator: the required skills supply bounded methods and never replace Kosmic's vault records, approval gates, Project Skill Pair, or Projection CLI.
+Missing skills or an unsupported adapter → stop and follow the required-procedure-skills section of the installed `README.md`. Kosmic is the sole workflow orchestrator: required skills supply bounded methods and never replace Kosmic's vault records, approval gates, Shared Skill Library, or Projection CLI.
 
 ---
 
@@ -53,9 +53,11 @@ Missing skills or an unsupported adapter → stop and follow the required-proced
 | Vault | `{VAULT}` |
 | Target | `{TARGET}` |
 | Project ID | `project_id` in `{VAULT}/Projects/{TARGET}/ProjectEntry.md` |
-| Canonical Skill Pair | `{VAULT}/Projects/{TARGET}/skills/` |
-| Usage Skill | `{VAULT}/Projects/{TARGET}/skills/{PROJECT_ID}-usage/` |
-| Development Skill | `{VAULT}/Projects/{TARGET}/skills/{PROJECT_ID}-development/` |
+| Shared Skill Library | `{VAULT}/Skills/` |
+| Shared Skill Router | `{VAULT}/Skills/SKILL.md`; installed as `memnotes-skills` |
+| Domain Skill | `{VAULT}/Skills/{DOMAIN}/SKILL.md` |
+| Skill Topics | `{VAULT}/Skills/{DOMAIN}/{usage|development}/*.md` |
+| Legacy migration pair | `{VAULT}/Projects/{TARGET}/skills/` |
 | Projection CLI | `scripts/kosmic_project_skills.py` in the installed Kosmic skill |
 | Notes | `{VAULT}/Projects/{TARGET}/notes/{TOPIC}.md` |
 | Knowledge Index | `{VAULT}/Projects/{TARGET}/notes/index.md` |
@@ -129,8 +131,8 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 | Situation | Use Task | Required Output | Gate Behavior |
 |-----------|----------|-----------------|---------------|
-| New project/package or missing Kosmic structure | Task 1: Initialize | Project structure, immutable Project Identifier, dual-native OKF/Obsidian notes, canonical Skill Pair, AGENTS.md integration, specs index | Block completion until real stable Usage knowledge exists |
-| Existing Project missing identity, OKF conformance, Audience Scope, or canonical pair | Task 8: Migrate Project Skills | Immutable Project Identifier, transactional note migration, migration report, valid pair when Usage knowledge exists | Unscoped Knowledge remains Development-only; block publication rather than infer Usage |
+| New project/package or missing Kosmic structure | Task 1: Initialize | Project structure, immutable Project Identifier, dual-native OKF/Obsidian notes, AGENTS.md integration, specs index | Block completion until real stable knowledge exists |
+| Existing Project missing identity, OKF conformance, or Shared Library migration | Task 8: Migrate Project Skills | Immutable Project Identifier, transactional note migration, explicit domain/topic assignments, valid library catalog | Unscoped Knowledge remains Project-local; never infer a reusable domain route |
 | Need existing knowledge or context | Task 3: Search | Relevant notes/specs read | Mandatory before implementation |
 | Small, low-risk implementation | Task 0: Quick Task | Quick task record, verification, log/notes | Approval unless user explicitly requested implementation |
 | Uncertain direction after PRD | Task R: Research | Research memo linked from Architecture | No new gate; feeds PRD/Architecture review |
@@ -165,7 +167,7 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 **When**: Starting work on a NEW Project, adding a NEW package, or no Kosmic structure or Project Identifier exists.
 
-**Check**: Verify the vault Project, `ProjectEntry.md` identity, and canonical Skill Pair. Run this task if any is missing.
+**Check**: Verify the vault Project, `ProjectEntry.md` identity, and Shared Skill Library. Run this task if Project prerequisites are missing.
 
 ---
 
@@ -250,11 +252,11 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 **Load**: `references/task_project_skills.md`
 
-**When**: An existing vault Project lacks an immutable Project Identifier, contains nonconformant or Unscoped Knowledge, or has no canonical Skill Pair.
+**When**: An existing vault Project lacks an immutable Project Identifier, contains nonconformant Knowledge, or has procedures not yet assigned to the Shared Skill Library.
 
-**Flow**: Assign/validate identity → normalize `notes/` to dual-native OKF/Obsidian Markdown → report Unscoped Knowledge → add reviewed Usage scope → validate pair → install adapter
+**Flow**: Assign/validate identity → normalize `notes/` → inventory stable projected procedures → require explicit domain/topic assignments → stage and validate Shared Library → compare behavior → publish atomically → install one router
 
-**Gate**: Migration may record identity, but must not publish either skill until real stable Usage knowledge exists. Ambiguous Wikilinks stop migration without partial note edits.
+**Gate**: Migration may record identity and normalize notes, but Shared Library publication requires a complete explicit assignment map and valid atomic catalog. Ambiguous Wikilinks or unassigned legacy references stop migration without partial authoritative changes.
 
 ---
 
@@ -381,7 +383,7 @@ draft → approved → in_progress → review → done
 Is this a NEW Project/package?
 ├─ YES → Task 1: Initialize
 └─ NO →
-    Is identity, Audience Scope, or the canonical Skill Pair missing?
+    Is identity, Project knowledge, or Shared Library migration missing?
     ├─ YES → Task 8: Migrate Project Skills
     └─ NO →
         Do I need to FIND existing knowledge?
@@ -440,4 +442,4 @@ If work is blocked, keep the current status and add a blocker note in the artifa
 ## Distribution
 
 When initializing a new project, use `references/agents_template.md` to add the Kosmic Integration section to that project's AGENTS.md.
-The canonical Project Skill Pair is generated in the vault and exposed through an Install Adapter. Never hand-maintain installed or canonical projection output.
+The Shared Skill Library is authoritative in the vault. Install only its generated `memnotes-skills` router; Domain Skills and detailed topics load dynamically through a verified Resolution Plan. Never hand-edit generated catalogs, manifests, router packages, or installed copies.

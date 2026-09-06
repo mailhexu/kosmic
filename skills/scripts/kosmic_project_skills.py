@@ -24,6 +24,31 @@ from pathlib import Path
 from typing import Any, Iterable, Sequence
 from urllib.parse import quote, unquote
 
+try:
+    from .kosmic_shared_library import (
+        LibraryError,
+        check_shared_router_installation,
+        generate_library,
+        install_shared_router,
+        load_recipe_packet,
+        migrate_assignments,
+        resolve_library,
+        validate_library,
+        parse_document as parse_library_document,
+    )
+except ImportError:
+    from kosmic_shared_library import (
+        LibraryError,
+        check_shared_router_installation,
+        generate_library,
+        install_shared_router,
+        load_recipe_packet,
+        migrate_assignments,
+        resolve_library,
+        validate_library,
+        parse_document as parse_library_document,
+    )
+
 GENERATOR_VERSION = 4
 OKF_VERSION = "0.2"
 PROJECT_ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
@@ -45,7 +70,7 @@ LEDGER_OUTCOMES = {"published", "accepted", "rejected"}
 MATHDOCS_DIR_NAME = "mathdocs"
 MATH_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 PROPOSAL_RESULTS = {"create", "update", "no_action"}
-PROPOSAL_SCOPES = {"project-knowledge", "project-procedure", "global-procedure"}
+PROPOSAL_SCOPES = {"project-knowledge", "project-procedure", "global-procedure", "shared-procedure"}
 PROPOSAL_DECISIONS = {"pending", "accepted", "rejected"}
 PROPOSAL_STATUSES = {"draft", "approved", "done"}
 PROPOSAL_FILE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
@@ -227,6 +252,7 @@ class SkillProposal:
     decision: str
     fingerprint: str
     reconsiders: str
+    approved_by: str
 
 
 def sha256_bytes(content: bytes) -> str:
@@ -2499,7 +2525,12 @@ def proposal_section(body: str, heading: str) -> str:
 
 
 def proposal_fingerprint(
-    result: str, scope: str, target: str, related_notes: Sequence[str], body: str
+    result: str,
+    scope: str,
+    target: str,
+    related_notes: Sequence[str],
+    evidence_packs: Sequence[str],
+    body: str,
 ) -> str:
     change = proposal_section(
         body, "No-Action Reason" if result == "no_action" else "Proposed Change"
@@ -2509,6 +2540,7 @@ def proposal_fingerprint(
         "scope": scope,
         "target": target,
         "related_notes": sorted(related_notes),
+        "evidence_packs": sorted(evidence_packs),
         "change": change,
     }
     return sha256_bytes(
@@ -2601,8 +2633,24 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         if not note.is_file() or note.suffix != ".md":
             raise KosmicError(f"Skill Proposal related note is missing: {reference}")
     for slug in evidence_packs:
-        if not (project.evidence_dir / slug).is_dir():
+        if "/" in slug:
+            vault_root = project.root.parent.parent.resolve()
+            pack = (vault_root / slug).resolve()
+            try:
+                relative_pack = pack.relative_to(vault_root)
+            except ValueError as error:
+                raise KosmicError(f"Skill Proposal evidence pack escapes vault: {slug}") from error
+            if (
+                len(relative_pack.parts) < 4
+                or relative_pack.parts[0] != "Projects"
+                or relative_pack.parts[2] != EVIDENCE_DIR_NAME
+            ):
+                raise KosmicError(f"invalid cross-project evidence pack path: {slug}")
+        else:
+            pack = project.evidence_dir / slug
+        if not pack.is_dir():
             raise KosmicError(f"Skill Proposal evidence pack is missing: {slug}")
+        validate_evidence_pack(pack)
     for reference in behavioral_evidence:
         evidence_path = contained_project_path(project, reference, "behavioral_evidence")
         if not evidence_path.is_file():
@@ -2627,8 +2675,8 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
     input_manifest = as_string_list(metadata["input_manifest"])
     input_entries = validate_input_manifest(project, input_manifest)
     proposer_mode = str(metadata["proposer_mode"]).strip()
-    if scope == "global-procedure" and proposer_mode != "subagent":
-        raise KosmicError("global-procedure Skill Proposal requires proposer_mode: subagent")
+    if scope in {"global-procedure", "shared-procedure"} and proposer_mode != "subagent":
+        raise KosmicError(f"{scope} Skill Proposal requires proposer_mode: subagent")
     if proposer_mode not in {"subagent", "same-agent"}:
         raise KosmicError("Skill Proposal proposer_mode must be subagent or same-agent")
     if not str(metadata["proposer_ref"]).strip():
@@ -2637,14 +2685,31 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         raise KosmicError("same-agent Skill Proposal requires proposer_reason")
     target_ref = str(metadata["target_ref"]).strip()
     target_sha256 = str(metadata["target_sha256"]).strip()
+    approved_by = str(metadata.get("approved_by") or "").strip()
+    target_prefix = "library-skill://" if scope == "shared-procedure" else "skill://"
+    if scope == "shared-procedure" and result != "no_action":
+        parts = target.split("/")
+        if len(parts) != 3 or parts[1] not in {"usage", "development"}:
+            raise KosmicError("shared-procedure target must be domain/audience/slug")
+        domain_skill = project.root.parent.parent / "Skills" / parts[0] / "SKILL.md"
+        if not domain_skill.is_file():
+            raise KosmicError(f"shared-procedure target domain is missing: {parts[0]}")
+        maintainers = as_string_list(
+            parse_library_document(domain_skill).metadata.get("maintainers")
+        )
+        if decision == "accepted" and approved_by not in maintainers:
+            raise KosmicError(
+                "OWNERSHIP_REQUIRED: accepted shared-procedure Skill Proposal "
+                f"approved_by must name a target Domain Maintainer: {', '.join(maintainers)}"
+            )
     if result == "create":
-        if not target or target_ref != f"skill://{target}" or target_sha256 != "empty":
+        if not target or target_ref != f"{target_prefix}{target}" or target_sha256 != "empty":
             raise KosmicError(
                 "create Skill Proposal requires target, matching target_ref, "
                 "and target_sha256: empty"
             )
     elif result == "update":
-        if not target or target_ref != f"skill://{target}" or not SHA256_RE.fullmatch(target_sha256):
+        if not target or target_ref != f"{target_prefix}{target}" or not SHA256_RE.fullmatch(target_sha256):
             raise KosmicError(
                 "update Skill Proposal requires target, matching target_ref, and a SHA-256 pin"
             )
@@ -2665,7 +2730,9 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         raise KosmicError(
             f"Skill Proposal {path.name} has missing or empty sections: {', '.join(empty_sections)}"
         )
-    computed = proposal_fingerprint(result, scope, target, related_notes, document.body)
+    computed = proposal_fingerprint(
+        result, scope, target, related_notes, evidence_packs, document.body
+    )
     recorded = str(metadata["fingerprint"]).strip()
     if decision != "pending" and recorded != computed:
         raise KosmicError(f"Skill Proposal fingerprint mismatch; expected {computed}")
@@ -2702,8 +2769,14 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         prior_scope = str(prior.metadata.get("scope") or "")
         prior_target = str(prior.metadata.get("target") or "")
         prior_related = as_string_list(prior.metadata.get("related_notes"))
+        prior_evidence = as_string_list(prior.metadata.get("evidence_packs"))
         prior_fingerprint = proposal_fingerprint(
-            prior_result, prior_scope, prior_target, prior_related, prior.body
+            prior_result,
+            prior_scope,
+            prior_target,
+            prior_related,
+            prior_evidence,
+            prior.body,
         )
         if str(prior.metadata.get("fingerprint") or "") != prior_fingerprint:
             raise KosmicError(f"rejected Skill Proposal fingerprint mismatch: {prior_path.name}")
@@ -2739,6 +2812,7 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         decision=decision,
         fingerprint=computed,
         reconsiders=str(metadata["reconsiders"]).strip(),
+        approved_by=approved_by,
     )
 
 
@@ -2921,6 +2995,50 @@ def build_parser() -> argparse.ArgumentParser:
     )
     required_skills_parser.add_argument("--home", type=path_argument, default=Path.home())
 
+    library_generate = subparsers.add_parser(
+        "generate-library", help="generate and validate Shared Skill Library indexes"
+    )
+    library_generate.add_argument("--vault", type=path_argument, required=True)
+    library_validate = subparsers.add_parser(
+        "validate-library", help="validate Shared Skill Library sources and generated indexes"
+    )
+    library_validate.add_argument("--vault", type=path_argument, required=True)
+    library_resolve = subparsers.add_parser(
+        "resolve-library", help="resolve a bounded hash-pinned Recipe Packet plan"
+    )
+    library_resolve.add_argument("--vault", type=path_argument, required=True)
+    request = library_resolve.add_mutually_exclusive_group(required=True)
+    request.add_argument("--query")
+    request.add_argument("--route")
+    library_resolve.add_argument("--role", choices=("usage", "development", "auto"), default="auto")
+    library_resolve.add_argument("--project")
+    library_resolve.add_argument("--max-bytes", type=int)
+    library_resolve.add_argument("--max-domains", type=int)
+    library_resolve.add_argument("--max-topics", type=int)
+    library_load = subparsers.add_parser(
+        "load-library", help="verify a resolution plan and emit its Recipe Packet"
+    )
+    library_load.add_argument("--vault", type=path_argument, required=True)
+    library_load.add_argument("--plan", type=path_argument, required=True)
+    library_migrate = subparsers.add_parser(
+        "migrate-library", help="publish explicitly assigned Project topics into the Shared Library"
+    )
+    library_migrate.add_argument("--vault", type=path_argument, required=True)
+    library_migrate.add_argument("--project", type=path_argument, required=True)
+    library_migrate.add_argument("--assignments", type=path_argument, required=True)
+    library_install = subparsers.add_parser(
+        "install-library", help="install one Shared Skill Router and remove managed Project pairs"
+    )
+    library_install.add_argument("--vault", type=path_argument, required=True)
+    library_install.add_argument("--adapter", choices=("opencode", "claude-code", "codex", "omp"), required=True)
+    library_install.add_argument("--home", type=path_argument, default=Path.home())
+    library_check = subparsers.add_parser(
+        "check-library-installation", help="verify the installed Shared Skill Router"
+    )
+    library_check.add_argument("--vault", type=path_argument, required=True)
+    library_check.add_argument("--adapter", choices=("opencode", "claude-code", "codex", "omp"), required=True)
+    library_check.add_argument("--home", type=path_argument, default=Path.home())
+
     return parser
 
 
@@ -2951,6 +3069,54 @@ def run(arguments: Sequence[str] | None = None) -> int:
     if args.command == "check-required-skills":
         check_required_skills(args.adapter, args.home)
         print(f"required skills available for {args.adapter}")
+        return 0
+
+    if args.command == "generate-library":
+        generated = generate_library(args.vault)
+        print("generated Shared Skill Library: " + ", ".join(str(path) for path in generated))
+        return 0
+    if args.command == "validate-library":
+        validate_library(args.vault)
+        print(f"valid Shared Skill Library: {args.vault.expanduser().resolve() / 'Skills'}")
+        return 0
+    if args.command == "resolve-library":
+        plan = resolve_library(
+            args.vault,
+            query=args.query,
+            route=args.route,
+            role=args.role,
+            project=args.project,
+            max_bytes=args.max_bytes,
+            max_domains=args.max_domains,
+            max_topics=args.max_topics,
+        )
+        print(json.dumps(plan, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 0
+    if args.command == "load-library":
+        plan = read_json(args.plan.expanduser().resolve())
+        sys.stdout.write(load_recipe_packet(args.vault, plan))
+        return 0
+    if args.command == "migrate-library":
+        assignments = read_json(args.assignments.expanduser().resolve())
+        if not all(isinstance(key, str) and isinstance(value, str) for key, value in assignments.items()):
+            raise LibraryError("migration assignments must be a JSON object of string paths to topic IDs")
+        report = migrate_assignments(args.vault, args.project, assignments)
+        print(json.dumps(report, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 0
+    if args.command in {"install-library", "check-library-installation"}:
+        destination_root = adapter_root(args.adapter, args.home.expanduser().resolve())
+        if args.command == "install-library":
+            installed = install_shared_router(args.vault, destination_root)
+            print(
+                f"installed Shared Skill Router bytes and identity at {installed}; "
+                f"active-session discovery unverified; {adapter_reload_action(args.adapter)}"
+            )
+        else:
+            installed = check_shared_router_installation(args.vault, destination_root)
+            print(
+                f"installed Shared Skill Router bytes and identity verified: {installed}; "
+                f"activation unverified; {adapter_reload_action(args.adapter)}"
+            )
         return 0
 
     project = load_project(args.project)
@@ -3014,6 +3180,9 @@ def main() -> int:
     except KosmicError as error:
         print(f"error: {error}", file=sys.stderr)
         return error.exit_code
+    except LibraryError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
     except OSError as error:
         print(f"error: filesystem operation failed: {error}", file=sys.stderr)
         return 5

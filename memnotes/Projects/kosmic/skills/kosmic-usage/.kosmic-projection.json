@@ -16,6 +16,12 @@
       "path": "notes/notation.md",
       "reference": "references/notation.md",
       "sha256": "5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3"
+    },
+    {
+      "audience": "usage",
+      "path": "notes/shared-domain-skill-library.md",
+      "reference": "references/shared-domain-skill-library.md",
+      "sha256": "f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940"
     }
   ],
   "working_state": "working-tree"

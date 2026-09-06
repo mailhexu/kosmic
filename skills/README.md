@@ -1,6 +1,6 @@
 # Kosmic Skill
 
-Spec-driven Project knowledge for reliable AI-assisted development and usage across agents. Kosmic remains the workflow orchestrator while a deterministic Projection CLI generates each Project's atomic Usage and Development Skill Pair.
+Spec-driven Project knowledge for reliable AI-assisted development and usage across agents. Kosmic remains the workflow orchestrator; a deterministic CLI maintains a vault-level Shared Skill Library behind one native router and dynamically loaded domain procedures.
 
 ## Features
 
@@ -11,9 +11,11 @@ Spec-driven Project knowledge for reliable AI-assisted development and usage acr
 - **Test-Driven Implementation**: Research → Tests → Code → Review pipeline
 - **Mandatory Code Review**: No story is "done" without review
 - **Progress Tracking**: Status lifecycle and daily logging
-- **Project Skill Pair**: Exactly `{project}-usage` and `{project}-development` generated from stable notes
-- **Dual-Native Knowledge**: One authoritative notes tree works directly in Obsidian and as an OKF v0.2 bundle
-- **Deterministic Projection CLI**: OKF validation, audience filtering, provenance, drift checks, atomic publication, migration, and Install Adapters
+- **Shared Skill Library**: One authoritative `memnotes/Skills/` tree with one dynamically loaded `SKILL.md` per maintained domain
+- **Bounded Recipe Packets**: Deterministic route/query resolution, dependency closure, exact byte budgets, and hash-pinned loading
+- **Single Native Router**: Constant discovery footprint across OpenCode, Claude Code, Codex, and OMP
+- **Dual-Native Knowledge**: Authoritative Markdown works directly in Obsidian and through Kosmic's validated schemas
+- **Deterministic Projection CLI**: Project validation, evidence, proposals, library catalogs, migration, atomic publication, and Install Adapters
 
 ## Quick Start
 
@@ -235,11 +237,12 @@ Create and maintain one executable SymPy derivation plus its paired Math Derivat
 
 `notes/` is one authoritative Obsidian-readable OKF v0.2 bundle—not an authoring tree plus an export tree. Its `index.md` contains only the required `okf_version: "0.2"` frontmatter. Every other concept starts with YAML on line 1, declares `type`, uses `status: draft | stable | deprecated`, and links with relative standard Markdown. Kosmic-specific fields such as `audience`, confidence, validation procedure, and provenance remain valid extension fields.
 
-## Project Skill Pair Lifecycle
+## Shared Domain Skill Library
 
-Stable notes declare `audience: development`, `usage`, or `both`. Usage receives `usage` and `both`; Development receives `development` and requires Usage for shared behavior. Vault-only `mathdocs/` pairs remain outside both projections. Run the Projection CLI through the commands in `references/task_project_skills.md` to generate, validate, review, migrate, execute math checks, check completion, or install the pair.
+`memnotes/Skills/SKILL.md` is the single installed library entry point. Each maintained software domain—such as `abinit`, `tb2j`, or `kosmic`—has one compact domain `SKILL.md`; its detailed Usage and Development procedures are ordinary Markdown topics. `resolve-library` selects one bounded dependency closure and emits a hash-pinned plan. `load-library` verifies the unchanged manifest and source hashes before emitting the ordered Recipe Packet. Cross-project Evidence stays with its source Project; Task P targets `library-skill://{domain}/{audience}/{slug}`, and only a declared target-domain Maintainer can approve publication.
 
-Canonical packages remain in the Project vault and are themselves OKF v0.2 bundles. OpenCode, Claude Code, and Codex adapters expose them through native skill directories; the pointer adapter supports agents without named skills.
+Legacy Project Skill Pairs remain migration inputs in their Project vaults, not installed compatibility aliases. `install-library` exposes only `memnotes-skills` and removes managed installed pairs after successful byte and identity verification. See `references/task_project_skills.md`.
+
 
 
 ## Typical Session Flow

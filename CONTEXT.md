@@ -44,6 +44,26 @@ _Avoid_: Skill Projection, installer
 The deterministic Kosmic tool that validates, generates, drift-checks, and installs a Project's atomic Skill Pair.
 _Avoid_: Agent procedure, skill generator
 
+**Shared Skill Library**:
+The authoritative vault-level `Skills/` tree containing maintained Domain Skills and atomic Skill Topics, exposed through one native Shared Skill Router.
+_Avoid_: Project Skill Pair, global wiki
+
+**Domain Skill**:
+One maintained software-domain boundary, such as ABINIT or TB2J, represented by a compact dynamically loaded `SKILL.md` that owns routing and Maintainers.
+_Avoid_: Every recipe, installed skill
+
+**Skill Topic**:
+One atomic Usage or Development procedure stored as ordinary Markdown beneath a Domain Skill.
+_Avoid_: Subskill, `SKILL.md` per recipe
+
+**Recipe Packet**:
+A complete, dependency-closed, byte-bounded, hash-verified set of Domain Skills and Skill Topics loaded for one task.
+_Avoid_: Whole library, partial context
+
+**Shared Skill Router**:
+The sole native Agent Skill entry point for the Shared Skill Library; it delegates deterministic selection and loading to the Projection CLI.
+_Avoid_: Domain Skill, Kosmic workflow Orchestrator
+
 **Projection Provenance**:
 The source-note identity and content hash carried by a projected topic reference so drift can be detected without treating generated content as authoritative.
 _Avoid_: Source link, generated metadata

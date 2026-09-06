@@ -12,6 +12,7 @@ import unittest
 from pathlib import Path
 
 
+from skills.scripts.kosmic_project_skills import proposal_fingerprint
 REPO_ROOT = Path(__file__).resolve().parents[1]
 CLI = REPO_ROOT / "skills" / "scripts" / "kosmic_project_skills.py"
 
@@ -2018,6 +2019,121 @@ class SkillProposalTest(ExperienceCompilationTest):
             "validate-proposal", "--project", str(project), "--proposal", str(proposal)
         )
         self.assertIn("valid Skill Proposal", result.stdout)
+
+    def test_shared_procedure_targets_domain_and_requires_independent_proposer(self) -> None:
+        project = self.make_project()
+        domain = project.parent.parent / "Skills" / "abinit"
+        domain.mkdir(parents=True)
+        (domain / "SKILL.md").write_text(
+            "---\ntype: Domain Skill\nid: abinit\nstatus: stable\n"
+            "description: ABINIT procedures\nmaintainers: [alice]\n"
+            "triggers: [abinit]\naliases: []\n---\n# ABINIT\n",
+            encoding="utf-8",
+        )
+        proposal = self.write_proposal(project)
+        text = proposal.read_text(encoding="utf-8")
+        text = text.replace("scope: project-procedure", "scope: shared-procedure")
+        text = text.replace("demo-skill", "abinit/usage/export-wavefunctions")
+        text = text.replace(
+            "target_ref: skill://", "target_ref: library-skill://"
+        ).replace("proposer_mode: same-agent", "proposer_mode: subagent")
+        proposal.write_text(text, encoding="utf-8")
+        valid = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        self.assertIn("valid Skill Proposal", valid.stdout)
+        proposal.write_text(
+            text.replace("proposer_mode: subagent", "proposer_mode: same-agent"),
+            encoding="utf-8",
+        )
+        invalid = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("shared-procedure Skill Proposal requires proposer_mode: subagent", invalid.stderr)
+
+    def test_shared_procedure_acceptance_requires_domain_maintainer(self) -> None:
+        project = self.make_project()
+        self.make_pack(project, "2026-09-06-governance")
+        domain = project.parent.parent / "Skills" / "abinit"
+        domain.mkdir(parents=True)
+        (domain / "SKILL.md").write_text(
+            "---\ntype: Domain Skill\nid: abinit\nstatus: stable\n"
+            "description: ABINIT procedures\nmaintainers: [alice]\n"
+            "triggers: [abinit]\naliases: []\n---\n# ABINIT\n",
+            encoding="utf-8",
+        )
+        proposal = self.write_proposal(project)
+        text = proposal.read_text(encoding="utf-8")
+        text = text.replace("scope: project-procedure", "scope: shared-procedure")
+        text = text.replace("demo-skill", "abinit/usage/export-wavefunctions")
+        text = text.replace("target_ref: skill://", "target_ref: library-skill://")
+        text = text.replace("proposer_mode: same-agent", "proposer_mode: subagent")
+        text = text.replace("decision: pending", "decision: accepted")
+        text = text.replace(
+            "behavioral_evidence: []",
+            "behavioral_evidence: [evidence/2026-09-06-governance/findings.md]",
+        )
+        text = text.replace('fingerprint: ""', "fingerprint: placeholder")
+        text = text.replace("status: draft", "status: done")
+        text = text.replace("proposer_reason:", "approved_by: mallory\nproposer_reason:")
+        proposal.write_text(text, encoding="utf-8")
+        result = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("OWNERSHIP_REQUIRED", result.stderr)
+
+    def test_cross_project_evidence_path_is_contained_and_changes_fingerprint(self) -> None:
+        project = self.make_project()
+        other = project.parent / "other"
+        self.make_pack(other, "2026-09-06-cross-project")
+        proposal = self.write_proposal(project)
+        cross = "Projects/other/evidence/2026-09-06-cross-project"
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8").replace(
+                "evidence_packs: []", f"evidence_packs: [{cross}]"
+            ),
+            encoding="utf-8",
+        )
+        result = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        self.assertIn("valid Skill Proposal", result.stdout)
+        body = proposal.read_text(encoding="utf-8")
+        without = proposal_fingerprint(
+            "create", "project-procedure", "demo-skill", ["notes/index.md"], [], body
+        )
+        with_cross = proposal_fingerprint(
+            "create",
+            "project-procedure",
+            "demo-skill",
+            ["notes/index.md"],
+            [cross],
+            body,
+        )
+        self.assertNotEqual(without, with_cross)
+        proposal.write_text(
+            body.replace(f"evidence_packs: [{cross}]", "evidence_packs: [../../escape]"),
+            encoding="utf-8",
+        )
+        invalid = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertRegex(invalid.stderr, "escape|cross-project")
 
 if __name__ == "__main__":
     unittest.main()

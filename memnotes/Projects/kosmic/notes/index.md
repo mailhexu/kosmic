@@ -11,6 +11,7 @@ okf_version: "0.2"
 
 ## Interfaces
 * [Projection CLI experience commands](cli-projection-commands.md) - Evidence packs, `evidence:` note links, the `impact.md` ledger, and the `check-completion` evidence gate: what the CLI validates and enforces.
+* [Shared Domain Skill Library](shared-domain-skill-library.md) - One installed router, dynamically loaded Domain Skills, bounded dependency-closed Recipe Packets, governed cross-project learning, and atomic migration.
 
 ## Reference
 * [Notation](notation.md) - Standard variable notations and symbols.

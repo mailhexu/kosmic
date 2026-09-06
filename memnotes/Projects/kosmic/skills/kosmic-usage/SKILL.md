@@ -17,5 +17,6 @@ Working State: `working-tree`
 
 - [Projection CLI experience commands](references/cli-projection-commands.md)
 - [Notation](references/notation.md)
+- [Shared Domain Skill Library](references/shared-domain-skill-library.md)
 
 Load only the topic references needed for the current task.

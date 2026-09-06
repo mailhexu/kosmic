@@ -15,7 +15,7 @@ related_notes: [notes/cli-extension-conventions.md]
 evidence_packs: [2026-09-02-experience-compilation-impl]
 behavioral_evidence: []
 decision: accepted
-fingerprint: 89bcc7de7c82648874b87a27942b90135bf8fa4a6546bbcc9dbba454c01f0b73
+fingerprint: 30d2d8021f4eee71d4f896545ee89f0ba171206b3ffad857dc90b941c931bd1a
 reconsiders: ""
 ---
 

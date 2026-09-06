@@ -40,7 +40,9 @@ Every listed file carries a Project-relative path and SHA-256. The proposer foll
 
 ## Output constraints
 
-- `create`: target is a new skill name; `target_ref` is `skill://{name}`; `target_sha256` is `empty`.
-- `update`: target, `target_ref`, and exact pre-change `target_sha256` are mandatory.
+- `create` for a Project-local or global skill: target is a new skill name; `target_ref` is `skill://{name}`; `target_sha256` is `empty`.
+- `update` for those targets: target, `target_ref`, and exact pre-change `target_sha256` are mandatory.
+- `shared-procedure`: target is `{domain}/{usage|development}/{slug}` and `target_ref` is `library-skill://{target}`. A fresh-context subagent is mandatory. Accepted proposals record `approved_by` matching the target Domain Skill's `maintainers`; Task 7 verifies the human authorization.
 - `no_action`: target fields are empty; `## No-Action Reason` replaces `## Proposed Change`; behavioral evidence may be empty.
-- Proposal paths and evidence/note references are Project-root-relative and contained within the Project.
+- Project evidence slugs remain valid. Cross-project evidence uses an explicit vault-contained `Projects/{project}/evidence/{pack}` path; Evidence stays with the Project that produced it.
+- Proposal paths and note references are Project-root-relative and contained within the Project.

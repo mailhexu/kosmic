@@ -15,6 +15,7 @@ related_notes: []
 evidence_packs: []
 behavioral_evidence: []
 decision: pending
+approved_by: ""
 fingerprint: ""
 reconsiders: ""
 ---

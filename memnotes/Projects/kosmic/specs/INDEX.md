@@ -12,7 +12,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 
 - PRD: [PRD](prd.md) (approved 2026-09-02)
 - Architecture: [Architecture](architecture.md) (approved 2026-09-02)
-- Current focus: explicit WikiSkill-inspired Skill Proposal loop with fresh-context proposer and human-gated behavioral validation
+- Current focus: vault-level Shared Domain Skill Library with one native router, dynamically loaded domain `SKILL.md` files, and cross-project learning
 
 ## Active Specs
 
@@ -24,6 +24,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Architecture | [Math Derivation Layer](architecture-math-derivation-layer.md) | approved 2026-09-05 | AD-M1..M8: registry, protocol, markers, atomic updates, validation, completion linkage |
 | Feature PRD | [Skill Proposal Loop](prd-skill-proposer.md) | approved 2026-09-06 | Task P, fresh-context proposer policy, behavioral gate, activation diagnostics |
 | Feature Architecture | [Skill Proposal Loop](architecture-skill-proposer.md) | approved 2026-09-06 | AD-P1..P8: proposer role, artifact, gates, behavior, rejection memory, activation |
+| Feature PRD | [Shared Domain Skill Library](prd-shared-domain-skill-library.md) | approved 2026-09-06 | One library router; domain-root subskills; ordinary topic notes; cross-domain resolution and Maintainer governance |
+| Feature Architecture | [Shared Domain Skill Library](architecture-shared-domain-skill-library.md) | approved 2026-09-06 | AD-SD1..SD10: domain-root fracture, deterministic resolver, bounded cross-domain packets, governed migration |
 
 ## Research Memos
 
@@ -56,6 +58,9 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Epic 11 Proposal governance](epics/epic-11-proposal-governance.md) | done | 2 | Completion gate, lifecycle, fingerprints, rejection memory |
 | [Epic 12 Proposal behavior](epics/epic-12-proposal-behavior.md) | done | 1 | Baseline/candidate evidence and review |
 | [Epic 13 Activation/release](epics/epic-13-proposal-activation-release.md) | done | 2 | Installation diagnostics, dogfood, distribution |
+| [Epic 14 Shared library foundation](epics/epic-14-shared-library-foundation.md) | draft | 2 | Domain/topic schemas, catalog, deterministic resolver |
+| [Epic 15 Shared library governance](epics/epic-15-shared-library-governance.md) | draft | 2 | Cross-project evidence, domain ownership, single-router install |
+| [Epic 16 Shared library migration/release](epics/epic-16-shared-library-migration-release.md) | draft | 2 | Explicit migration, cross-domain dogfood, clean cutover |
 
 ## Stories
 
@@ -85,6 +90,12 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [story-022 behavioral gate](stories/story-022-proposal-behavioral-gate.md) | done | 12 | Isolated baseline/candidate evidence |
 | [story-023 activation diagnostics](stories/story-023-installation-activation-diagnostics.md) | done | 13 | Descriptions, installed bytes, honest discovery |
 | [story-024 dogfood/release](stories/story-024-proposer-dogfood-release.md) | done | 13 | Real proposal, review, release |
+| [story-025 library schema/catalog](stories/story-025-library-schema-catalog.md) | done | 14 | Authoritative documents, generated indexes, dependency validation |
+| [story-026 deterministic resolver](stories/story-026-deterministic-library-resolver.md) | done | 14 | Route/query plans, closure, budgets, verified load |
+| [story-027 cross-project governance](stories/story-027-cross-project-domain-governance.md) | done | 15 | Source evidence, target-domain Maintainer approval |
+| [story-028 shared router install](stories/story-028-shared-router-installation.md) | done | 15 | One native router, adapter cutover and rollback |
+| [story-029 shared library migration](stories/story-029-shared-library-migration.md) | done | 16 | Explicit assignments, provenance preservation, atomic publication |
+| [story-030 dogfood/release](stories/story-030-shared-library-dogfood-release.md) | done | 16 | Kosmic and TB2J→ABINIT behavior, review, release |
 
 ## Completed or Archived
 
@@ -94,6 +105,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Route-Graph Architecture](archive/2026-09-02-architecture-route-graph.md) | 2026-09-02 (abandoned) | ADRs 0002-0006 never approved or implemented; retained for reference |
 | [Experience Compilation (PRD + Architecture + 5 epics + 9 stories)](prd.md) | 2026-09-02 | Implemented, reviewed (self-review round 1, disclosed), 67/67 tests; first Skill Pair published; ledger live |
 | [Math Derivation Layer (PRD + Architecture + 4 epics + 8 stories)](prd-math-derivation-layer.md) | 2026-09-05 | Implemented, independently reviewed, 205 tests; real SymPy dogfood; v4.0.0 pushed and installed |
+| [Shared Domain Skill Library (PRD + Architecture + 3 epics + 6 stories)](prd-shared-domain-skill-library.md) | 2026-09-06 | Implemented, independently reviewed, 283 tests; explicit Kosmic migration; four-adapter `memnotes-skills` install verified |
 
 ## Maintenance Notes
 

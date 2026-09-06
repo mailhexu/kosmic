@@ -1,8 +1,8 @@
 # Installing Kosmic
 
-Kosmic is distributed as Markdown workflows plus a deterministic Python 3.11+ Projection CLI. Install the entire `skills/` directory wherever your agent loads custom skills, reusable instructions, or persistent project workflows.
+Kosmic is distributed as Markdown workflows plus a deterministic Python 3.11+ CLI. Install the entire `skills/` directory wherever your agent loads custom skills, reusable instructions, or persistent project workflows.
 
-The orchestrator skill name is `kosmic`. After Project initialization, Kosmic generates one `{project}-usage` and one `{project}-development` skill under the Project vault. In OpenCode, load the orchestrator with:
+The orchestrator skill name is `kosmic`. It remains the workflow/control-plane skill. Reusable software procedures live separately in the vault-level `memnotes/Skills/` Shared Skill Library, exposed through one installed `memnotes-skills` router. In OpenCode, load the orchestrator with:
 
 ```text
 /skill kosmic
@@ -32,6 +32,21 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 ```
 
 Then smoke-load `kosmic` and one required skill through the adapter's native interaction. The check uses each adapter's global skill location and reports every missing skill. An unsupported adapter or an incomplete set blocks Kosmic initialization and Contributor workflows.
+
+## Install the Shared Skill Router
+
+After creating or migrating the vault-level Shared Skill Library, generate and validate it, then install the single router:
+
+```bash
+python3 skills/scripts/kosmic_project_skills.py generate-library --vault memnotes
+python3 skills/scripts/kosmic_project_skills.py validate-library --vault memnotes
+python3 skills/scripts/kosmic_project_skills.py install-library \
+  --vault memnotes --adapter opencode --home "$HOME"
+python3 skills/scripts/kosmic_project_skills.py check-library-installation \
+  --vault memnotes --adapter opencode --home "$HOME"
+```
+
+Use adapter `claude-code`, `codex`, or `omp` for the other supported registries. Installation exposes exactly `memnotes-skills`; Domain Skills and detailed topics remain in the vault and load dynamically. The command removes only managed legacy Project Skill Pairs and rolls back on failure. Start a new adapter session and inspect its native inventory before claiming activation.
 
 ## Option 1: Install with an AI agent
 

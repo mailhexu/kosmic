@@ -22,3 +22,10 @@
 - date: 2026-09-06 | kind: decision | targets: [specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md] | refs: proposal:specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md#89bcc7de7c82648874b87a27942b90135bf8fa4a6546bbcc9dbba454c01f0b73 | outcome: accepted | reason: "Existing generated development topic already exposes the Pattern; no separate procedural skill is warranted."
 
 - date: 2026-09-06 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 4924b4151e91d3a5da72204a180224b0a5540e443b141c46c383ca32a52cbf9c->9e5bcdc66e14fe39c028a3066d7d39ae4bd0e8ab6cafc58c10a312d6dd20813f | outcome: published | reason: ""
+
+- date: 2026-09-06 | kind: decision | targets: [specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md] | refs: proposal:specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md#30d2d8021f4eee71d4f896545ee89f0ba171206b3ffad857dc90b941c931bd1a | outcome: accepted | reason: "Fingerprint supersedes the prior value by including declared Evidence Pack paths."
+- date: 2026-09-06 | kind: publication | targets: [Skills/memnotes-skills, Skills/abinit, Skills/tb2j, Skills/kosmic] | refs: null->38c3bbcee18e44a19ce1f731b2e2e98bd63be3f2e14193419642909edd944147 | outcome: published | reason: "One bounded shared router replaces managed per-Project installed pairs."
+- date: 2026-09-06 | kind: decision | targets: [stories/story-025..030] | refs: shared-domain-skill-library-task7 | outcome: accepted | reason: "Independent Standards and Spec re-reviews passed after all findings and stale installs were resolved."
+- date: 2026-09-06 | kind: publication | targets: [Skills/kosmic/usage/shared-domain-skill-library.md] | refs: 38c3bbcee18e44a19ce1f731b2e2e98bd63be3f2e14193419642909edd944147->a4bfb88ff792b164152c8f7675f3d72d697a779f2d1369f64dd5525aad602dcc | outcome: published | reason: "Published the reviewed consumer contract as an authoritative Kosmic Usage topic."
+
+- date: 2026-09-06 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: null->f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940 | outcome: published | reason: ""
