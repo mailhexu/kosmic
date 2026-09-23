@@ -100,6 +100,26 @@ _Avoid_: Developer, maintainer
 An agent or person using the Project through its supported interfaces without changing its implementation.
 _Avoid_: User, operator
 
+**Domain Topic**:
+An authoritative Shared Library document classified independently by audience and semantic role.
+_Avoid_: Skill Topic, executable reference
+
+**Procedure**:
+Executable guidance with a recognizable trigger, bounded outcome, ordered actions, decisions, verification, and failure handling.
+_Avoid_: Any stable note, topic
+
+**Guideline**:
+Normative constraints that govern procedures and review without becoming an executable task.
+_Avoid_: Procedure, recommendation
+
+**Knowledge**:
+Informational facts, models, conventions, and implementation explanation used for understanding.
+_Avoid_: Procedure, evidence
+
+**Evidence**:
+A dated historical observation that substantiates or challenges claims but never silently becomes current guidance.
+_Avoid_: Procedure, current truth
+
 **Evidence Pack**:
 The immutable, append-only record of one work item or investigation that motivates knowledge; it never projects into a Skill Pair. Research discovery and execution outcome are two kinds of the same concept.
 _Avoid_: Research memo, raw trace, wiki page
@@ -119,3 +139,19 @@ _Avoid_: Wiki pattern page, separate artifact from an atomic note
 **Impact Ledger**:
 The machine-appended, append-only record of knowledge-state transitions — publications and accept/reject decisions — kept separate from session narrative.
 _Avoid_: Session log, review ledger, skill-impact tracker
+
+**Deterministic Routine**:
+A tested Python function that implements stable, reusable procedure mechanics and is discovered from a static declaration without importing its source module.
+_Avoid_: Skill prose, plugin, generated code
+
+**Routine Inventory**:
+The generated, hash-pinned catalog of deterministic routines, ownership, callers, procedure edges, and behavioral-test references used for reuse-first selection.
+_Avoid_: Handwritten registry, runtime plugin list
+
+**RoutineRecord**:
+A normalized entry in `.kosmic/routines.json` containing a routine’s identity, source module and symbol, owning Maintainer, constraints, callers, procedure edges, test references, and provenance hashes.
+_Avoid_: runtime plugin object, handwritten registry row
+
+**Procedure Compilation**:
+The governed Task 9 and Task P transition that moves repeated deterministic mechanics into a canonical routine while retaining judgment, risk, and approval in reviewed skill prose.
+_Avoid_: Automatic code generation, compiling Markdown

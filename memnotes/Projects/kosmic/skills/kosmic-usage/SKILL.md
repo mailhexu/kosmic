@@ -15,7 +15,10 @@ Working State: `working-tree`
 
 ## Topics
 
+- [Atomic Skill Publication](references/atomic-skill-publication.md)
 - [Projection CLI experience commands](references/cli-projection-commands.md)
+- [Dream Reflection workflow](references/dream-reflection-workflow.md)
+- [Managed Run Workspace Lifecycle](references/managed-run-workspace-lifecycle.md)
 - [Notation](references/notation.md)
 - [Shared Domain Skill Library](references/shared-domain-skill-library.md)
 

@@ -1,13 +1,20 @@
 ---
-type: Skill Topic
+type: Domain Topic
 id: kosmic/usage/notation
 domain: kosmic
 audience: usage
+artifact_role: knowledge
 status: stable
 summary: Notation
 triggers: [Notation]
+outcome: 
 aliases: []
-requires: []
+requires_procedures: []
+governed_by: []
+uses_knowledge: []
+supported_by: []
+supersedes: []
+observed_on: 
 evidence: []
 source_project: kosmic
 source_sha256: 5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3

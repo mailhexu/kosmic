@@ -1,0 +1,14 @@
+{
+  "development": {
+    "name": "abinit-development",
+    "requires": "abinit-usage",
+    "sha256": "5de28d2690aae6db2c12c6e83fa0742cb0a8df0cbd1b95dcb7794bfc4fb4b30a"
+  },
+  "generator_version": 4,
+  "project_id": "abinit",
+  "usage": {
+    "name": "abinit-usage",
+    "sha256": "501e1fd2e32ca5ad1849138e072c22b2a09bc709701ef2d9b8b998310b9409bb"
+  },
+  "working_state": "scoped-source"
+}

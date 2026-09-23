@@ -1,0 +1,25 @@
+---
+type: Project Knowledge
+title: Managed Run Workspace Lifecycle
+description: Delivered ownership and lifetime model for Kosmic-created temporary artifacts.
+confidence: 0.9
+created: '2026-09-14'
+updated: '2026-09-16'
+validation_procedure: "Approve and implement the linked PRD, then verify the exhaustive temporary-path inventory and lifecycle scenarios."
+project: kosmic
+status: stable
+audience: usage
+artifact_role: knowledge
+usage_stale: false
+tags: [temporary-files, workspaces, lifecycle, git-status, cleanup]
+evidence: []
+---
+
+# Managed Run Workspace Lifecycle
+Kosmic previously had file-hygiene prose but no enforced ownership or lifetime mechanism for scratch files. The governing concept is a **managed run**: Kosmic-created scratch lives below the active Git worktree's `.tmp/kosmic/`, carries deterministic retention, and records related Git status at start and finalization. Story 043 delivered the foundation: `skills/scripts/kosmic_runs.py` resolves the descriptor-anchored, fail-closed run root (only Git worktrees, root `.tmp/` ignore rule required, no-follow owner/mode/type/device checks), and the checked-in versioned migration inventory classifies all fourteen production temporary-path callers and all eight scratch-policy consumers with a source-policy audit test that rejects new unexplained entries.
+
+Stories 044-048 and 052 delivered the initial lifecycle in `skills/scripts/kosmic_runs.py`: strict porcelain-v2 Git snapshots with before/after path classification; versioned manifests, private handle files, terminal receipts, operation records, and bounded rotating history written through descriptor-relative atomic replacement with required fsync; a double-forked session-detached holder holding `fcntl.flock` for the run's active lifetime and serving an abstract-namespace control socket authenticated by peer UID plus a compared token; `begin_run`/`finish_run`/`extend_run`/`promote_file`/`report_runs` as the five public operations; deterministic diagnostic/disposable/extended-diagnostic retention with the 72-hour failure window and seven-day extension cap; and the journaled planned→quarantined→deleted→recorded owner cleanup transaction with idempotent recovery. The `scratch` CLI verbs and automatic command integration (validate, review, check-completion, install, provenance) expose the same interface. The skill-prose cutover (story 053), publication markers (story 056), and destructive `gc --apply` (story 050) remain correctly undelivered.
+
+Cleanup authority remains narrow. `gc --apply` now selects only report-identified valid expired immediate run children, reuses the journaled quarantine transaction, and records before/after Git deltas; active locks, grace candidates, malformed entries, wrong-owner paths, and unsupported cases remain report-only. `startup_collect` is an adapter over that same transaction, bounded to four entries or 256 MiB per automatic command invocation, and reports remaining eligible work without changing the primary command result on maintenance failure. Destination-sibling staging remains under the atomic-publication module because same-filesystem replacement and recovery have different invariants.
+
+The approved requirements are in the [Managed Run Workspaces PRD](../specs/prd-managed-run-workspaces.md); the approved holder, descriptor-anchored path, Git snapshot, cleanup transaction, and promotion designs are in the [Architecture](../specs/architecture-managed-run-workspaces.md). Stories 044–048, 050, 052, and 054 are implemented and awaiting the required convergent Standards/Spec/security review. Stories 051, 053, and 056 remain gated on their validated Task P proposals and Maintainer approval.

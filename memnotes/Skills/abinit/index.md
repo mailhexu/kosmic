@@ -3,5 +3,6 @@
 
 | ID | Audience | Summary |
 |---|---|---|
+| `abinit/development/nio-gamma-ddb-validation` | development | Runtime and source-review evidence that the packed-spinor NiO Gamma phonon path writes the ordinary ABINIT DDB layout. |
 | `abinit/usage/export-wavefunctions` | usage | Export ABINIT wavefunction data for downstream projector and exchange workflows. |
 | `abinit/usage/spin-orbit-conventions` | usage | Preserve ABINIT spinor and spin-orbit conventions across downstream interfaces. |

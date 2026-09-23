@@ -4,6 +4,7 @@ created: {DATE}
 updated: {DATE}
 result: create
 scope: project-procedure
+artifact_role: procedure
 target: {skill-name}
 target_ref: skill://{skill-name}
 target_sha256: empty
@@ -40,7 +41,7 @@ reconsiders: ""
 
 ## Behavioral Validation
 
-Candidate paths: [.scratch/{skill-name}]
+Candidate paths: [pending_tests/{project}/{date}-{slug}/candidate/{skill-name}]
 
 {Predeclared invariant scenario, observable criterion, baseline, candidate, and evidence-pack paths.}
 

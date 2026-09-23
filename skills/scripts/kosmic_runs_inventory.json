@@ -1,0 +1,206 @@
+{
+  "schema": "kosmic.runs-inventory/v1",
+  "created": "2026-09-14",
+  "story": "story-048-temporary-caller-migration",
+  "callers": [
+    {
+      "id": "kosmic/atomic-write",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "atomic_write",
+      "call": "tempfile.mkstemp",
+      "anchor": "tempfile\\.mkstemp\\(prefix=f\"\\.\\{path\\.name\\}\\.\", dir=path\\.parent\\)",
+      "classification": "atomic-single-file",
+      "rationale": "Same-parent staging file backing the os.replace single-file atomic write; destination-sibling placement is required by rename atomicity (AD-MRW2 exception)."
+    },
+    {
+      "id": "kosmic/skill-pair-staging",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "generate",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=f\"\\.\\{destination\\.name\\}\\.staging-\", dir=destination\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staging directory feeding publish_tree atomic Skill Pair publication."
+    },
+    {
+      "id": "kosmic/notes-migration-staging",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "migrate_notes_bundle",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"\\.notes-migration-\", dir=notes_dir\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staging directory feeding publish_tree atomic notes-bundle migration."
+    },
+    {
+      "id": "kosmic/adapter-install-staging",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "install_named_adapter",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"\\.kosmic-install-\", dir=destination_root\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling install staging for the adapter skill pair with os.replace rollback."
+    },
+    {
+      "id": "kosmic/adapter-install-backup",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "install_named_adapter",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"\\.kosmic-backup-\", dir=destination_root\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling backup directory restoring the previous adapter installation on failure."
+    },
+    {
+      "id": "kosmic/mathdocs-staging",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "update_mathdocs",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"\\.kosmic-mathdocs-\", dir=project\\.root\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staging copy of mathdocs (project root is the mathdocs destination's parent) feeding publish_tree."
+    },
+    {
+      "id": "kosmic/publish-tree-backup",
+      "module": "skills/scripts/kosmic_routines.py",
+      "function": "publish_tree",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling backup directory restoring the destination tree on any publication failure."
+    },
+    {
+      "id": "library/generate-staging",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "generate_library",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"kosmic-library-stage-\", dir=root\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staging directory feeding publish_tree managed-path library generation."
+    },
+    {
+      "id": "library/migration-staging",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "migrate_assignments",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"kosmic-migration-\", dir=root\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staged copy of the library tree for the governed migration transaction."
+    },
+    {
+      "id": "router/generate-staging",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "generate_router",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"kosmic-router-stage-\", dir=destination\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staging directory feeding os.replace router publication."
+    },
+    {
+      "id": "router/install-staging",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "install_shared_router",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"\\.memnotes-skills-stage-\", dir=destination_root\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling install staging for the shared router with os.replace rollback."
+    },
+    {
+      "id": "router/install-backup",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "install_shared_router",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"\\.memnotes-skills-backup-\", dir=destination_root\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling backup directory restoring the previous router installation on failure."
+    }
+  ],
+  "policy_consumers": [
+    {
+      "id": "policy/skill-md-file-hygiene",
+      "path": "skills/SKILL.md",
+      "anchor": "File Hygiene Before Coding and Before Final Status",
+      "classification": "managed-run",
+      "rationale": "Orchestrator scratch policy replaced by one managed-run step plus the lifecycle reference in story-053; durable pending-test, evidence, patch, and generated-output rules are preserved."
+    },
+    {
+      "id": "policy/readme-file-hygiene",
+      "path": "skills/README.md",
+      "anchor": "## File Hygiene",
+      "classification": "managed-run",
+      "rationale": "Guide-level duplicate of the orchestrator scratch policy; cut over to the managed-run step in story-053 while durable classifications remain."
+    },
+    {
+      "id": "policy/task-implement-story-hygiene",
+      "path": "skills/references/task_implement_story.md",
+      "anchor": "Managed Run Before Scratch",
+      "classification": "managed-run",
+      "rationale": "Story-implementation scratch placement duplicated from the orchestrator; cut over to the managed-run step in story-053."
+    },
+    {
+      "id": "policy/task-quick-task-hygiene",
+      "path": "skills/references/task_quick_task.md",
+      "anchor": "Managed Run Before Scratch",
+      "classification": "managed-run",
+      "rationale": "Quick-task reference to the duplicated hygiene section; cut over to the managed-run step in story-053."
+    },
+    {
+      "id": "policy/managed-run-lifecycle-reference",
+      "path": "skills/references/managed_run_lifecycle.md",
+      "anchor": "Managed Run Lifecycle",
+      "classification": "managed-run",
+      "rationale": "Progressively disclosed lifecycle detail for the mandatory managed-run step."
+    },
+    {
+      "id": "policy/task-create-spec-prototype",
+      "path": "skills/references/task_create_spec.md",
+      "anchor": "mandatory managed run",
+      "classification": "managed-run",
+      "rationale": "Prototype scratch placement for spec research; prototypes run below a managed run after story-053."
+    },
+    {
+      "id": "policy/template-skill-proposal-scratch",
+      "path": "skills/references/templates/template-skill-proposal.md",
+      "anchor": "Candidate paths",
+      "classification": "managed-run",
+      "rationale": "Task P candidate working area using ad hoc .scratch paths; moves below managed runs in story-053."
+    },
+    {
+      "id": "policy/adr-0001-prototype-tmp",
+      "path": "docs/adr/0001-required-matt-pocock-procedure-skills.md",
+      "anchor": "inside a managed run",
+      "classification": "managed-run",
+      "rationale": "ADR prototype lifecycle referencing the disposable .tmp area; updated to managed runs in the story-053 cutover."
+    },
+    {
+      "id": "policy/required-procedure-skills-prototype-tmp",
+      "path": "docs/specs/required-procedure-skills.md",
+      "anchor": "inside a managed run",
+      "classification": "managed-run",
+      "rationale": "Upstream-integration specification referencing the disposable .tmp prototype area; updated to managed runs in the story-053 cutover."
+    }
+  ],
+  "root_ignore": {
+    "id": "root/gitignore-dot-tmp",
+    "path": ".gitignore",
+    "classification": "defect",
+    "resolution": "story-043 adds the .tmp/ ignore rule to the worktree-root .gitignore; git check-ignore decides authoritatively (info/exclude and core.excludesFile provide equivalent authority).",
+    "rationale": "No worktree-root ignore rule for the canonical scratch area existed at inventory time; the rule is required so removing a worktree removes its ignored scratch (AD-MRW2)."
+  },
+  "updated": "2026-09-15",
+  "managed_callers": [
+    {
+      "id": "kosmic/projection-validation-managed-run",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "validate_current_projection",
+      "migrated_from": "tempfile.TemporaryDirectory(prefix=\"kosmic-validation-\")",
+      "mechanism": "managed_command_run(project.root, purpose=\"validate-projection\")",
+      "rationale": "Story 048 moved the projection drift rebuild below a disposable managed run; the run is begun and terminally finalized through the shared kosmic_runs lifecycle with the same Git boundaries as explicit scratch commands."
+    },
+    {
+      "id": "kosmic/provenance-managed-run",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "collect_provenance",
+      "migrated_from": "tempfile.TemporaryDirectory()",
+      "mechanism": "managed_command_run(repo, purpose=\"provenance\")",
+      "rationale": "Story 048 moved the temporary Git index below a disposable managed run; the index lives in the run scratch tree and the run finalizes through the shared lifecycle."
+    }
+  ]
+}

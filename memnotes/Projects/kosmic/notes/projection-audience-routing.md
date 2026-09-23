@@ -5,7 +5,7 @@ status: stable
 audience: development
 tags: [projection, audience, routing]
 created: '2026-09-02'
-updated: '2026-09-02' (promoted)
+updated: 2026-09-02
 validation_procedure: "Read collect_projection_plan and router_text in skills/scripts/kosmic_project_skills.py; cross-check references/task_project_skills.md invariants"
 project: kosmic
 ---

@@ -6,6 +6,7 @@ kosmic_generated: true
 project_id: kosmic
 working_state: working-tree
 audience: both
+artifact_role: ""
 source: notes/notation.md
 source_sha256: 5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3
 ---

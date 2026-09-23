@@ -18,15 +18,17 @@ import sys
 import socket
 import subprocess
 import tempfile
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
+from contextlib import contextmanager
 from dataclasses import dataclass
-from pathlib import Path
+from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Sequence
 from urllib.parse import quote, unquote
 
 try:
     from .kosmic_shared_library import (
         LibraryError,
+        PROCEDURE_SECTIONS,
         check_shared_router_installation,
         generate_library,
         install_shared_router,
@@ -39,6 +41,7 @@ try:
 except ImportError:
     from kosmic_shared_library import (
         LibraryError,
+        PROCEDURE_SECTIONS,
         check_shared_router_installation,
         generate_library,
         install_shared_router,
@@ -48,6 +51,22 @@ except ImportError:
         validate_library,
         parse_document as parse_library_document,
     )
+
+try:
+    from .kosmic_routines import (
+        RoutineError, RoutineQuery, publish_tree, query_routines, validate_routine_inventory,
+    )
+except ImportError:
+    from kosmic_routines import (
+        RoutineError, RoutineQuery, publish_tree, query_routines, validate_routine_inventory,
+    )
+
+try:
+    from . import kosmic_runs
+    from . import kosmic_dreams
+except ImportError:
+    import kosmic_runs
+    import kosmic_dreams
 
 GENERATOR_VERSION = 4
 OKF_VERSION = "0.2"
@@ -70,9 +89,10 @@ LEDGER_OUTCOMES = {"published", "accepted", "rejected"}
 MATHDOCS_DIR_NAME = "mathdocs"
 MATH_SLUG_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*$")
 PROPOSAL_RESULTS = {"create", "update", "no_action"}
-PROPOSAL_SCOPES = {"project-knowledge", "project-procedure", "global-procedure", "shared-procedure"}
+PROPOSAL_SCOPES = {"project-knowledge", "project-procedure", "global-procedure", "shared-procedure", "shared-routine"}
 PROPOSAL_DECISIONS = {"pending", "accepted", "rejected"}
 PROPOSAL_STATUSES = {"draft", "approved", "done"}
+ARTIFACT_ROLES = {"procedure", "guideline", "knowledge", "evidence"}
 PROPOSAL_FILE_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*\.md$")
 MATH_INDEX_HEADER = (
     "# Math Derivations\n\n"
@@ -195,6 +215,7 @@ class Note:
     body: str
     source_hash: str
     audience: str
+    artifact_role: str
     unscoped: bool
 
 
@@ -240,6 +261,7 @@ class SkillProposal:
     status: str
     result: str
     scope: str
+    artifact_role: str
     target: str
     target_ref: str
     target_sha256: str
@@ -504,6 +526,38 @@ def validate_note_evidence_paths(value: Any, relative_path: str, project_root: P
                 f"stable note evidence path does not resolve: {raw} (in {relative_path})"
             )
 
+def validate_artifact_role(document: MarkdownDocument, relative: str, *, required: bool) -> str:
+    role = str(document.metadata.get("artifact_role") or "").strip()
+    if not role:
+        if required:
+            raise KosmicError(f"artifact_role is required in {relative}")
+        return ""
+    if role not in ARTIFACT_ROLES:
+        raise KosmicError(f"invalid artifact_role '{role}' in {relative}")
+    if role == "procedure":
+        if not str(document.metadata.get("outcome") or "").strip():
+            raise KosmicError(f"procedure requires a bounded outcome in {relative}")
+        sections: dict[str, list[str]] = {}
+        current: str | None = None
+        for line in document.body.splitlines():
+            if line.startswith("## "):
+                current = line[3:].strip().casefold()
+                sections.setdefault(current, [])
+            elif current is not None:
+                sections[current].append(line)
+        missing = sorted(
+            heading
+            for heading in PROCEDURE_SECTIONS
+            if heading not in sections
+            or not any(line.strip() for line in sections[heading])
+        )
+        if missing:
+            raise KosmicError(
+                f"procedure {relative} missing non-empty behavioral sections: "
+                + ", ".join(missing)
+            )
+    return role
+
 
 def validate_note_math_markers(
     document: MarkdownDocument,
@@ -599,6 +653,13 @@ def validate_notes_bundle(
                 f"invalid Project Knowledge status '{status}' in {relative}; "
                 "expected draft, stable, or deprecated"
             )
+        updated = str(document.metadata.get("updated") or "")
+        if updated and not ISO_DATE_RE.fullmatch(updated):
+            raise KosmicError(f"updated must be YYYY-MM-DD in {relative}")
+        validate_artifact_role(
+            document, relative,
+            required=bool(updated and updated >= "2026-09-07"),
+        )
         validated_stale_after(document.metadata.get("stale_after"), relative)
         if status == "stable":
             validate_note_evidence_paths(
@@ -1150,6 +1211,7 @@ def collect_projection_plan(project: Project) -> ProjectionPlan:
             body=body + "\n",
             source_hash=sha256_bytes(source),
             audience=audience,
+            artifact_role=str(document.metadata.get("artifact_role") or ""),
             unscoped=is_unscoped,
         )
         if is_unscoped:
@@ -1185,6 +1247,7 @@ def projected_reference(project: Project, note: Note, body: str) -> str:
         "project_id": project.project_id,
         "working_state": project.working_state,
         "audience": note.audience,
+        "artifact_role": note.artifact_role,
         "source": note.relative_path,
         "source_sha256": note.source_hash,
     }
@@ -1458,35 +1521,13 @@ def validate_current_projection(project: Project, output: Path) -> None:
     plan = collect_projection_plan(project)
     if not plan.usage_notes:
         raise KosmicError("Usage Skill requires at least one stable usage or both note")
-    with tempfile.TemporaryDirectory(prefix="kosmic-validation-") as temporary:
-        expected = Path(temporary) / "skills"
+    with managed_command_run(project.root, purpose="validate-projection") as scratch:
+        expected = scratch / "skills"
         build_projection_root(plan, expected)
         if directory_snapshot(expected) != directory_snapshot(output):
             raise KosmicError("canonical Skill Pair is stale; regenerate it from Project Knowledge")
 
 
-# MathDoc: kosmic/atomic-publication-state
-def publish_directory(staged: Path, destination: Path) -> None:
-    destination.parent.mkdir(parents=True, exist_ok=True)
-    backup = destination.parent / f".{destination.name}.backup"
-    if backup.exists():
-        shutil.rmtree(backup)
-    moved_old = False
-    try:
-        if destination.exists():
-            os.replace(destination, backup)
-            moved_old = True
-        if os.environ.get("KOSMIC_FAIL_STAGE") == "after-backup":
-            raise OSError("injected publication failure after backup")
-        os.replace(staged, destination)
-        if moved_old:
-            shutil.rmtree(backup)
-    except Exception:
-        if destination.exists():
-            shutil.rmtree(destination)
-        if moved_old and backup.exists():
-            os.replace(backup, destination)
-        raise
 
 
 def prior_source_hashes(destination: Path, project: Project) -> dict[str, str]:
@@ -1517,7 +1558,7 @@ def generate(project: Project, output: Path | None = None) -> Path:
         validate_projection_root(project, temporary, check_sources=True)
         if os.environ.get("KOSMIC_FAIL_STAGE") == "before-publish":
             raise OSError("injected publication failure before publish")
-        publish_directory(temporary, destination)
+        publish_tree(temporary, destination)
     except Exception:
         if temporary.exists():
             shutil.rmtree(temporary)
@@ -1557,6 +1598,61 @@ def generate(project: Project, output: Path | None = None) -> Path:
             file=sys.stderr,
         )
     return destination
+
+
+@contextmanager
+def managed_command_run(root: Path, purpose: str) -> "Iterator[Path]":
+    """Automatic managed-run integration for ordinary command scratch (FR-MRW24).
+
+    Non-exempt Kosmic commands begin and terminally finalize one disposable
+    managed run through the shared lifecycle module instead of choosing their
+    own scratch paths.
+    """
+    try:
+        maintenance = kosmic_runs.startup_collect(root)
+    except (OSError, kosmic_runs.RunError, kosmic_runs.RunRootError) as error:
+        print(
+            f"warning: MANAGED_RUN_MAINTENANCE_FAILED:{getattr(error, 'code', type(error).__name__)}",
+            file=sys.stderr,
+        )
+    else:
+        removed = sum(1 for operation in maintenance.operations if operation.get("result") == "removed")
+        if removed or maintenance.remaining_eligible or maintenance.diagnostics:
+            print(
+                f"warning: MANAGED_RUN_MAINTENANCE:{maintenance.code}:"
+                f"removed={removed}:remaining={maintenance.remaining_eligible}",
+                file=sys.stderr,
+            )
+    try:
+        handle = kosmic_runs.begin_run(
+            root, purpose=purpose, retention="disposable", active_for=timedelta(hours=1)
+        )
+    except (kosmic_runs.RunError, kosmic_runs.RunRootError) as error:
+        code = getattr(error, "code", type(error).__name__)
+        detail = getattr(error, "detail", str(error))
+        raise KosmicError(f"managed run unavailable: {code}: {detail}", exit_code=2) from error
+    finalize_errors = (kosmic_runs.RunError, kosmic_runs.RunRootError)
+    try:
+        yield handle.path / "scratch"
+    except BaseException as error:
+        # Best-effort failure finalization: a failed finalize leaves a
+        # recoverable run that the next status or recovery pass completes,
+        # and the original command error always propagates.
+        try:
+            kosmic_runs.finish_run(handle.handle_file, "failed", detail=type(error).__name__)
+        except finalize_errors as finalize_error:
+            error.add_note(
+                f"managed-run failure finalization pending: {getattr(finalize_error, 'code', 'ERROR')}"
+            )
+        raise
+    try:
+        kosmic_runs.finish_run(handle.handle_file, "succeeded")
+    except finalize_errors as error:
+        raise KosmicError(
+            f"managed run finalization failed: {getattr(error, 'code', 'ERROR')}: "
+            f"{getattr(error, 'detail', error)}",
+            exit_code=2,
+        ) from error
 
 
 def rewrite_outside_fences(text: str, rewrite: Any) -> str:
@@ -1785,7 +1881,7 @@ def migrate_notes_bundle(project: Project) -> None:
             )
 
         validate_notes_bundle(temporary, load_math_registry(project))
-        publish_directory(temporary, notes_dir)
+        publish_tree(temporary, notes_dir)
     except Exception:
         if temporary.exists():
             shutil.rmtree(temporary)
@@ -1991,8 +2087,8 @@ def collect_provenance(repo: Path) -> tuple[str, str]:
 
     head = git("rev-parse", "HEAD")
     head_tree = git("rev-parse", "HEAD^{tree}")
-    with tempfile.TemporaryDirectory() as tmp:
-        env = {**os.environ, "GIT_INDEX_FILE": str(Path(tmp) / "index")}
+    with managed_command_run(repo, purpose="provenance") as scratch:
+        env = {**os.environ, "GIT_INDEX_FILE": str(scratch / "index")}
         git("add", "-A", "--", env=env)
         worktree_tree = git("write-tree", env=env)
     return head, "clean" if worktree_tree == head_tree else worktree_tree
@@ -2337,7 +2433,7 @@ def update_mathdocs(
                 ),
             )
         load_math_registry(project, temporary)
-        publish_directory(temporary, project.mathdocs_dir)
+        publish_tree(temporary, project.mathdocs_dir)
     finally:
         if temporary.exists():
             shutil.rmtree(temporary, ignore_errors=True)
@@ -2528,14 +2624,16 @@ def proposal_fingerprint(
     result: str,
     scope: str,
     target: str,
+    artifact_role: str | None,
     related_notes: Sequence[str],
     evidence_packs: Sequence[str],
     body: str,
+    routine_fields: dict[str, object] | None = None,
 ) -> str:
     change = proposal_section(
         body, "No-Action Reason" if result == "no_action" else "Proposed Change"
     )
-    payload = {
+    payload: dict[str, object] = {
         "result": result,
         "scope": scope,
         "target": target,
@@ -2543,6 +2641,10 @@ def proposal_fingerprint(
         "evidence_packs": sorted(evidence_packs),
         "change": change,
     }
+    if artifact_role is not None:
+        payload["artifact_role"] = artifact_role
+    if routine_fields is not None:
+        payload.update(routine_fields)
     return sha256_bytes(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
     )
@@ -2560,17 +2662,32 @@ def validate_input_manifest(project: Project, references: Sequence[str]) -> dict
             line = raw.strip()
             if not line or line.startswith("#"):
                 continue
-            match = re.fullmatch(r"- ([^:]+): ([0-9a-f]{64})", line)
+            match = re.fullmatch(r"- (.+): ([0-9a-f]{64})", line)
             if not match:
                 raise KosmicError(
                     f"Skill Proposal input_manifest line {number} must be '- path: sha256'"
                 )
-            source = contained_project_path(project, match.group(1), "input_manifest path")
-            if not source.is_file() or sha256_bytes(source.read_bytes()) != match.group(2):
-                raise KosmicError(
-                    f"Skill Proposal input_manifest source missing or stale: {match.group(1)}"
-                )
-            entries[match.group(1)] = match.group(2)
+            source_ref, recorded_hash = match.groups()
+            if source_ref.startswith("routine://"):
+                routine_id = source_ref.removeprefix("routine://")
+                inventory_path = project.root.parent.parent / "Skills" / ".kosmic" / "routines.json"
+                if not inventory_path.is_file():
+                    raise KosmicError("Skill Proposal routine input requires generated routine inventory")
+                rows = {
+                    str(row.get("id")): row
+                    for row in read_json(inventory_path).get("routines", [])
+                }
+                if str(rows.get(routine_id, {}).get("routine_sha256") or "") != recorded_hash:
+                    raise KosmicError(
+                        f"Skill Proposal input_manifest routine missing or stale: {source_ref}"
+                    )
+            else:
+                source = contained_project_path(project, source_ref, "input_manifest path")
+                if not source.is_file() or sha256_bytes(source.read_bytes()) != recorded_hash:
+                    raise KosmicError(
+                        f"Skill Proposal input_manifest source missing or stale: {source_ref}"
+                    )
+            entries[source_ref] = recorded_hash
     if not entries:
         raise KosmicError("Skill Proposal input_manifest must list at least one input")
     return entries
@@ -2606,6 +2723,31 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
     scope = str(metadata["scope"]).strip()
     status = str(metadata["status"]).strip()
     decision = str(metadata["decision"]).strip()
+    artifact_role_explicit = "artifact_role" in metadata
+    artifact_role = str(metadata.get("artifact_role") or "procedure").strip()
+    target_kind_explicit = "target_kind" in metadata
+    target_kind = str(metadata.get("target_kind") or "procedure").strip()
+    routine_action = str(metadata.get("routine_action") or "").strip()
+    routine_id = str(metadata.get("routine_id") or "").strip()
+    linked_proposals = as_string_list(metadata.get("linked_proposals"))
+    consumer_approvals = as_string_list(metadata.get("consumer_approvals"))
+    if target_kind not in {"procedure", "routine"}:
+        raise KosmicError("Skill Proposal target_kind must be procedure or routine")
+    if target_kind == "routine":
+        expected_results = {
+            "create": "create", "extend": "update", "reuse": "no_action",
+            "keep_as_prose": "no_action", "none": "no_action",
+        }
+        if routine_action not in expected_results or result != expected_results[routine_action]:
+            raise KosmicError("routine_action is incompatible with Skill Proposal result")
+        if scope != "shared-routine":
+            raise KosmicError("routine Skill Proposal requires scope: shared-routine")
+    elif any((routine_action, routine_id, linked_proposals, consumer_approvals)):
+        raise KosmicError("procedure Skill Proposal must omit routine fields")
+    if artifact_role_explicit and artifact_role not in ARTIFACT_ROLES:
+        raise KosmicError(f"invalid Skill Proposal artifact_role: {artifact_role}")
+    if result != "no_action" and artifact_role != "procedure":
+        raise KosmicError("Task P create/update proposals are eligible only for artifact_role: procedure")
     if result not in PROPOSAL_RESULTS:
         raise KosmicError("Skill Proposal result must be create, update, or no_action")
     if scope not in PROPOSAL_SCOPES:
@@ -2675,7 +2817,7 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
     input_manifest = as_string_list(metadata["input_manifest"])
     input_entries = validate_input_manifest(project, input_manifest)
     proposer_mode = str(metadata["proposer_mode"]).strip()
-    if scope in {"global-procedure", "shared-procedure"} and proposer_mode != "subagent":
+    if scope in {"global-procedure", "shared-procedure", "shared-routine"} and proposer_mode != "subagent":
         raise KosmicError(f"{scope} Skill Proposal requires proposer_mode: subagent")
     if proposer_mode not in {"subagent", "same-agent"}:
         raise KosmicError("Skill Proposal proposer_mode must be subagent or same-agent")
@@ -2686,7 +2828,7 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
     target_ref = str(metadata["target_ref"]).strip()
     target_sha256 = str(metadata["target_sha256"]).strip()
     approved_by = str(metadata.get("approved_by") or "").strip()
-    target_prefix = "library-skill://" if scope == "shared-procedure" else "skill://"
+    target_prefix = "routine://" if scope == "shared-routine" else "library-skill://" if scope == "shared-procedure" else "skill://"
     if scope == "shared-procedure" and result != "no_action":
         parts = target.split("/")
         if len(parts) != 3 or parts[1] not in {"usage", "development"}:
@@ -2702,6 +2844,77 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
                 "OWNERSHIP_REQUIRED: accepted shared-procedure Skill Proposal "
                 f"approved_by must name a target Domain Maintainer: {', '.join(maintainers)}"
             )
+    if scope == "shared-routine":
+        if routine_action in {"create", "extend", "reuse"}:
+            if target != routine_id or target.count("/") != 1:
+                raise KosmicError("shared-routine target and routine_id must match domain/slug")
+            if target_ref != f"routine://{target}":
+                raise KosmicError("shared-routine target_ref must match routine://domain/slug")
+        elif routine_action == "none":
+            if routine_id or target or target_ref or target_sha256:
+                raise KosmicError("none requires empty routine target fields")
+        elif routine_action == "keep_as_prose":
+            if routine_id or not target or target.count("/") != 2 or target_ref != f"library-skill://{target}" or target_sha256:
+                raise KosmicError("keep_as_prose requires a procedure target and no routine_id")
+        inventory_path = project.root.parent.parent / "Skills" / ".kosmic" / "routines.json"
+        inventory_rows: dict[str, dict[str, object]] = {}
+        if inventory_path.is_file():
+            inventory_rows = {
+                str(row["id"]): row for row in read_json(inventory_path).get("routines", [])
+            }
+        if routine_action in {"extend", "reuse"} and status != "done":
+            current = inventory_rows.get(routine_id)
+            if current is None:
+                raise KosmicError(f"routine proposal target is absent from inventory: {routine_id}")
+            if target_sha256 != current.get("routine_sha256"):
+                raise KosmicError(f"routine proposal target hash is stale: {routine_id}")
+        if routine_action == "create" and routine_id in inventory_rows and status != "done":
+            raise KosmicError(f"routine create target already exists: {routine_id}")
+        if routine_action in {"create", "extend"}:
+            candidate = proposal_section(document.body, "Routine Candidate")
+            labels = ("Repetition", "Contract", "Expected failures", "Leverage")
+            if any(not re.search(rf"(?mi)^{re.escape(label)}:\s*\S", candidate) for label in labels):
+                raise KosmicError("Routine Candidate requires Repetition, Contract, Expected failures, and Leverage")
+            approval_map: dict[str, str] = {}
+            for approval in consumer_approvals:
+                domain, separator, maintainer = approval.partition(":")
+                if not separator or not domain or not maintainer:
+                    raise KosmicError("consumer_approvals entries must be domain:maintainer")
+                if domain in approval_map:
+                    raise KosmicError(f"duplicate consumer approval domain: {domain}")
+                domain_path = project.root.parent.parent / "Skills" / domain / "SKILL.md"
+                if not domain_path.is_file():
+                    raise KosmicError(f"consumer approval domain is missing: {domain}")
+                maintainers = as_string_list(parse_library_document(domain_path).metadata.get("maintainers"))
+                if maintainer not in maintainers:
+                    raise KosmicError(f"consumer approval is not a Domain Maintainer: {approval}")
+                approval_map[domain] = maintainer
+            owner_domain = routine_id.split("/", 1)[0]
+            required_domains: set[str] = set()
+            if routine_action == "extend":
+                for procedure_id in inventory_rows[routine_id].get("procedures", []):
+                    domain = str(procedure_id).split("/", 1)[0]
+                    if domain != owner_domain:
+                        required_domains.add(domain)
+            current_reference = path.relative_to(project.root).as_posix()
+            for linked in linked_proposals:
+                linked_path = contained_project_path(project, linked, "linked_proposals")
+                if not linked_path.is_file():
+                    raise KosmicError(f"linked Skill Proposal is missing: {linked}")
+                linked_doc = parse_markdown(linked_path.read_text(encoding="utf-8"))
+                if current_reference not in as_string_list(linked_doc.metadata.get("linked_proposals")):
+                    raise KosmicError(f"linked Skill Proposal is not reciprocal: {linked}")
+                linked_target = str(linked_doc.metadata.get("target") or "")
+                linked_domain = linked_target.split("/", 1)[0] if linked_target else ""
+                if linked_domain and linked_domain != owner_domain:
+                    required_domains.add(linked_domain)
+            if set(approval_map) != required_domains:
+                raise KosmicError(
+                    "consumer_approvals must cover linked consumer domains: "
+                    + ", ".join(sorted(required_domains))
+                )
+        elif consumer_approvals:
+            raise KosmicError("reuse, keep_as_prose, and none require empty consumer_approvals")
     if result == "create":
         if not target or target_ref != f"{target_prefix}{target}" or target_sha256 != "empty":
             raise KosmicError(
@@ -2717,8 +2930,9 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
             raise KosmicError(
                 "update Skill Proposal target_sha256 is not pinned by input_manifest"
             )
-    elif target or target_ref or target_sha256:
-        raise KosmicError("no_action Skill Proposal requires empty target fields")
+    elif target_kind != "routine" or routine_action == "none":
+        if target or target_ref or target_sha256:
+            raise KosmicError("no_action Skill Proposal requires empty target fields")
     if scope == "project-knowledge" and result != "no_action":
         raise KosmicError(
             "project-knowledge findings continue through note review and require result: no_action"
@@ -2730,8 +2944,19 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         raise KosmicError(
             f"Skill Proposal {path.name} has missing or empty sections: {', '.join(empty_sections)}"
         )
+    routine_fields = None
+    if target_kind_explicit:
+        routine_fields = {
+            "target_kind": target_kind,
+            "routine_action": routine_action,
+            "routine_id": routine_id,
+            "linked_proposals": sorted(linked_proposals),
+            "consumer_approvals": sorted(consumer_approvals),
+        }
     computed = proposal_fingerprint(
-        result, scope, target, related_notes, evidence_packs, document.body
+        result, scope, target, artifact_role if artifact_role_explicit else None,
+        related_notes, evidence_packs,
+        document.body, routine_fields,
     )
     recorded = str(metadata["fingerprint"]).strip()
     if decision != "pending" and recorded != computed:
@@ -2770,13 +2995,19 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         prior_target = str(prior.metadata.get("target") or "")
         prior_related = as_string_list(prior.metadata.get("related_notes"))
         prior_evidence = as_string_list(prior.metadata.get("evidence_packs"))
+        prior_role = str(prior.metadata.get("artifact_role") or "")
+        prior_routine_fields = None
+        if "target_kind" in prior.metadata:
+            prior_routine_fields = {
+                "target_kind": str(prior.metadata.get("target_kind") or ""),
+                "routine_action": str(prior.metadata.get("routine_action") or ""),
+                "routine_id": str(prior.metadata.get("routine_id") or ""),
+                "linked_proposals": sorted(as_string_list(prior.metadata.get("linked_proposals"))),
+                "consumer_approvals": sorted(as_string_list(prior.metadata.get("consumer_approvals"))),
+            }
         prior_fingerprint = proposal_fingerprint(
-            prior_result,
-            prior_scope,
-            prior_target,
-            prior_related,
-            prior_evidence,
-            prior.body,
+            prior_result, prior_scope, prior_target, prior_role,
+            prior_related, prior_evidence, prior.body, prior_routine_fields,
         )
         if str(prior.metadata.get("fingerprint") or "") != prior_fingerprint:
             raise KosmicError(f"rejected Skill Proposal fingerprint mismatch: {prior_path.name}")
@@ -2800,6 +3031,7 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
         status=status,
         result=result,
         scope=scope,
+        artifact_role=artifact_role,
         target=target,
         target_ref=target_ref,
         target_sha256=target_sha256,
@@ -2823,9 +3055,68 @@ def validate_skill_proposals(project: Project) -> None:
         load_skill_proposal(project, path)
 
 
+
+def migrate_routines_report(
+    project: Project,
+    output: Path,
+    legacy_candidates: Sequence[str] = (),
+    unregistered_helpers: Sequence[str] = (),
+) -> Path:
+    """Write a deterministic, read-only report for explicitly supplied migration candidates."""
+    library_root = project.root.parent.parent / "Skills"
+    inventory_path = library_root / ".kosmic" / "routines.json"
+    if not inventory_path.is_file():
+        raise RoutineError("routine inventory is missing; run generate-library")
+    inventory = read_json(inventory_path)
+    rows = sorted(inventory.get("routines", []), key=lambda row: str(row["id"]))
+    candidates = sorted(set(legacy_candidates))
+    helpers = sorted(set(unregistered_helpers))
+    lines = ["# Routine Migration Report", "", "## Canonical routines", ""]
+    for row in rows:
+        procedures = ", ".join(f"`{procedure}`" for procedure in row["procedures"]) or "none"
+        lines.append(
+            f"- `{row['id']}` — `{row['module']}::{row['symbol']}`; "
+            f"hash `{row['routine_sha256']}`; callers: "
+            + ", ".join(f"`{caller}`" for caller in row["callers"])
+            + f"; procedures: {procedures}"
+        )
+    lines.extend(["", "## Legacy candidates supplied by Task 9", ""])
+    lines.extend(f"- `{candidate}`" for candidate in candidates)
+    if not candidates:
+        lines.append("- None supplied.")
+    lines.extend(["", "## Explicit unregistered helpers", ""])
+    lines.extend(f"- `{helper}`" for helper in helpers)
+    if not helpers:
+        lines.append("- None supplied.")
+    lines.extend([
+        "",
+        "## Behavioral equivalence",
+        "",
+        "- Canonical publication behavior: whole-tree and managed-path success, "
+        "failure before backup, failure after backup, restoration, and cleanup.",
+        "- Evidence must compare baseline and candidate outcomes before another routine cutover.",
+        "",
+        "## Blockers",
+        "",
+        "- None." if rows else "- No canonical routines were discovered.",
+        "",
+    ])
+    output = output.expanduser().resolve()
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text("\n".join(lines), encoding="utf-8")
+    return output
+
 def check_completion(
     project: Project, work_item: Path, source_root: Path = Path.cwd()
 ) -> None:
+    dependencies = as_string_list(parse_markdown(work_item.read_text(encoding="utf-8")).metadata.get("depends_on"))
+    for reference in dependencies:
+        dependency = (work_item.parent / reference.strip()).resolve()
+        if not dependency.is_file():
+            raise KosmicError(f"depends_on work item is missing: {reference}")
+        status = str(parse_markdown(dependency.read_text(encoding="utf-8")).metadata.get("status") or "")
+        if status != "done":
+            raise KosmicError(f"depends_on work item is not done: {reference} ({status or 'unknown'})")
     if not work_item.is_file():
         raise KosmicError(f"missing work item: {work_item}")
     document = parse_markdown(work_item.read_text(encoding="utf-8"))
@@ -2865,6 +3156,47 @@ def check_completion(
             proposal = load_skill_proposal(project, candidate)
             if proposal.decision == "pending":
                 raise KosmicError("Skill Proposal decision is still pending")
+    if "routine_decision_required" in document.metadata and "routine_edge_change" not in document.metadata:
+        raise KosmicError(
+            "routine-aware work item must declare routine_edge_change: true or false"
+        )
+    if "routine_edge_change" in document.metadata:
+        edge_change = document.metadata["routine_edge_change"]
+        if not isinstance(edge_change, bool):
+            raise KosmicError("routine_edge_change must be true or false")
+        if edge_change and document.metadata.get("routine_decision_required") is not True:
+            raise KosmicError(
+                "routine_edge_change: true requires routine_decision_required: true"
+            )
+    if "routine_decision_required" in document.metadata:
+        routine_required = document.metadata["routine_decision_required"]
+        routine_paths = as_string_list(document.metadata.get("routine_proposals"))
+        if not isinstance(routine_required, bool):
+            raise KosmicError("routine_decision_required must be true or false")
+        if not routine_required:
+            if routine_paths:
+                raise KosmicError("routine_decision_required: false requires empty routine_proposals")
+            if not proposal_section(document.body, "Routine Decision"):
+                raise KosmicError("routine_decision_required: false requires a Routine Decision reason")
+        else:
+            if not routine_paths:
+                raise KosmicError("routine_decision_required: true requires routine_proposals")
+            seen_targets: set[str] = set()
+            for reference in routine_paths:
+                proposal_path = (work_item.parent / reference).resolve()
+                routine_proposal = load_skill_proposal(project, proposal_path)
+                proposal_document = parse_markdown(proposal_path.read_text(encoding="utf-8"))
+                if str(proposal_document.metadata.get("target_kind") or "") != "routine":
+                    raise KosmicError("routine_proposals must reference routine target proposals")
+                action = str(proposal_document.metadata.get("routine_action") or "")
+                if action in {"create", "extend"} and routine_proposal.decision != "accepted":
+                    raise KosmicError("create/extend routine proposal decision must be accepted")
+                if action in {"create", "extend"} and not routine_proposal.behavioral_evidence:
+                    raise KosmicError("create/extend routine proposal requires behavioral evidence")
+                target_id = str(proposal_document.metadata.get("routine_id") or "")
+                if target_id in seen_targets:
+                    raise KosmicError(f"duplicate routine proposal target: {target_id}")
+                seen_targets.add(target_id)
     if not affects_interface:
         return
     references = as_string_list(document.metadata.get("related_notes"))
@@ -2999,10 +3331,33 @@ def build_parser() -> argparse.ArgumentParser:
         "generate-library", help="generate and validate Shared Skill Library indexes"
     )
     library_generate.add_argument("--vault", type=path_argument, required=True)
+    library_generate.add_argument("--source-root", type=path_argument)
     library_validate = subparsers.add_parser(
         "validate-library", help="validate Shared Skill Library sources and generated indexes"
     )
     library_validate.add_argument("--vault", type=path_argument, required=True)
+    library_validate.add_argument("--source-root", type=path_argument)
+    routine_query = subparsers.add_parser(
+        "query-routines", help="query the canonical deterministic routine inventory"
+    )
+    routine_query.add_argument("--vault", type=path_argument, required=True)
+    routine_query.add_argument("--query")
+    routine_query.add_argument("--id")
+    routine_query.add_argument("--domain")
+    routine_query.add_argument("--module")
+    routine_query.add_argument("--symbol")
+    routine_query.add_argument("--owner")
+    routine_query.add_argument("--caller")
+    routine_query.add_argument("--procedure")
+    routine_query.add_argument("--source-root", type=path_argument)
+    routine_query.add_argument("--format", choices=("json",), default="json")
+    routine_migrate = subparsers.add_parser(
+        "migrate-routines", help="report canonical and legacy routine migration candidates"
+    )
+    routine_migrate.add_argument("--project", type=path_argument, required=True)
+    routine_migrate.add_argument("--output", type=path_argument, required=True)
+    routine_migrate.add_argument("--legacy-candidate", action="append", default=[])
+    routine_migrate.add_argument("--unregistered-helper", action="append", default=[])
     library_resolve = subparsers.add_parser(
         "resolve-library", help="resolve a bounded hash-pinned Recipe Packet plan"
     )
@@ -3012,6 +3367,8 @@ def build_parser() -> argparse.ArgumentParser:
     request.add_argument("--route")
     library_resolve.add_argument("--role", choices=("usage", "development", "auto"), default="auto")
     library_resolve.add_argument("--project")
+    library_resolve.add_argument("--intent", choices=("do", "check", "understand", "investigate"))
+    library_resolve.add_argument("--include-evidence", action="store_true")
     library_resolve.add_argument("--max-bytes", type=int)
     library_resolve.add_argument("--max-domains", type=int)
     library_resolve.add_argument("--max-topics", type=int)
@@ -3039,9 +3396,132 @@ def build_parser() -> argparse.ArgumentParser:
     library_check.add_argument("--adapter", choices=("opencode", "claude-code", "codex", "omp"), required=True)
     library_check.add_argument("--home", type=path_argument, default=Path.home())
 
+    scratch_parser = subparsers.add_parser(
+        "scratch", help="managed run workspace lifecycle (begin/finalize/promote/report)"
+    )
+    scratch_subparsers = scratch_parser.add_subparsers(dest="scratch_command", required=True)
+    scratch_begin = scratch_subparsers.add_parser("begin", help="begin a leased managed run")
+    scratch_begin.add_argument("--project", type=path_argument, required=True)
+    scratch_begin.add_argument("--purpose", required=True)
+    scratch_begin.add_argument("--retention", choices=("diagnostic", "disposable"))
+    scratch_begin.add_argument("--active-for", default="24h")
+    scratch_finish = scratch_subparsers.add_parser("succeed", help="finalize a run as succeeded")
+    scratch_finish.add_argument("--project", type=path_argument, required=True)
+    scratch_finish.add_argument("--handle-file", type=path_argument, required=True)
+    scratch_fail = scratch_subparsers.add_parser("fail", help="finalize a run as failed")
+    scratch_fail.add_argument("--project", type=path_argument, required=True)
+    scratch_fail.add_argument("--handle-file", type=path_argument, required=True)
+    scratch_fail.add_argument("--detail", default="")
+    scratch_extend = scratch_subparsers.add_parser("extend", help="extend a failed diagnostic run")
+    scratch_extend.add_argument("--project", type=path_argument, required=True)
+    scratch_extend.add_argument("--handle-file", type=path_argument, required=True)
+    scratch_extend.add_argument("--until", required=True)
+    scratch_promote = scratch_subparsers.add_parser("promote", help="promote one run file durably")
+    scratch_promote.add_argument("--project", type=path_argument, required=True)
+    scratch_promote.add_argument("--handle-file", type=path_argument, required=True)
+    scratch_promote.add_argument("--source", required=True)
+    scratch_promote.add_argument("--destination", type=path_argument, required=True)
+    scratch_promote.add_argument("--overwrite", action="store_true")
+    scratch_status = scratch_subparsers.add_parser("status", help="report run status")
+    scratch_status.add_argument("--project", type=path_argument, required=True)
+    scratch_status.add_argument("--run")
+    scratch_gc = scratch_subparsers.add_parser("gc", help="garbage-collect expired runs")
+    scratch_gc.add_argument("--project", type=path_argument, required=True)
+    scratch_gc_mode = scratch_gc.add_mutually_exclusive_group(required=True)
+    scratch_gc_mode.add_argument("--dry-run", action="store_true")
+    scratch_gc_mode.add_argument("--apply", action="store_true")
+    dream_harvest_parser = subparsers.add_parser("dream-harvest", help="begin a managed dream harvest run")
+    dream_harvest_parser.add_argument("--vault", required=True, type=path_argument)
+    dream_harvest_parser.add_argument("--date", default=None)
+    dream_harvest_parser.add_argument("--timezone", dest="timezone_name", default=None)
+    dream_harvest_parser.add_argument("--project", default=None)
+    dream_validate_parser = subparsers.add_parser("validate-dreams", help="validate canonical or staged dream trees")
+    dream_validate_parser.add_argument("--vault", required=True, type=path_argument)
+    dream_validate_parser.add_argument("--root", default=None, type=path_argument)
+    dream_publish_parser = subparsers.add_parser("dream-publish", help="publish a staged dream record atomically")
+    dream_publish_parser.add_argument("--vault", required=True, type=path_argument)
+    dream_publish_parser.add_argument("--handle", required=True, type=path_argument)
+    dream_publish_parser.add_argument("--replace", action="store_true")
+    dream_abort_parser = subparsers.add_parser("dream-abort", help="finalize a dream run as failed")
+    dream_abort_parser.add_argument("--vault", required=True, type=path_argument)
+    dream_abort_parser.add_argument("--handle", required=True, type=path_argument)
+    dream_abort_parser.add_argument("--reason", default="aborted")
     return parser
 
 
+
+def _parse_duration(value: str) -> "timedelta":
+    """Parse ``--active-for`` values like 24h, 30m, 7d, or plain hours."""
+    match = re.fullmatch(r"([0-9]*\.?[0-9]+)\s*([smhd]?)", value.strip())
+    if not match:
+        raise KosmicError(f"invalid duration: {value}", exit_code=2)
+    amount = float(match.group(1))
+    unit = match.group(2) or "h"
+    seconds = amount * {"s": 1, "m": 60, "h": 3600, "d": 86400}[unit]
+    return timedelta(seconds=seconds)
+
+
+def _print_json(payload: dict[str, Any]) -> None:
+    print(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+
+
+def _run_scratch(args: argparse.Namespace) -> int:
+    """Adapter over the managed-run lifecycle module (AD-MRW1 CLI design)."""
+    try:
+        if args.scratch_command == "begin":
+            handle = kosmic_runs.begin_run(
+                args.project,
+                purpose=args.purpose,
+                retention=args.retention or "diagnostic",
+                active_for=_parse_duration(args.active_for),
+            )
+            _print_json({
+                "code": "OK",
+                "run_id": handle.run_id,
+                "path": str(handle.path),
+                "handle_file": str(handle.handle_file),
+                "state": handle.state,
+                "scratch_path": str(handle.path / "scratch"),
+            })
+        elif args.scratch_command in ("succeed", "fail"):
+            receipt = kosmic_runs.finish_run(
+                args.handle_file,
+                "succeeded" if args.scratch_command == "succeed" else "failed",
+                detail=getattr(args, "detail", "") or "",
+            )
+            _print_json(kosmic_runs.receipt_to_json(receipt))
+        elif args.scratch_command == "extend":
+            try:
+                until = datetime.strptime(args.until, "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+            except ValueError as error:
+                raise KosmicError(f"invalid --until (expected YYYY-MM-DDTHH:MM:SSZ): {args.until}", exit_code=2) from error
+            receipt = kosmic_runs.extend_run(args.handle_file, until)
+            _print_json(kosmic_runs.receipt_to_json(receipt))
+        elif args.scratch_command == "promote":
+            receipt = kosmic_runs.promote_file(
+                args.handle_file,
+                PurePosixPath(args.source),
+                Path(args.destination),
+                overwrite=args.overwrite,
+            )
+            _print_json(kosmic_runs.promotion_to_json(receipt))
+        elif args.scratch_command == "status":
+            if args.run:
+                payload = kosmic_runs.run_live_status(args.project, args.run)
+                _print_json(payload)
+            else:
+                report = kosmic_runs.report_runs(args.project, action="status")
+                _print_json(kosmic_runs.report_to_json(report))
+        elif args.scratch_command == "gc":
+            if not args.dry_run and not args.apply:
+                raise KosmicError("scratch gc requires exactly one of --dry-run or --apply", exit_code=2)
+            report = kosmic_runs.report_runs(args.project, action="gc-apply" if args.apply else "gc-dry-run")
+            _print_json(kosmic_runs.report_to_json(report))
+        else:
+            raise KosmicError(f"unknown scratch command: {args.scratch_command}", exit_code=2)
+    except (kosmic_runs.RunError, kosmic_runs.RunRootError) as error:
+        raise KosmicError(f"{error.code}: {error.detail}" if error.detail else error.code, exit_code=2) from error
+    return 0
 
 def run(arguments: Sequence[str] | None = None) -> int:
     parser = build_parser()
@@ -3052,6 +3532,27 @@ def run(arguments: Sequence[str] | None = None) -> int:
         print(f"git_head: {head}")
         print(f"worktree_tree: {worktree_tree}")
         return 0
+    if args.command == "scratch":
+        return _run_scratch(args)
+
+    if args.command == "dream-harvest":
+        payload = kosmic_dreams.dream_harvest(
+            args.vault, date=args.date, timezone_name=args.timezone_name, project=args.project
+        )
+        _print_json(payload)
+        return 0
+    if args.command == "validate-dreams":
+        kosmic_dreams.validate_dream_tree(args.vault, root=args.root)
+        root_text = str(args.root.expanduser().resolve()) if args.root else str((args.vault / "dreams").resolve())
+        print(f"valid dreams tree: {root_text}")
+        return 0
+    if args.command == "dream-publish":
+        _print_json(kosmic_dreams.dream_publish(args.vault, args.handle, replace=args.replace))
+        return 0
+    if args.command == "dream-abort":
+        _print_json(kosmic_dreams.dream_abort(args.vault, args.handle, reason=args.reason))
+        return 0
+
 
 
     if args.command == "init":
@@ -3072,12 +3573,53 @@ def run(arguments: Sequence[str] | None = None) -> int:
         return 0
 
     if args.command == "generate-library":
-        generated = generate_library(args.vault)
+        generated = generate_library(args.vault, source_root=args.source_root)
         print("generated Shared Skill Library: " + ", ".join(str(path) for path in generated))
         return 0
     if args.command == "validate-library":
-        validate_library(args.vault)
+        validate_library(args.vault, source_root=args.source_root)
         print(f"valid Shared Skill Library: {args.vault.expanduser().resolve() / 'Skills'}")
+        return 0
+    if args.command == "query-routines":
+        root = args.vault.expanduser().resolve() / "Skills"
+        inventory_path = root / ".kosmic" / "routines.json"
+        manifest_path = root / ".kosmic" / "manifest.json"
+        if not inventory_path.is_file() or not manifest_path.is_file():
+            raise RoutineError("routine inventory is missing; run generate-library")
+        inventory = read_json(inventory_path)
+        manifest = read_json(manifest_path)
+        source = (args.source_root or Path(__file__).resolve().parent).expanduser().resolve()
+        validate_routine_inventory(source.parent.parent, source, root, inventory)
+        inventory_bytes = inventory_path.read_bytes()
+        if hashlib.sha256(inventory_bytes).hexdigest() != manifest.get("routine_inventory_sha256"):
+            raise RoutineError("stale routine inventory hash")
+        rows = query_routines(
+            inventory,
+            RoutineQuery(
+                query=args.query, id=args.id, domain=args.domain, module=args.module,
+                symbol=args.symbol, owner=args.owner, caller=args.caller,
+                procedure=args.procedure,
+            ),
+        )
+        if not rows:
+            raise RoutineError("NO_ROUTINE_MATCH")
+        print(json.dumps(
+            {
+                "inventory_sha256": manifest["routine_inventory_sha256"],
+                "manifest_sha256": hashlib.sha256(manifest_path.read_bytes()).hexdigest(),
+                "routines": rows,
+            },
+            ensure_ascii=False, sort_keys=True, separators=(",", ":"),
+        ))
+        return 0
+    if args.command == "migrate-routines":
+        report = migrate_routines_report(
+            load_project(args.project),
+            args.output,
+            args.legacy_candidate,
+            args.unregistered_helper,
+        )
+        print(f"wrote routine migration report: {report}")
         return 0
     if args.command == "resolve-library":
         plan = resolve_library(
@@ -3086,6 +3628,8 @@ def run(arguments: Sequence[str] | None = None) -> int:
             route=args.route,
             role=args.role,
             project=args.project,
+            intent=args.intent,
+            include_evidence=args.include_evidence,
             max_bytes=args.max_bytes,
             max_domains=args.max_domains,
             max_topics=args.max_topics,
@@ -3097,9 +3641,22 @@ def run(arguments: Sequence[str] | None = None) -> int:
         sys.stdout.write(load_recipe_packet(args.vault, plan))
         return 0
     if args.command == "migrate-library":
-        assignments = read_json(args.assignments.expanduser().resolve())
-        if not all(isinstance(key, str) and isinstance(value, str) for key, value in assignments.items()):
-            raise LibraryError("migration assignments must be a JSON object of string paths to topic IDs")
+        raw_assignments = read_json(args.assignments.expanduser().resolve())
+        if isinstance(raw_assignments, dict) and raw_assignments.get("schema") == "kosmic.semantic-role-classification/v1":
+            rows = raw_assignments.get("topics")
+            if not isinstance(rows, list):
+                raise LibraryError("semantic role classification topics must be a list")
+            assignments = {
+                str(row["source"]): row
+                for row in rows
+                if isinstance(row, dict) and "source" in row
+            }
+            if len(assignments) != len(rows):
+                raise LibraryError("semantic role classification has invalid sources")
+        else:
+            assignments = raw_assignments
+        if not isinstance(assignments, dict):
+            raise LibraryError("migration assignments must be a JSON object")
         report = migrate_assignments(args.vault, args.project, assignments)
         print(json.dumps(report, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
         return 0
@@ -3181,6 +3738,9 @@ def main() -> int:
         print(f"error: {error}", file=sys.stderr)
         return error.exit_code
     except LibraryError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
+    except RoutineError as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     except OSError as error:

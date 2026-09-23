@@ -1,0 +1,8 @@
+{
+ "first_dream_published": true,
+ "ideas_dedupe": true,
+ "index_reverse_order": true,
+ "publish_second_date": "OK",
+ "validate_canonical": true,
+ "validate_two_dates": true
+}

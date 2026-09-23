@@ -1,0 +1,11 @@
+{
+  "generator_version": 4,
+  "name": "abinit-development",
+  "project_id": "abinit",
+  "requires": [
+    "abinit-usage"
+  ],
+  "role": "development",
+  "sources": [],
+  "working_state": "scoped-source"
+}

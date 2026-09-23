@@ -1,6 +1,6 @@
 # Kosmic Skill
 
-Spec-driven Project knowledge for reliable AI-assisted development and usage across agents. Kosmic remains the workflow orchestrator; a deterministic CLI maintains a vault-level Shared Skill Library behind one native router and dynamically loaded domain procedures.
+Spec-driven Project knowledge for reliable AI-assisted development and usage across agents. Kosmic maintains a bounded Shared Skill Library and compiles repeated deterministic procedure mechanics into governed, tested Python routines while preserving judgment in prose.
 
 ## Features
 
@@ -16,6 +16,7 @@ Spec-driven Project knowledge for reliable AI-assisted development and usage acr
 - **Single Native Router**: Constant discovery footprint across OpenCode, Claude Code, Codex, and OMP
 - **Dual-Native Knowledge**: Authoritative Markdown works directly in Obsidian and through Kosmic's validated schemas
 - **Deterministic Projection CLI**: Project validation, evidence, proposals, library catalogs, migration, atomic publication, and Install Adapters
+- **Procedure Compilation**: Static routine inventory, reuse-first Task P decisions, tested source hashes, and routine-bearing Recipe Packets
 
 ## Quick Start
 
@@ -105,7 +106,7 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
 | Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` enforces evidence linkage |
 | Reusable symbolic result or equation defect | Task M: Math Note | Executable derivation, paired note, registry row, source links | Derivation-first; check, review, and completion gates |
-| Distillation yields or updates a reusable Pattern | Task P: Propose Skill Change | One validated create/update/no_action proposal | Fresh-context proposer for shared/global scope; human and behavioral gates |
+| Distillation finds a proven executable procedure or reusable deterministic mechanics | Task P: Propose Skill Change | One role-declared skill result plus one routine action per canonical routine ID | Shared targets require fresh context, human authority, behavioral evidence, and review; reuse precedes extension and creation |
 
 ### Task 0: Quick Task
 Plan and execute a small, low-risk implementation task.
@@ -212,6 +213,12 @@ Assign or validate immutable Project identity, transactionally normalize Project
 
 **Gate**: Never infer Consumer guidance, guess ambiguous Wikilinks, or publish an empty Usage Skill.
 
+### Task D: Dream
+
+Previous-day whole-vault reflection via `dream-harvest` / `dream-publish` / `dream-abort`; writes only `memnotes/dreams/`.
+
+**Reference**: `references/task_dream.md`
+
 ### Task 9: Distill
 Consolidate captured Evidence Packs (`evidence/{YYYY-MM-DD}-{slug}/`, append-only, never projected) into root-cause draft notes linked back to their evidence. Adapted from WikiSkill's Wiki Maintainer (arXiv 2608.27454) with attribution and a pinned upstream revision.
 
@@ -220,11 +227,11 @@ Consolidate captured Evidence Packs (`evidence/{YYYY-MM-DD}-{slug}/`, append-onl
 **Gate**: Draft-only output; `check-completion` fails until every declared pack has a linking draft-or-stable note; promotion to stable is human-gated. `generate` records publications in the `impact.md` ledger automatically.
 
 ### Task P: Propose Skill Change
-Classify a reusable Pattern as one skill creation, one skill update, or `no_action` using a curated fresh-context package. Proposal artifacts remain reviewable under `specs/skill-proposals/`; they never mutate canonical or installed skills before approval and behavioral comparison.
+Classify a reusable Pattern as one skill result (`create`, `update`, `no_action`) and, when applicable, one routine action (`reuse`, `extend`, `create`, `keep_as_prose`, `none`) per canonical routine ID. Search the generated inventory first. Proposal artifacts remain reviewable under `specs/skill-proposals/`; they never mutate canonical or installed artifacts before approval and behavioral comparison.
 
 **Reference**: `references/task_propose_skill.md`
 
-**Gate**: Shared/global scope requires a dedicated proposer subagent. Accepted procedural changes require execution Evidence, human approval, and Task 7 review; equivalent rejected fingerprints require materially new evidence.
+**Gate**: Shared/global scope requires a dedicated proposer subagent. Accepted procedural changes require execution Evidence, human approval, and Task 7 review. Routine create/extend additionally requires owning and consuming Domain Maintainer approvals; equivalent rejected fingerprints require materially new evidence.
 
 ### Task M: Math Note
 Create and maintain one executable SymPy derivation plus its paired Math Derivation note. Search `mathdocs/index.md` first, execute trusted code through `check-math`, review assumptions/units/conventions, and link dependent notes and implementation with stable `MathDoc:` identifiers.
@@ -239,7 +246,7 @@ Create and maintain one executable SymPy derivation plus its paired Math Derivat
 
 ## Shared Domain Skill Library
 
-`memnotes/Skills/SKILL.md` is the single installed library entry point. Each maintained software domain—such as `abinit`, `tb2j`, or `kosmic`—has one compact domain `SKILL.md`; its detailed Usage and Development procedures are ordinary Markdown topics. `resolve-library` selects one bounded dependency closure and emits a hash-pinned plan. `load-library` verifies the unchanged manifest and source hashes before emitting the ordered Recipe Packet. Cross-project Evidence stays with its source Project; Task P targets `library-skill://{domain}/{audience}/{slug}`, and only a declared target-domain Maintainer can approve publication.
+`memnotes/Skills/SKILL.md` is the single installed library entry point. Each maintained software domain has one compact domain `SKILL.md`; detailed Usage and Development topics are ordinary Markdown. `resolve-library` selects a bounded dependency closure plus declared routines and emits a hash-pinned plan. `load-library` verifies manifest, topic, routine-source, and exact packet hashes. `generate-library` statically discovers literal routine declarations without importing source modules; `query-routines` is the reuse-first search seam. Cross-project Evidence stays with its source Project, and Task P governs both shared procedures and `routine://domain/slug` decisions.
 
 Legacy Project Skill Pairs remain migration inputs in their Project vaults, not installed compatibility aliases. `install-library` exposes only `memnotes-skills` and removes managed installed pairs after successful byte and identity verification. See `references/task_project_skills.md`.
 
@@ -288,13 +295,7 @@ Use inline `$...$` only for short symbols or expressions inside prose.
 
 ## File Hygiene
 
-- Classify new files before creating them: commit artifact, scratch/runtime output, recoverable pending tests, or generated output.
-- Use `.tmp/<task-slug>/` only for disposable scratch and runtime output.
-- Use `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` for tests awaiting later commit.
-- Add `MANIFEST.md` with restore command and contents, and commit pending-test packages before ending the session.
-- Delete generated ABINIT outputs (`*.nc`, `*_DDB`, `*.agr`, run-output `*.abo`) and patch scratch unless explicitly promoted.
-- Finish by running `git status --short` and classifying every remaining file.
-
+Kosmic-owned scratch starts with the mandatory **Managed Run Before Scratch** step in `SKILL.md`: `scratch begin` returns the sole writable run path below the active worktree’s `.tmp/kosmic/`; `scratch succeed|fail` closes it with Git evidence. Keep durable source/docs in the project tree and pending tests under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`. See `references/managed_run_lifecycle.md` for retention, promotion, status, cleanup, and the destination-sibling staging exception.
 ## Spec Status Lifecycle
 
 ```

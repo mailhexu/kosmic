@@ -42,20 +42,26 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py generate-library \
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py validate-library \
   --vault "{VAULT}"
 
-# Produce a canonical hash-pinned plan. Use --route instead of --query when known.
+# Produce a canonical hash-pinned plan. Omitted intent defaults to `understand`
+# unless exactly one explicit intent signal is present. Add `--include-evidence`
+# only when dated support is required outside `investigate`.
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py resolve-library \
   --vault "{VAULT}" --project "{PROJECT_ID}" --role usage|development|auto \
-  --query "{TASK}" --max-bytes 32768 --max-domains 4 --max-topics 8
+  --intent do|check|understand|investigate --include-evidence --query "{TASK}" \
+  --max-bytes 32768 --max-domains 4 --max-topics 8
 
 # Recheck every plan/source hash and emit the ordered Recipe Packet.
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py load-library \
   --vault "{VAULT}" --plan "{PLAN_JSON}"
 
-# Migrate only an explicitly complete old-reference → new-topic map.
+# Migrate only an explicit source → assignment map. Every assignment declares
+# target_id, artifact_role, and all five typed relationship arrays.
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py migrate-library \
   --vault "{VAULT}" --project "{VAULT}/Projects/{TARGET}" \
   --assignments "{ASSIGNMENTS_JSON}"
 ```
+
+Domain Topics declare `artifact_role: procedure|guideline|knowledge|evidence` independently of `audience`. Typed edges are `requires_procedures`, `governed_by`, `uses_knowledge`, `supported_by`, and evidence-only `supersedes`. `do` selects only procedures and fails with `NO_EXECUTABLE_MATCH`; `check` prefers guidelines then procedures, `understand` prefers knowledge then guidelines, and `investigate` prefers current dated evidence then knowledge. Recipe Packets label every topic by role and relation; evidence loads only for `investigate`, an exact evidence route, or `--include-evidence`.
 
 Resolution is all-or-none. Ambiguity, stale hashes, unknown/cyclic dependencies, invalid audience edges, or byte/domain/topic overflow emits no Recipe body. `load-library` never re-ranks. Domain `SKILL.md` files load dynamically through the plan; detailed Usage/Development topics remain ordinary Markdown.
 
@@ -118,7 +124,7 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-completion \
   --source-root "{SOURCE_ROOT}"
 ```
 
-Work items must declare `consumer_interface_change: true | false`. New templates also declare `proposal_required: false`; set it true and add exactly one `skill_proposal` path when Task P is required. The proposal must validate and have a non-pending decision before completion. When Consumer Interface change is true, `related_notes` must name current stable `usage` or `both` notes, and the canonical pair must pass drift validation. Work items may additionally declare `evidence_packs: [{slugs}]`; every declared pack must exist under `evidence/` and have at least one draft-or-stable note linking it via `evidence:` frontmatter, or the gate fails naming the slug.
+Work items must declare `consumer_interface_change: true | false`, `proposal_required: true | false`, `routine_edge_change: true | false`, and `routine_decision_required: true | false`. Any work item that adds or changes a procedure's `uses_routines` edge declares `routine_edge_change: true`; completion then requires `routine_decision_required: true`. A required skill proposal uses exactly one `skill_proposal` path. A required routine decision uses non-empty `routine_proposals`, one validated, non-pending Task P artifact per unique proposal path; a false decision gate requires the list to be empty. Consumer Interface changes require current stable `usage` or `both` notes and a drift-free canonical pair. Declared `evidence_packs` must exist and be linked from a draft-or-stable note.
 
 Math-derived work items declare both `derivations: [{slug}, ...]` and `math_implementation_files: [relative/path, ...]`. Each listed file must remain under `--source-root` and contain a matching `MathDoc: {project_id}/{slug}[#result-name]` identifier.
 
@@ -131,6 +137,20 @@ shape-checked (40/64 lowercase hex). Use the `provenance` command
 temporary index — no working-tree or index side effects.
 
 Projected reference bodies are package-consistent: a Markdown link whose target is not projected into the same Skill Pair package (draft target, other-audience target) is demoted to bold plain text, and `generate` warns on stderr naming each demoted link. Links inside code fences, external URLs, and non-Markdown targets are untouched.
+
+Generate and validate the routine inventory from static source declarations, or query it before implementing repeated mechanics:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py generate-library \
+  --vault "{VAULT}" --source-root "{KOSMIC_SKILL_DIR}/scripts"
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py query-routines \
+  --vault "{VAULT}" --query "atomic publication"
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py migrate-routines \
+  --project "{PROJECT}" --output "{PROJECT}/specs/migration-routine-reuse.md" \
+  --legacy-candidate "module:symbol" --unregistered-helper "module:symbol"
+```
+
+Routine inventory and query output are hash-pinned and include source, declaration, routine, inventory, and manifest provenance. Procedure Domain Topics declare `uses_routines: [domain/slug]`; generation fails when either side of that relationship is stale or missing. `migrate-routines` is read-only: it reports canonical routines, remaining legacy helpers, behavioral-equivalence duties, and blockers.
 
 ## Install Adapters
 

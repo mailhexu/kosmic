@@ -3,7 +3,7 @@
 
 | ID | Audience | Summary |
 |---|---|---|
-| `kosmic/development/atomic-skill-publication` | development | Atomic Skill Publication |
+| `kosmic/development/atomic-skill-publication` | development | Publish a staged artifact tree atomically with rollback |
 | `kosmic/development/cli-extension-conventions` | development | Projection CLI extension conventions |
 | `kosmic/development/projection-audience-routing` | development | Projection audience routing |
 | `kosmic/usage/cli-projection-commands` | usage | Projection CLI experience commands |

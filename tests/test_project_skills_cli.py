@@ -70,6 +70,10 @@ class ProjectionCliTest(unittest.TestCase):
         (mathdocs / "index.md").write_text(
             MathDocsLayerTest.EMPTY_MATH_INDEX, encoding="utf-8"
         )
+        # Story 048: validate/review/install/check-completion run their scratch
+        # below a managed run, which requires a Git worktree at the vault root.
+        (project.parents[1] / ".gitignore").write_text(".tmp/\n", encoding="utf-8")
+        subprocess.run(["git", "init", "-q", str(project.parents[1])], check=True, capture_output=True)
         return project
 
     def write_note(
@@ -82,10 +86,13 @@ class ProjectionCliTest(unittest.TestCase):
         usage_stale: bool = False,
         stale_after: str | None = None,
         concept_type: str = "Project Knowledge",
+        artifact_role: str | None = None,
     ) -> Path:
         metadata = [f"type: {concept_type}", f"status: {status}"]
         if audience is not None:
             metadata.append(f"audience: {audience}")
+        if artifact_role is not None:
+            metadata.append(f"artifact_role: {artifact_role}")
         if usage_stale:
             metadata.append("usage_stale: true")
         if stale_after is not None:
@@ -97,6 +104,35 @@ class ProjectionCliTest(unittest.TestCase):
             encoding="utf-8",
         )
         return note
+
+    def test_migrate_routines_reports_only_explicit_candidates(self) -> None:
+        project = self.make_project()
+        inventory_path = self.root / "vault" / "Skills" / ".kosmic" / "routines.json"
+        inventory_path.parent.mkdir(parents=True)
+        inventory_path.write_text(json.dumps({
+            "routines": [{
+                "id": "kosmic/publish",
+                "module": "skills/scripts/ops.py",
+                "symbol": "publish",
+                "routine_sha256": "a" * 64,
+                "callers": ["python:client:run"],
+                "procedures": ["kosmic/development/publish"],
+            }],
+        }), encoding="utf-8")
+        report = project / "specs" / "migration.md"
+        self.run_cli(
+            "migrate-routines",
+            "--project", str(project),
+            "--output", str(report),
+            "--legacy-candidate", "old:publish",
+            "--unregistered-helper", "local:helper",
+        )
+        body = report.read_text(encoding="utf-8")
+        self.assertIn("`kosmic/publish`", body)
+        self.assertIn("`kosmic/development/publish`", body)
+        self.assertIn("`old:publish`", body)
+        self.assertIn("`local:helper`", body)
+        self.assertNotIn("publish_directory", body)
 
     def generate_ready_project(self, project_id: str = "acme-demo") -> Path:
         project = self.make_project(project_id)
@@ -166,6 +202,25 @@ class ProjectionCliTest(unittest.TestCase):
         self.assertNotIn("status: validated", projected)
         self.assertNotIn("Future", "\n".join(path.read_text() for path in usage_package.rglob("*.md")))
         self.assertTrue(both.exists() and development.exists() and unscoped.exists())
+
+    def test_projected_reference_preserves_artifact_role(self) -> None:
+        project = self.make_project()
+        self.write_note(
+            project,
+            "knowledge",
+            "usage",
+            "# Knowledge\n\nExplain the system.\n",
+            artifact_role="knowledge",
+        )
+        self.run_cli("generate", "--project", str(project))
+        projected = (
+            project
+            / "skills"
+            / "acme-demo-usage"
+            / "references"
+            / "knowledge.md"
+        ).read_text(encoding="utf-8")
+        self.assertIn("artifact_role: knowledge", projected)
 
     def test_source_change_is_reported_as_drift(self) -> None:
         project = self.generate_ready_project()
@@ -539,6 +594,9 @@ class ProjectionCliTest(unittest.TestCase):
             encoding="utf-8",
         )
 
+        # Story 048: validate requires a Git worktree at the vault root.
+        (project.parents[1] / ".gitignore").write_text(".tmp/\n", encoding="utf-8")
+        subprocess.run(["git", "init", "-q", str(project.parents[1])], check=True, capture_output=True)
         self.run_cli(
             "init",
             "--project",
@@ -1071,6 +1129,7 @@ class CodeProvenanceTest(ExperienceCompilationTest):
         git("init", "-q")
         git("config", "user.email", "test@example.com")
         git("config", "user.name", "Test")
+        (repo / ".gitignore").write_text(".tmp/\n", encoding="utf-8")
         (repo / "notes").mkdir(exist_ok=True)
         (repo / "notes" / "seed.md").write_text("seed\n", encoding="utf-8")
         git("add", "-A")
@@ -1702,7 +1761,7 @@ class SkillProposalTest(ExperienceCompilationTest):
         ).read_text(encoding="utf-8")
         self.assertIn("proposal_required: false", story)
         self.assertIn("proposal_required: false", quick)
-        self.assertIn("reusable Pattern", distill)
+        self.assertIn("artifact_role: procedure|guideline|knowledge|evidence", distill)
         self.assertIn("Task P", distill)
 
     def write_proposal(
@@ -1731,7 +1790,7 @@ class SkillProposalTest(ExperienceCompilationTest):
         proposal.write_text(
             "---\n"
             "status: draft\ncreated: 2026-09-06\nupdated: 2026-09-06\n"
-            f"result: {result}\nscope: project-procedure\n"
+            f"result: {result}\nscope: project-procedure\nartifact_role: procedure\n"
             f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
             "proposer_mode: same-agent\nproposer_ref: agent://test\n"
             'proposer_reason: \"Project-local test fixture\"\n'
@@ -1749,6 +1808,86 @@ class SkillProposalTest(ExperienceCompilationTest):
             encoding="utf-8",
         )
         return proposal
+
+    def write_routine_proposal(self, project: Path, action: str) -> Path:
+        inputs = project / "specs" / "skill-proposals" / "inputs" / f"{action}.md"
+        inputs.parent.mkdir(parents=True, exist_ok=True)
+        source = project / "notes" / "index.md"
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        library = self.root / "vault" / "Skills"
+        (library / ".kosmic").mkdir(parents=True, exist_ok=True)
+        (library / "kosmic").mkdir(exist_ok=True)
+        routine_pin = f"- routine://kosmic/existing: {digest}\n" if action == "extend" else ""
+        inputs.write_text(f"- notes/index.md: {digest}\n{routine_pin}", encoding="utf-8")
+        (library / "kosmic" / "SKILL.md").write_text(
+            "---\nid: kosmic\nmaintainers: [alice]\n---\n# Kosmic\n", encoding="utf-8"
+        )
+        (library / ".kosmic" / "routines.json").write_text(json.dumps({
+            "routines": [{
+                "id": "kosmic/existing", "routine_sha256": digest, "procedures": [],
+            }],
+        }), encoding="utf-8")
+        result = {"create": "create", "extend": "update"}.get(action, "no_action")
+        routine_id = "kosmic/new" if action == "create" else "kosmic/existing"
+        target = routine_id
+        target_ref = f"routine://{routine_id}"
+        target_hash = "empty" if action == "create" else digest
+        if action == "keep_as_prose":
+            routine_id = ""
+            target = "kosmic/development/procedure"
+            target_ref = f"library-skill://{target}"
+            target_hash = ""
+        elif action == "none":
+            routine_id = target = target_ref = target_hash = ""
+        change_heading = "No-Action Reason" if result == "no_action" else "Proposed Change"
+        candidate = (
+            "\n## Routine Candidate\n\n"
+            "Repetition: Used by multiple callers.\n\n"
+            "Contract: Inputs and outputs are paths; rollback is invariant; filesystem is the side effect.\n\n"
+            "Expected failures: Invalid paths and failed replacements.\n\n"
+            "Leverage: One implementation removes duplicated transactions.\n"
+            if action in {"create", "extend"} else ""
+        )
+        proposal = inputs.parent.parent / f"2026-09-07-{action.replace('_', '-')}.md"
+        rendered_action = '"none"' if action == "none" else action
+        proposal.write_text(
+            "---\nstatus: draft\ncreated: 2026-09-07\nupdated: 2026-09-07\n"
+            f"result: {result}\nscope: shared-routine\nartifact_role: procedure\n"
+            "target_kind: routine\n"
+            f"routine_action: {rendered_action}\nroutine_id: {routine_id}\n"
+            "linked_proposals: []\nconsumer_approvals: []\n"
+            f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
+            "proposer_mode: subagent\nproposer_ref: agent://test\n"
+            "proposer_reason: \"Routine action fixture\"\n"
+            f"input_manifest: [specs/skill-proposals/inputs/{action}.md]\n"
+            "related_notes: [notes/index.md]\nevidence_packs: []\n"
+            "behavioral_evidence: []\ndecision: pending\nfingerprint: \"\"\nreconsiders: \"\"\n"
+            "---\n\n# Skill Proposal: Routine\n\n"
+            "## Problem\n\nRepeated mechanics.\n\n"
+            "## Evidence\n\nA deterministic fixture.\n\n"
+            f"## {change_heading}\n\nGovern the selected routine action.\n"
+            f"{candidate}\n## Applicability\n\nProcedure mechanics.\n\n"
+            "## Behavioral Validation\n\nPending.\n\nCandidate paths: [.scratch/routine]\n\n"
+            "## Risks\n\nIncorrect reuse.\n\n## New Evidence\n\nNone.\n",
+            encoding="utf-8",
+        )
+        return proposal
+
+    def test_all_routine_proposal_actions_validate_and_bad_mapping_fails(self) -> None:
+        project = self.make_project("demo-routines")
+        for action in ("create", "extend", "reuse", "keep_as_prose", "none"):
+            with self.subTest(action=action):
+                proposal = self.write_routine_proposal(project, action)
+                self.run_cli("validate-proposal", "--project", str(project), "--proposal", str(proposal))
+        proposal = self.write_routine_proposal(project, "create")
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8").replace("result: create", "result: no_action"),
+            encoding="utf-8",
+        )
+        self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal),
+            expected=2,
+        )
 
     def test_validate_proposal_accepts_valid_create(self) -> None:
         project = self.make_project()
@@ -1821,6 +1960,197 @@ class SkillProposalTest(ExperienceCompilationTest):
             "--work-item",
             str(item),
         )
+
+    def test_routine_completion_requires_unique_finished_proposals(self) -> None:
+        project = self.make_project("routine-gate")
+        (project / "specs" / "stories").mkdir(parents=True, exist_ok=True)
+        item = project / "specs" / "stories" / "routine-work.md"
+        item.write_text(
+            "---\nconsumer_interface_change: false\nroutine_edge_change: true\nroutine_decision_required: false\n"
+            "routine_proposals: []\n---\n\n# Routine work\n"
+            "\n## Routine Decision\n\nA governed routine decision is required.\n",
+            encoding="utf-8",
+        )
+        content = item.read_text(encoding="utf-8")
+        item.write_text(
+            content.replace("routine_edge_change: true\n", ""), encoding="utf-8"
+        )
+        absent = self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item),
+            expected=2,
+        )
+        self.assertIn("must declare routine_edge_change", absent.stderr)
+        item.write_text(content, encoding="utf-8")
+        undeclared = self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item),
+            expected=2,
+        )
+        self.assertIn("routine_edge_change", undeclared.stderr)
+        item.write_text(
+            item.read_text(encoding="utf-8").replace(
+                "routine_decision_required: false", "routine_decision_required: true"
+            ),
+            encoding="utf-8",
+        )
+        missing = self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item),
+            expected=2,
+        )
+        self.assertIn("routine_proposals", missing.stderr)
+
+        proposal = self.write_routine_proposal(project, "none")
+        checked = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+        )
+        fingerprint = re.search(r"fingerprint: ([0-9a-f]{64})", checked.stdout).group(1)
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8")
+            .replace("status: draft", "status: done")
+            .replace("decision: pending", "decision: accepted")
+            .replace('fingerprint: ""', f"fingerprint: {fingerprint}"),
+            encoding="utf-8",
+        )
+        reference = "../skill-proposals/2026-09-07-none.md"
+        item.write_text(
+            item.read_text(encoding="utf-8").replace(
+                "routine_proposals: []", f"routine_proposals: [{reference}, {reference}]"
+            ),
+            encoding="utf-8",
+        )
+        duplicate = self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item),
+            expected=2,
+        )
+        self.assertIn("duplicate", duplicate.stderr)
+        item.write_text(
+            item.read_text(encoding="utf-8").replace(
+                f"routine_proposals: [{reference}, {reference}]",
+                f"routine_proposals: [{reference}]",
+            ),
+            encoding="utf-8",
+        )
+        self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item)
+        )
+    def test_routine_false_gate_rejects_proposals_and_missing_reason(self) -> None:
+        project = self.make_project("routine-false")
+        item = project / "routine-false.md"
+        item.write_text(
+            "---\nconsumer_interface_change: false\nroutine_edge_change: false\n"
+            "routine_decision_required: false\nroutine_proposals: [proposal.md]\n"
+            "---\n\n# Work\n\n## Routine Decision\n\nNo candidate.\n",
+            encoding="utf-8",
+        )
+        populated = self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item),
+            expected=2,
+        )
+        self.assertIn("requires empty routine_proposals", populated.stderr)
+        item.write_text(
+            item.read_text(encoding="utf-8")
+            .replace("routine_proposals: [proposal.md]", "routine_proposals: []")
+            .replace("## Routine Decision\n\nNo candidate.\n", ""),
+            encoding="utf-8",
+        )
+        reasonless = self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item),
+            expected=2,
+        )
+        self.assertIn("requires a Routine Decision reason", reasonless.stderr)
+
+    def test_completion_accepts_finished_create_and_extend_with_evidence(self) -> None:
+        project = self.make_project("routine-create-extend")
+        self.make_pack(
+            project, "2026-09-07-demo",
+            payload=("result.md",),
+        )
+        references = []
+        for action in ("create", "extend"):
+            proposal = self.write_routine_proposal(project, action)
+            proposal.write_text(
+                proposal.read_text(encoding="utf-8").replace(
+                    "behavioral_evidence: []",
+                    "behavioral_evidence: [evidence/2026-09-07-demo/result.md]",
+                ),
+                encoding="utf-8",
+            )
+            checked = self.run_cli(
+                "validate-proposal", "--project", str(project), "--proposal", str(proposal)
+            )
+            fingerprint = re.search(r"fingerprint: ([0-9a-f]{64})", checked.stdout).group(1)
+            proposal.write_text(
+                proposal.read_text(encoding="utf-8")
+                .replace("status: draft", "status: done")
+                .replace("decision: pending", "decision: accepted")
+                .replace('fingerprint: ""', f"fingerprint: {fingerprint}"),
+                encoding="utf-8",
+            )
+            references.append(f"../skill-proposals/{proposal.name}")
+        item = project / "specs" / "stories" / "routine-create-extend.md"
+        item.parent.mkdir(parents=True, exist_ok=True)
+        item.write_text(
+            "---\nconsumer_interface_change: false\nroutine_edge_change: true\n"
+            "routine_decision_required: true\n"
+            f"routine_proposals: [{', '.join(references)}]\n"
+            "---\n\n# Routine changes\n\n## Routine Decision\n\nApproved candidates.\n",
+            encoding="utf-8",
+        )
+        self.run_cli(
+            "check-completion", "--project", str(project), "--work-item", str(item)
+        )
+
+    def test_legacy_done_and_rejected_fingerprints_remain_byte_identical(self) -> None:
+        project = self.make_project("legacy-fingerprints")
+        accepted = self.write_proposal(project, result="no_action")
+        accepted.write_text(
+            accepted.read_text(encoding="utf-8").replace("artifact_role: procedure\n", ""),
+            encoding="utf-8",
+        )
+        checked = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(accepted)
+        )
+        accepted_fingerprint = re.search(
+            r"fingerprint: ([0-9a-f]{64})", checked.stdout
+        ).group(1)
+        accepted.write_text(
+            accepted.read_text(encoding="utf-8")
+            .replace("status: draft", "status: done")
+            .replace("decision: pending", "decision: accepted")
+            .replace("fingerprint: \n", f"fingerprint: {accepted_fingerprint}\n"),
+            encoding="utf-8",
+        )
+        accepted_check = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(accepted)
+        )
+        self.assertIn(accepted_fingerprint, accepted_check.stdout)
+
+        rejected = accepted.with_name("2026-09-07-legacy-rejected.md")
+        rejected.write_text(
+            accepted.read_text(encoding="utf-8")
+            .replace("status: done", "status: draft")
+            .replace("decision: accepted", "decision: pending")
+            .replace(f"fingerprint: {accepted_fingerprint}", "fingerprint: ")
+            .replace("Project facts only", "Uncertain evidence only"),
+            encoding="utf-8",
+        )
+        checked = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(rejected)
+        )
+        rejected_fingerprint = re.search(
+            r"fingerprint: ([0-9a-f]{64})", checked.stdout
+        ).group(1)
+        rejected.write_text(
+            rejected.read_text(encoding="utf-8")
+            .replace("status: draft", "status: done")
+            .replace("decision: pending", "decision: rejected")
+            .replace("fingerprint: \n", f"fingerprint: {rejected_fingerprint}\n"),
+            encoding="utf-8",
+        )
+        rejected_check = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(rejected)
+        )
+        self.assertIn(rejected_fingerprint, rejected_check.stdout)
+
 
     def test_completion_rejects_proposal_path_when_not_required(self) -> None:
         project = self.make_project()
@@ -2110,12 +2440,14 @@ class SkillProposalTest(ExperienceCompilationTest):
         self.assertIn("valid Skill Proposal", result.stdout)
         body = proposal.read_text(encoding="utf-8")
         without = proposal_fingerprint(
-            "create", "project-procedure", "demo-skill", ["notes/index.md"], [], body
+            "create", "project-procedure", "demo-skill", "procedure",
+            ["notes/index.md"], [], body
         )
         with_cross = proposal_fingerprint(
             "create",
             "project-procedure",
             "demo-skill",
+            "procedure",
             ["notes/index.md"],
             [cross],
             body,

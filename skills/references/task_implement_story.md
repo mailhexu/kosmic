@@ -271,11 +271,7 @@ Use patterns discovered in research phase:
 - Reuse existing utilities
 - Apply architectural decisions from ADRs
 
-Apply SKILL.md "File Hygiene Before Coding and Before Final Status" while implementing:
-- create scratch/runtime output outside the project repo under `.tmp/<task-slug>/`;
-- keep tests awaiting later commit under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`;
-- commit pending-test packages before finishing;
-- delete generated ABINIT outputs and patch scratch unless explicitly promoted.
+Apply SKILL.md **Managed Run Before Scratch** while implementing. Begin the run before creating disposable output and use only its returned path; terminally succeed or fail it before final status. Keep pending tests under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`, commit those packages before finishing, and preserve durable evidence/spec/log rules.
 
 ### 3.2 Run Tests Continuously
 
@@ -370,8 +366,9 @@ If you learned something during implementation:
 3. Link notes from story file
 4. Assign each changed note an explicit Audience Scope and regenerate the atomic Skill Pair.
 5. If the story changes a Consumer Interface, set `consumer_interface_change: true` and list its current stable `usage` or `both` notes in `related_notes`.
-6. If the work captured raw experience (review findings, test-run summaries, debug transcripts), write an Evidence Pack under `{VAULT}/Projects/{TARGET}/evidence/{YYYY-MM-DD}-{slug}/` with a `MANIFEST.md`, declare its slug in the story's `evidence_packs:` frontmatter, and run Task 9: Distill (`references/task_distill.md`) over it.
-7. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done — it fails when any declared evidence pack lacks a draft-or-stable note linking it via `evidence:`.
+6. Classify changed procedure mechanics. Declare `routine_edge_change: true` whenever the story adds or changes a procedure's `uses_routines` edge; this requires `routine_decision_required: true`. When reusable deterministic mechanics are introduced or materially changed, set `routine_decision_required: true`, query the generated inventory, and list one governed Task P artifact per unique proposal path in `routine_proposals`; otherwise keep the gate false and the list empty.
+7. If the work captured raw experience (review findings, test-run summaries, debug transcripts), write an Evidence Pack under `{VAULT}/Projects/{TARGET}/evidence/{YYYY-MM-DD}-{slug}/` with a `MANIFEST.md`, declare its slug in the story's `evidence_packs:` frontmatter, and run Task 9: Distill (`references/task_distill.md`) over it.
+8. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done — it fails when any declared evidence pack lacks a draft-or-stable note linking it via `evidence:`.
 
 ### 4.4 Update Story
 

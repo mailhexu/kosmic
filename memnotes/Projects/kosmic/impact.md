@@ -29,3 +29,27 @@
 - date: 2026-09-06 | kind: publication | targets: [Skills/kosmic/usage/shared-domain-skill-library.md] | refs: 38c3bbcee18e44a19ce1f731b2e2e98bd63be3f2e14193419642909edd944147->a4bfb88ff792b164152c8f7675f3d72d697a779f2d1369f64dd5525aad602dcc | outcome: published | reason: "Published the reviewed consumer contract as an authoritative Kosmic Usage topic."
 
 - date: 2026-09-06 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: null->f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940 | outcome: published | reason: ""
+
+- date: 2026-09-07 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940->4f18457431a1839345d4071fe005eb7e73f9405537feec0124474fcd12ff58c2 | outcome: published | reason: ""
+- date: 2026-09-07 | kind: publication | targets: [Skills/memnotes-skills, Skills/abinit, Skills/tb2j, Skills/kosmic] | refs: a4bfb88ff792b164152c8f7675f3d72d697a779f2d1369f64dd5525aad602dcc->4dc6f7c94288b9393cb7e8761b1dbde2f8b37f9c5711addc71403dd1c93b716c | outcome: published | reason: "Published the clean semantic-role schema, typed resolver, explicit migration, and role-aware router."
+- date: 2026-09-07 | kind: decision | targets: [stories/story-031..036] | refs: semantic-artifact-roles-task7 | outcome: accepted | reason: "Independent Standards and Spec re-reviews passed after all twelve findings were resolved."
+
+- date: 2026-09-07 | kind: publication | targets: [notes/cli-extension-conventions.md] | refs: 12370f1ca4c1405e7062fa0338d3a80ea4661d19cb90676cad38cc2a94e3fc6d->3adaee347506b6e88345145566b830a74a60fb07d43e296d4ff7907609896806 | outcome: published | reason: ""
+- date: 2026-09-07 | kind: publication | targets: [notes/projection-audience-routing.md] | refs: 603b60733a105aac6b3c7c0025d6e52a1faaf2f3234b3db60ad5bbcb62b9a3d8->7858653a25453535b817a091b0a91c21965bd520e114253f88ea22cc70e517e3 | outcome: published | reason: ""
+
+- date: 2026-09-07 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: 4f18457431a1839345d4071fe005eb7e73f9405537feec0124474fcd12ff58c2->f96f86a1180b781ea5bd111a4e1cae3570532fd579daa35f52c95bad7c6acfe0 | outcome: published | reason: ""
+
+- date: 2026-09-07 | kind: publication | targets: [notes/procedure-compilation-and-routine-reuse.md] | refs: null->e2bc7f98d13b09f597855f59382a5b97f672a9548eb1ffe1b195697c06bcf0bc | outcome: published | reason: ""
+
+- date: 2026-09-07 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 9e5bcdc66e14fe39c028a3066d7d39ae4bd0e8ab6cafc58c10a312d6dd20813f->0899094a9296f5391d40433f358afb9adbfa6d4e4b081d42f05616251e60561d | outcome: published | reason: ""
+
+- date: 2026-09-07 | kind: decision | targets: [routine://kosmic/atomic-publish-tree] | refs: specs/skill-proposals/2026-09-07-atomic-publish-tree-reuse.md | outcome: accepted | reason: "Existing compiled routine satisfies the repeated atomic-publication contract; reuse, do not duplicate."
+
+- date: 2026-09-15 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 0899094a9296f5391d40433f358afb9adbfa6d4e4b081d42f05616251e60561d->74fc821632e2c450b79334fcc39206d57d65c7058ee6d4455d9cd58871769639 | outcome: published | reason: ""
+
+- date: 2026-09-15 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 74fc821632e2c450b79334fcc39206d57d65c7058ee6d4455d9cd58871769639->f1accb943443488d5eaec0bf4cd39885ff2ba6d034f47a07ff14ddfb23ea0385 | outcome: published | reason: ""
+
+- date: 2026-09-16 | kind: publication | targets: [notes/atomic-skill-publication.md] | refs: d06c6bbc8c67b7cad7db199df5697b75e92f38876233029c828a54682a71fe65->36e081cc47e2de36eac2f98ece82e8f718fed105cbf0f51f5f49fdba2144e00a | outcome: published | reason: ""
+- date: 2026-09-16 | kind: publication | targets: [notes/managed-run-workspace-lifecycle.md] | refs: null->4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11 | outcome: published | reason: ""
+
+- date: 2026-09-23 | kind: publication | targets: [notes/dream-reflection-workflow.md] | refs: null->4b43a51352fc158879e264305e79135667956723819b6dac1636b53a276ab37d | outcome: published | reason: ""

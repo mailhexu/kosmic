@@ -4,14 +4,15 @@ title: Projection CLI experience commands
 description: What the Projection CLI validates and enforces for evidence packs, executable MathDocs, Skill Proposals, projections, installation, and work-item completion.
 confidence: 0.9
 created: '2026-09-02'
-updated: '2026-09-06'
+updated: '2026-09-15'
 validation_procedure: "python3 -m unittest tests/test_project_skills_cli; kosmic_project_skills.py validate --project {VAULT}/Projects/{TARGET}"
 project: kosmic
 status: stable
 audience: usage
+artifact_role: knowledge
 usage_stale: false
 tags: []
-evidence: [evidence/2026-09-02-experience-compilation-impl/session-record.md, evidence/2026-09-05-math-derivation-layer-impl/session-record.md, evidence/2026-09-06-skill-proposal-loop-impl/session-record.md]
+evidence: [evidence/2026-09-02-experience-compilation-impl/session-record.md, evidence/2026-09-05-math-derivation-layer-impl/session-record.md, evidence/2026-09-06-skill-proposal-loop-impl/session-record.md, evidence/2026-09-07-procedure-compilation/session-record.md]
 ---
 
 # Projection CLI experience commands
@@ -24,8 +25,8 @@ How the Projection CLI treats Project evidence, executable MathDocs, Skill Propo
 - Notes may declare `evidence: [paths]` (Project-root-relative). `validate` fails a **stable** note whose paths do not resolve; drafts may reference pending packs.
 - `impact.md` at the Project root is an append-only ledger of six-field entries (`date, kind, targets, refs, outcome, reason`). `generate` appends publication entries automatically after each atomic publication to the canonical root; review decisions are appended procedurally. `validate` rejects malformed entries.
 - Work items may declare `evidence_packs: [slugs]`; `check-completion` fails naming any declared pack that lacks a draft-or-stable note linking it via `evidence:`.
-- Every Project has a vault-only `mathdocs/` registry. Stable Math Derivations carry the current script SHA-256, Python/SymPy versions, verification time, host, and source directory. Stable regular notes mark each display equation with a resolvable `MathDoc` result or exposition identifier.
-- Task P proposal artifacts use `draft -> approved -> done` status and `pending -> accepted|rejected` decisions. `validate-proposal` checks a SHA-pinned curated input manifest, scope/independence policy, immutable fingerprints, execution-pack behavioral evidence, and project-relative candidate isolation. `check-completion` enforces the proposal gate before its Consumer Interface early return.
+- `scratch begin|succeed|fail|extend|promote|status|gc` is the managed-run lifecycle adapter over `skills/scripts/kosmic_runs.py`. `begin --project PATH --purpose TEXT [--retention diagnostic|disposable] [--active-for 24h]` returns a private `handle_file` and resolves the run root at the active worktree’s `.tmp/kosmic/`; creation outside a Git worktree fails closed with `NO_GIT_WORKTREE`. `succeed`/`fail` finalize idempotently with terminal Git snapshots and receipts; `extend --until UTC` is capped to seven days after diagnostic failure; `promote --source RUN-RELATIVE --destination WORKTREE-RELATIVE [--overwrite]` verifies source, stage, and destination hashes and records Git evidence; `status` reports liveness and bounded accounting; `gc --dry-run` classifies only, while `gc --apply` removes only valid expired immediate runs through the same journaled transaction and returns operation receipts, diagnostics, and remaining eligible work. Ordinary managed commands run one bounded startup collection pass (four entries or 256 MiB); a maintenance failure emits a stable warning and does not replace the primary command result.
+- `validate`, `review`, `check-completion`, `install`, and `provenance` automatically begin and terminally finalize one disposable managed run per invocation through the same module (FR-MRW24), so their scratch never touches system temporary storage; vaults must therefore live inside a Git worktree whose root ignores `.tmp/`.
 
 ## Details
 - `validate` checks packs and the ledger before pair validation; a vault with neither is unaffected (all keys optional).

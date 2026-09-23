@@ -1,13 +1,20 @@
 ---
-type: Skill Topic
+type: Domain Topic
 id: kosmic/development/cli-extension-conventions
 domain: kosmic
 audience: development
+artifact_role: guideline
 status: stable
 summary: Projection CLI extension conventions
 triggers: [Projection CLI extension conventions]
+outcome: 
 aliases: []
-requires: []
+requires_procedures: []
+governed_by: []
+uses_knowledge: []
+supported_by: []
+supersedes: []
+observed_on: 
 evidence: [evidence/2026-09-02-experience-compilation-impl/session-record.md]
 source_project: kosmic
 source_sha256: 12370f1ca4c1405e7062fa0338d3a80ea4661d19cb90676cad38cc2a94e3fc6d

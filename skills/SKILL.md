@@ -1,7 +1,7 @@
 ---
 name: kosmic
-description: Orchestrate Project knowledge and spec-driven work, and maintain a vault-level Shared Skill Library with bounded dynamic domain routing, governed proposals, migration, and installation.
-version: 5.0.0
+description: Orchestrate Project knowledge and spec-driven work, maintain a governed Shared Skill Library, and compile repeated deterministic procedure mechanics into tested reusable routines.
+version: 6.0.0
 license: MIT
 compatibility: markdown-agent-skill, python>=3.11
 ---
@@ -10,7 +10,7 @@ compatibility: markdown-agent-skill, python>=3.11
 
 ## Overview
 
-Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages authoritative Project Knowledge and a vault-level Shared Skill Library. One installed library router dynamically loads compact Domain Skills and only the bounded Usage/Development topics required for a task. Kosmic works with OpenCode, Claude Code, Codex, or OMP. Each task is independent—load only what you need.
+Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages authoritative Project Knowledge and a vault-level Shared Skill Library. One installed router dynamically loads bounded Usage/Development topics and any hash-pinned deterministic routines their procedures use. Task 9 classifies mechanics; Task P governs reuse, extension, or creation. Judgment and approval stay in prose. Kosmic works with OpenCode, Claude Code, Codex, or OMP.
 
 **Documentation**: See `README.md` for complete guide.
 
@@ -103,28 +103,17 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 ## File Hygiene Before Coding and Before Final Status
 
-1. **Classify every new file before creating it**:
-   - source/docs intended for commit → create in the project tree;
-   - temporary scratch/runtime output → create under the workspace `.tmp/` area, not inside the project Git repo;
-   - tests awaiting a later commit → create or move under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>`;
-   - generated ABINIT outputs (`*.nc`, `*_DDB`, `*.agr`, run-output `*.abo`) → keep under `.tmp/` and delete when no longer needed.
+### Managed Run Before Scratch (MANDATORY)
 
-2. **Never run experiments from the source root**. Use a named `.tmp/<task-slug>/` run directory and redirect logs there.
+Before creating Kosmic-owned scratch, runtime output, generated intermediates, or a temporary Git index, run:
 
-3. **Patch scratch is disposable**. Files such as `patch_*.py`, `*_tmp.F90`, and empty untracked source files must be deleted before review unless explicitly promoted to source.
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py scratch begin --project {VAULT}/Projects/{TARGET} --purpose {task-slug}
+```
 
-4. **Tests awaiting later commit must be recoverable and committed before finishing**.
-   - Use the visible path `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>`; never hide recoverable tests in `.tmp/`.
-   - Preserve original paths exactly under `original-paths/` so restore is a single copy operation.
-   - Add `MANIFEST.md` with purpose, status, exact restore command, and contents.
-   - Commit the pending-test package before ending the session.
+**Done when:** JSON reports `code: OK`; write all disposable material only below the returned run path. `NO_GIT_WORKTREE` is a stop condition: place the vault in a Git worktree whose root ignores `.tmp/`. Before final status run `scratch succeed` or `scratch fail`; **done when** it reports `code: OK` and the run has terminal Git evidence.
 
-5. **Pre-finish gate**: run `git status --short`; every untracked/modified file must be classified as commit, preserved outside the project repo, or deleted. Do not leave mystery files.
-
-6. **Kosmic log entry**: when files are moved or deleted, record the cleanup/recovery path and reason in the project log.
-
----
-
+Durable source and documentation remain in the project tree. Pending tests remain under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md` and must be committed; Evidence Packs, specs, and logs retain their own governance. Destination-sibling atomic-publication staging is not run scratch. Load [Managed Run Lifecycle](references/managed_run_lifecycle.md) only when retention, promotion, status, or recovery detail is needed.
 ## Tasks
 
 ### Task Selection Matrix
@@ -143,7 +132,7 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
 | Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` fails until every declared pack has a linking draft-or-stable note |
 | Reusable symbolic result or equation-level defect | Task M: Math Note | Executable SymPy derivation, paired note, index row, verified links | Derivation-first; `check-math`, structural validation, review, and completion linkage gate |
-| Distillation yields or materially updates a reusable Pattern | Task P: Propose Skill Change | One validated create/update/no_action proposal | Fresh-context subagent required for shared/global scope; human approval and behavioral evidence before publication |
+| Distillation creates or materially updates a proven executable procedure | Task P: Propose Skill Change | One role-declared, validated create/update/no_action proposal | Knowledge, guidelines, and evidence never trigger publication; shared procedures require a fresh-context proposer, human approval, behavioral evidence, and target-Maintainer authority |
 
 ---
 
@@ -275,7 +264,7 @@ Do not leave standalone LaTeX equations as raw paragraphs without delimiters. Us
 
 **When**: Task 9 yields or materially updates a reusable Pattern, or a work item declares `proposal_required: true`.
 
-**Rule**: A curated, fresh-context proposer emits exactly one atomic `create`, `update`, or `no_action` artifact. It never edits canonical or installed skills. Shared/global proposals require a separate proposer subagent; accepted procedural proposals require behavioral evidence, human approval, and Task 7 review.
+**Rule**: A curated, fresh-context proposer emits exactly one atomic `create`, `update`, or `no_action` artifact. It never edits canonical or installed skills. Repeated failure is a Task P signal only when a general invariant, recovery, reproducer, and verification matrix show that the repair generalizes; it never causes automatic publication. Shared/global proposals require a separate proposer subagent; accepted procedural proposals require behavioral evidence, human approval, and Task 7 review.
 
 **Gate**: New work declares `proposal_required`. A true value requires one valid proposal before completion; rejected equivalent interventions require materially new evidence before reconsideration.
 

@@ -1,13 +1,20 @@
 ---
-type: Skill Topic
+type: Domain Topic
 id: kosmic/development/projection-audience-routing
 domain: kosmic
 audience: development
+artifact_role: knowledge
 status: stable
 summary: Projection audience routing
 triggers: [Projection audience routing]
+outcome: 
 aliases: []
-requires: []
+requires_procedures: []
+governed_by: []
+uses_knowledge: []
+supported_by: []
+supersedes: []
+observed_on: 
 evidence: []
 source_project: kosmic
 source_sha256: 603b60733a105aac6b3c7c0025d6e52a1faaf2f3234b3db60ad5bbcb62b9a3d8

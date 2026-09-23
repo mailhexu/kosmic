@@ -7,6 +7,9 @@ related_specs: []
 related_files: []
 consumer_interface_change: false
 proposal_required: false
+routine_edge_change: false
+routine_decision_required: false
+routine_proposals: []
 # When true, add: skill_proposal: ../skill-proposals/YYYY-MM-DD-slug.md
 # For math-derived implementation, uncomment and populate both:
 # derivations: [{slug}]
@@ -36,6 +39,10 @@ review_round: 0
 - [ ] Log updated
 - [ ] Notes updated if durable knowledge was learned
 - [ ] Specs index updated
+
+## Routine Decision
+
+No reusable deterministic procedure mechanics are introduced or materially changed.
 
 ## Implementation Notes
 

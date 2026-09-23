@@ -59,6 +59,7 @@ Use `references/templates/template-quick-task.md`.
    - Declare `consumer_interface_change: true` when supported CLI, API, configuration, integration, or troubleshooting behavior changes; otherwise explicitly keep `false`.
    - For `true`, list the current stable Consumer knowledge in `related_notes`.
    - Pin `review_base` before implementation and set `review_round: 0`; do not move the baseline during re-review.
+   - Declare `routine_edge_change: true` whenever the task adds or changes a procedure's `uses_routines` edge; this requires `routine_decision_required: true`. Declare `routine_decision_required: true` when the task introduces or materially changes reusable deterministic mechanics; list one governed Task P artifact per unique proposal path in `routine_proposals`. Otherwise keep both fields false and the list empty.
    - When the work produces raw experience worth keeping (review findings, test runs, debug transcripts), capture it as an Evidence Pack (`evidence/{YYYY-MM-DD}-{slug}/` with `MANIFEST.md`), declare the slug in `evidence_packs:`, and distill it with Task 9 before completion — `check-completion` enforces the linkage.
 
 3. **Approval gate**
@@ -76,7 +77,7 @@ Use `references/templates/template-quick-task.md`.
    - Set `Status: in_progress`.
    - Make the minimal change that satisfies acceptance criteria.
    - Add or update tests when the codebase has a relevant test pattern.
-   - Follow SKILL.md "File Hygiene Before Coding and Before Final Status" for scratch files, generated outputs, and tests awaiting a later commit.
+   - Follow SKILL.md **Managed Run Before Scratch** for disposable scratch; it does not replace durable pending-test, Evidence Pack, specification, or log rules.
 
 6. **Verify and review**
    - Run diagnostics and focused tests or an equivalent manual check.

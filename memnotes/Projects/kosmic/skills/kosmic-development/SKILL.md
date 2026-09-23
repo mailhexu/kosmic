@@ -19,8 +19,8 @@ Load `kosmic-usage` before contributor work that invokes, configures, integrates
 
 ## Topics
 
-- [Atomic Skill Publication](references/atomic-skill-publication.md)
 - [Projection CLI extension conventions](references/cli-extension-conventions.md)
+- [Procedure Compilation and Routine Reuse](references/procedure-compilation-and-routine-reuse.md)
 - [Projection audience routing](references/projection-audience-routing.md)
 
 Load only the topic references needed for the current task.

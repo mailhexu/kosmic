@@ -1,0 +1,16 @@
+{
+  "generator_version": 4,
+  "name": "abinit-usage",
+  "project_id": "abinit",
+  "requires": [],
+  "role": "usage",
+  "sources": [
+    {
+      "audience": "both",
+      "path": "notes/scoped-project-boundary.md",
+      "reference": "references/scoped-project-boundary.md",
+      "sha256": "ca46c9703a0b4fcebab5cde190a0adae91ff59b26675aca5c45e4f1ba7417142"
+    }
+  ],
+  "working_state": "scoped-source"
+}

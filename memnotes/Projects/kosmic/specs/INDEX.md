@@ -1,7 +1,7 @@
 ---
 project: kosmic
 created: 2026-09-02
-updated: 2026-09-06
+updated: 2026-09-23
 ---
 
 # Specs Index: kosmic
@@ -12,7 +12,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 
 - PRD: [PRD](prd.md) (approved 2026-09-02)
 - Architecture: [Architecture](architecture.md) (approved 2026-09-02)
-- Current focus: vault-level Shared Domain Skill Library with one native router, dynamically loaded domain `SKILL.md` files, and cross-project learning
+- Current focus: Dream Reflection Epic 26 delivered 2026-09-23
 
 ## Active Specs
 
@@ -26,12 +26,21 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Architecture | [Skill Proposal Loop](architecture-skill-proposer.md) | approved 2026-09-06 | AD-P1..P8: proposer role, artifact, gates, behavior, rejection memory, activation |
 | Feature PRD | [Shared Domain Skill Library](prd-shared-domain-skill-library.md) | approved 2026-09-06 | One library router; domain-root subskills; ordinary topic notes; cross-domain resolution and Maintainer governance |
 | Feature Architecture | [Shared Domain Skill Library](architecture-shared-domain-skill-library.md) | approved 2026-09-06 | AD-SD1..SD10: domain-root fracture, deterministic resolver, bounded cross-domain packets, governed migration |
+| Feature PRD | [Semantic Artifact Roles](prd-semantic-artifact-roles.md) | approved 2026-09-07 | Role-aware Domain Topics, typed relationships and intent routing; ABINIT-first migration |
+| Feature Architecture | [Semantic Artifact Roles](architecture-semantic-artifact-roles.md) | approved 2026-09-07 | AD-SR1..SR10: role authority, typed closure, intent selection, evidence freshness, explicit migration |
+| Feature PRD | [Procedure Compilation and Routine Reuse](prd-procedure-compilation.md) | approved 2026-09-07 | Task 9 classification, Task P routine decisions, generated inventory, reuse-first validation |
+| Feature Architecture | [Procedure Compilation and Routine Reuse](architecture-procedure-compilation.md) | approved 2026-09-07 | AD-PC1..PC11: static routine registry, reuse-first query, proposal/gate integration, atomic publication dogfood |
+| Feature PRD | [Managed Run Workspaces](prd-managed-run-workspaces.md) | approved 2026-09-14 | Worktree-local `.tmp/kosmic/`, deterministic retention, mandatory Git status, conservative cleanup; ready for Architecture |
+| Feature Architecture | [Managed Run Workspaces](architecture-managed-run-workspaces.md) | approved 2026-09-14 | Detached per-run `flock` holder, descriptor-anchored paths, Git evidence, journaled cleanup and promotion; ready for Epics and Stories |
+| Feature PRD | [Dream Reflection](prd-dream-reflection.md) | approved 2026-09-23 | Reviewed Task D/CLI seam, observable-day union, open-work and bounded read contracts, vault validation, idempotent publication; delivery specs drafted |
+| Feature Architecture | [Dream Reflection](architecture-dream-reflection.md) | approved 2026-09-23 | AD-DR1..AD-DR7: observable union, vault validator, typed read-set contract, advisory boundary, managed handshake, rerun semantics, redaction; delivery specs drafted |
 
 ## Research Memos
 
 | Research | Status | Linked PRD | Linked Architecture | Recommendation |
 |----------|--------|------------|---------------------|----------------|
 | [2026-09-02 route-graph skill projection](../evidence/2026-09-02-route-graph-skill-projection/memo.md) | done | [Archived PRD](archive/2026-09-02-prd-route-graph.md) | [Archived Architecture](archive/2026-09-02-architecture-route-graph.md) | Option B: keep pair, shared route graph — direction abandoned by user |
+| [2026-09-14 managed run workspace mechanisms](research/2026-09-14-managed-run-workspace-mechanisms.md) | done | [Managed Run Workspaces](prd-managed-run-workspaces.md) | [Managed Run Workspaces Architecture](architecture-managed-run-workspaces.md) | Detached per-run `flock` holder plus descriptor-relative quarantine; capability-only lease rejected |
 | [2026-09-02 WikiSkill experience compilation](../evidence/2026-09-02-wikiskill-experience-compilation/memo.md) | done | [PRD](prd.md) | [Architecture](architecture.md) | Posture B staged: adapt WikiSkill engine writing into Kosmic substrate |
 
 ## Quick Tasks
@@ -40,6 +49,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 |------------|--------|-------|--------------|
 | [Projected link rewriting](quick-tasks/2026-09-02-projected-link-rewriting.md) | done | demote unshipped links in projected references | 95/95 tests; gate passed; pair regenerated |
 | [Manifest code provenance](quick-tasks/2026-09-03-manifest-code-provenance.md) | done | optional git_head/worktree_tree in MANIFEST + provenance command | 142/142 tests; validate exit 0 |
+| [Failure-derived procedure proposals](quick-tasks/2026-09-08-failure-derived-proposals.md) | done | Add failure-derived procedure-proposal gates to Task 9 and Task P | `validate` and `check-completion` passed; Standards/Spec reviews found no findings |
+| [Scoped ABINIT MPI source Project](quick-tasks/2026-09-08-scoped-abinit-mpi-source-project.md) | done | Adopt bounded same-vault provenance for future MPI procedure distillation | `generate`, `validate`, and `check-completion` passed; Standards/Spec reviews found no findings |
 
 ## Epics
 
@@ -61,6 +72,16 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Epic 14 Shared library foundation](epics/epic-14-shared-library-foundation.md) | draft | 2 | Domain/topic schemas, catalog, deterministic resolver |
 | [Epic 15 Shared library governance](epics/epic-15-shared-library-governance.md) | draft | 2 | Cross-project evidence, domain ownership, single-router install |
 | [Epic 16 Shared library migration/release](epics/epic-16-shared-library-migration-release.md) | draft | 2 | Explicit migration, cross-domain dogfood, clean cutover |
+| [Epic 17 Semantic role schema](epics/epic-17-semantic-role-schema.md) | done | 2 | Domain Topic roles, strict procedures, typed graph validation |
+| [Epic 18 Role-aware resolution](epics/epic-18-role-aware-resolution.md) | done | 2 | Intent selection, role-aware primary matching, typed Recipe Packets |
+| [Epic 19 Classification migration/release](epics/epic-19-classification-migration-release.md) | done | 2 | Task 9/Task P classification, ABINIT migration, dogfood and release |
+| [Epic 20 Routine registry/discovery](epics/epic-20-routine-registry-discovery.md) | done | 2 | Static declarations, generated inventory, bounded query |
+| [Epic 21 Routine governance](epics/epic-21-routine-governance.md) | done | 2 | Task P routine decisions, approval and completion gates |
+| [Epic 22 Atomic publication dogfood/release](epics/epic-22-routine-publication-dogfood.md) | done | 2 | First routine, four-caller cutover, packet integration |
+| [Epic 23 Managed run foundation](epics/epic-23-managed-run-foundation.md) | approved 2026-09-14 | 2 | Exhaustive inventory, trusted root, Git evidence, and read-only run store |
+| [Epic 24 Managed run initial release](epics/epic-24-managed-run-initial-release.md) | done | 8 | Lease lifecycle, retention, owner cleanup, promotion, migration, staging detection, skill cutover, and release |
+| [Epic 25 Managed run destructive cleanup](epics/epic-25-managed-run-destructive-cleanup.md) | done | 4 | Explicit GC, bounded startup reuse, atomic recovery, and destructive release |
+| [Epic 26 Dream Reflection initial release](epics/epic-26-dream-reflection-initial-release.md) | done | 7 | Harvest, open-work/knowledge, vault validation, managed handshake, publication, recovery, Task D dogfood |
 
 ## Stories
 
@@ -96,6 +117,39 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [story-028 shared router install](stories/story-028-shared-router-installation.md) | done | 15 | One native router, adapter cutover and rollback |
 | [story-029 shared library migration](stories/story-029-shared-library-migration.md) | done | 16 | Explicit assignments, provenance preservation, atomic publication |
 | [story-030 dogfood/release](stories/story-030-shared-library-dogfood-release.md) | done | 16 | Kosmic and TB2J→ABINIT behavior, review, release |
+| [story-031 Domain Topic role schema](stories/story-031-domain-topic-role-schema.md) | done | 17 | Role-neutral schema and clean terminology cutover |
+| [story-032 procedure/relationship validation](stories/story-032-procedure-and-relationship-validation.md) | done | 17 | Procedure contract, typed edges, evidence freshness |
+| [story-033 intent/primary selection](stories/story-033-intent-and-primary-selection.md) | done | 18 | Deterministic intent and role-filtered matching |
+| [story-034 typed Recipe Packets](stories/story-034-typed-recipe-packets.md) | done | 18 | Labeled closure, ordering, verification and budgets |
+| [story-035 distillation/proposal classification](stories/story-035-distillation-and-proposal-classification.md) | done | 19 | Project-note roles, Task 9 and Task P authority |
+| [story-036 ABINIT migration/dogfood/release](stories/story-036-abinit-migration-dogfood-release.md) | done | 19 | Explicit classification, behavior proof and release |
+| [story-037 routine registry schema](stories/story-037-routine-registry-schema.md) | done | 20 | Static AST schema and fail-closed validation |
+| [story-038 routine inventory/query](stories/story-038-routine-inventory-query.md) | done | 20 | Hash-pinned inventory and deterministic discovery |
+| [story-039 routine proposal contract](stories/story-039-routine-proposal-contract.md) | done | 21 | Compatible Task P routine target/action semantics |
+| [story-040 routine completion workflow](stories/story-040-routine-completion-workflow.md) | done | 21 | Explicit work-item, Task 9, approval, evidence gates |
+| [story-041 atomic publication compilation](stories/story-041-atomic-publication-compilation.md) | done | 22 | Deep publication routine and clean four-caller cutover |
+| [story-042 procedure compilation dogfood/release](stories/story-042-procedure-compilation-dogfood-release.md) | done | 22 | Procedure edges, packet framing, reviewed release |
+| [story-043 temporary-path inventory and root anchor](stories/story-043-temporary-path-inventory-root-anchor.md) | done | 23 | Exhaustive caller/policy inventory and descriptor-anchored `.tmp/kosmic` root |
+| [story-044 Git evidence and run store](stories/story-044-git-evidence-run-store.md) | done | 23 | Porcelain-v2 snapshots, canonical schemas, and static entry enumeration |
+| [story-045 lease-backed run lifecycle](stories/story-045-lease-backed-run-lifecycle.md) | done | 24 | Detached holder, authenticated control, active TTL, and terminal state |
+| [story-046 retention and terminal receipts](stories/story-046-retention-and-terminal-receipts.md) | done | 24 | Deterministic retention, post-failure extension, and persistent receipts |
+| [story-047 durable promotion and complete reporting](stories/story-047-durable-promotion-complete-reporting.md) | done | 24 | No-clobber promotion, Git evidence, and complete status/dry-run results |
+| [story-048 temporary caller migration](stories/story-048-temporary-caller-migration.md) | done | 24 | Automatic lifecycle migration for every ordinary temporary caller |
+| [story-049 managed run initial release](stories/story-049-managed-run-initial-release.md) | done | 24 | End-to-end dogfood, evidence, adapter verification, and safe initial release |
+| [story-050 destructive run garbage collection](stories/story-050-destructive-run-garbage-collection.md) | done | 25 | Concurrent contained explicit `gc --apply` activation |
+| [story-051 atomic publication recovery](stories/story-051-atomic-publication-recovery.md) | done | 25 | Destination-specific recovery preserving one canonical tree |
+| [story-052 owner cleanup transaction and recovery](stories/story-052-owner-cleanup-recovery.md) | done | 24 | Journaled owner deletion, crash recovery, and bounded history |
+| [story-053 managed run skill cutover](stories/story-053-managed-run-skill-cutover.md) | done | 24 | Task P-governed one-step workflow and progressive lifecycle disclosure |
+| [story-054 bounded startup collection](stories/story-054-bounded-startup-collection.md) | done | 25 | Bounded reuse of proven GC at command startup |
+| [story-055 managed run destructive release](stories/story-055-managed-run-destructive-release.md) | done | 25 | Combined destructive dogfood, migration removal, and release closure |
+| [story-056 atomic staging markers and detection](stories/story-056-atomic-staging-markers-detection.md) | done | 24 | Bounded report-only marker lifecycle in the initial release |
+| [story-057 dream day-delta harvest](stories/story-057-dream-day-delta-harvest.md) | done | 26 | Observable Git/frontmatter/dirty union and canonical harvest |
+| [story-058 dream open work and knowledge contract](stories/story-058-dream-open-work-knowledge-contract.md) | done | 26 | Open work, transitions, Knowledge Flags, candidate evidence, read set |
+| [story-059 dream vault schema and validator](stories/story-059-dream-vault-schema-validator.md) | done | 26 | Vault record/index/ideas schemas and `validate-dreams` |
+| [story-060 managed dream harvest handshake](stories/story-060-managed-dream-harvest-handshake.md) | done | 26 | Managed run, materialized read set, confined untrusted inputs |
+| [story-061 deterministic dream publication](stories/story-061-deterministic-dream-publication.md) | done | 26 | Merge, redaction, canonical hash, validation, atomic publication |
+| [story-062 dream run recovery and concurrency](stories/story-062-dream-run-recovery-concurrency.md) | done | 26 | State machine, races, retry, abort, expiry, recovery |
+| [story-063 dream workflow dogfood release](stories/story-063-dream-workflow-dogfood-release.md) | done | 26 | Task D routing, pinned dogfood oracle, usage knowledge, release gates |
 
 ## Completed or Archived
 

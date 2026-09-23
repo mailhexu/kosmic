@@ -1,0 +1,17 @@
+# Managed Run Workflow Proposal Inputs
+
+- specs/skill-proposals/inputs/curated/mrw-task_propose_skill.md: a671a76444fa076f9e6fcb0e4b549f454bf127613345962666d35391c4a21991
+- specs/skill-proposals/inputs/curated/mrw-template-skill-proposal.md: 3a7d832189813d7267897ede3daa5e6569fcc65477cfd2e36b02859e1cffa3f2
+- notes/index.md: b8b1949757610acc54ad07e0776b168ebe8af07295b1ec5b147f3d941e9b6f0d
+- notes/managed-run-workspace-lifecycle.md: 4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11
+- notes/cli-projection-commands.md: f1accb943443488d5eaec0bf4cd39885ff2ba6d034f47a07ff14ddfb23ea0385
+- evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md: 5f5f51862558f3b688630df7062f9ae39a2fad9fa63471c5bfa48a565e48ea79
+- evidence/2026-09-15-managed-run-lifecycle/session-record.md: f08a6e1a630e4d8282a3a6a0ecea80bfdc30151719f02d100810b70bb5b9ff23
+- specs/stories/story-053-managed-run-skill-cutover.md: 47519d0ade7aabf1a0b61b760bb5ff076a298aaa804a086ec667689894ec3ccb
+- specs/prd-managed-run-workspaces.md: 66128abd538214505b9dfe6773055f4007b73bec315c319608de746e42874fe0
+- specs/skill-proposals/inputs/curated/mrw-candidate-skills__SKILL.md: 95a81cd212d1a27bfea5f094b184446b0757db7c7019902c3188bc562d1cf0b8
+- specs/skill-proposals/inputs/curated/mrw-candidate-skills__README.md: 59c571d62250eb983effef45dee44a3f02d129586289aa355151540dd6d86df7
+- specs/skill-proposals/inputs/curated/mrw-candidate-task_implement_story.md: 7968b9d78b63dbda95d4bff112bdca5b8c884166a6df93c2eaa96c480125f213
+- specs/skill-proposals/inputs/curated/mrw-candidate-task_quick_task.md: ac16e88aaac93761ba1f14a2e0a36eeec5404ca28741b6243b7d776ba3aee24c
+- impact.md: e72673b03765758a90465816f1e55d411e131d220050a98fe0254a3ed1dd1032
+- specs/skill-proposals/2026-09-07-atomic-publish-tree-reuse.md: de0dffb21b5488e138abefe0478bfc8f4664ae44095584451f636c7004a3bd73

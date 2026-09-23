@@ -4,7 +4,7 @@ title: Projection CLI extension conventions
 description: Where new vault-layer features hook into the Projection CLI and the failure modes observed extending it.
 confidence: 0.8
 created: '2026-09-02'
-updated: '2026-09-02' (promoted)
+updated: 2026-09-02
 validation_procedure: "python3 -m unittest tests.test_project_skills_cli; kosmic_project_skills.py validate --project {VAULT}/Projects/{TARGET}"
 project: kosmic
 status: stable

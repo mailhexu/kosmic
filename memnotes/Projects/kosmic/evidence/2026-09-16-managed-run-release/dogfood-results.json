@@ -1,0 +1,86 @@
+{
+  "checks": [
+    {
+      "check": "live-status",
+      "ok": true,
+      "detail": {
+        "code": "OK",
+        "lease_expires_at": "2026-09-16T23:56:25Z",
+        "live": true,
+        "run_id": "20260915T235625Z-049-live-probe-effd6e5c24985da334a26bbf170e7b9c",
+        "state": "active"
+      }
+    },
+    {
+      "check": "promotion",
+      "ok": true,
+      "detail": {
+        "code": "OK",
+        "destination": "/home/hexu/projects/myagentskills/kosmic/.tmp/049-probe.txt",
+        "destination_sha256": "5d3acfb1af3995fca2437ac138fdfc0ea9282df9a36e13c2deb499a12cfbd3dc",
+        "git_after_sha256": "e9b128065b98fcee95eb698799db702909a7b27ce583e8852d14e862de0d8092",
+        "git_before_sha256": "e9b128065b98fcee95eb698799db702909a7b27ce583e8852d14e862de0d8092",
+        "run_id": "20260915T235625Z-049-live-probe-effd6e5c24985da334a26bbf170e7b9c",
+        "source_sha256": "5d3acfb1af3995fca2437ac138fdfc0ea9282df9a36e13c2deb499a12cfbd3dc"
+      }
+    },
+    {
+      "check": "success-cleanup",
+      "ok": true,
+      "detail": {
+        "code": "OK",
+        "expires_at": "2026-09-15T23:56:26Z",
+        "git_finish_sha256": "e9b128065b98fcee95eb698799db702909a7b27ce583e8852d14e862de0d8092",
+        "git_start_sha256": "e9b128065b98fcee95eb698799db702909a7b27ce583e8852d14e862de0d8092",
+        "path": null,
+        "run_id": "20260915T235625Z-049-live-probe-effd6e5c24985da334a26bbf170e7b9c",
+        "state": "succeeded"
+      }
+    },
+    {
+      "check": "retention-extension-accounting",
+      "ok": true,
+      "detail": {
+        "retention_72h": true,
+        "cap_enforced": true,
+        "extend_ok": true,
+        "gc_category": "retained",
+        "total_bytes": 871979
+      }
+    },
+    {
+      "check": "holder-crash-recovery",
+      "ok": true,
+      "detail": {
+        "status": {
+          "abandoned_candidate": true,
+          "code": "OK",
+          "grace_until": "2026-09-17T00:56:27Z",
+          "live": false,
+          "run_id": "20260915T235627Z-049-holder-crash-e44d37bc726b65aae633582468639df2",
+          "state": "active"
+        },
+        "replay": "OK"
+      }
+    },
+    {
+      "check": "secret-redaction",
+      "ok": true,
+      "detail": {
+        "purpose_redacted": true
+      }
+    },
+    {
+      "check": "combined-destructive-matrix",
+      "ok": true,
+      "detail": {
+        "gc_removed_abandoned": 1,
+        "expired_retained_then_removed": true,
+        "unrelated_preserved": true,
+        "git_delta_recorded": true,
+        "publication_restored": true
+      }
+    }
+  ],
+  "all_ok": true
+}

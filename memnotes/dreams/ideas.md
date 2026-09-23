@@ -1,0 +1,3 @@
+- 2026-09-16-idea-dream-week — weekly dream rollup compiling seven records into a Task Review feed — trigger: [PRD FR-D10](../Projects/kosmic/specs/prd-dream-reflection.md) — next: revisit after two weeks of records (added 2026-09-23)
+- 2026-09-16-idea-flag-remediation — let Knowledge Flags suggest Task Review remediation actions in prose — trigger: [Task Review](../Projects/kosmic/notes/dream-reflection-workflow.md) — next: draft wording change (added 2026-09-23)
+- 2026-09-22-idea-cross-project-candidates — surface cross-project repeated mechanics as Shared Skill Library candidates — trigger: [PRD FR-D11](../Projects/kosmic/specs/prd-dream-reflection.md) — next: enable after two dreams exist (added 2026-09-23)

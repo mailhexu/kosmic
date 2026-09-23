@@ -8,6 +8,9 @@ linked_prd: ../prd.md
 related_notes: []
 consumer_interface_change: false
 proposal_required: false
+routine_edge_change: false
+routine_decision_required: false
+routine_proposals: []
 # When true, add: skill_proposal: ../skill-proposals/YYYY-MM-DD-slug.md
 # For math-derived implementation, uncomment and populate both:
 # derivations: [{slug}]
@@ -55,6 +58,10 @@ So that {benefit}.
 - [ ] All tests pass
 - [ ] Code review completed
 - [ ] Knowledge notes updated
+
+## Routine Decision
+
+No reusable deterministic procedure mechanics are introduced or materially changed.
 
 ## Technical Notes
 

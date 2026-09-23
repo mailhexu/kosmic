@@ -1,7 +1,7 @@
 ---
 type: Concept
 status: stable
-audience: development
+audience: usage
 confidence: high
 derivations: [mathdocs/atomic-publication-state.py]
 evidence: [evidence/2026-09-05-math-derivation-layer-impl/session-record.md]
