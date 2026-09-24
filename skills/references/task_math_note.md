@@ -1,6 +1,6 @@
 # Task M: Math Note
 
-Create or correct one executable SymPy derivation and its paired Math Derivation note. The executable file is the authority; prose records assumptions, units, interpretation, and correction history.
+Create or correct one executable SymPy derivation and its paired Math Derivation note. The executable file is the authority; prose records assumptions, units, interpretation, and correction history. Write the human-owned prose in the Simplified Technical English subset defined by [Note writing style](note-writing-style.md); the machine-owned region is exempt.
 
 ## When to Use
 

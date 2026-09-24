@@ -36,6 +36,12 @@
       "sha256": "5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3"
     },
     {
+      "audience": "both",
+      "path": "notes/note-writing-style.md",
+      "reference": "references/note-writing-style.md",
+      "sha256": "dbe7345fc895aa1081e2f34863a9f70b8ffa7be1f91f6471196246bbbc12ec88"
+    },
+    {
       "audience": "usage",
       "path": "notes/shared-domain-skill-library.md",
       "reference": "references/shared-domain-skill-library.md",

@@ -12,6 +12,8 @@ okf_version: "0.2"
 
 * [Dream Reflection workflow](dream-reflection-workflow.md) - Task D harvest/reflect/publish loop and its CLI contracts
 
+* [Note writing style](note-writing-style.md) - Simplified Technical English subset for notes and mathdocs prose
+
 ## Interfaces
 * [Projection CLI experience commands](cli-projection-commands.md) - Evidence packs, `evidence:` note links, the `impact.md` ledger, and the `check-completion` evidence gate: what the CLI validates and enforces.
 * [Shared Domain Skill Library](shared-domain-skill-library.md) - One installed router, dynamically loaded Domain Skills, bounded dependency-closed Recipe Packets, governed cross-project learning, and atomic migration.

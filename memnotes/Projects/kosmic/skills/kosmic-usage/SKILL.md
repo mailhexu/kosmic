@@ -20,6 +20,7 @@ Working State: `working-tree`
 - [Dream Reflection workflow](references/dream-reflection-workflow.md)
 - [Managed Run Workspace Lifecycle](references/managed-run-workspace-lifecycle.md)
 - [Notation](references/notation.md)
+- [Note writing style](references/note-writing-style.md)
 - [Shared Domain Skill Library](references/shared-domain-skill-library.md)
 
 Load only the topic references needed for the current task.

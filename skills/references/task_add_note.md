@@ -31,6 +31,8 @@ grep -rni "{keywords}" "{VAULT}/Projects/{TARGET}/notes/" && grep -i "{keywords}
 
 ## Step 2: Check Notation
 
+Before writing, read [Note writing style](note-writing-style.md) and follow it: short sentences, active voice, one word per concept, explicit names, no session-context shorthand. The note must be readable without conversation context.
+
 Before writing, check notation.md for existing variable definitions:
 
     cat {VAULT}/Projects/{TARGET}/notes/notation.md
