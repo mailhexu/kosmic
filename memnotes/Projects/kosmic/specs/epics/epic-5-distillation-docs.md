@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-02
 updated: 2026-09-02 (approved)
 linked_prd: ../prd.md
@@ -36,9 +36,9 @@ The human/agent-facing half (AD-5/AD-6): Task 9 (Distill) reference doc adopting
 
 ## Success Criteria
 
-- [ ] Task 9 doc is self-sufficient (any agent can execute it from the doc alone, NFR-004)
-- [ ] Attribution + pinned revision recorded wherever E.2-derived text appears
-- [ ] SKILL.md catalogue, README, and affected references updated consistently
+- [x] Task 9 doc is self-sufficient (any agent can execute it from the doc alone, NFR-004)
+- [x] Attribution + pinned revision recorded wherever E.2-derived text appears
+- [x] SKILL.md catalogue, README, and affected references updated consistently
 
 ## Progress
 

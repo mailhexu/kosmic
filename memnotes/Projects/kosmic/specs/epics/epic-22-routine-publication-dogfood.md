@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-07
 updated: 2026-09-07
 linked_prd: ../prd-procedure-compilation.md

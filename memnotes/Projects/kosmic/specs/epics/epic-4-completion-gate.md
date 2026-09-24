@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-02
 updated: 2026-09-02 (approved)
 linked_prd: ../prd.md
@@ -33,8 +33,8 @@ Mechanical enforcement of distillation (AD-4): work items declare `evidence_pack
 
 ## Success Criteria
 
-- [ ] Declared pack with no linking note fails; with a draft note passes; absent declaration passes
-- [ ] Nonexistent slug fails with the slug named
+- [x] Declared pack with no linking note fails; with a draft note passes; absent declaration passes
+- [x] Nonexistent slug fails with the slug named
 
 ## Progress
 

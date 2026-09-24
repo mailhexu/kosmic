@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-02
 updated: 2026-09-02 (approved)
 linked_prd: ../prd.md
@@ -33,8 +33,8 @@ Additive optional note frontmatter `evidence: [paths]` linking a note to its mot
 
 ## Success Criteria
 
-- [ ] Stable note with resolvable `evidence:` passes; unresolvable fails with the path named
-- [ ] Existing notes without the key are unaffected (backward compatible)
+- [x] Stable note with resolvable `evidence:` passes; unresolvable fails with the path named
+- [x] Existing notes without the key are unaffected (backward compatible)
 
 ## Progress
 

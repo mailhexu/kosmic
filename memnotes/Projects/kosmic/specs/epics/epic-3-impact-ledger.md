@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-02
 updated: 2026-09-02 (approved)
 linked_prd: ../prd.md
@@ -36,8 +36,8 @@ Flat, append-only `impact.md` at Project root recording knowledge-state transiti
 
 ## Success Criteria
 
-- [ ] Malformed entries fail `validate` with the field named
-- [ ] `generate` appends one entry per changed note with correct old→new hashes; re-running with no changes appends nothing
+- [x] Malformed entries fail `validate` with the field named
+- [x] `generate` appends one entry per changed note with correct old→new hashes; re-running with no changes appends nothing
 
 ## Progress
 

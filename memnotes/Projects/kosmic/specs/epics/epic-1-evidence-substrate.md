@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-02
 updated: 2026-09-02 (approved)
 linked_prd: ../prd.md
@@ -38,9 +38,9 @@ Establish the Evidence Pack layer at `{VAULT}/Projects/{TARGET}/evidence/{YYYY-M
 
 ## Success Criteria
 
-- [ ] Vault with evidence packs passes `validate`; packs never appear in any projection
-- [ ] Malformed MANIFEST fails `validate` with a named error
-- [ ] Both memos live as `kind: research` packs; PRD and INDEX links resolve
+- [x] Vault with evidence packs passes `validate`; packs never appear in any projection
+- [x] Malformed MANIFEST fails `validate` with a named error
+- [x] Both memos live as `kind: research` packs; PRD and INDEX links resolve
 
 ## Progress
 
