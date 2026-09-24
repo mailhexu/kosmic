@@ -113,7 +113,14 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py scratch begin --proj
 
 **Done when:** JSON reports `code: OK`; write all disposable material only below the returned run path. `NO_GIT_WORKTREE` is a stop condition: place the vault in a Git worktree whose root ignores `.tmp/`. Before final status run `scratch succeed` or `scratch fail`; **done when** it reports `code: OK` and the run has terminal Git evidence.
 
-Durable source and documentation remain in the project tree. Pending tests remain under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md` and must be committed; Evidence Packs, specs, and logs retain their own governance. Destination-sibling atomic-publication staging is not run scratch. Load [Managed Run Lifecycle](references/managed_run_lifecycle.md) only when retention, promotion, status, or recovery detail is needed.
+Durable source and documentation remain in the project tree. Pending tests remain under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md` and must be committed; Evidence Packs, specs, and logs retain their own governance.
+
+**Vault commit cadence**: when a story or epic reaches `done`, or a session
+ends after any vault change, commit the *entire* vault tree
+(`git add -A && git commit`) — memnotes records, specs, evidence, logs, and
+generated Skill Pairs together with source. Never accumulate multi-session
+uncommitted vault history: dream harvesting, Git-derived provenance, and
+input-manifest pinning all degrade silently on uncommitted state. Destination-sibling atomic-publication staging is not run scratch. Load [Managed Run Lifecycle](references/managed_run_lifecycle.md) only when retention, promotion, status, or recovery detail is needed.
 ## Tasks
 
 ### Task Selection Matrix

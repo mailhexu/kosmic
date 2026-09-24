@@ -50,7 +50,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Projected link rewriting](quick-tasks/2026-09-02-projected-link-rewriting.md) | done | demote unshipped links in projected references | 95/95 tests; gate passed; pair regenerated |
 | [Manifest code provenance](quick-tasks/2026-09-03-manifest-code-provenance.md) | done | optional git_head/worktree_tree in MANIFEST + provenance command | 142/142 tests; validate exit 0 |
 | [Failure-derived procedure proposals](quick-tasks/2026-09-08-failure-derived-proposals.md) | done | Add failure-derived procedure-proposal gates to Task 9 and Task P | `validate` and `check-completion` passed; Standards/Spec reviews found no findings |
-| [Scoped ABINIT MPI source Project](quick-tasks/2026-09-08-scoped-abinit-mpi-source-project.md) | done | Adopt bounded same-vault provenance for future MPI procedure distillation | `generate`, `validate`, and `check-completion` passed; Standards/Spec reviews found no findings |
+| [Scoped ABINIT MPI source Project](quick-tasks/2026-09-08-scoped-abinit-mpi-source-project.md) | done |
+| [Vault commit cadence](quick-tasks/2026-09-24-vault-commit-cadence.md) | done | Adopt dream idea: commit whole vault at story/epic closure and session end | Docs-only; validate green | Adopt bounded same-vault provenance for future MPI procedure distillation | `generate`, `validate`, and `check-completion` passed; Standards/Spec reviews found no findings |
 
 ## Epics
 

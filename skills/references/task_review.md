@@ -169,3 +169,10 @@ git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 # Low confidence
 git grep "confidence: 0\.[0-5]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 ```
+
+## Vault Commit Cadence
+
+Before closing a session in which any vault record changed, commit the entire
+vault tree (`git add -A && git commit`) — the classification step says *what*
+changed; this step makes it history. Multi-session uncommitted vault state
+silently degrades dream harvests, provenance, and manifest pinning.

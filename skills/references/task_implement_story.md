@@ -273,6 +273,11 @@ Use patterns discovered in research phase:
 
 Apply SKILL.md **Managed Run Before Scratch** while implementing. Begin the run before creating disposable output and use only its returned path; terminally succeed or fail it before final status. Keep pending tests under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`, commit those packages before finishing, and preserve durable evidence/spec/log rules.
 
+**Vault commit cadence**: when the story (and, on its final story, the epic)
+reaches `done`, commit the whole vault tree together with source —
+`git add -A && git commit` — before reporting final status. Uncommitted vault
+records break dream harvesting and Git-derived provenance.
+
 ### 3.2 Run Tests Continuously
 
 ```bash
