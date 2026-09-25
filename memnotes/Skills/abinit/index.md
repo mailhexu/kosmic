@@ -4,5 +4,8 @@
 | ID | Audience | Summary |
 |---|---|---|
 | `abinit/development/nio-gamma-ddb-validation` | development | Runtime and source-review evidence that the packed-spinor NiO Gamma phonon path writes the ordinary ABINIT DDB layout. |
+| `abinit/development/phonopy-frozen-phonon-campaign` | development | Run phonopy-driven frozen-phonon force-constant campaigns against ABINIT with SUPERCELL0 seeding, a restart idiom, and fixture-validity audits. |
+| `abinit/development/seeded-phonopy-force-oracle` | development | Regenerate an ABINIT spinor Phonopy force oracle from matched central densities and audit force-energy and basin consistency. |
+| `abinit/development/unfolding-ddb-gauge-binary-seal` | development | Debug and certify ABINIT DDB or Phonopy phonon unfolding weights when pristine bands show fractional weights or only a Gamma sector. |
 | `abinit/usage/export-wavefunctions` | usage | Export ABINIT wavefunction data for downstream projector and exchange workflows. |
 | `abinit/usage/spin-orbit-conventions` | usage | Preserve ABINIT spinor and spin-orbit conventions across downstream interfaces. |
