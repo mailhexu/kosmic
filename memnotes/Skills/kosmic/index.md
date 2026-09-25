@@ -4,8 +4,23 @@
 | ID | Audience | Summary |
 |---|---|---|
 | `kosmic/development/atomic-skill-publication` | development | Publish a staged artifact tree atomically with rollback |
+| `kosmic/development/c-header-macro-anchored-edit` | development | Edit long C headers with repeated preprocessor blocks through unique multi-line anchors, never line ranges. |
 | `kosmic/development/cli-extension-conventions` | development | Projection CLI extension conventions |
+| `kosmic/development/code-review` | development | Review a diff since a fixed point along two axes, standards and spec, through parallel subagents. |
+| `kosmic/development/codebase-design` | development | Shared vocabulary and principles for designing deep modules, seams, and testable interfaces. |
+| `kosmic/development/edit-tool-boundary-repair` | development | Recover when a line-range PUT edit mangles adjacent markdown structure or the tool warns about a boundary echo. |
+| `kosmic/development/find-skills` | development | Discover and install third-party agent skills through the npx skills CLI and the skills.sh leaderboard. |
+| `kosmic/development/grilling` | development | Interview the user in frontier rounds over a design tree until no decision is silently assumed. |
+| `kosmic/development/install-agent-skill-plugin` | development | Install third-party skills or MCP plugins into both omp and opencode on this workstation, with registry refresh and live verification. |
+| `kosmic/development/managed-skill-consolidation` | development | Consolidate OMP managed skills into the kosmic vault through a triage table, parallel distillation, index assembly, and retirement. |
+| `kosmic/development/parallel-doi-verified-research-agents` | development | Fan out parallel literature-research agents that verify every citation against DOI, publisher, or arXiv sources. |
 | `kosmic/development/projection-audience-routing` | development | Projection audience routing |
+| `kosmic/development/prototype` | development | Build throwaway prototypes that answer one explicit design question, then dispose of them after capturing the verdict. |
+| `kosmic/development/recover-source-from-session-jsonl` | development | Recover a lost uncommitted source file by replaying edit diffs from the omp session transcript JSONL, then prove equivalence with pinned tests. |
+| `kosmic/development/research` | development | Delegate a research question to a background agent that reads primary sources and writes one cited Markdown file. |
+| `kosmic/development/subagent-review-meta-review-loop` | development | Convert fast parallel review findings into facts through a slow meta-review against primary sources, then correct, revalidate, and commit. |
+| `kosmic/development/subagent-story-implementation` | development | Run approved kosmic stories through derivation, implementation, and review subagents while the parent verifies every claim. |
+| `kosmic/development/surgical-commit-entangled-file` | development | Commit only your own hunks from a file that also carries the user's uncommitted changes, leaving the working tree untouched. |
 | `kosmic/usage/cli-projection-commands` | usage | Projection CLI experience commands |
 | `kosmic/usage/notation` | usage | Notation |
 | `kosmic/usage/shared-domain-skill-library` | usage | Maintain and use Kosmic's bounded Shared Domain Skill Library. |

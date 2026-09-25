@@ -14,5 +14,5 @@ Use this router for maintained procedures, governing guidelines, reference knowl
 
 Library budget policy: 32768 packet bytes, 4 domains, 8 topics; requests are clamped to these maxima.
 Authoritative library: `/home/hexu/projects/myagentskills/kosmic/memnotes/Skills`
-Manifest SHA-256 at publication: `3ad08728547e75fe3a45a25bff013e9612f7a46f3f8ceddbb8c0994a8d0b9a1a`
+Manifest SHA-256 at publication: `a73328773419a4c28c50e1800305a0d3da30de0ce54c8e14b352dc0c1ebabdc5`
 Failure is closed: stale hashes, ambiguity, missing dependencies, cycles, and budget overflow return no recipe bodies.

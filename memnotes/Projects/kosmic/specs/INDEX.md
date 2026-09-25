@@ -53,7 +53,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Scoped ABINIT MPI source Project](quick-tasks/2026-09-08-scoped-abinit-mpi-source-project.md) | done |
 | [Vault commit cadence](quick-tasks/2026-09-24-vault-commit-cadence.md) | done |
 | [Note writing style](quick-tasks/2026-09-24-note-writing-style.md) | done |
-| Cross-project: abinit managed-skill consolidation (see Projects/abinit/specs/quick-tasks/2026-09-25-managed-skill-consolidation.md) | done | 49 skills -> vault notes/topics; managed copies retired | library + pair validated | STE subset for notes and mathdocs prose | validate green | Adopt dream idea: commit whole vault at story/epic closure and session end | Docs-only; validate green | Adopt bounded same-vault provenance for future MPI procedure distillation | `generate`, `validate`, and `check-completion` passed; Standards/Spec reviews found no findings |
+| Cross-project: abinit managed-skill consolidation (see Projects/abinit/specs/quick-tasks/2026-09-25-managed-skill-consolidation.md) | done |
+| [Managed-skill consolidation phase 2](quick-tasks/2026-09-25-managed-skill-consolidation-phase2.md) | done | 103 skills -> 55 library topics in 6 domains; inbox emptied | library valid, adapters verified | 49 skills -> vault notes/topics; managed copies retired | library + pair validated | STE subset for notes and mathdocs prose | validate green | Adopt dream idea: commit whole vault at story/epic closure and session end | Docs-only; validate green | Adopt bounded same-vault provenance for future MPI procedure distillation | `generate`, `validate`, and `check-completion` passed; Standards/Spec reviews found no findings |
 
 ## Epics
 

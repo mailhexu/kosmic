@@ -3,8 +3,18 @@
 
 | ID | Audience | Summary |
 |---|---|---|
+| `abinit/development/batio3-pure-strain-quota-attribution` | development | Attribute BaTiO3 example-08 fit-metric changes to quota, generator, reference-stress, or parent-structure factors with one-factor-per-arm scratch runs. |
+| `abinit/development/gitlab-uliege-abinit-admin` | development | Admin API operations on gitlab.uliege.be for the ABINIT migration with the group token (subgroups, projects, transfers, MR and pipeline checks). |
+| `abinit/development/ifc-channel-degradation-adjudication` | development | Adjudicate whether an IFC fit target that worsens held-out IFC or phonons is a bug or Pareto capacity competition in pymultibinit campaigns. |
+| `abinit/development/multibinit-stress-fd-audit` | development | Ground-truth audit of fitted MULTIBINIT model stresses with FD dE/deta, harmonic-anharmonic decomposition, and symmetry probes. |
+| `abinit/development/nio-elastic-stress-fd-cross-code` | development | Run matched ABINIT-versus-QE stress-FD elastic-tensor campaigns with exponential strain paths, Bernasconi QE cutoffs, and U-delta Hubbard controls. |
 | `abinit/development/nio-gamma-ddb-validation` | development | Runtime and source-review evidence that the packed-spinor NiO Gamma phonon path writes the ordinary ABINIT DDB layout. |
+| `abinit/development/phonopy-fc-cross-pipeline-comparison` | development | Compare phonon force constants and bands between phonopy and a custom evaluator while separating ordering, frame, and FD-convergence defects. |
 | `abinit/development/phonopy-frozen-phonon-campaign` | development | Run phonopy-driven frozen-phonon force-constant campaigns against ABINIT with SUPERCELL0 seeding, a restart idiom, and fixture-validity audits. |
+| `abinit/development/pymultibinit-ifc-atom-ordering-audit` | development | Audit atom-order mismatches between phonopy and pymultibinit supercells when IFC fits or Hessian comparisons go wrong at ncell != (1,1,1). |
+| `abinit/development/pymultibinit-ifc-projection-ceiling` | development | Diagnose IFC-fit residual floors with a full-basis lsqr projection probe to separate basis expressivity, data selection, and ncoeff limits. |
+| `abinit/development/pymultibinit-phonon-band-comparison` | development | Compute finite-displacement phonon bands with fitted pymultibinit models and overlay an ML reference such as MACE on identical q-paths. |
+| `abinit/development/qe-abinit-dftu-parity-slices` | development | Run matched QE 7.4 versus ABINIT DFT+U parity slices on the AFM NiO fixture with U-delta isolation and a discrepancy classification taxonomy. |
 | `abinit/development/seeded-phonopy-force-oracle` | development | Regenerate an ABINIT spinor Phonopy force oracle from matched central densities and audit force-energy and basin consistency. |
 | `abinit/development/unfolding-ddb-gauge-binary-seal` | development | Debug and certify ABINIT DDB or Phonopy phonon unfolding weights when pristine bands show fractional weights or only a Gamma sector. |
 | `abinit/usage/export-wavefunctions` | usage | Export ABINIT wavefunction data for downstream projector and exchange workflows. |

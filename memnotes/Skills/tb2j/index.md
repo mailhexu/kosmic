@@ -4,3 +4,8 @@
 | ID | Audience | Summary |
 |---|---|---|
 | `tb2j/development/debug-abinit-exchange` | development | Diagnose TB2J exchange parameters generated from an ABINIT spin-orbit calculation. |
+| `tb2j/development/mft-curvature-probe-protocol` | development | Certify LKAG-type magnetic-force-theorem second-order curvature identities on toy ring models with finite differences before sympy promotion. |
+| `tb2j/development/repo-conventions` | development | Branch discipline, mydev environment, pre-commit, tests and docs layout, sympy derivations, and VASP interface facts for the TB2J repository. |
+| `tb2j/development/tensor-symmetrizer-audit` | development | Audit exchange-tensor symmetrization engines with an independent spglib invariance checker, per-orbit stabilizer averaging, and synthetic fixtures. |
+| `tb2j/development/vasp-native-symmetry-export` | development | Implement a VASP symmetry-reduced k-point projector export for TB2J with consumer-side symmetry expansion. |
+| `tb2j/development/vasp-tb2j-patch-validation` | development | Validate the VASP_TB2J_patch native exporter end-to-end against pristine VASP 6.4.1 and consume the result with vasp_native2J. |
