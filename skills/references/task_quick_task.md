@@ -90,7 +90,8 @@ Use `references/templates/template-quick-task.md`.
 
 7. **Complete**
    - Set `Status: done` only after verification and review pass.
-   - Run `git status --short`; classify every modified/untracked file as committed, recoverably preserved, or deleted.
+   - Run `generate-status --project ...` when the task created or transitioned any spec.
+Run `git status --short`; classify every modified/untracked file as committed, recoverably preserved, or deleted.
    - Update `{VAULT}/Projects/{TARGET}/specs/INDEX.md`.
    - Update the log.
    - Add notes for durable knowledge learned during the work.

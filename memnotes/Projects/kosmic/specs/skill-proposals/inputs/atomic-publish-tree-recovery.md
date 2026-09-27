@@ -2,7 +2,7 @@
 
 - routine://kosmic/atomic-publish-tree: aeaad9c360fe1a0a046196208d3bb5d17919cf6d418d4da0ce79e9d3016057fc
 - specs/skill-proposals/inputs/curated/mrw-routine-task_propose_skill.md: a671a76444fa076f9e6fcb0e4b549f454bf127613345962666d35391c4a21991
-- notes/index.md: ea8c5e40ed7a9f52ab7dad32986b228786bdd0a33457e110b14406ebfd3c1bfd
+- notes/index.md: 53d4643bc95089ab2f1dd7e26d473559097dd3d8469bfb78d4760e8c987fd708
 - notes/managed-run-workspace-lifecycle.md: 4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11
 - notes/atomic-skill-publication.md: 36e081cc47e2de36eac2f98ece82e8f718fed105cbf0f51f5f49fdba2144e00a
 - evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md: 5f5f51862558f3b688630df7062f9ae39a2fad9fa63471c5bfa48a565e48ea79

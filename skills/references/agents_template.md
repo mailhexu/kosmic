@@ -151,3 +151,5 @@ When planning a task, always integrate knowledge retrieval:
    - Implementing → document decisions
    - Debugging → document root causes
 4. **End**: Review and log progress
+
+**Status file**: `STATUS.md` at the working-directory root is generated from vault spec state (`generate-status --project {VAULT}/Projects/{TARGET}`). Read it first; never edit it by hand.

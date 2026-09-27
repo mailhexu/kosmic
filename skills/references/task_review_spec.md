@@ -305,3 +305,7 @@ Allow at most three automated rounds: one complete initial review and two re-rev
 - [ ] Review result documented in story
 - [ ] Story status updated
 - [ ] Log updated
+
+## STATUS.md
+
+After changing any spec or work-item status, run `generate-status --project ...`. Validation fails `STATUS_STALE` while the generated file drifts.

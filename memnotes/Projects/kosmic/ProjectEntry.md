@@ -1,6 +1,7 @@
 ---
 project_id: kosmic
 working_state: working-tree
+status_root: /home/hexu/projects/myagentskills/kosmic
 ---
 
 # kosmic

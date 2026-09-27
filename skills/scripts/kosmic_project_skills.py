@@ -17,6 +17,7 @@ import shutil
 import sys
 import socket
 import subprocess
+import unicodedata
 import tempfile
 from datetime import date, datetime, timedelta, timezone
 from contextlib import contextmanager
@@ -173,6 +174,7 @@ class Project:
     entry: Path
     project_id: str
     working_state: str
+    status_root: Path | None = None
 
     @property
     def notes_dir(self) -> Path:
@@ -1153,7 +1155,14 @@ def load_project(root: Path, require_id: bool = True) -> Project:
         validate_project_id(project_id)
         check_project_id_collision(root, project_id)
     working_state = str(document.metadata.get("working_state") or "working-tree")
-    return Project(root=root, entry=entry, project_id=project_id, working_state=working_state)
+    status_root_text = str(document.metadata.get("status_root") or "").strip()
+    return Project(
+        root=root,
+        entry=entry,
+        project_id=project_id,
+        working_state=working_state,
+        status_root=Path(status_root_text) if status_root_text else None,
+    )
 
 
 def note_title(body: str, path: Path) -> str:
@@ -1908,7 +1917,39 @@ def ensure_project_structure(root: Path) -> None:
         path.mkdir(parents=True, exist_ok=True)
     ensure_mathdocs_index(root)
 
-def assign_project_id(root: Path, project_id: str) -> Project:
+def resolve_status_root(status_root: Path | None, *, project: Path) -> Path:
+    """Validate a working-directory binding for STATUS.md generation."""
+    if status_root is None:
+        raise KosmicError("STATUS_ROOT_UNBOUND", exit_code=2)
+    resolved = status_root.expanduser().resolve()
+    if not resolved.is_dir():
+        raise KosmicError(f"STATUS_ROOT_MISSING: {resolved}", exit_code=2)
+    probe = resolved
+    while probe != probe.parent:
+        if (probe / ".git").exists():
+            break
+        probe = probe.parent
+    else:
+        probe = probe.parent
+    if not (probe / ".git").exists():
+        raise KosmicError(f"STATUS_ROOT_MISSING: {resolved} is not inside a Git worktree", exit_code=2)
+    projects_dir = project.resolve().parent
+    for sibling in sorted(projects_dir.iterdir()) if projects_dir.is_dir() else []:
+        entry = sibling / "ProjectEntry.md"
+        if not entry.is_file() or sibling == project.resolve():
+            continue
+        try:
+            other = parse_markdown(entry.read_text(encoding="utf-8")).metadata.get("status_root")
+        except OSError:
+            continue
+        if other and Path(str(other)).expanduser().resolve() == resolved:
+            raise KosmicError(
+                f"STATUS_ROOT_COLLISION: {sibling.name} already binds {resolved}", exit_code=2
+            )
+    return resolved
+
+
+def assign_project_id(root: Path, project_id: str, status_root: Path | None = None) -> Project:
     root = root.expanduser().resolve()
     validate_project_id(project_id)
     root.mkdir(parents=True, exist_ok=True)
@@ -1925,17 +1966,25 @@ def assign_project_id(root: Path, project_id: str) -> Project:
     else:
         text = f"# {root.name}\n\n## Overview\n\nDescribe this Project.\n"
     check_project_id_collision(root, project_id)
-    updated = update_markdown_metadata(
-        text, {"project_id": project_id, "working_state": "working-tree"}
-    )
+    updates: dict[str, Any] = {"project_id": project_id, "working_state": "working-tree"}
+    if status_root is not None:
+        updates["status_root"] = str(resolve_status_root(status_root, project=root))
+    updated = update_markdown_metadata(text, updates)
     atomic_write(entry, updated)
     return load_project(root)
 
 
-def migrate(root: Path, project_id: str) -> Path:
+def migrate(root: Path, project_id: str, status_root: Path | None = None) -> Path:
     project = assign_project_id(root, project_id)
     migrate_notes_bundle(project)
     project = load_project(root)
+    if status_root is not None and project.status_root is None:
+        updated_entry = update_markdown_metadata(
+            project.entry.read_text(encoding="utf-8"),
+            {"status_root": str(resolve_status_root(status_root, project=root))},
+        )
+        atomic_write(project.entry, updated_entry)
+        project = load_project(root)
     plan = collect_projection_plan(project)
     if plan.unscoped_notes:
         print(
@@ -3119,6 +3168,12 @@ def check_completion(
             raise KosmicError(f"depends_on work item is not done: {reference} ({status or 'unknown'})")
     if not work_item.is_file():
         raise KosmicError(f"missing work item: {work_item}")
+    if project.status_root is not None and status_drift(project):
+        raise KosmicError(
+            "STATUS_STALE: STATUS.md is missing or drifts from spec state; run "
+            "generate-status --project <PROJECT>",
+            exit_code=2,
+        )
     document = parse_markdown(work_item.read_text(encoding="utf-8"))
     registry = validate_project_content(project)
     if "consumer_interface_change" not in document.metadata:
@@ -3241,6 +3296,132 @@ def path_argument(value: str) -> Path:
     return Path(value)
 
 
+STATUS_CLASSES = ("PRD", "Architecture", "Epics", "Stories", "Quick Tasks", "Skill Proposals")
+SPEC_TERMINAL_STATUSES = {"done", "rejected", "deprecated"}
+STATUS_GENERATED_MARKER = "<!-- Generated by the Kosmic Projection CLI. Do not edit. -->"
+
+
+def _spec_rows(project: Project) -> dict[str, list[dict[str, Any]]]:
+    """Collect status/title/updated rows for every spec class."""
+    specs = project.root / "specs"
+    classes: dict[str, list[Path]] = {name: [] for name in STATUS_CLASSES}
+    for path in sorted(specs.glob("*.md")) if specs.is_dir() else []:
+        name = path.name.lower()
+        if name == "index.md":
+            continue
+        if name.startswith("prd"):
+            classes["PRD"].append(path)
+        elif name.startswith("architecture"):
+            classes["Architecture"].append(path)
+    for class_name, pattern in (
+        ("Epics", "epics/epic-*.md"),
+        ("Stories", "stories/story-*.md"),
+        ("Quick Tasks", "quick-tasks/*.md"),
+        ("Skill Proposals", "skill-proposals/*.md"),
+    ):
+        classes[class_name].extend(sorted(specs.glob(pattern)))
+    rows: dict[str, list[dict[str, Any]]] = {name: [] for name in STATUS_CLASSES}
+    for class_name, paths in classes.items():
+        for path in paths:
+            document = parse_markdown(path.read_text(encoding="utf-8", errors="replace"))
+            body = document.body
+            title = path.stem
+            for line in body.splitlines():
+                if line.startswith("# "):
+                    title = line[2:].strip()
+                    break
+            rows[class_name].append(
+                {
+                    "path": path,
+                    "title": title,
+                    "status": str(document.metadata.get("status") or "?"),
+                    "updated": str(document.metadata.get("updated") or "?"),
+                }
+            )
+    return rows
+
+
+def _status_link(path: Path, status_root: Path) -> str:
+    return os.path.relpath(path, status_root).replace(os.sep, "/")
+
+
+def render_status(project: Project, head: str) -> bytes:
+    """Render the deterministic STATUS.md bytes (never writes)."""
+    status_root = (project.status_root or Path(".")).expanduser().resolve()
+    rows = _spec_rows(project)
+    lines = [
+        STATUS_GENERATED_MARKER,
+        f"# Status: {project.project_id}",
+        "",
+        f"Vault HEAD: {head}",
+        "",
+        "## Spec Status",
+        "",
+    ]
+    open_items: list[dict[str, Any]] = []
+    for class_name in STATUS_CLASSES:
+        entries = rows[class_name]
+        lines.extend([f"### {class_name}", "", "| Spec | Status | Updated |", "|------|--------|---------|"])
+        if not entries:
+            lines.append("| — | — | — |")
+        for entry in entries:
+            link = _status_link(entry["path"], status_root)
+            lines.append(f"| [{entry['title']}]({link}) | {entry['status']} | {entry['updated']} |")
+            is_open = False
+            if class_name in ("Epics", "Stories", "Quick Tasks"):
+                is_open = entry["status"] not in SPEC_TERMINAL_STATUSES
+            elif class_name in ("PRD", "Architecture"):
+                is_open = entry["status"] == "draft"
+            else:
+                decision = parse_markdown(entry["path"].read_text(encoding="utf-8", errors="replace")).metadata.get("decision") or ""
+                is_open = decision in ("", "pending")
+            if is_open:
+                open_items.append(entry)
+        lines.append("")
+    lines.append(f"## Open Work")
+    lines.append("")
+    lines.append(f"- {len(open_items)} open item(s)")
+    for entry in open_items:
+        lines.append(f"- [{entry['title']}]({_status_link(entry['path'], status_root)}) - {entry['status']}")
+    return unicodedata.normalize("NFC", "\n".join(lines) + "\n").encode("utf-8")
+
+
+def status_drift(project: Project) -> bool:
+    """True when a bound STATUS.md is missing or differs from generated bytes."""
+    if project.status_root is None:
+        return False
+    status_root = project.status_root.expanduser().resolve()
+    path = status_root / "STATUS.md"
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=str(project.root), capture_output=True, text=True
+        )
+    except OSError:
+        completed = None
+    head = completed.stdout.strip() if completed is not None and completed.returncode == 0 else "no-head"
+    expected = render_status(project, head)
+    return not path.is_file() or path.read_bytes() != expected
+
+
+def generate_status(project: Project) -> Path:
+    """Generate STATUS.md into the bound working directory."""
+    if project.status_root is None:
+        raise KosmicError("STATUS_ROOT_UNBOUND", exit_code=2)
+    status_root = project.status_root.expanduser().resolve()
+    if not status_root.is_dir():
+        raise KosmicError(f"STATUS_ROOT_MISSING: {status_root}", exit_code=2)
+    try:
+        completed = subprocess.run(
+            ["git", "rev-parse", "HEAD"], cwd=str(project.root), capture_output=True, text=True
+        )
+    except OSError:
+        completed = None
+    head = completed.stdout.strip() if completed is not None and completed.returncode == 0 else "no-head"
+    payload = render_status(project, head)
+    atomic_write(status_root / "STATUS.md", payload.decode("utf-8"))
+    return status_root / "STATUS.md"
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="kosmic-project-skills")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -3266,12 +3447,14 @@ def build_parser() -> argparse.ArgumentParser:
     )
     init_parser.add_argument("--project", type=path_argument, required=True)
     init_parser.add_argument("--project-id", required=True)
+    init_parser.add_argument("--status-root", default=None, type=path_argument)
 
     migrate_parser = subparsers.add_parser(
         "migrate", help="migrate an existing Project to OKF Project Knowledge"
     )
     migrate_parser.add_argument("--project", type=path_argument, required=True)
     migrate_parser.add_argument("--project-id", required=True)
+    migrate_parser.add_argument("--status-root", default=None, type=path_argument)
 
     review_parser = subparsers.add_parser("review", help="report unscoped knowledge and drift")
     review_parser.add_argument("--project", type=path_argument, required=True)
@@ -3446,6 +3629,8 @@ def build_parser() -> argparse.ArgumentParser:
     dream_abort_parser.add_argument("--vault", required=True, type=path_argument)
     dream_abort_parser.add_argument("--handle", required=True, type=path_argument)
     dream_abort_parser.add_argument("--reason", default="aborted")
+    generate_status_parser = subparsers.add_parser("generate-status", help="regenerate the bound STATUS.md")
+    generate_status_parser.add_argument("--project", required=True, type=path_argument)
     return parser
 
 
@@ -3555,15 +3740,19 @@ def run(arguments: Sequence[str] | None = None) -> int:
 
 
 
+    if args.command == "generate-status":
+        path = generate_status(load_project(args.project))
+        print(f"generated {path}")
+        return 0
     if args.command == "init":
-        project = assign_project_id(args.project, args.project_id)
+        project = assign_project_id(args.project, args.project_id, status_root=args.status_root)
         migrate_notes_bundle(project)
         project = load_project(args.project)
         output = generate(project)
         print(f"initialized Project '{project.project_id}' and published {output}")
         return 0
     if args.command == "migrate":
-        output = migrate(args.project, args.project_id)
+        output = migrate(args.project, args.project_id, status_root=args.status_root)
         print(f"migrated Project and published {output}")
         return 0
 
@@ -3686,6 +3875,12 @@ def run(arguments: Sequence[str] | None = None) -> int:
         validate_impact_ledger(project)
         validate_skill_proposals(project)
         validate_current_projection(project, output)
+        if project.status_root is not None and status_drift(project):
+            raise KosmicError(
+                "STATUS_STALE: STATUS.md is missing or drifts from spec state; run "
+                "generate-status --project <PROJECT>",
+                exit_code=2,
+            )
         print(f"valid Skill Pair: {output}")
     elif args.command == "validate-proposal":
         proposal = load_skill_proposal(project, args.proposal)

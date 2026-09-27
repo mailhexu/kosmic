@@ -89,6 +89,8 @@ STOP CHECK: Have I searched for existing specs?
 4. Update `specs/INDEX.md`
 5. Present to user for review
 
+**Spec-event step**: after writing the spec and updating `specs/INDEX.md`, run `generate-status --project ...` so the working-directory STATUS.md reflects the new spec.
+
 ### GATE: User Approval Required
 
 ```

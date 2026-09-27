@@ -33,7 +33,10 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature PRD | [Managed Run Workspaces](prd-managed-run-workspaces.md) | approved 2026-09-14 | Worktree-local `.tmp/kosmic/`, deterministic retention, mandatory Git status, conservative cleanup; ready for Architecture |
 | Feature Architecture | [Managed Run Workspaces](architecture-managed-run-workspaces.md) | approved 2026-09-14 | Detached per-run `flock` holder, descriptor-anchored paths, Git evidence, journaled cleanup and promotion; ready for Epics and Stories |
 | Feature PRD | [Dream Reflection](prd-dream-reflection.md) | approved 2026-09-23 | Reviewed Task D/CLI seam, observable-day union, open-work and bounded read contracts, vault validation, idempotent publication; delivery specs drafted |
-| Feature Architecture | [Dream Reflection](architecture-dream-reflection.md) | approved 2026-09-23 | AD-DR1..AD-DR7: observable union, vault validator, typed read-set contract, advisory boundary, managed handshake, rerun semantics, redaction; delivery specs drafted |
+| Feature Architecture | [Dream Reflection](architecture-dream-reflection.md) | approved 2026-09-23 |
+| Feature PRD | [Project Status File](prd-project-status-file.md) | approved 2026-09-27 |
+| Feature Architecture | [Project Status File](architecture-project-status-file.md) | approved 2026-09-27 |
+| Feature Epic | [Project Status File](epics/epic-27-project-status-file.md) | draft | 3 stories: generation core, drift gates, workflow dogfood | AD-S1..S5: generated projection, frontmatter source, status_root binding, workflow/init enforcement, content contract | Generated STATUS.md per working directory: spec statuses, init + workflow regeneration, AGENTS.md reference, drift detection | AD-DR1..AD-DR7: observable union, vault validator, typed read-set contract, advisory boundary, managed handshake, rerun semantics, redaction; delivery specs drafted |
 
 ## Research Memos
 
@@ -85,7 +88,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Epic 23 Managed run foundation](epics/epic-23-managed-run-foundation.md) | approved 2026-09-14 | 2 | Exhaustive inventory, trusted root, Git evidence, and read-only run store |
 | [Epic 24 Managed run initial release](epics/epic-24-managed-run-initial-release.md) | done | 8 | Lease lifecycle, retention, owner cleanup, promotion, migration, staging detection, skill cutover, and release |
 | [Epic 25 Managed run destructive cleanup](epics/epic-25-managed-run-destructive-cleanup.md) | done | 4 | Explicit GC, bounded startup reuse, atomic recovery, and destructive release |
-| [Epic 26 Dream Reflection initial release](epics/epic-26-dream-reflection-initial-release.md) | done | 7 | Harvest, open-work/knowledge, vault validation, managed handshake, publication, recovery, Task D dogfood |
+| [Epic 26 Dream Reflection initial release](epics/epic-26-dream-reflection-initial-release.md) | done | 7 |
+| [Epic 27 Project Status File](epics/epic-27-project-status-file.md) | approved 2026-09-27 | 3 | Binding + generator, drift/completion gates, workflow dogfood | Harvest, open-work/knowledge, vault validation, managed handshake, publication, recovery, Task D dogfood |
 
 ## Stories
 
@@ -153,7 +157,10 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [story-060 managed dream harvest handshake](stories/story-060-managed-dream-harvest-handshake.md) | done | 26 | Managed run, materialized read set, confined untrusted inputs |
 | [story-061 deterministic dream publication](stories/story-061-deterministic-dream-publication.md) | done | 26 | Merge, redaction, canonical hash, validation, atomic publication |
 | [story-062 dream run recovery and concurrency](stories/story-062-dream-run-recovery-concurrency.md) | done | 26 | State machine, races, retry, abort, expiry, recovery |
-| [story-063 dream workflow dogfood release](stories/story-063-dream-workflow-dogfood-release.md) | done | 26 | Task D routing, pinned dogfood oracle, usage knowledge, release gates |
+| [story-063 dream workflow dogfood release](stories/story-063-dream-workflow-dogfood-release.md) | done | 26 |
+| [story-064 status generation core](stories/story-064-status-generation-core.md) | approved | 27 | Binding, deterministic renderer, generate-status CLI |
+| [story-065 status drift gates](stories/story-065-status-drift-gates.md) | approved | 27 | Validate STATUS_STALE + completion staleness gate |
+| [story-066 status workflow dogfood release](stories/story-066-status-workflow-dogfood-release.md) | approved | 27 | Task references, AGENTS template, bind this repo, evidence | Task D routing, pinned dogfood oracle, usage knowledge, release gates |
 
 ## Completed or Archived
 

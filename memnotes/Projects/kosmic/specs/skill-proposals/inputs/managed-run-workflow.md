@@ -2,7 +2,7 @@
 
 - specs/skill-proposals/inputs/curated/mrw-task_propose_skill.md: a671a76444fa076f9e6fcb0e4b549f454bf127613345962666d35391c4a21991
 - specs/skill-proposals/inputs/curated/mrw-template-skill-proposal.md: 3a7d832189813d7267897ede3daa5e6569fcc65477cfd2e36b02859e1cffa3f2
-- notes/index.md: ea8c5e40ed7a9f52ab7dad32986b228786bdd0a33457e110b14406ebfd3c1bfd
+- notes/index.md: 53d4643bc95089ab2f1dd7e26d473559097dd3d8469bfb78d4760e8c987fd708
 - notes/managed-run-workspace-lifecycle.md: 4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11
 - notes/cli-projection-commands.md: f1accb943443488d5eaec0bf4cd39885ff2ba6d034f47a07ff14ddfb23ea0385
 - evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md: 5f5f51862558f3b688630df7062f9ae39a2fad9fa63471c5bfa48a565e48ea79

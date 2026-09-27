@@ -12,6 +12,8 @@ Determine the vault location in this order:
 
 Ask the user only when multiple plausible vaults or targets exist.
 
+**Bind**: Ask for the working directory and record `status_root: <dir>` in ProjectEntry.md (init `--status-root`); run `generate-status --project ...` to create the first STATUS.md.
+
 **Store**: Record in AGENTS.md:
 ```markdown
 ### Configuration
