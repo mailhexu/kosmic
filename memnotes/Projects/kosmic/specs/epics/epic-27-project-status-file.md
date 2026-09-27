@@ -44,13 +44,13 @@ protected against drift by validation and the completion gate.
 
 ## Success Criteria
 
-- [ ] All three stories complete in order
-- [ ] Fresh fixture project initializes with AGENTS.md section and matching STATUS.md
-- [ ] Status flips regenerate byte-stably; hand edits fail validation; stale STATUS blocks story done
-- [ ] Full suite, gates, pair validation, and adapter checks green
-- [ ] This repository's own STATUS.md generated, committed, and drift-free
+- [x] All three stories complete in order
+- [x] Fresh fixture project initializes with AGENTS.md section and matching STATUS.md
+- [x] Status flips regenerate byte-stably; hand edits fail validation; stale STATUS blocks story done
+- [x] Full suite, gates, pair validation, and adapter checks green
+- [x] This repository's own STATUS.md generated, committed, and drift-free
 
 ## Progress
 
-- Stories: 0/3 done
+- Stories: 3/3 done
 - Last updated: 2026-09-27

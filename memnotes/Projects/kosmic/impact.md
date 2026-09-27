@@ -55,3 +55,5 @@
 - date: 2026-09-23 | kind: publication | targets: [notes/dream-reflection-workflow.md] | refs: null->4b43a51352fc158879e264305e79135667956723819b6dac1636b53a276ab37d | outcome: published | reason: ""
 
 - date: 2026-09-24 | kind: publication | targets: [notes/note-writing-style.md] | refs: null->dbe7345fc895aa1081e2f34863a9f70b8ffa7be1f91f6471196246bbbc12ec88 | outcome: published | reason: ""
+
+- date: 2026-09-27 | kind: publication | targets: [notes/project-status-file.md] | refs: null->221b4955688d89baf33fdf4415c8c91b6da07d8341289195b6d67780c3a8ddb5 | outcome: published | reason: ""

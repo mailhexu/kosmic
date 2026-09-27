@@ -43,6 +43,12 @@
     },
     {
       "audience": "usage",
+      "path": "notes/project-status-file.md",
+      "reference": "references/project-status-file.md",
+      "sha256": "221b4955688d89baf33fdf4415c8c91b6da07d8341289195b6d67780c3a8ddb5"
+    },
+    {
+      "audience": "usage",
       "path": "notes/shared-domain-skill-library.md",
       "reference": "references/shared-domain-skill-library.md",
       "sha256": "f96f86a1180b781ea5bd111a4e1cae3570532fd579daa35f52c95bad7c6acfe0"

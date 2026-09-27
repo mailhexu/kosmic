@@ -1,5 +1,5 @@
 ---
-status: approved
+status: done
 created: 2026-09-27
 updated: 2026-09-27
 linked_epic: ../epics/epic-27-project-status-file.md

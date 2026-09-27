@@ -9,5 +9,5 @@
 - specs/stories/story-056-atomic-staging-markers-detection.md: 9274e50930b8506293701208d1ad3e09085046de6f049f053c4ff8fdb7b637b2
 - specs/stories/story-051-atomic-publication-recovery.md: 8414571d508eb2fd3ae5e32969bb0c77a569891200ca9ab638710643d837103d
 - specs/skill-proposals/inputs/curated/mrw-routine-kosmic_routines.py: b9f1dea10e12fb957763f9205b2360404a7b8b16a4d707b4291227ef56a1fa64
-- impact.md: ffa6d0b2b3b44c477c804ce44d3bfd5ffebffd14a1a9238a8d8fe475adfa6bbe
+- impact.md: a9568a76ffa5f5d681e7fdff3d8303d1540f2e1ff6ce592d9ab5c6fdd9cdf9a7
 - specs/skill-proposals/2026-09-07-atomic-publish-tree-reuse.md: de0dffb21b5488e138abefe0478bfc8f4664ae44095584451f636c7004a3bd73

@@ -1,0 +1,9 @@
+{
+ "completion_gate": "check-completion blocks done on stale STATUS.md (unit TEST-065-2)",
+ "determinism": "double-run byte-identical (unit TEST-064-1/2)",
+ "dogfood_flip": "story-066 approved->in_progress flip + regeneration kept validate green",
+ "drift": "validate fails STATUS_STALE on hand edit; passes after regeneration (unit TEST-065-1)",
+ "generate": "generate-status wrote STATUS.md (123 spec rows across 6 classes, 5 open items at generation time, vault-HEAD marker)",
+ "init_binding": "status_root bound in kosmic ProjectEntry via ProjectEntry edit + resolve_status_root",
+ "suite": "full suite run after closures"
+}

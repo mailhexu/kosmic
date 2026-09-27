@@ -172,3 +172,61 @@ class AssignMigrationTest(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class GateTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.tmp = tempfile.TemporaryDirectory(prefix="kosmic-status-")
+        self.worktree, self.project_root = build_project(Path(self.tmp.name))
+        entry = self.project_root / "ProjectEntry.md"
+        entry.write_text(
+            update_markdown_metadata(
+                entry.read_text(encoding="utf-8"), {"status_root": str(self.worktree.resolve())}
+            ),
+            encoding="utf-8",
+        )
+        self.project = load_project(self.project_root)
+
+    def tearDown(self) -> None:
+        self.tmp.cleanup()
+
+    def test_completion_gate_blocks_on_drift_for_non_interface_work(self) -> None:
+        work_item = self.project_root / "specs" / "stories" / "story-001-a.md"
+        with self.assertRaises(kosmic_project_skills.KosmicError) as ctx:
+            kosmic_project_skills.check_completion(self.project, work_item)
+        self.assertIn("STATUS_STALE", str(ctx.exception))
+        generate_status(self.project)
+        try:
+            kosmic_project_skills.check_completion(self.project, work_item)
+        except kosmic_project_skills.KosmicError as error:
+            self.assertNotIn("STATUS_STALE", str(error))
+
+    def test_validate_collision_scan(self) -> None:
+        sibling = self.project_root.parent / "bar"
+        sibling.mkdir()
+        (sibling / "ProjectEntry.md").write_text(
+            "---\nproject_id: bar\nworking_state: working-tree\nstatus_root: %s\n---\n"
+            % self.worktree.resolve(),
+            encoding="utf-8",
+        )
+        collisions = kosmic_project_skills.status_root_collisions(self.project)
+        self.assertEqual(len(collisions), 1)
+        self.assertIn("foo", collisions[0] + "bar")
+
+    def test_write_failure_code(self) -> None:
+        locked = self.worktree / "locked"
+        locked.mkdir()
+        entry = self.project_root / "ProjectEntry.md"
+        entry.write_text(
+            update_markdown_metadata(
+                entry.read_text(encoding="utf-8"), {"status_root": str(locked)}
+            ),
+            encoding="utf-8",
+        )
+        locked.chmod(0o555)
+        try:
+            with self.assertRaises(kosmic_project_skills.KosmicError) as ctx:
+                kosmic_project_skills.generate_status(load_project(self.project_root))
+        finally:
+            locked.chmod(0o755)
+        self.assertIn("STATUS_WRITE_FAILED", str(ctx.exception))

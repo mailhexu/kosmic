@@ -13,5 +13,5 @@
 - specs/skill-proposals/inputs/curated/mrw-candidate-skills__README.md: 59c571d62250eb983effef45dee44a3f02d129586289aa355151540dd6d86df7
 - specs/skill-proposals/inputs/curated/mrw-candidate-task_implement_story.md: 7968b9d78b63dbda95d4bff112bdca5b8c884166a6df93c2eaa96c480125f213
 - specs/skill-proposals/inputs/curated/mrw-candidate-task_quick_task.md: ac16e88aaac93761ba1f14a2e0a36eeec5404ca28741b6243b7d776ba3aee24c
-- impact.md: ffa6d0b2b3b44c477c804ce44d3bfd5ffebffd14a1a9238a8d8fe475adfa6bbe
+- impact.md: a9568a76ffa5f5d681e7fdff3d8303d1540f2e1ff6ce592d9ab5c6fdd9cdf9a7
 - specs/skill-proposals/2026-09-07-atomic-publish-tree-reuse.md: de0dffb21b5488e138abefe0478bfc8f4664ae44095584451f636c7004a3bd73
