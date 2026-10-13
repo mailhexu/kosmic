@@ -72,14 +72,66 @@ Missing skills or an unsupported adapter → stop and follow the required-proced
 | Epics | `{VAULT}/Projects/{TARGET}/specs/epics/epic-{N}-{slug}.md` |
 | Stories | `{VAULT}/Projects/{TARGET}/specs/stories/story-{N}-{slug}.md` |
 
+**CLI invocation**: every command shown in this skill (`work start`, `generate-status`, `validate-library`, …) is a **subcommand of the single Projection CLI** — never a standalone executable. Run it as `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py <subcommand> …`; see `<subcommand> --help` for flags.
+
 ## Project Skill Routing (MANDATORY)
 
 Kosmic remains the workflow orchestrator; Project skills provide audience-specific knowledge.
 
 1. **Contributor work** — before planning, changing, testing, reviewing, or releasing Project code, load `{DEVELOPMENT_SKILL}`. Follow its required reference to `{USAGE_SKILL}` whenever the work invokes or changes a Consumer Interface.
-2. **Consumer work** — when the request only invokes, configures, integrates, or troubleshoots the Project without changing its implementation, load `{USAGE_SKILL}` directly. Do not enter the spec or implementation workflow.
+2. **Consumer work** — load `{USAGE_SKILL}` for invocation/configuration/integration/troubleshooting that does not change implementation. Read-only questions/checks need no spec workflow. Persistent configuration or experiment outputs still need compatible bounded record/scope authority; this never implies feature implementation approval.
 3. **Knowledge/spec maintenance** — use Kosmic tasks and load the Project skill matching the knowledge audience.
 4. Missing, stale, mismatched, or unresolved pair → stop and run validation or migration. Never continue contributor work without Project guidance.
+
+## Record-first authority (MANDATORY)
+
+Before a substantive source, docs, vault, configuration, or experiment change,
+select or create its governing record. Feature implementation needs an approved
+owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk
+change needs an approved Quick Task; PRD creation/success never approves code.
+
+- Questions, searches and unchanged checks need no new record and remain
+  read-only. Never hide durable cleanup, publication, or installation in them.
+- Planning creates only its draft hierarchy and bounded planning outputs.
+  Initial Project/registration bootstrap first establishes a bounded governing
+  Quick Task; its scope does not authorize unrelated implementation.
+- Use one owner-aware catalog. Feature records live under
+  `subprojects/{SUBPROJECT_ID}/specs/`; shared Quick Tasks/proposals under `specs/`.
+  Existing flat feature specs stay bootstrap until separately approved migration.
+- Keep notes, mathdocs and canonical skills shared at the Project root. Register
+  each exact working directory. A fixed subproject constrains a directory, never
+  selects its task. Never persist selection in a shared mutable pointer.
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work start --project {PROJECT_ROOT} --worktree {REGISTERED_ROOT} --work-record {QUALIFIED_RECORD}
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work show --project {PROJECT_ROOT} --work-record {QUALIFIED_RECORD}
+```
+
+Run `work start` before writable changes. It resolves ownership, approved
+ancestry and lifecycle at invocation time, then refuses a dirty worktree and
+lists the conflicting paths. Each mutating command takes the same explicit
+`--work-record`; it re-resolves authority and never caches approval.
+
+Use one clean worktree per record and one writer per worktree. Declare intended
+outputs with `--scope` on `work finish`; it checks the Git diff against those
+claims. Preserve user work by committing/stashing it or using a separate
+worktree. Raw editor/shell writes remain agent compliance, not an OS sandbox.
+
+Declare actual acceptance results/artifact hashes in `acceptance_evidence` and
+the real pinned two-axis decision in `review_record` (formats in
+`references/task_project_skills.md`). Never edit `done` by hand. Use
+`work finish --work-record REF --worktree PATH --scope worktree:PATH` after
+review; the receipt is the completion marker, so unreceipted `done` is pending.
+If interrupted, rerun finish; there is no recovery journal or `work recover`.
+
+Reports name qualified identity, canonical path, and observed acceptance/smoke/
+review results. A checkbox or command exit code alone is not acceptance evidence.
+Migration and installation retain their separate approved target plans, including
+disposable adapter validation. Never edit installed user-authored skills.
+
+Record-first checks are on by default for supported mutating commands. Each
+command re-resolves the explicit record. Raw editor/shell remains an agent
+compliance boundary, never claimed as OS sandbox enforcement.
 
 ## Project Knowledge Format (MANDATORY)
 

@@ -75,6 +75,25 @@ There are two supported paths:
 
 See [docs/installation.md](docs/installation.md) for detailed instructions, verification steps, and notes for agents that do not support named skills.
 
+## Projection CLI
+
+All Kosmic functionality lives in **one script** — `skills/scripts/kosmic_project_skills.py` — invoked as `<script> <subcommand> …` from the repository root. There is no standalone per-feature executable: `generate-status`, `work start`, `validate-library`, and every other operation are subcommands of this single CLI.
+
+```bash
+# from the repository root
+python3 skills/scripts/kosmic_project_skills.py generate-status --project <PROJECT> [--work-record RECORD]
+python3 skills/scripts/kosmic_project_skills.py --help            # full subcommand list
+python3 skills/scripts/kosmic_project_skills.py <subcommand> --help
+```
+
+Subcommand groups: `work`, `generate`, `validate`, `validate-proposal`, `init`, `migrate`, `review`, `check-completion`, `spec-create`, `workdir-register`, `migrate-subprojects-{plan,apply,recover}`, `check-math`, `provenance`, `install`, `check-installation`, `check-required-skills`, `generate-library`, `validate-library`, `query-routines`, `migrate-routines`, `resolve-library`, `load-library`, `migrate-library`, `install-library`, `check-library-installation`, `scratch`, `validate-dreams`, `dream-*`, `generate-status`.
+
+Optional convenience: create a personal launcher so `kosmic <subcommand>` works from any directory (not tracked by this repository):
+
+```bash
+mkdir -p ~/.local/bin && printf '#!/bin/sh\nexec python3 /path/to/kosmic/skills/scripts/kosmic_project_skills.py "$@"\n' > ~/.local/bin/kosmic && chmod +x ~/.local/bin/kosmic
+```
+
 ## Quick start
 
 The skill identity is `kosmic`. In agents with named skills, load or invoke `kosmic` using that agent's normal mechanism. For OpenCode:
@@ -86,6 +105,74 @@ The skill identity is `kosmic`. In agents with named skills, load or invoke `kos
 The knowledge vault directory is `memnotes` by default. Kosmic organizes each Project under `{VAULT}/Projects/{TARGET}/`, assigns an immutable Project Identifier, and keeps one authoritative Obsidian-compatible OKF v0.2 knowledge bundle under `notes/`. Reusable cross-project material is published into the vault-level `Skills/` Shared Domain Skill Library and reached through one installed `memnotes-skills` router. The resolver infers or accepts `do | check | understand | investigate`, computes typed dependency closure, and returns a hash-pinned, byte-bounded plan. Procedure packets may also carry canonical tested routine records discovered statically from source; contributors query this inventory before implementing repeated mechanics.
 
 For the full task catalogue (Task 0: Quick Task through Task 9: Distill plus Task P: Propose Skill Change), Project Skill Pair and Shared Library CLI lifecycles, templates, approval gates, and directory layout, see the [docs](docs/README.md), [skills/README.md](skills/README.md), and [skills/SKILL.md](skills/SKILL.md).
+
+### Contributor specification catalog
+
+`skills/scripts/kosmic_specs.py` provides the scoped `SpecCatalog` interface.
+It reads Project identity plus feature-local specification owners, resolves
+qualified references, and validates owner-local ancestry and explicitly
+declared cross-subproject dependencies. This is identity resolution, not
+permission to mutate a Project.
+
+```python
+from pathlib import Path
+from skills.scripts.kosmic_specs import SpecCatalog
+
+catalog = SpecCatalog(Path("memnotes/Projects/example"))
+catalog.validate()
+record = catalog.resolve("example/export/story/001")
+parents = catalog.ancestry(record)
+```
+
+Feature references use `project/subproject/kind/local-id`; shared Quick Tasks
+and proposals use `project/kind/local-id`. A local identifier requires an
+explicit owner and, where necessary, kind. `next_local_id` proposes a number;
+creation must reserve it under its owner lock before writing. Reads reject
+escaping paths, symlinks, and non-regular files through retained descriptors.
+
+The catalog accepts the subproject layout. Flat feature inputs report
+`MIGRATION_REQUIRED`; migration must use an approved plan, not path aliases.
+STATUS/dream consumers use the validated catalog in subproject mode and retain explicit flat bootstrap behavior until approved migration. Work authorization and deployment retain their separate migration/installation approvals.
+
+### Record creation, directory registration, and migration planning
+
+    python3 skills/scripts/kosmic_project_skills.py spec-create \
+        --project memnotes/Projects/example --kind prd --title "Wavefunction Export"
+
+    python3 skills/scripts/kosmic_project_skills.py workdir-register \
+        --project memnotes/Projects/example --worktree DIR --quick-task REF
+
+    python3 skills/scripts/kosmic_project_skills.py migrate-subprojects-plan \
+        --project memnotes/Projects/example
+
+`spec-create` returns the reserved identity and `operation_id`; resume an
+interrupted publication only with that operation ID. Work-directory registration
+is a bounded bootstrap operation tied to its Quick Task. Migration planning is
+read-only; applying a plan remains a separate approved gate.
+
+### Explicit work records and receipt-last completion
+
+Mutating implementation commands resolve `--work-record REF` at invocation time.
+They do not retain a work session or approval cache. Start is a stateless check
+that rejects pre-existing worktree changes; one record uses one clean worktree.
+
+    python3 skills/scripts/kosmic_project_skills.py work start \
+        --project PROJECT --worktree DIR --work-record QUALIFIED_ID
+    python3 skills/scripts/kosmic_project_skills.py work show \
+        --project PROJECT --work-record QUALIFIED_ID
+    python3 skills/scripts/kosmic_project_skills.py check-completion \
+        --project PROJECT --work-item CANONICAL_PATH --work-record QUALIFIED_ID
+    python3 skills/scripts/kosmic_project_skills.py work finish \
+        --project PROJECT --worktree DIR --work-record QUALIFIED_ID \
+        --scope worktree:src/ --scope project:evidence/PACK/
+
+Finish checks the worktree diff against declared scopes, verifies acceptance
+evidence and the pinned review, publishes status/index/STATUS/log outputs, then
+writes the successful receipt last. Until that receipt matches, `done` remains
+pending to readers; rerun finish after interruption to converge publication.
+Read-only queries and checks need no work record. Bounded bootstrap operations
+retain only their documented first-write contracts; there is no work-session
+switch or work recovery journal.
 
 ## Scope of this repository
 

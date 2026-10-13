@@ -1,0 +1,26 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/document-cli-subcommand-structure",
+  "record_path": "specs/quick-tasks/document-cli-subcommand-structure.md",
+  "review_base": "54b9030de20ed7deab0247f8c224c0b62dff7a63",
+  "reviewed_revision": "5e5ecdc4905af93893bd63c0bbc96cc6d28bacb4f4ea4035e51f57649dfdda4e",
+  "round": 1,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://DocsStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://DocsSpec"
+  },
+  "findings": [
+    {
+      "id": "STANDARDS-001",
+      "status": "resolved",
+      "detail": "README subcommand list omitted validate-dreams; added explicitly (scratch, validate-dreams, dream-*, generate-status). Acceptance README hash refreshed to 525046c2d90f22f27e8c6140fdd8809866c7483873a5a8f30f663e778db86062 and re-verified by the reviewer."
+    }
+  ],
+  "decision": "approved",
+  "scope": "Documentation only: README.md Projection CLI section, skills/SKILL.md CLI invocation note (installed copy synced byte-identical), the governing quick-task record, and this evidence. Owner's unrelated in-flight changes excluded; no code or generated artifacts touched.",
+  "baseline_provenance": "Review conducted in the owner checkout at HEAD 54b9030de20ed7deab0247f8c224c0b62dff7a63, which carries unrelated uncommitted owner work; the record-scoped source delta hash binds only this task's files."
+}

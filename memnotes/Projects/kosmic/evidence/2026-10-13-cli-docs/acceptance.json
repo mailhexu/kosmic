@@ -1,0 +1,31 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/document-cli-subcommand-structure",
+  "record_path": "specs/quick-tasks/document-cli-subcommand-structure.md",
+  "results": [
+    {
+      "criterion": "README documents the single-CLI subcommand invocation and lists generate-status.",
+      "outcome": "passed",
+      "observation": "README.md gained a '## Projection CLI' section stating all functionality is subcommands of one script, showing the exact generate-status invocation and --help usage, listing every subcommand group, and documenting the optional ~/.local/bin/kosmic launcher. Installation section content verified intact (two install paths preserved; diff is insertions only, 0 deletions).",
+      "artifacts": [
+        {"path": "../../../../README.md", "sha256": "525046c2d90f22f27e8c6140fdd8809866c7483873a5a8f30f663e778db86062"}
+      ]
+    },
+    {
+      "criterion": "SKILL.md source states the single-CLI invocation model.",
+      "outcome": "passed",
+      "observation": "skills/SKILL.md gained a 'CLI invocation' note after the Paths table stating every command is a subcommand of the single Projection CLI; the installed copy at ~/.omp/agent/skills/kosmic/SKILL.md was synced byte-identical (diff -q clean).",
+      "artifacts": [
+        {"path": "../../../skills/SKILL.md", "sha256": "6cb3d4f3d5959b69ddd5dabfca75013251bf8ef1766ef9398a139374cf70e90e"}
+      ]
+    },
+    {
+      "criterion": "No code or generated artifacts changed.",
+      "outcome": "passed",
+      "observation": "Changes are confined to README.md, skills/SKILL.md, the installed SKILL.md copy, and this record/evidence; scripts/, memnotes/Skills/, and derived artifacts are untouched.",
+      "artifacts": [
+        {"path": "specs/quick-tasks/document-cli-subcommand-structure.md", "sha256": "895bdfe6eff807d07be4f9b8fab208f23dd057357b8ac5573be8b61b455bceaf"}
+      ]
+    }
+  ]
+}
