@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "knowledge-first-notes-and-evidence-retirement"
-status: "approved"
+status: "in_progress"
 record_kind: "story"
 local_id: "002"
 linked_prd: "../prd.md"
@@ -11,6 +11,7 @@ depends_on: []
 created: 2026-10-18
 updated: 2026-10-18
 consumer_interface_change: true
+review_base: "02426c2"
 proposal_required: false
 routine_edge_change: false
 routine_decision_required: false
@@ -123,3 +124,4 @@ Story's metadata contract.
 |------|--------|-------|
 | 2026-10-18 | Created | Initial draft; no implementation started |
 | 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |
+| 2026-10-18 | Started | Work start accepted at setup commit 02426c2; implementation delegated |
