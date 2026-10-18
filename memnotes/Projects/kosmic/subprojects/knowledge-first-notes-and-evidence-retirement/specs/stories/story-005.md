@@ -15,13 +15,36 @@ depends_on:
   - ../stories/story-003.md
   - ../stories/story-004.md
 review_base: "139f91b"
-review_round: 0
+review_round: 2
 consumer_interface_change: true
 proposal_required: false
 related_notes:
   - notes/cli-projection-commands.md
   - notes/note-writing-style.md
   - notes/shared-domain-skill-library.md
+completion_review:
+  reviewer: "OMP/Main"
+  axes:
+    standards: {reviewer: "StandardsAxis005", decision: "approved"}
+    spec: {reviewer: "SpecAxis005", decision: "approved"}
+  decision: approved
+  review_base: "139f91b"
+  reviewed_revision: "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  binding_scope: "Canonical source_revision binds the clean uncommitted delta; the full owned committed and formerly dirty source was independently reviewed against fixed base 139f91b and retained in commit 72e2d82. This approval does not close Story 004."
+  scope: ["worktree:skills/", "worktree:tests/", "worktree:docs/", "worktree:README.md", "worktree:CONTEXT.md", "worktree:memnotes/Skills/", "project:notes/", "project:skills/", "project:specs/skill-proposals/2026-09-24-day-delta-harvest-routine.md", "project:specs/skill-proposals/2026-10-11-migration-routine-decision.md", "project:subprojects/knowledge-first-notes-and-evidence-retirement/specs/", "project:.kosmic/work-receipts/", "project:log/kosmic-2026-10-18.md"]
+  findings:
+    - id: "05STD-01"
+      disposition: "Blocking"
+      status: "resolved"
+      resolution: "Owned-topic reconciliation preserves unrelated actual-use IDs; the removal regression passes."
+    - id: "05STD-02"
+      disposition: "Blocking"
+      status: "resolved"
+      resolution: "All source-mapping paths enforce audience compatibility. Development-only sources cannot leak into Usage topics; both-audience sources serve both routes. Negative and positive real-consumer regressions pass."
+    - id: "05SPEC-1"
+      disposition: "Blocking"
+      status: "resolved"
+      resolution: "The prior library backup survives final published-tree validation; failure restores library, notes and pair to their call-entry state while preserving caller edits. Post-publication fault regression passes."
 completion_observations:
   - criterion: |-
       Given a user invoking an obsolete evidence-pack mode after cutover (the `evidence_packs:` gate, sidecar-file acceptance inputs, stable-note `evidence:` path checks, and the forced pack-to-note distillation chain), when the command is run, then the invocation is rejected as unknown/unsupported — no no-op shim, alias, or replacement dossier under another name or hidden directory.
@@ -116,9 +139,9 @@ completion_observations:
   - criterion: |-
       Given that byte change, when the same approved publication/removal flow reconciles the affected current generated projections and library `source_sha256`/manifest entries against the note's final bytes, then the refreshed artifacts load coherently against the final source, preserving the exact reviewed scope — no stale-pin blessing, and installation remains a separate unchanged approval gate; historical curated snapshots and historical work-record pins are untouched (current-source consistency, not repinning history).
     observation: |-
-      Historical actual (green before the last three Round-1-fix code changes): real `generate-library` rebuilt all six current topic bodies from final note bytes, reconciled complete raw source pins and `source: notes/…` identities; `resolve_library` → `load_recipe_packet` loaded the current STATUS and curation guidance with all six actual-use IDs and final raw hashes matched, current pair+library valid, old ledger bytes unchanged, historical snapshots/pins untouched. Final producer proof: after the surfaced `FR010_AUDIENCE_INCOMPATIBLE` regression was fixed in source, the fresh real canonical CLI `generate-library` rerun (writer run bg110) is GREEN — full six identities, final raw pins, resources, semantic `updated` unchanged, ledger bytes unchanged, real-consumer packet load, current pair+library valid. Finding history retained above (intermediate `FR010_AUDIENCE_INCOMPATIBLE` failure; pre-fix 14/14 suite). Final state: the added positive both-audience regression case landed — focused suite 15/15 ALL PASS (23.481 s, `story005-final-publication-15-green.log`); the integrated 31-module suite is ALL GREEN on the final post-fix source (0 failed, `knowledge-first-release-verified.log`); the fresh real canonical publication (`dogfood-library-publication.log`) is GREEN across all six identities with semantic `updated` unchanged, ledger bytes unchanged, actual-consumer packet load and current pair+library valid.
+      Publication reconciles only owned resource IDs and rebuilds the pair plus complete current topic bodies and raw source pins. All 15 publication regressions pass, including post-publish rollback, foreign-ID preservation, Development-only-to-Usage rejection and valid both-audience consumers. The real six-topic publisher and consumer pass with semantic `updated` unchanged by bookkeeping and old ledger bytes unchanged. Historical captures and pins remain untouched.
     source: |-
-      This record body "Current topic identity recovery"; `story005-final-publication-15-green.log` 15/15 ALL PASS (Round-1 fixes 05STD-01/05STD-02/05SPEC-1 plus the positive both-audience case); `knowledge-first-release-verified.log` integrated 31-module ALL GREEN on post-fix source; `dogfood-library-publication.log` real canonical publication 6/6 GREEN — final producer proof.
+      `story005-final-publication-15-green.log` (15/15); `knowledge-first-final-cutover.log` (31 modules, 0 failed, 188.99 s); `dogfood-library-publication.log` (six final source identities/pins/resources and actual consumer); this record's Current topic identity recovery section.
   - criterion: |-
       Given `skill_resources` metadata, when written by any flow in this story, then it contains only stable topic IDs — no content hashes and no proposed/unapproved targets.
     observation: |-
@@ -128,9 +151,9 @@ completion_observations:
   - criterion: |-
       Given a genuine consumer holding a source pin whose recorded hash no longer matches the note's current bytes, when the approved refreshed flow runs, then the consumer loads against the coherent final source (behavior test on a real consumer; no wording/copy assertions). Existing source-pin primitives are the expected seam: `project_skills.py` lines 1273-1275, 1313-1315, 1648-1650; shared library lines 951-962 (source-byte hashes) — confirmed as implementation-time starting points, not a completed inventory.
     observation: |-
-      Real-consumer behavior observed: `resolve_library` → `load_recipe_packet` loaded against the coherent final source with matched final raw hashes (behavior, not wording assertions). Post-fix final proof: with the `FR010_AUDIENCE_INCOMPATIBLE` regression (surfaced on the first rerun; 05STD-02 area) fixed in source, the fresh real canonical CLI `generate-library` rerun (writer run bg110) is GREEN including the real-consumer packet load against the coherent final source — recorded as final producer/consumer proof. Final: the added positive both-consumer case landed and the focused suite is 15/15 ALL PASS (`story005-final-publication-15-green.log`); the fresh real canonical publication (`dogfood-library-publication.log`) is GREEN 6/6 including the actual-consumer load — final producer/consumer proof complete on the final source (integrated suite ALL GREEN, `knowledge-first-release-verified.log`).
+      The actual `resolve_library` → `load_recipe_packet` consumer loaded coherent final CLI guidance after three legacy source identities were recovered from verified prior-publication context. All six catalog pins match final raw note bytes and every current topic persists its stable source identity. Fifteen publication regressions and the real six-topic publication/load pass; no historical curated input was repinned.
     source: |-
-      This record body "Current topic identity recovery"; `story005-final-publication-15-green.log` 15/15 ALL PASS; `dogfood-library-publication.log` 6/6 GREEN; `knowledge-first-release-verified.log` integrated 31-module ALL GREEN.
+      `story005-final-publication-15-green.log` (15/15); `dogfood-library-publication.log` (6/6 and actual consumer); `knowledge-first-final-cutover.log` (31 modules, 0 failed); this record's Current topic identity recovery section.
   - criterion: |-
       Given a real test-vault invocation of the full workflow (`work start` → edit → `work finish --scope`), when completed, then no `evidence/` tree, mandatory sidecar, or forced pack-to-note step is produced; embedded criterion observations and the two-axis independent review are still checked; receipted completion renders via the canonical publisher; and a session yielding no reusable finding manufactures no note.
     observation: |-
@@ -302,12 +325,12 @@ The bounded current-record inventory found no unfinished task containing both an
 
 | Assumption | Verified? | Source |
 |------------|-----------|--------|
-| Obsolete pack modes are confined to the inventoried CLI surfaces | ✅ | Phase-1 inventory in "Implementation inventory and authority correction" below (`kosmic_project_skills.py` + `kosmic_dreams.py`; no dedicated subcommand); retirement suite green (`story005-retirement-15-green.log`, 15/15 OK) |
-| All generated projections flow through the ADR-E-bounded canonical publisher | ✅ | Renderer authorization (ADR-E); smoke canonical STATUS render; real `generate-library` publications incl. post-fix rerun 2026-10-18 (writer run bg110) GREEN |
-| QuickTask record path/identity and its current bytes are stable | ✅ | Captured SHA-256 `e66ee0a8…` recorded in this record; bounded inventory: draft record, no receipt, byte-unmutated (draft-not-completed correction preserved) |
-| The four demonstration inputs exist at the audited paths | ✅ | Demo run `20261018T172001Z-knowledge-first-bounded-2c3d90264c3455cb6dd1d95ffe06147c` demo1–demo4; ten original SHA-256 rows in this record |
+| Obsolete pack modes are confined to the inventoried CLI surfaces | Yes | Implementation inventory and authority correction (`kosmic_project_skills.py` and `kosmic_dreams.py`; no dedicated subcommand); retirement suite 15/15 green |
+| All generated projections flow through the ADR-E-bounded canonical publisher | Yes | Authorized STATUS renderer; real `generate-library` publication and `resolve_library` → `load_recipe_packet` consumer, six final source pins verified |
+| QuickTask record path/identity and its current bytes are stable | Yes | Full captured SHA-256 in the supersession entry; unchanged draft record with no receipt, not a completed record |
+| The four demonstration inputs exist at the audited paths | Yes | Bounded `demo1`–`demo4` exercise; ten original SHA-256 comparisons and durable recovery recorded above |
 
-Verification scope (2026-10-18): the suites and real-flow runs cited above are actual executed evidence, now final: the integrated 31-module suite is ALL GREEN on the post-compatibility-fix source (0 failed, 179.69 s, `knowledge-first-release-verified.log`), the focused publication suite is 15/15 ALL PASS (23.481 s, `story005-final-publication-15-green.log`), and the fresh real canonical publication is GREEN 6/6 (`dogfood-library-publication.log`). Standards/Spec Round-2 approval and Story-004 human review closure remain pending — this record is intentionally left in_progress.
+Verification scope (2026-10-18): the final cutover tree passed all 31 test modules (0 failed, 188.99 s, `knowledge-first-final-cutover.log`), all 15 publication regressions (23.481 s, `story005-final-publication-15-green.log`) and the real six-topic canonical publisher/consumer. The final generated-report heading was exercised through its CLI surface and the existing explicit-candidate behavior test. Round-2 Standards and Spec implementation reviews are approved; Story 004 still requires human Spec closure after its three-round cap. Stories 001–003 have actual successful receipts, imported byte-for-byte and terminal-validated here. This dependent Story remains `in_progress`, not completed.
 
 ## Definition of Done
 
@@ -325,4 +348,4 @@ Verification scope (2026-10-18): the suites and real-flow runs cited above are a
 | 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |
 | 2026-10-18 | Started | Work start accepted at setup commit 139f91b; implementation delegated |
 | 2026-10-18 | Whole-CLI smoke completed | Managed run `20261018T191012Z-smokewholeworkflow005-sy-db62268080b2ac6649343ec2e7d929bd` cycle 2: pre-receipt FULL `check-completion` rc=0, receipted `work finish` (`7dbd9da571c8807e.json`), no `evidence/` tree or sidecars, pre-seeded note bytes unchanged, no_action finding manufactured no note; cycle-1 pre-receipt-check gap admitted and remediated. Feature completion not yet claimed |
-| 2026-10-18 | Completion observations embedded | 20 criterion observations recorded in frontmatter from actual executed evidence; final proof landed after the compatibility fix: focused publication suite 15/15 ALL PASS, integrated 31-module suite ALL GREEN (0 failed, `knowledge-first-release-verified.log`), fresh real canonical publication 6/6 GREEN (`dogfood-library-publication.log`). Record stays in_progress — Round-2 Standards/Spec approval and Story-004 human review closure outstanding |
+| 2026-10-18 | Review and verification complete; dependency gate retained | Twenty exact criterion observations; latest 31-module suite green, 15 publication regressions green, real six-topic publisher/consumer green. StandardsAxis005 and SpecAxis005 approved Round 2. Stories 001–003 receipted and portable; Story 004 human closure remains required, so no Story 005 finish or main-tree cutover is claimed |
