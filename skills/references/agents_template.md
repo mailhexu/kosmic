@@ -22,6 +22,20 @@ This project uses **Kosmic** for persistent memory and knowledge management.
 
 The `kosmic` skill is the workflow orchestrator. Contributor work loads `{DEVELOPMENT_SKILL}`, which in turn requires `{USAGE_SKILL}` for consumer and shared behavior. Consumers may invoke `{USAGE_SKILL}` directly. If named skills are unsupported, persistent instructions must point to both canonical packages.
 
+### Work Record Authority
+
+- Project root: `{KOSMIC_VAULT}/Projects/{TARGET}/`; register the exact working root.
+  A fixed subproject constrains the directory, never selects an agent task.
+- Before substantive source/docs/vault/config/experiment changes, select/create
+  an approved owner-local Story hierarchy or standalone approved Quick Task.
+  Planning/initialization has only bounded record-first bootstrap.
+  Inspect the governing record with `work show --project {KOSMIC_VAULT}/Projects/{TARGET} --work-record QUALIFIED_RECORD`; no shared mutable task pointer is used.
+- Start writes with `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. It refuses a dirty worktree; use one clean worktree per record and one writer.
+- Every mutating command takes `--work-record` and rechecks ownership, ancestry and status. Declare scope at `work finish`; out-of-scope Git paths block completion.
+- Read-only queries remain record-free. Raw editor/shell guarantees are agent compliance, not an OS sandbox.
+- Complete with `work finish --work-record REF --worktree ROOT --scope worktree:PATH` after actual acceptance and review. A successful receipt marks completion; after interruption, rerun finish.
+- Installation/migration require their own approved target plans. Do not edit installed user-authored skills.
+
 ### Project Knowledge Format
 
 `{KOSMIC_VAULT}/Projects/{TARGET}/notes/` is the authoritative Obsidian-compatible OKF v0.2 bundle. Use `index.md` for discovery. Concept notes require YAML frontmatter on line 1, non-empty `type`, `status: draft | stable | deprecated`, and relative Markdown links. Do not create or hand-maintain a second OKF export.

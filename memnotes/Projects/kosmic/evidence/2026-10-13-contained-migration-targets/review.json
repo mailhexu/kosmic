@@ -1,0 +1,31 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/preserve-contained-migration-link-targets",
+  "record_path": "specs/quick-tasks/preserve-contained-migration-link-targets.md",
+  "review_base": "75ac6513af98fa6f07e0cf94c779352432226aed",
+  "reviewed_revision": "34fbcd23d46658869765f031eb7be92e3571d4dca741c5fa53557c7ccb5ec71f",
+  "round": 2,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "PlannerStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "PlannerSpec"
+  },
+  "findings": [
+    {
+      "id": "PL-01",
+      "status": "resolved",
+      "blocking": true,
+      "title": "Local linked-metadata precedence"
+    },
+    {
+      "id": "PL-02",
+      "status": "resolved",
+      "blocking": true,
+      "title": "Moving target-only WikiLinks"
+    }
+  ],
+  "decision": "approved"
+}

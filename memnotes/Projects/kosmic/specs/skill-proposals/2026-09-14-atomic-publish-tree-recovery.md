@@ -1,27 +1,31 @@
 ---
-status: done
-created: 2026-09-14
-updated: 2026-09-15
-result: update
-scope: shared-routine
-target_kind: routine
-routine_action: extend
-routine_id: kosmic/atomic-publish-tree
+status: "done"
+created: "2026-09-14"
+updated: "2026-09-15"
+result: "update"
+scope: "shared-routine"
+target_kind: "routine"
+routine_action: "extend"
+routine_id: "kosmic/atomic-publish-tree"
 linked_proposals: []
 consumer_approvals: []
-target: kosmic/atomic-publish-tree
-target_ref: routine://kosmic/atomic-publish-tree
-target_sha256: aeaad9c360fe1a0a046196208d3bb5d17919cf6d418d4da0ce79e9d3016057fc
-proposer_mode: subagent
-proposer_ref: agent://ImplementManagedRunSuite.RoutineExtendProposer
+target: "kosmic/atomic-publish-tree"
+target_ref: "routine://kosmic/atomic-publish-tree"
+target_sha256: "725d4a9922505d9a2c2f9dd3b266924fe487b6037a14fce9b4a81f87fd4f08fc"
+proposer_mode: "subagent"
+proposer_ref: "agent://ImplementManagedRunSuite.RoutineExtendProposer"
 proposer_reason: "Fresh-context Task P assessment restricted to the hash-pinned curated manifest"
-input_manifest: [specs/skill-proposals/inputs/atomic-publish-tree-recovery.md]
-related_notes: [notes/managed-run-workspace-lifecycle.md, notes/atomic-skill-publication.md]
-evidence_packs: [2026-09-15-managed-run-lifecycle]
-behavioral_evidence: [evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md]
-decision: accepted
-fingerprint: ead7ac18dcb22578d90a8eaeb69f8a218110db4e5de1e2e6e18be0c6cf4ae57b
+input_manifest: ["specs/skill-proposals/inputs/atomic-publish-tree-recovery.md"]
+related_notes: ["notes/managed-run-workspace-lifecycle.md", "notes/atomic-skill-publication.md"]
+evidence_packs: ["2026-09-15-managed-run-lifecycle"]
+behavioral_evidence: ["evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md"]
+decision: "accepted"
+fingerprint: "ead7ac18dcb22578d90a8eaeb69f8a218110db4e5de1e2e6e18be0c6cf4ae57b"
 reconsiders: "2026-09-07-atomic-publish-tree-reuse"
+project_id: "kosmic"
+subproject_id: null
+record_kind: "proposal"
+local_id: "2026-09-14-atomic-publish-tree-recovery"
 ---
 
 # Skill Proposal: Extend Atomic Publish Tree With Staging Markers and Detection

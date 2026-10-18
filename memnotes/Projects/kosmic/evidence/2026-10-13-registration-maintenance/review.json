@@ -1,0 +1,19 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/remove-missing-writer-registration",
+  "record_path": "specs/quick-tasks/remove-missing-writer-registration.md",
+  "review_base": "7dab77c8fee74a3edaa3fa48d1128d4668877da1",
+  "reviewed_revision": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "round": 1,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://SkillStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://SkillSpec"
+  },
+  "findings": [],
+  "decision": "approved",
+  "scope": "Approved missing registry entry plus required sequence count; actual receipt recovery."
+}

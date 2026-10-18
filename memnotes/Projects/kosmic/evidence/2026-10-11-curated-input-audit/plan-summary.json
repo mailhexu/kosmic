@@ -1,0 +1,37 @@
+{
+  "records": 112,
+  "rewrites": 155,
+  "link_corrections": 467,
+  "link_problems": 86,
+  "ambiguities": 0,
+  "problem_categories": [
+    {
+      "reason": "ambiguous-link",
+      "protected": true,
+      "count": 2
+    },
+    {
+      "reason": "moved-reference",
+      "protected": true,
+      "count": 12
+    },
+    {
+      "reason": "unparsable-document",
+      "protected": true,
+      "count": 2
+    },
+    {
+      "reason": "unresolved-link",
+      "protected": false,
+      "count": 22
+    },
+    {
+      "reason": "unresolved-link",
+      "protected": true,
+      "count": 48
+    }
+  ],
+  "planner_exit": 0,
+  "applied": false,
+  "snapshot_digest": "325ba817e430808c9cce38026ebfd04829bf3922c6b6e1f32af83e2001b57962"
+}

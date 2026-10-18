@@ -11,7 +11,7 @@ Execute story implementation following TDD with mandatory research phase.
 
 ```
 STOP CHECK before starting:
-  1. Story file exists at {VAULT}/Projects/{TARGET}/specs/stories/story-{N}-{slug}.md
+  1. Story resolves through the owner catalog to {VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/stories/story-{N}.md (retain its returned canonical path).
   2. Story status is "approved" OR "in_progress"
      → grep "status:" {story_file}
      → If approved: transition it to in_progress and begin at Phase 1.
@@ -90,7 +90,7 @@ This is story-level implementation research. It is mandatory for approved storie
 
 If the Story corrects a defect, invoke `diagnosing-bugs` before Phase 2. Establish and minimize a reproducible failure, discriminate cause hypotheses with evidence, and add the regression test at the agreed seam before implementation can complete.
 
-Before changing code, pin a stable review fixed point. Update story status, date, and review metadata:
+Before the first implementation write, run `work start --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD`. It re-resolves the approved Story and requires a clean worktree. Use one record, one worktree, one writer; scope expansion requires an updated reviewed Story/Quick Task. Follow SKILL.md Record-first authority; code review is evidence, not permission to expand the slice.
 ```yaml
 status: in_progress
 updated: {DATE}
@@ -275,10 +275,11 @@ Apply SKILL.md **Managed Run Before Scratch** while implementing. Begin the run 
 
 **Spec-event step**: whenever a spec or work-item status changes, run `generate-status --project ...` so the working-directory STATUS.md stays drift-free (validation and the completion gate fail on `STATUS_STALE`).
 
-**Vault commit cadence**: when the story (and, on its final story, the epic)
-reaches `done`, commit the whole vault tree together with source —
-`git add -A && git commit` — before reporting final status. Uncommitted vault
-records break dream harvesting and Git-derived provenance.
+**Commit cadence**: retain verified record-owned source, vault outputs and the
+successful receipt in the isolated writer before final reporting. Load
+[Receipt completion](work_completion.md) for scope, proof and integration.
+Preserve unrelated changes in destination checkouts; integrate only owned,
+baseline-checked deltas.
 
 ### 3.2 Run Tests Continuously
 
@@ -336,11 +337,7 @@ updated: {DATE}
 
 **Goal**: Ensure quality before marking done.
 
-Update story status to `review` and bump the date:
-```yaml
-status: review
-updated: {DATE}
-```
+Capture the actual pinned two-axis review decision while the governed implementation record remains live. The receipt transaction—not a hand-edited status—publishes `done`. A separate administrative `review` state grants no new implementation authority.
 
 ### 4.1 Verify All Tests Pass
 
@@ -414,12 +411,7 @@ Open the story file and apply **all four** of the following:
 | {DATE} | Reviewed | Code review passed |
 ```
 
-**d) Bump frontmatter status to `review` and update the date** (if not already done at the start of Step 4):
-
-```yaml
-status: review
-updated: {DATE}
-```
+**d) Capture acceptance evidence and the real converged review artifact**, including qualified record identity, canonical path, pinned base, current reviewed revision, stable finding IDs and actual decisions. See `task_project_skills.md`; never synthesize approval.
 
 ---
 
@@ -427,14 +419,9 @@ updated: {DATE}
 
 Execute **all of the following in one pass** — do not skip any item:
 
-### 5.1 Update Story Frontmatter
+### 5.1 Publish receipt-backed completion
 
-```yaml
----
-status: done
-updated: {DATE}
----
-```
+Run read-only `check-completion --project PROJECT_ROOT --work-item CANONICAL_PATH`, then `work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM` (repeat for every declared scope). Do not set `done` directly. Finish checks proof/review/scope, publishes record status/indexes/log and the authoritative receipt, then derives STATUS from that receipt. Publication is stepwise, not cross-file atomic. Inspect the successful identity-matched receipt and current STATUS. If interrupted, rerun finish; an existing valid receipt is preserved while derived reports are repaired. Unreceipted `done` stays pending.
 
 ### 5.2 Add Final Row to Story Progress Log
 
@@ -447,28 +434,15 @@ updated: {DATE}
 | {DATE} | Done | Story complete |
 ```
 
-### 5.3 Update Epic
+### 5.3 Verify associated Epic progress
 
-Open the linked epic file (from `linked_epic:` in story frontmatter). Update the stories table and progress:
-
-```markdown
-## Stories
-
-| Story | Title | Status |
-|-------|-------|--------|
-| [story-{N}](../stories/story-{N}-{slug}.md) | {title} | done |
-
-## Progress
-
-- Stories: {X}/{N} done
-- Last updated: {DATE}
-```
+The completion transaction updates only the current Story's owner-local Epic row and associated index/STATUS/log outputs. Check these projections against the receipt. It does not approve or close the entire Epic, rewrite another feature's specs, or authorize unrelated implementation.
 
 ### 5.4 Update Daily Log
 
 ```markdown
 ## Session {N}
-- Completed: [Story {N}](../specs/stories/story-{N}-{slug}.md) - {brief description}
+- Completed: [Story {N}](../subprojects/{SUBPROJECT_ID}/specs/stories/story-{N}.md) - {brief description}
 - Added notes: [{note}](../notes/{note}.md)   ← only if knowledge notes were created
 ```
 

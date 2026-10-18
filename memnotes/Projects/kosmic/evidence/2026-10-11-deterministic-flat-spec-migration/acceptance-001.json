@@ -1,0 +1,168 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/deterministic-flat-spec-migration/story/001",
+  "record_path": "subprojects/deterministic-flat-spec-migration/specs/stories/story-001.md",
+  "results": [
+    {
+      "criterion": "AC1: The actual `migrate-subprojects-plan` CLI preserves stdout mode and supports exclusive `--output PATH`; saving never overwrites an existing file or changes source records.",
+      "outcome": "passed",
+      "observation": "Actual plan CLI saves an exclusive JSON file and rejects existing files and symlink aliases without changing their bytes.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC2: A fixed snapshot and assignments produce an identical versioned plan and digest containing all recomputation inputs, complete legacy inventory, existing owners, ProjectEntry and live-reference hashes, target preconditions, candidate hashes and intended write scope.",
+      "outcome": "passed",
+      "observation": "Planner/recompute and rehashed-candidate rejection regressions verify deterministic hashes and complete input guards.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC3: Declared ancestry determines owners. Explicit assignments resolve ambiguous ownership; cycles, dangling/conflicting parents and destination collisions remain explicit blockers rather than inferred prose decisions.",
+      "outcome": "passed",
+      "observation": "Owner ancestry, explicit orphan assignments, malformed assignment rejection, collisions and independent Spec review cover owner selection without prose inference.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC4: Rewrites cover ancestry/dependency metadata and supported live Markdown links, reference links and images outside code fences, including active inbound references and Project/owner indexes. Links resolve to the intended final identities; unsupported live forms are reported as blockers.",
+      "outcome": "passed",
+      "observation": "Nested notes, surgical inbound metadata, plain/angle/wiki/HTML handling, actual mixed-owner dependency migration and final link resolution passed.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC5: Existing canonical shared local IDs and lifecycle decisions are retained. Legacy shared identity metadata is deterministic; unrelated content, historical evidence and logs remain byte-identical.",
+      "outcome": "passed",
+      "observation": "Canonical shared ID migration-authority is retained; historical evidence/log bytes and existing owner PRD bytes were compared before and after actual migration.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC6: Plans include proposal fingerprint disposition and bound/unbound STATUS inputs without installing adapters, creating bindings, approving records or manufacturing completion authority.",
+      "outcome": "passed",
+      "observation": "Bound STATUS is pinned and rendered from final paths; foreign identity metadata is rejected; proposal fingerprint classification is reviewed without inherited approval.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC7: Focused behavior regressions and an actual CLI smoke prove the preceding criteria; saved plan schema and command documentation are updated and reviewed.",
+      "outcome": "passed",
+      "observation": "48 focused migration/audit checks and the 15-module suite passed; both independent review axes approved; consumer CLI knowledge and procedure docs updated.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    }
+  ]
+}

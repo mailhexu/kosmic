@@ -1,4 +1,8 @@
 ---
+project_id: {PROJECT_ID}
+subproject_id: null
+record_kind: quick-task
+local_id: {ALLOCATED_LOCAL_ID}
 status: draft
 created: {DATE}
 updated: {DATE}
@@ -16,6 +20,8 @@ routine_proposals: []
 # math_implementation_files: [relative/source/path.py]
 review_base: ""
 review_round: 0
+acceptance_evidence: []
+review_record: ""
 ---
 
 # Quick Task: {Title}

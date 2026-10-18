@@ -1,0 +1,67 @@
+URL and nested YAML
+nested staying flow URL: repaired; valid encoded YAML URL: byte-identical
+actual CLI plan/apply: successful
+nested YAML sources: ['First source', 'Second source']
+YAML url: ../prd.md?q=1#overview
+[encoded](../prd.md?q=1#overview)
+[titled](../prd.md "Background (reviewed)")
+filename repair: [repair](../subprojects/export/specs/prd.md#overview)
+reported corrections: 17
+protected link problems: 2
+historical bytes: identical; final catalog: valid
+
+scalar preservation
+unrelated title: missing/prd-export.md
+actual CLI plan/apply: successful
+nested YAML sources: ['First source', 'Second source']
+YAML url: ../prd.md?q=1#overview
+[encoded](../prd.md?q=1#overview)
+[titled](../prd.md "PRD title")
+filename repair: [repair](../subprojects/export/specs/prd.md#overview)
+reported corrections: 17
+protected link problems: 2
+historical bytes: identical; final catalog: valid
+
+JSON flow
+JSON URL: ../subprojects/export/specs/prd.md
+unrelated title: missing/prd-export.md
+actual CLI plan/apply: successful
+nested YAML sources: ['First source', 'Second source']
+YAML url: ../prd.md?q=1#overview
+[encoded](../prd.md?q=1#overview)
+[titled](../prd.md "PRD title")
+filename repair: [repair](../subprojects/export/specs/prd.md#overview)
+reported corrections: 17
+protected link problems: 2
+historical bytes: identical; final catalog: valid
+
+multiline flow
+JSON URL: ../subprojects/export/specs/prd.md
+unrelated title: missing/prd-export.md
+actual CLI plan/apply: successful
+nested YAML sources: ['First source', 'Second source']
+YAML url: ../prd.md?q=1#overview
+[encoded](../prd.md?q=1#overview)
+[titled](../prd.md "PRD title")
+filename repair: [repair](../subprojects/export/specs/prd.md#overview)
+reported corrections: 17
+protected link problems: 2
+historical bytes: identical; final catalog: valid
+
+Integrated repository smoke
+JSON URL: ../subprojects/export/specs/prd.md
+unrelated title: missing/prd-export.md
+actual CLI plan/apply: successful
+nested YAML sources: ['First source', 'Second source']
+YAML url: ../prd.md?q=1#overview
+[encoded](../prd.md?q=1#overview)
+[titled](../prd.md "PRD title")
+filename repair: [repair](../subprojects/export/specs/prd.md#overview)
+reported corrections: 17
+protected link problems: 2
+historical bytes: identical; final catalog: valid
+
+Actual CLI reports unplaceable scalar as apply blocker: [{"candidates": ["subprojects/export/specs/prd.md"], "reason": "unsupported-link-rewrite", "record": "notes/escaped.md", "reference": "missing/prd-export.md"}]
+
+Read-only canonical Project audit
+error: SPEC_INVALID: notes/cli-extension-conventions.md: notes/cli-extension-conventions.md: line 6: unexpected content after quoted value: '(promoted)'. Correct the specification identity or metadata and validate the Project again.

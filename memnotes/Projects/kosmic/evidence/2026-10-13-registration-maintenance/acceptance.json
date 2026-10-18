@@ -1,0 +1,64 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/remove-missing-writer-registration",
+  "record_path": "specs/quick-tasks/remove-missing-writer-registration.md",
+  "results": [
+    {
+      "criterion": "Only the confirmed missing writer registration is removed; other registry entries remain identical.",
+      "outcome": "passed",
+      "observation": "Exact parsed registry comparison confirms only the missing wd-083ca86fb05f081a removed; both retained entries identical and required count updated from 3 to 2. load_registry passes.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/registry-before.json",
+          "sha256": "92345b585e21af8fbdc0d6de21d8ae5d7125c49e4efcaa7f6a7126551151a5cf"
+        },
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/registry-after.json",
+          "sha256": "f9205d2297d9775ed1a373e78c70959bd80469e061000cfb9c192b12f8d497e4"
+        },
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/skill-repair-receipt.json",
+          "sha256": "e8af49b795a188271843fcaaa503139b20e678e6414eae699f2ecdd048ab913d"
+        }
+      ]
+    },
+    {
+      "criterion": "Checked skill-repair finish returns a successful receipt and terminal receipt validation passes.",
+      "outcome": "passed",
+      "observation": "Actual checked work finish returned successful skill-repair receipt; check_terminal_receipt validated identity, record and complete proof.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/registry-before.json",
+          "sha256": "92345b585e21af8fbdc0d6de21d8ae5d7125c49e4efcaa7f6a7126551151a5cf"
+        },
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/registry-after.json",
+          "sha256": "f9205d2297d9775ed1a373e78c70959bd80469e061000cfb9c192b12f8d497e4"
+        },
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/skill-repair-receipt.json",
+          "sha256": "e8af49b795a188271843fcaaa503139b20e678e6414eae699f2ecdd048ab913d"
+        }
+      ]
+    },
+    {
+      "criterion": "No directory or unrelated task is deleted or rewritten by the maintenance edit.",
+      "outcome": "passed",
+      "observation": "Maintenance edit was limited to the approved registry row/count; no directory or unrelated task was deleted. Existing checked finish projections updated through their supported transaction.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/registry-before.json",
+          "sha256": "92345b585e21af8fbdc0d6de21d8ae5d7125c49e4efcaa7f6a7126551151a5cf"
+        },
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/registry-after.json",
+          "sha256": "f9205d2297d9775ed1a373e78c70959bd80469e061000cfb9c192b12f8d497e4"
+        },
+        {
+          "path": "evidence/2026-10-13-registration-maintenance/skill-repair-receipt.json",
+          "sha256": "e8af49b795a188271843fcaaa503139b20e678e6414eae699f2ecdd048ab913d"
+        }
+      ]
+    }
+  ]
+}

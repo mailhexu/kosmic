@@ -1,0 +1,97 @@
+{
+  "review_base": "22a36f09af5fce16c2d097c68ab9988f27c3705f",
+  "isolated_worktree": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261011T135504Z-completion-canonical-pro-41ff53375bdde83578a27de1f88069ee/final-source-scope",
+  "isolated_revision": "dd2f23ed734eaac31f0764e5e9db3dfd53dd34d30ba2a0d488cb1836b7eab1d7",
+  "owned_files": {
+    "skills/references/task_project_skills.md": "14031fbb0dd2bd48a78b38339447b80357578b010b8bea7ffe6a39cf68171fba",
+    "skills/references/task_quick_task.md": "01a32bd9bb1616b2715fe7abfaae31724b59cbad4fa7b193abd5fd5a765c073f",
+    "skills/scripts/kosmic_migration.py": "5a0e2c65332c8d1806bf58c2472881693b060b9832fd1622370394c73f343115",
+    "skills/scripts/kosmic_project_skills.py": "ae3ba8389588d6ee6d34a176d5952bd68c743d09e3787edb01ae78c8c675c0f5",
+    "skills/scripts/kosmic_shared_library.py": "b5e40dcdc0a40fdce0553390c0ce68a87b8bcda26c76d46f3fb8874f4133767b",
+    "skills/scripts/kosmic_specs.py": "13fd142afdde9d26fbe503f4dcbce0e6975478ba603f5ba0e0cc7a2e3a2d04cc",
+    "skills/scripts/kosmic_yaml.py": "f1ee8e85d3a8924e3fd0fddd9d555959dc00e7c43e935ff8bb590a9b0559678a",
+    "tests/test_kosmic_curated_inputs.py": "9f376a50950254b9aab107a4e6de7e4795856b8ccb685b290a1073737a8b11bc",
+    "tests/test_kosmic_link_audit_targets.py": "37b2ba8b67198f509da62c66deeb839aa40c92fb5ee94de22c820a13f329316f",
+    "tests/test_kosmic_link_corrections.py": "9b0c626a00016aaad2898c4a74720e05a672fa8a2e369dcbee00553551fdf3e1",
+    "tests/test_kosmic_migration_apply.py": "d8271dea56911e47d12c0ed9230a5e5f58ee654b99fce82436c35ff68d257a14",
+    "tests/test_kosmic_migration_plan.py": "0a8865534ac35585b90154cec85192f1287e8232abbc6294e27e4d023b8ffe45",
+    "tests/test_kosmic_owner_ancestry_migration.py": "a64c51373f736cd21cc450534927e3ab444ef58afb6e4eeb08686a472a7fa27d",
+    "tests/test_kosmic_yaml.py": "b91233a664eef6b0e315641ffffdf6237893adbed1c9544046832f47b2c82031"
+  },
+  "independent_current_source_approval": false,
+  "capped_ledger": "evidence/2026-10-11-yaml-link-corrections/review-ledger.json",
+  "pending_human_acceptance": [],
+  "additional_postcap_manual_fixes": [
+    "Protected proposal input manifests/snapshots inventory",
+    "Existing protected target recognition; escaped WikiLink table aliases; physical-line reference definitions",
+    "Existing owner linked ancestry local-target precedence"
+  ],
+  "verification": [
+    "116 focused checks passed on final 17-file bounded scope",
+    "Live migration plan and receipt previously validated",
+    "Stories 001-003 now have successful checked receipts",
+    "Final complete suite pending current run bg_126"
+  ],
+  "restriction": "Do not accept all 106 mixed canonical working-tree changes as this source scope; unrelated Project/source changes and caches were excluded via original pinned baseline. No fourth automated source review or fabricated reviewer approval.",
+  "human_acceptance": {
+    "recorded": "2026-10-12",
+    "approved_by": "user",
+    "decision": "user-accepted",
+    "findings": [
+      "STD-YL-10",
+      "STD-YL-11",
+      "SPEC-YL-6"
+    ],
+    "automated_review_cap": "Three rounds reached; no fourth source-code review claimed."
+  },
+  "supplemental_reviews": [
+    {
+      "scope": "nested-project scratch gate root-alignment bugfix only",
+      "standards": "approved",
+      "spec": "approved",
+      "reviewers": [
+        "agent://ScratchPathStandards",
+        "agent://ScratchPathSpec"
+      ]
+    },
+    {
+      "scope": "owner-local completion index path and status-column fixes only",
+      "standards": "approved",
+      "spec": "approved",
+      "reviewers": [
+        "agent://OwnerIndexStandards",
+        "agent://OwnerIndexSpec"
+      ]
+    },
+    {
+      "scope": "owner Story index Status header selection after receipt publication",
+      "standards": "approved",
+      "spec": "approved",
+      "reviewers": [
+        "agent://IndexColumnStandards",
+        "agent://IndexColumnSpec"
+      ],
+      "blockers": [],
+      "reviewed_revision": "92f0110fc51b4aa7140cff3b02c0344a66e5ed8f120b89dbf7e3c218026fb854"
+    }
+  ],
+  "final_bounded_revision": "92f0110fc51b4aa7140cff3b02c0344a66e5ed8f120b89dbf7e3c218026fb854",
+  "final_bounded_file_count": 17,
+  "decision_boundary": "All three capped findings explicitly accepted by user; separate deltas independently approved; no review round beyond three.",
+  "post_completion_index_fix": {
+    "files": {
+      "skills/scripts/kosmic_completion.py": "5f1caaa19b2bbf401aa0f0583366643ed161447026affb2793636fc52cffb64f",
+      "tests/test_kosmic_work_records.py": "590db2577c9d7001d30334e54d4ca5f2a78ac8ce6088e4a637afa5ff1ef1cc01"
+    },
+    "regression": "WorkRecordTest.test_finish_owner_record_skips_unrelated_project_root_index; red before header-aware status fix, green after",
+    "focused_verification": "116 tests passed including record/index/scratch/migration gates",
+    "complete_suite": "21 modules in 111.9s; zero failures",
+    "application": "Corrected updater invoked for three completed Story records; owner INDEX statuses now done, dependency column unchanged, unrelated root INDEX unchanged",
+    "review_state": "Independent Standards and Spec reviewers approved; no blocking findings.",
+    "standards_review": "approved: agent://IndexColumnStandards",
+    "spec_review": "approved: agent://IndexColumnSpec",
+    "blockers": [],
+    "nonblocking_suggestions": [],
+    "reviewed_revision": "92f0110fc51b4aa7140cff3b02c0344a66e5ed8f120b89dbf7e3c218026fb854"
+  }
+}

@@ -1,0 +1,435 @@
+{
+  "projects": [
+    {
+      "project": "DMModel",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 20,
+      "link_corrections": 20,
+      "editable_link_diagnostics": 4,
+      "protected_diagnostics": 3,
+      "digest": "f8973092f10fa71f962dd01c714567163d22ae506594acdb96d005ca60872a55"
+    },
+    {
+      "project": "HamiltonIO",
+      "movable_records": 5,
+      "subprojects": 0,
+      "ambiguities": 10,
+      "link_corrections": 20,
+      "editable_link_diagnostics": 11,
+      "protected_diagnostics": 12,
+      "digest": "e1caf92b3536f0b25a7e8df5079bb1edc1aa2b75511f047bd0d5a320333ab90a"
+    },
+    {
+      "project": "Ideas",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 0,
+      "digest": "b3cd9c62bacb0cff146271718b5b68620719d99c5db79c2f79a1474d25a5e45c"
+    },
+    {
+      "project": "MemNotes",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 68,
+      "editable_link_diagnostics": 1,
+      "protected_diagnostics": 18,
+      "digest": "32c6a0bcbccfac6f7a8e71581d3a8114daa6c6545e719492c44d86abafd2d513"
+    },
+    {
+      "project": "QE",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 2,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 1,
+      "digest": "d6dca4916a099bc7d47591ef3aea8274d6df185d3b8bc621623e13d8150de02f"
+    },
+    {
+      "project": "TB2J",
+      "movable_records": 0,
+      "subprojects": 28,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "editable_link_diagnostics": 32,
+      "protected_diagnostics": 132,
+      "digest": "f612b484b14a10610af321f9b9840ad8c1fa239d6f61fadc83db5076ec8cfd33"
+    },
+    {
+      "project": "TB2J_dev",
+      "movable_records": 23,
+      "subprojects": 0,
+      "ambiguities": 129,
+      "link_corrections": 124,
+      "editable_link_diagnostics": 26,
+      "protected_diagnostics": 79,
+      "digest": "c755709a57db7bfef8591cda6de9e9fabd743e3b1cbddf59b6338d27bb1430b4"
+    },
+    {
+      "project": "TB2Jflows",
+      "movable_records": 6,
+      "subprojects": 0,
+      "ambiguities": 17,
+      "link_corrections": 12,
+      "editable_link_diagnostics": 15,
+      "protected_diagnostics": 11,
+      "digest": "cf692106cf9ef2a0b060b979a4e645856efa6913c821d46465386f56633458bd"
+    },
+    {
+      "project": "TBUpy",
+      "movable_records": 39,
+      "subprojects": 0,
+      "ambiguities": 212,
+      "link_corrections": 105,
+      "editable_link_diagnostics": 93,
+      "protected_diagnostics": 150,
+      "digest": "895837db882256d88ff2c497f704379e44c68228c79cfca2cad407f7cf154cb8"
+    },
+    {
+      "project": "abacus",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 8,
+      "link_corrections": 21,
+      "editable_link_diagnostics": 5,
+      "protected_diagnostics": 12,
+      "digest": "47ee2519a90821068e96ae5b69525a88b6d7ed7b960c6aed638eb18b7215dd69"
+    },
+    {
+      "project": "abibuildbot_dev",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 9,
+      "link_corrections": 33,
+      "editable_link_diagnostics": 1,
+      "protected_diagnostics": 22,
+      "digest": "f24ee0ac6652e9c6f5e3f8ca8eb5f1fa5b2cf3c76eace27742f64160711ff287"
+    },
+    {
+      "project": "abinao",
+      "movable_records": 4,
+      "subprojects": 0,
+      "ambiguities": 38,
+      "link_corrections": 19,
+      "editable_link_diagnostics": 46,
+      "protected_diagnostics": 5,
+      "digest": "e0323df3a9b8a7b22e0058b3abeef61e0d615879521884611c880bba178ac387"
+    },
+    {
+      "project": "atomchain",
+      "movable_records": 4,
+      "subprojects": 0,
+      "ambiguities": 36,
+      "link_corrections": 75,
+      "editable_link_diagnostics": 22,
+      "protected_diagnostics": 47,
+      "digest": "daaf1eceecf212836d523c687a571299b44e30c269827f64918f0134a9136420"
+    },
+    {
+      "project": "basis_set",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 8,
+      "editable_link_diagnostics": 1,
+      "protected_diagnostics": 5,
+      "digest": "d892413a5f8222b966f49e47d0ee89a781ec8776ef72bb624eebe75107a1d418"
+    },
+    {
+      "project": "easybondvalence",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 21,
+      "link_corrections": 15,
+      "editable_link_diagnostics": 24,
+      "protected_diagnostics": 12,
+      "digest": "ccff33a9952375040df8aafbd1f91ed46e28adb4e1c47eb48983180bac8e4261"
+    },
+    {
+      "project": "electron-magnon-coupling",
+      "movable_records": 12,
+      "subprojects": 1,
+      "ambiguities": 58,
+      "link_corrections": 21,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 5,
+      "digest": "9ff919af0981f497a655709622e28326455b8ec5c071c2e5d6a20f0480382adc"
+    },
+    {
+      "project": "epcdownfolding",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 8,
+      "editable_link_diagnostics": 1,
+      "protected_diagnostics": 4,
+      "digest": "1bbc413c6e73efaa89258633dae7432db53d3cb249a2f08a0ee465c0457d5134"
+    },
+    {
+      "project": "formal-charge",
+      "movable_records": 0,
+      "subprojects": 5,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 13,
+      "digest": "be395ef3c1df4a42521a6328b2ff427a9df2155cbbfa557a2ccb40722a0b6930"
+    },
+    {
+      "project": "fourstate",
+      "movable_records": 4,
+      "subprojects": 0,
+      "ambiguities": 11,
+      "link_corrections": 11,
+      "editable_link_diagnostics": 12,
+      "protected_diagnostics": 6,
+      "digest": "4ee48fead99e15b2548d17a8c5a94a16236f4f0bdb1425e52609899e369c4e91"
+    },
+    {
+      "project": "lawaf",
+      "movable_records": 17,
+      "subprojects": 0,
+      "ambiguities": 104,
+      "link_corrections": 38,
+      "editable_link_diagnostics": 1,
+      "protected_diagnostics": 8,
+      "digest": "d65b22324306aa91b6541c0a0b646cdda85fdb316f30b55e0bd2f3933a6df174"
+    },
+    {
+      "project": "magnetic_descriptor",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 13,
+      "link_corrections": 9,
+      "editable_link_diagnostics": 18,
+      "protected_diagnostics": 28,
+      "digest": "e4450e1d099d961a7ba12165ca72875ed7d833349c000f344c98502f4ef0d0d2"
+    },
+    {
+      "project": "magsym",
+      "movable_records": 11,
+      "subprojects": 0,
+      "ambiguities": 24,
+      "link_corrections": 68,
+      "editable_link_diagnostics": 10,
+      "protected_diagnostics": 50,
+      "digest": "b5a1bd46018566d8ec1b06da1da4d18768efd037c83be362807bc7679324a015"
+    },
+    {
+      "project": "mblammps",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 17,
+      "link_corrections": 9,
+      "editable_link_diagnostics": 8,
+      "protected_diagnostics": 9,
+      "digest": "0e278cf66a286353e16c43a9ee941dea06200e24a3645b5cd9ee3012153761dd"
+    },
+    {
+      "project": "mywebsite",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 5,
+      "link_corrections": 8,
+      "editable_link_diagnostics": 6,
+      "protected_diagnostics": 5,
+      "digest": "52df276d6cedce9f2f4fac09af8c3a1e2e3ea0ef954a03923e5a325c0cf4b827"
+    },
+    {
+      "project": "non-orthogonal-spin-lattice",
+      "movable_records": 0,
+      "subprojects": 1,
+      "ambiguities": 0,
+      "link_corrections": 2,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 0,
+      "digest": "1f992e85138e3b076a9f51fe301b052508af5a25c42affdfd010abc9214bcbb1"
+    },
+    {
+      "project": "phononkit",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 67,
+      "editable_link_diagnostics": 3,
+      "protected_diagnostics": 18,
+      "digest": "9adf43a9db0994365f8c916509c55d0a27c2f8cfa0a694fd49c5e1d0a5d8f7b9"
+    },
+    {
+      "project": "predict_mag_dev",
+      "movable_records": 4,
+      "subprojects": 0,
+      "ambiguities": 35,
+      "link_corrections": 73,
+      "editable_link_diagnostics": 49,
+      "protected_diagnostics": 25,
+      "digest": "36db35eec4755ee989f0dc648f32afc45d2e3e09dbc04114d8361ae01817a5a5"
+    },
+    {
+      "project": "pypao",
+      "movable_records": 8,
+      "subprojects": 0,
+      "ambiguities": 42,
+      "link_corrections": 41,
+      "editable_link_diagnostics": 48,
+      "protected_diagnostics": 42,
+      "digest": "910198c91f32af56f2cee1ad0211f7320b2d60775072b448c8b4253e72c2d3a5"
+    },
+    {
+      "project": "qdmag",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 4,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 0,
+      "digest": "bd6f1683533f5e2121b9c7618ee1874d874ea953e67a461205d22ee6769f36b3"
+    },
+    {
+      "project": "siesta",
+      "movable_records": 8,
+      "subprojects": 0,
+      "ambiguities": 32,
+      "link_corrections": 39,
+      "editable_link_diagnostics": 37,
+      "protected_diagnostics": 34,
+      "digest": "a81352c83443522423c9c226bea2b295a50fad63afbc6ff2a5666025023c2491"
+    },
+    {
+      "project": "siesta_plusB",
+      "movable_records": 0,
+      "subprojects": 2,
+      "ambiguities": 3,
+      "link_corrections": 19,
+      "editable_link_diagnostics": 31,
+      "protected_diagnostics": 16,
+      "digest": "325adec0c1e1938aaa0de09075600dfbf40eda85f8e389be5cfee6c8de04df7e"
+    },
+    {
+      "project": "software_installation_manager",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 0,
+      "digest": "54e40407afdb8208d0450a1627854aa4a9c79b4d485835018d8df79410cc1de8"
+    },
+    {
+      "project": "supercellmap",
+      "movable_records": 0,
+      "subprojects": 0,
+      "ambiguities": 0,
+      "link_corrections": 2,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 0,
+      "digest": "6c1b05f4f8b34a4b9f6e3013c0ca5992e5de315afade0a571b924ed0affb7f6c"
+    },
+    {
+      "project": "superexchange_MFT",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 16,
+      "link_corrections": 5,
+      "editable_link_diagnostics": 0,
+      "protected_diagnostics": 5,
+      "digest": "624510502a929c9b6150feb764db45297bae0c36b09621314c7d2c2837fbf4b8"
+    },
+    {
+      "project": "symphon",
+      "movable_records": 2,
+      "subprojects": 0,
+      "ambiguities": 5,
+      "link_corrections": 57,
+      "editable_link_diagnostics": 3,
+      "protected_diagnostics": 13,
+      "digest": "35309460b2965751f5f15b6180cc8d6f832dfb35e2ff00180d5502bf4bcccabc"
+    },
+    {
+      "project": "symwannier",
+      "movable_records": 5,
+      "subprojects": 0,
+      "ambiguities": 19,
+      "link_corrections": 103,
+      "editable_link_diagnostics": 28,
+      "protected_diagnostics": 36,
+      "digest": "cab04f72d911c17f3ff7041b68390d64fe83ec1352c82268ce267f39b21c6592"
+    },
+    {
+      "project": "pymultibinit",
+      "movable_records": 1,
+      "subprojects": 0,
+      "ambiguities": 24,
+      "link_corrections": 80,
+      "editable_link_diagnostics": 20,
+      "protected_diagnostics": 17,
+      "digest": "e31df9545c5c662bb5810191dfdc14fd4b47b705046e9b7b430d1a2ae3c43dea"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "movable_records": 23,
+      "subprojects": 0,
+      "ambiguities": 182,
+      "link_corrections": 143,
+      "editable_link_diagnostics": 51,
+      "protected_diagnostics": 123,
+      "digest": "c932e8f99c21b1ff6dc0d35540882654a63b409ee25e02d397f926f1528e4a13"
+    },
+    {
+      "project": "unfolding",
+      "movable_records": 4,
+      "subprojects": 0,
+      "ambiguities": 67,
+      "link_corrections": 5,
+      "editable_link_diagnostics": 1,
+      "protected_diagnostics": 2,
+      "digest": "ac9d85287f49d8a34f6dd78a68c812b19ce4e6bd5b39a706b229c6cad7139928"
+    },
+    {
+      "project": "abinit",
+      "movable_records": 48,
+      "subprojects": 1,
+      "ambiguities": 391,
+      "link_corrections": 135,
+      "editable_link_diagnostics": 248,
+      "protected_diagnostics": 207,
+      "digest": "af205c066bb09f5bc2bffaedab522a7e9e91a7e65b3b19c8680fc673935b35b7"
+    }
+  ],
+  "totals": {
+    "movable_records": 244,
+    "link_corrections": 1469,
+    "ambiguities": 1548,
+    "editable_link_diagnostics": 856,
+    "protected_diagnostics": 1175
+  },
+  "planning": "40/40 Projects plan successfully",
+  "writer_changed_files": 1583,
+  "owner_in_flight_overlap": [
+    "Projects/electron-magnon-coupling/specs/epics/epic-007-fe-performance-and-gpu-acceleration.md",
+    "Projects/electron-magnon-coupling/specs/epics/epic-008-p3a-cpu-certification-batching.md",
+    "Projects/electron-magnon-coupling/specs/epics/epic-009-p3b-keyed-oracle-memoization.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p0-memory-metric.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p1-batched-contraction.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p2-jax-gpu-backend.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p3a-1-batched-certification-hamiltonians.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p3a-2-keyed-j0-cache.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p3a-3-numpy-memory-remeasure.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p3b-1-orbital-memoization.md",
+    "Projects/electron-magnon-coupling/specs/stories/story-p3b-2-envelope-verdict.md",
+    "Projects/siesta_plusB/subprojects/noncollinear-sr-fixdirection/specs/stories/story-007-nii2-primitive-reference.md",
+    "Projects/siesta_plusB/subprojects/noncollinear-sr-fixdirection/specs/stories/story-008-finite-angle-workflow.md"
+  ],
+  "projects_planning": "40/40",
+  "movable_records": 1362,
+  "link_corrections": 7222,
+  "ambiguities": 474,
+  "editable_link_diagnostics": 489,
+  "protected_diagnostics": 1226,
+  "post_fix_commit": "aa577c9c725f0c467c979055b9676cc4d926beec"
+}

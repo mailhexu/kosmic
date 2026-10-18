@@ -616,6 +616,6 @@ KOSMIC_ROUTINES = [
             "python:kosmic_project_skills:update_mathdocs",
             "python:kosmic_shared_library:generate_library",
         ],
-        "procedures": ["topic:kosmic/development/atomic-skill-publication"],
+        "procedures": [],
     }
 ]

@@ -1,9 +1,13 @@
 ---
-id: qt-2026-09-03-manifest-code-provenance
-status: done
-created: 2026-09-03
-updated: 2026-09-03 (done)
+id: "qt-2026-09-03-manifest-code-provenance"
+status: "done"
+created: "2026-09-03"
+updated: "2026-09-03 (done)"
 consumer_interface_change: false
+project_id: "kosmic"
+subproject_id: null
+record_kind: "quick-task"
+local_id: "2026-09-03-manifest-code-provenance"
 ---
 
 # Quick Task: Manifest code provenance

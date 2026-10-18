@@ -1,0 +1,190 @@
+---
+project_id: "kosmic"
+subproject_id: "knowledge-first-notes-and-evidence-retirement"
+status: "approved"
+record_kind: "story"
+local_id: "003"
+created: 2026-10-18
+updated: 2026-10-18
+linked_prd: "../prd.md"
+linked_epic: "../epics/epic-001.md"
+linked_architecture: "../architecture.md"
+related_notes: []
+consumer_interface_change: true
+proposal_required: false
+routine_edge_change: false
+routine_decision_required: false
+routine_proposals: []
+review_base: ""
+review_round: 0
+acceptance_evidence: []
+review_record: ""
+depends_on: []
+---
+
+# Story 003: Compact completion and durable historical receipts
+
+## User Story
+
+As a kosmic developer finishing a Story or QuickTask,
+I want criterion observations and the independent review decision embedded in the work record, with the receipt bound to the completed record's bytes,
+So that an ordinary code fix completes without an Evidence Pack, manifest, or acceptance/review sidecars, and historical completions stay valid regardless of later note or data-doc evolution.
+
+## Dependencies
+
+None — Epic slice 3 is independently designable. [Story 005](story-005.md) later reconciles the
+whole-release doc cutover; this story owns only its bounded doc set below.
+
+## Acceptance Criteria
+
+- [ ] Given an ordinary code fix in an approved implementation record, when `work finish` runs with criterion observations and the review decision embedded in that record, then completion succeeds with no `evidence/` directory, no acceptance/review sidecar JSONs, no manifest, and no manufactured note, and the published receipt's proof binds exactly the completed record (`{record_path: sha256 of record bytes at finish}`).
+- [ ] Given observations that omit any acceptance criterion or mismatch the exact criterion checkbox text, when `work finish` validates, then it fails deterministically and publishes no receipt — a structural coverage check only: no keyword/NLP parsing of free-text observation content and no new mandatory outcome field or classifier.
+- [ ] Given observations documenting an actual adverse scientific/verification finding, when finish runs, then observation sufficiency is assessed by the real independent reviewer, not by machine parsing: the structured `completion_review` decision must be non-approved (e.g. `changes-requested`), and finish deterministically refuses to publish a receipt while that decision is not approved.
+- [ ] Given source changed after the recorded review, when `work finish` re-derives `source_revision`, then the `reviewed_revision` mismatch fails completion; binding keeps the unchanged `source_revision`, including its `specs/`/`evidence/`/`log/`/record/`.tmp`/STATUS/`.git/` exclusion set un-widened.
+- [ ] Given either review axis lacks an approved decision with a named reviewer identity, when completion is validated, then it fails; standards and spec approvals remain mandatory and independent (existing identity/base/round checks preserved in embedded form).
+- [ ] Given a blocking finding neither resolved nor explicitly risk-accepted by a named human with a reason, when completion is validated, then it fails; finding ids, dispositions, and risk-acceptance notes survive approval.
+- [ ] Given `work finish --scope` claims, then scope diff checking behavior is unchanged, and record status changes only through finish publication: a hand-edited `done` without a receipt stays surfaced as receipt-pending, never counted as completed.
+- [ ] Given a newly completed record, when its receipt is validated later, then validation checks schema, qualified identity, canonical `record_path`, successful status, and `record_sha256`/proof against the unchanged completed record bytes only — no recursive rehashing of linked notes, data docs, or artifacts.
+- [ ] Given historical completion, when related notes are later refined, merged, split, or deprecated, or dataset-local docs change, then the receipt stays valid with no retroactive drift; when the completed work record itself is edited after its receipt, then the receipt breaks by design (drift detection, not adversarial authentication — reviewer attribution and the trusted publication path remain required).
+- [ ] Given a legacy receipt recorded against sidecar files, when validated, then it checks those originals' unchanged historical bytes without rehashing evolving linked content; absent or unrecoverable originals surface as explicit pending/blocker and no legacy receipt is repinned, blanket-blessed, or refreshed against current bytes.
+- [ ] Given migration of existing proof payloads to the record-bound shape, when a record is carried over, then no recorded fact is dropped (criteria, outcomes, artifacts, reviewer identities, findings, revisions are preserved or explicitly mapped in the approved migration record).
+- [ ] Given an interrupted finish, when it is retried, then the receipt-first repair keeps the valid receipt and regenerates only derived STATUS, preserving the publish order record → indexes → completion log → receipt → STATUS.
+- [ ] Given the cutover, then the math gate (`validate_math_implementation`) and the skill-proposal and routine gates in `_check_existing_completion` behave unchanged, and no replacement dossier, manifest, or hidden directory is introduced.
+
+## Non-Goals
+
+- No new dossier/manifest format, hidden directory, or new subcommand mode (NFR-003).
+- No change to `source_revision` semantics beyond where embedded review reads it; no widening of its exclusion list.
+- No live-vault migration, evidence-archive recreation, or deletion of existing `evidence/` content ([Story 005](story-005.md)).
+- No math-gate semantics change; mathdocs remain formal derivation records.
+- No renderer authorization change ([Story 001](story-001.md)), note metadata/curation ([Stories 002](story-002.md)/[004](story-004.md)), or ADR-0002 supersession ([Story 005](story-005.md)).
+- No automatic re-blessing of legacy receipts and no machine validator replacing semantic review.
+
+## Tasks
+
+### Phase 1: Research
+
+- [ ] Map the exact completion paths: `validate_completion_proof`, `source_revision`, `_checked_review`, `validate_receipt_payload`, `check_terminal_receipt`, `finish_work`, `check_completion_gates` in `skills/scripts/kosmic_completion.py`; gates and pending-receipt rendering in `skills/scripts/kosmic_project_skills.py`; scope checks in `skills/scripts/kosmic_work.py`.
+- [ ] Inventory existing receipts under `.kosmic/work-receipts/` and their sidecar/proof shapes; identify which records would need the legacy pending path.
+- [ ] Verify current test coverage for completion behavior under `tests/` and pick red/green targets.
+- [ ] Confirm the bounded doc set (`skills/references/work_completion.md`); defer all other pack-doc cutover to [Story 005](story-005.md).
+- [ ] Document findings in Technical Notes; record open points in the assumption table.
+
+### Phase 2: Tests (focused deterministic red/green where machine-testable)
+
+- [ ] TEST-001: missing/partial/mismatched criterion coverage fails deterministically before any receipt write; and a non-approved structured `completion_review` decision (e.g. `changes-requested`) blocks receipt publication — asserted via the structured decision field, never via free-text observation wording such as 'failed' triggering parser rejection.
+- [ ] TEST-002: source drift since review (`reviewed_revision` ≠ recomputed `source_revision`) fails.
+- [ ] TEST-003: missing standards or spec axis approval, or missing reviewer identity, fails.
+- [ ] TEST-004: unresolved blocking finding fails; named-human risk acceptance passes with the note retained.
+- [ ] TEST-005: new-shape receipt validates against unchanged record bytes; stays valid across later note edits; breaks when the completed record is edited.
+- [ ] TEST-006: legacy sidecar receipt validates against unchanged historical originals; absent originals surface pending/blocker, not forged success.
+- [ ] TEST-007: retry after interruption keeps the receipt and repairs only STATUS; publish order preserved.
+- [ ] TEST-008: existing math/proposal gate tests stay green untouched.
+
+### Phase 3: Implementation
+
+- [ ] IMPL-001: add embedded `completion_observations`/`completion_review` validation (full exact-text criterion coverage, both independent axes, fixed `review_base` + `reviewed_revision`, findings ledger) replacing sidecar-file validation in `work finish`.
+- [ ] IMPL-002: narrow receipt proof to the completed record binding; keep all other receipt fields and the publish order intact.
+- [ ] IMPL-003: add the legacy validation branch (unchanged historical bytes → valid; missing/unrecoverable → explicit pending/blocker) without repinning or new subcommands.
+- [ ] IMPL-004: remove the retired gates (`evidence_packs` requirement, forced `note_links_evidence_pack` chain, sidecar inputs) while keeping identity/scope/math/proposal duties; update `skills/references/work_completion.md` to match runtime.
+
+### Phase 4: Real CLI smoke
+
+- [ ] On bounded scratch records: complete a fix with no `evidence/`, no sidecars, no note; probe each negative boundary; exercise a legacy-shaped receipt and an interrupted-then-retried finish via the real CLI. As one-off planning-package verification, confirm records still resolve through the `SpecCatalog` public seam (`skills/scripts/kosmic_specs.py`) — no standing wiring test.
+
+### Phase 5: Independent review
+
+- [ ] Real independent Standards + Spec review with named per-axis reviewers, fixed review base, and a findings ledger embedded in this record per the new shape; blocking findings resolved or explicitly human-risk-accepted.
+
+## Routine Decision
+
+Project-internal `work finish`/receipt validation mechanics change (completion
+evidence moves from sidecar files into the owning work record and the receipt
+binds the record itself), but no Shared Skill Library routine or edge artifact
+is introduced or modified; therefore no separate routine proposal is required
+by this Story.
+
+## Technical Notes
+
+Current runtime (verified seams):
+
+- `skills/scripts/kosmic_completion.py` — `RECEIPT_SCHEMA = "kosmic.work-receipt/1"`,
+  receipts under `.kosmic/work-receipts` (:31-32). `validate_completion_proof` (:101)
+  requires an `acceptance_evidence` sidecar per criterion group, re-hashes declared
+  artifact `{path, sha256}` entries against live bytes, demands full exact-checkbox
+  criterion coverage, and validates the `review_record` sidecar (`review_base` match,
+  round 1..3, per-axis standards/spec approvals with reviewer identities, blocking
+  findings resolved or user-accepted). `source_revision` (:171) hashes changed
+  worktree paths excluding `specs/`, `evidence/`, `log/`, the record itself, `.tmp`,
+  `STATUS.md`, `.git/` — this set must not widen (dataset-local placement, ADR-A).
+  `_checked_review` (:217) fails when `reviewed_revision` ≠ recomputed
+  `source_revision`. `validate_receipt_payload` (:199) demands `record_sha256` equal
+  to the hash of current record bytes and `proof` equal to a fresh recompute, raising
+  `COMPLETION_PENDING` / `COMPLETION_DRIFT` — the retroactive-revocation behavior
+  ADR-C replaces. `finish_work` (:312) publishes record → indexes → completion log →
+  receipt → derived STATUS and repairs interrupted publication receipt-first without
+  rewriting the receipt or duplicating the log; `check_completion_gates` (:390)
+  routes done records to ancestry + terminal-receipt checks and implementation
+  records to proof + reviewed-revision checks.
+- `skills/scripts/kosmic_project_skills.py` — `_check_existing_completion` (:3618)
+  enforces done dependencies, STATUS freshness, `consumer_interface_change`, the
+  math gate, the `evidence_packs` + `note_links_evidence_pack` forced pack-to-note
+  chain (retired here), and `proposal_required`/`routine` gates (unchanged here).
+  Unreceipted `done` renders as receipt-pending (:3820, :3913); root receipt
+  validation hashes original record bytes and fail-closes byte-drifted candidates
+  (:3886).
+- `skills/scripts/kosmic_work.py` — `check_record_changes` (:537) implements
+  `--scope` diff claims; `IMPLEMENTATION_KINDS` (:59).
+
+Approved design (ADR-B — field names are proposed, absent from runtime today):
+`completion_observations` entries carry `criterion` (exact checkbox text),
+`observation`, `source` — the accepted shape has no required outcome field, and
+deterministic finish reads only structural criterion coverage: observation
+sufficiency, including adverse scientific/verification findings, is assessed by
+the real independent reviewer through the structured `completion_review` decision
+— never by a new text classifier or outcome field. An implementation may add an
+explicit outcome flag only by preserving this accepted
+field contract and requiring no unapproved API. `completion_review` carries
+reviewer identity, both standards/spec axes with per-axis reviewer and
+decision, overall decision
+(`approved | changes-requested | user-accepted` with `approved_by`), fixed
+`review_base`, `reviewed_revision`, and a stable findings ledger (`Blocking |
+Non-blocking`; blocking findings resolved or explicitly risk-accepted by a named
+human). `work finish` validates these embedded fields instead of the two sidecar
+JSONs; the receipt payload keeps its existing field names and shapes, with proof
+exactly `{"<canonical record_path>": "<sha256 of completed record bytes at finish>"}`.
+
+Approved design (ADR-C): a completed work record is immutable after its receipt;
+terminal validation hashes only those unchanged record bytes, so later note
+refinement/merge/split/deprecation and dataset-doc edits never revoke completion,
+while a post-completion work-record edit breaks the receipt by design. These hashes
+detect drift, not adversarial fabrication: reviewer attribution and the trusted
+publication path remain required. Legacy receipts recorded against sidecar files
+validate against those originals' unchanged historical bytes until an approved
+migration establishes an equivalent durable historical record; unresolved validity
+is surfaced as pending or an explicit blocker, never repinned or re-blessed against
+current bytes. No new subcommand modes.
+
+## Assumptions & Verification
+
+| Assumption | Verified? | Source |
+|------------|-----------|--------|
+| `completion_observations`/`completion_review` do not exist in runtime today | ⬜ verify in Research | `skills/scripts/kosmic_completion.py` |
+| Existing receipts under `.kosmic/work-receipts/` are sidecar-shaped with artifact-path proof maps | ⬜ verify in Research | `.kosmic/work-receipts/` |
+| Completion behavior has machine-testable coverage under `tests/` | ⬜ verify in Research | `tests/` |
+| `skills/references/work_completion.md` is the only consumer doc this story must cut over | ⬜ verify in Research | `skills/references/work_completion.md` |
+
+## Definition of Done
+
+- [ ] All acceptance criteria met
+- [ ] Focused tests red → green; existing math/proposal gate tests stay green untouched
+- [ ] Real CLI smoke on bounded scratch records (positive, negative, legacy, retry)
+- [ ] Independent two-axis review approved and embedded per the new shape
+- [ ] `skills/references/work_completion.md` matches runtime; no regressions introduced
+
+## Progress Log
+
+| Date | Action | Notes |
+|------|--------|-------|
+| 2026-10-18 | Created | Initial draft; approved - awaiting implementation |
+| 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |

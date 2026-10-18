@@ -1,0 +1,20 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/apply-reviewed-flat-spec-migration",
+  "record_path": "specs/quick-tasks/apply-reviewed-flat-spec-migration.md",
+  "review_base": "cc697aed137aee374e0a5eabf6fcb8cac6679c15",
+  "reviewed_revision": "e82bea787aa787db8066a8e6708a1410be00cc27eedf26a566481d46fd68ef28",
+  "round": 1,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://ExecutionDataStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://ExecutionDataSpec"
+  },
+  "findings": [],
+  "decision": "approved",
+  "scope": "Executed migration data and criterion-specific evidence only. No planner source-code approval; the capped source review ledger remains unchanged.",
+  "baseline_provenance": "Retrospective before-image dataset; all 258 before blobs authenticated against transaction SHA-256, not represented as a pre-execution Git checkpoint."
+}

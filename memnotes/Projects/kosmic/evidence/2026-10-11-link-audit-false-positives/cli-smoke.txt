@@ -1,0 +1,5 @@
+Actual CLI plan/apply: success
+Protected target resolves; historical bytes identical
+Escaped WikiLink alias and fragment preserved
+Prose unchanged; real reference definition rewritten
+Authoritative audit diagnostics: zero for fixture note

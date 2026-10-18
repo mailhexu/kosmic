@@ -2,6 +2,8 @@
 
 Create or correct one executable SymPy derivation and its paired Math Derivation note. The executable file is the authority; prose records assumptions, units, interpretation, and correction history. Write the human-owned prose in the Simplified Technical English subset defined by [Note writing style](note-writing-style.md); the machine-owned region is exempt.
 
+Persistent derivation/script/note changes require a compatible approved Story or standalone Quick Task and declared shared mathdocs/note scope. Read-only math checks remain record-free. Pass `--work-record REF` to `check-math --update`; script success never supplies approval or acceptance sufficiency by itself.
+
 ## When to Use
 
 - A formula or symbolic result will be reused by notes or implementation.

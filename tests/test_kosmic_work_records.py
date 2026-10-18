@@ -1,0 +1,432 @@
+from __future__ import annotations
+
+import hashlib
+import json
+import tempfile
+import subprocess
+import sys
+import unittest
+from unittest.mock import patch
+from pathlib import Path
+
+from skills.scripts import kosmic_completion, kosmic_project_skills, kosmic_work
+from skills.scripts.kosmic_specs import SpecCatalog
+from skills.scripts.kosmic_work import WorkdirError
+from tests.test_kosmic_navigation import (
+    build_two_feature_project,
+    commit_all,
+    receipt_for,
+    write,
+)
+
+
+class WorkRecordTest(unittest.TestCase):
+    def setUp(self):
+        self.tmp = tempfile.TemporaryDirectory(prefix="kosmic-record-")
+        self.addCleanup(self.tmp.cleanup)
+        self.tree, self.root = build_two_feature_project(Path(self.tmp.name))
+        epic = self.root / "subprojects/alpha/specs/epics/epic-001.md"
+        epic.write_text(epic.read_text().replace('status: "done"', 'status: "approved"'))
+        entry = self.root / "ProjectEntry.md"
+        entry.write_text(entry.read_text().replace(
+            "working_state: working-tree\n",
+            f"working_state: working-tree\nstatus_root: {self.tree}\n"))
+        self.identity = "nav/alpha/story/001"
+        self.record = SpecCatalog(self.root).resolve(self.identity)
+        self.path = self.record.path
+        self.acceptance = "evidence/story-acceptance.json"
+        self.review_ref = "evidence/story-review.json"
+        metadata = dict(self.record.metadata)
+        metadata.update(acceptance_evidence=[self.acceptance],
+                        review_record=self.review_ref, review_base="fixture-base")
+        write(self.path, metadata, "Alpha Story One",
+              "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
+        artifact = self.root / "evidence/result.txt"
+        artifact.parent.mkdir(exist_ok=True)
+        artifact.write_text("verified output\n")
+        canonical = self.path.relative_to(self.root).as_posix()
+        evidence = {
+            "schema": "kosmic.acceptance-evidence/1", "identity": self.identity,
+            "record_path": canonical,
+            "results": [{"criterion": "Result file contains verified output",
+                         "outcome": "passed",
+                         "observation": "The test read the output bytes from the declared file.",
+                         "artifacts": [{"path": "evidence/result.txt",
+                                        "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest()}]}],
+        }
+        (self.root / self.acceptance).write_text(json.dumps(evidence))
+        review = {
+            "schema": "kosmic.work-review/1", "identity": self.identity,
+            "record_path": canonical, "review_base": "fixture-base", "round": 1,
+            "standards": {"decision": "approved", "reviewer": "fixture-standards"},
+            "spec": {"decision": "approved", "reviewer": "fixture-spec"},
+            "findings": [], "decision": "approved",
+        }
+        review["reviewed_revision"] = kosmic_completion.source_revision(
+            self.tree, self.root, SpecCatalog(self.root).resolve(self.identity))
+        (self.root / self.review_ref).write_text(json.dumps(review))
+        commit_all(self.tree, "2026-10-04", "fixture evidence baseline")
+
+    def refresh_review_revision(self):
+        record = SpecCatalog(self.root).resolve(self.identity)
+        review = json.loads((self.root / self.review_ref).read_text())
+        review["reviewed_revision"] = kosmic_completion.source_revision(self.tree, self.root, record)
+        (self.root / self.review_ref).write_text(json.dumps(review))
+
+    def test_clean_worktree_is_a_start_precondition(self):
+        record = kosmic_work.check_work_start(self.root, self.tree, self.identity)
+        self.assertEqual(record.qualified_id, self.identity)
+        (self.tree / "preexisting.txt").write_text("user change\n")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_work.check_work_start(self.root, self.tree, self.identity)
+        self.assertEqual(caught.exception.code, "ATTRIBUTION_AMBIGUOUS")
+        self.assertIn("preexisting.txt", caught.exception.detail)
+
+    def test_record_resolution_rechecks_status(self):
+        self.assertEqual(kosmic_work.resolve_work_record(self.root, self.identity).qualified_id,
+                         self.identity)
+        metadata = dict(self.record.metadata)
+        metadata["status"] = "done"
+        write(self.path, metadata, "Alpha Story One",
+              "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_work.resolve_work_record(self.root, self.identity)
+        self.assertEqual(caught.exception.code, "WORK_PHASE_DENIED")
+
+    def test_unreceipted_done_ancestor_is_not_terminal_authority(self):
+        epic = self.root / "subprojects/alpha/specs/epics/epic-001.md"
+        epic.write_text(epic.read_text().replace('status: "approved"', 'status: "done"'))
+        ancestor = SpecCatalog(self.root).resolve("nav/alpha/epic/001")
+        self.assertTrue(ancestor.receipt_pending)
+        self.assertEqual(ancestor.effective_status, "pending")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_work.resolve_work_record(self.root, self.identity)
+        self.assertEqual(caught.exception.code, "ANCESTRY_INVALID")
+
+    def test_finish_checks_scope_and_publishes_receipt_idempotently(self):
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        self.refresh_review_revision()
+        scope = ["worktree:src/", "project:evidence/",
+                 "project:subprojects/alpha/specs/stories/"]
+        receipt = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        self.assertEqual(receipt["status"], "successful")
+        done_record = SpecCatalog(self.root).resolve(self.identity)
+        self.assertEqual(done_record.status, "done")
+        self.assertEqual(kosmic_completion.check_terminal_receipt(self.root, done_record)["identity"],
+                         self.identity)
+        repeated = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        self.assertEqual(repeated["identity"], self.identity)
+
+    def test_finish_owner_record_skips_unrelated_project_root_index(self):
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        owner_specs = self.path.parent.parent
+        owner_index = owner_specs / "INDEX.md"
+        owner_index.write_text(
+            "# Alpha Specs\n\n| Story | Status | Dependency | Scope |\n"
+            "| --- | --- | --- | --- |\n"
+            "| [Story](stories/story-001.md) | in_progress | done | Alpha |\n")
+        project_index = self.root / "specs/INDEX.md"
+        project_index.parent.mkdir(parents=True, exist_ok=True)
+        project_index.write_text("# Shared specs\n\n- [Keep](quick-tasks/keep.md)\n")
+        project_before = project_index.read_bytes()
+        self.refresh_review_revision()
+        scope = ["worktree:src/", "project:evidence/", "project:specs/",
+                 "project:subprojects/alpha/specs/"]
+
+        receipt = kosmic_completion.finish_work(
+            self.root, self.tree, self.identity, scope)
+
+        self.assertEqual(receipt["status"], "successful")
+        self.assertEqual(project_index.read_bytes(), project_before)
+        self.assertIn("| [Story](stories/story-001.md) | done | done | Alpha |",
+                      owner_index.read_text())
+        self.assertEqual(
+            kosmic_completion.check_terminal_receipt(
+                self.root, SpecCatalog(self.root).resolve(self.identity))["identity"],
+            self.identity)
+
+    def test_unreceipted_done_remains_pending_and_finish_converges(self):
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        self.refresh_review_revision()
+        scope = ["worktree:src/", "project:evidence/",
+                 "project:subprojects/alpha/specs/stories/"]
+        original_write = kosmic_work._atomic_write
+
+        def fail_receipt(base, relative, payload):
+            if relative.startswith(".kosmic/work-receipts/"):
+                raise OSError("injected receipt publication failure")
+            return original_write(base, relative, payload)
+
+        with patch.object(kosmic_work, "_atomic_write", side_effect=fail_receipt):
+            with self.assertRaisesRegex(OSError, "receipt publication"):
+                kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        pending = SpecCatalog(self.root).resolve(self.identity)
+        self.assertEqual(pending.status, "done")
+        self.assertTrue(pending.receipt_pending)
+        self.assertEqual(pending.effective_status, "pending")
+        completed = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        self.assertEqual(completed["status"], "successful")
+        settled = SpecCatalog(self.root).resolve(self.identity)
+        self.assertFalse(settled.receipt_pending)
+        self.assertEqual(settled.effective_status, "done")
+
+    def test_cli_finish_leaves_receipt_valid_and_status_current(self):
+        cli = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
+        base = [sys.executable, str(cli)]
+        common = ["--project", str(self.root), "--worktree", str(self.tree),
+                  "--work-record", self.identity]
+        start = subprocess.run(base + ["work", "start", *common], capture_output=True, text=True)
+        self.assertEqual(start.returncode, 0, start.stderr)
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        self.refresh_review_revision()
+        finish = subprocess.run(base + ["work", "finish", *common,
+                                        "--scope", "worktree:src/",
+                                        "--scope", "project:evidence/",
+                                        "--scope", "project:subprojects/alpha/specs/stories/"],
+                               capture_output=True, text=True)
+        self.assertEqual(finish.returncode, 0, finish.stderr)
+        receipt = kosmic_completion.check_terminal_receipt(
+            self.root, SpecCatalog(self.root).resolve(self.identity))
+        self.assertEqual(receipt["status"], "successful")
+        self.assertFalse(kosmic_project_skills.status_drift(
+            kosmic_project_skills.load_project(self.root)))
+        rows = [line for line in (self.tree / "STATUS.md").read_text().splitlines()
+                if "Alpha Story One" in line]
+        self.assertTrue(rows)
+        for row in rows:
+            self.assertIn("| done |", row)
+            self.assertNotIn("(receipt pending)", row)
+
+    def test_interrupted_status_publication_recovers_without_receipt_rewrite(self):
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        registered = Path(self.tmp.name) / "registered-reports"
+        registered.mkdir()
+        (registered / "STATUS.md").write_text("stale registered projection\n")
+        directory = str(registered)
+        registry = {
+            "schema": "kosmic.workdirs/1", "project_id": "nav", "sequence": 1,
+            "directories": [{
+                "schema": "kosmic.workdir/1", "path": directory,
+                "directory_id": "wd-" + hashlib.sha256(directory.encode()).hexdigest()[:16],
+                "fixed_subproject_id": None,
+                "authority": {"record": "nav/quick-task/2026-10-01-shared-task",
+                              "run_id": "fixture-run"},
+            }],
+        }
+        registry_path = self.root / ".kosmic/working-directories.json"
+        registry_path.parent.mkdir(parents=True, exist_ok=True)
+        registry_path.write_text(json.dumps(registry))
+        bound_status = self.tree / "STATUS.md"
+        bound_status.write_text("stale bound projection\n")
+        commit_all(self.tree, "2026-10-05", "stale status projections")
+        self.refresh_review_revision()
+        scope = ["worktree:src/", "project:evidence/",
+                 "project:subprojects/alpha/specs/stories/"]
+        original_write = kosmic_work._atomic_write
+
+        def fail_status(base, relative, payload):
+            if relative == "STATUS.md":
+                raise OSError("injected STATUS publication failure")
+            return original_write(base, relative, payload)
+
+        with patch.object(kosmic_work, "_atomic_write", side_effect=fail_status):
+            with self.assertRaisesRegex(OSError, "STATUS publication"):
+                kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        interrupted = SpecCatalog(self.root).resolve(self.identity)
+        self.assertEqual(interrupted.status, "done")
+        receipt = kosmic_completion.check_terminal_receipt(self.root, interrupted)
+        self.assertEqual(receipt["status"], "successful")
+        receipt_path = self.root / ".kosmic/work-receipts" / receipt_for(self.identity)
+        receipt_bytes = receipt_path.read_bytes()
+        logs = sorted(self.root.glob("log/*-work-completion.md"))
+        self.assertEqual(len(logs), 1)
+        log_bytes = logs[0].read_bytes()
+        repaired = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        self.assertEqual(repaired["identity"], self.identity)
+        self.assertEqual(receipt_path.read_bytes(), receipt_bytes)
+        self.assertEqual(logs[0].read_bytes(), log_bytes)
+        self.assertEqual(log_bytes.decode().count(f"- `{self.identity}` — "), 1)
+        self.assertFalse(kosmic_project_skills.status_drift(
+            kosmic_project_skills.load_project(self.root)))
+        for status_path in (bound_status, registered / "STATUS.md"):
+            rows = [line for line in status_path.read_text().splitlines()
+                    if "Alpha Story One" in line]
+            self.assertTrue(rows, str(status_path))
+            for row in rows:
+                self.assertIn("| done |", row)
+                self.assertNotIn("(receipt pending)", row)
+
+    def test_valid_receipt_retry_still_denies_corrupted_proof(self):
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        self.refresh_review_revision()
+        scope = ["worktree:src/", "project:evidence/",
+                 "project:subprojects/alpha/specs/stories/"]
+        receipt = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        self.assertEqual(receipt["status"], "successful")
+        (self.root / "evidence/result.txt").write_text("tampered output\n")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
+        self.assertEqual(caught.exception.code, "ACCEPTANCE_INVALID")
+
+    def test_out_of_scope_diff_is_not_completed(self):
+        (self.tree / "outside.txt").write_text("outside\n")
+        self.refresh_review_revision()
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.finish_work(self.root, self.tree, self.identity, ["worktree:src/"])
+        self.assertEqual(caught.exception.code, "SCOPE_DENIED")
+        self.assertNotIn("status: done", self.path.read_text())
+    def test_completion_rejects_absolute_evidence_reference(self):
+        metadata = dict(self.record.metadata)
+        metadata["acceptance_evidence"] = [str((self.root / self.acceptance).resolve())]
+        write(self.path, metadata, "Alpha Story One",
+              "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.finish_work(self.root, self.tree, self.identity,
+                                          ["project:subprojects/alpha/specs/stories/"])
+        self.assertEqual(caught.exception.code, "SCOPE_DENIED")
+        (self.root / "evidence/linked.json").symlink_to(self.root / self.acceptance)
+        metadata["acceptance_evidence"] = ["evidence/linked.json"]
+        write(self.path, metadata, "Alpha Story One",
+              "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.finish_work(self.root, self.tree, self.identity,
+                                          ["project:subprojects/alpha/specs/stories/"])
+        self.assertEqual(caught.exception.code, "SCOPE_DENIED")
+
+    def test_finish_retry_converges_when_project_is_worktree_root(self):
+        root = Path(self.tmp.name) / "equal-root"
+        root.mkdir()
+        subprocess.run(["git", "init", "-q"], cwd=root, check=True)
+        subprocess.run(["git", "-C", str(root), "config", "user.email", "t@example.com"], check=True)
+        subprocess.run(["git", "-C", str(root), "config", "user.name", "t"], check=True)
+        (root / ".gitignore").write_text(".tmp/\n")
+        write(root / "ProjectEntry.md", {"project_id": "equal", "status_root": str(root)}, "Equal")
+        identity = "equal/quick-task/task"
+        record_path = root / "specs/quick-tasks/task.md"
+        metadata = {"project_id": "equal", "subproject_id": None, "status": "approved",
+                    "record_kind": "quick-task", "local_id": "task",
+                    "acceptance_evidence": ["evidence/acceptance.json"],
+                    "review_record": "evidence/review.json", "review_base": "base"}
+        write(record_path, metadata, "Task",
+              "## Acceptance Criteria\n\n- [ ] Source output is observed\n")
+        artifact = root / "evidence/result.txt"
+        artifact.parent.mkdir(parents=True)
+        artifact.write_text("accepted\n")
+        evidence = {"schema": "kosmic.acceptance-evidence/1", "identity": identity,
+                    "record_path": record_path.relative_to(root).as_posix(),
+                    "results": [{"criterion": "Source output is observed", "outcome": "passed",
+                                 "observation": "Read source output bytes.",
+                                 "artifacts": [{"path": "evidence/result.txt",
+                                                "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest()}]}]}
+        (root / "evidence/acceptance.json").write_text(json.dumps(evidence))
+        review = {"schema": "kosmic.work-review/1", "identity": identity,
+                  "record_path": record_path.relative_to(root).as_posix(), "review_base": "base",
+                  "round": 1, "standards": {"decision": "approved", "reviewer": "standards"},
+                  "spec": {"decision": "approved", "reviewer": "spec"},
+                  "findings": [], "decision": "approved"}
+        (root / "evidence/review.json").write_text(json.dumps(review))
+        write(root / "specs/stories/story-legacy.md", {"status": "approved"}, "Legacy feature")
+        commit_all(root, "2026-10-04", "equal-root fixture")
+        record = kosmic_work.resolve_work_record(root, identity)
+        kosmic_work.check_work_start(root, root, identity)
+        review["reviewed_revision"] = kosmic_completion.source_revision(root, root, record)
+        (root / "evidence/review.json").write_text(json.dumps(review))
+        (root / "src/result.txt").parent.mkdir(parents=True)
+        (root / "src/result.txt").write_text("source output\n")
+        review["reviewed_revision"] = kosmic_completion.source_revision(root, root, record)
+        (root / "evidence/review.json").write_text(json.dumps(review))
+        scope = ["worktree:src/", "project:specs/", "project:evidence/"]
+        original_write = kosmic_work._atomic_write
+
+        def fail_receipt(base, relative, payload):
+            if relative.startswith(".kosmic/work-receipts/"):
+                raise OSError("injected receipt publication failure")
+            return original_write(base, relative, payload)
+
+        with patch.object(kosmic_work, "_atomic_write", side_effect=fail_receipt):
+            with self.assertRaisesRegex(OSError, "receipt publication"):
+                kosmic_completion.finish_work(root, root, identity, scope)
+        self.assertEqual(kosmic_work.resolve_work_record(root, identity, allow_terminal=True).status, "done")
+        cli = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
+        result = subprocess.run(
+            [sys.executable, str(cli), "work", "finish", "--project", str(root),
+             "--worktree", str(root), "--work-record", identity,
+             "--scope", "worktree:src/", "--scope", "project:specs/",
+             "--scope", "project:evidence/"],
+            capture_output=True, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+        record = kosmic_work.resolve_work_record(root, identity, allow_terminal=True)
+        receipt = kosmic_completion.check_terminal_receipt(root, record)
+        self.assertEqual(receipt["status"], "successful")
+
+    def test_cli_start_finish_and_show_publish_terminal_receipt(self):
+        cli = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
+        base = [sys.executable, str(cli)]
+        common = ["--project", str(self.root), "--worktree", str(self.tree),
+                  "--work-record", self.identity]
+        start = subprocess.run(base + ["work", "start", *common], capture_output=True, text=True)
+        self.assertEqual(start.returncode, 0, start.stderr)
+        source = self.tree / "src/result.txt"
+        source.parent.mkdir(parents=True, exist_ok=True)
+        source.write_text("verified output\n")
+        self.refresh_review_revision()
+        finish = subprocess.run(base + ["work", "finish", *common,
+                                        "--scope", "worktree:src/",
+                                        "--scope", "project:evidence/",
+                                        "--scope", "project:subprojects/alpha/specs/stories/"],
+                               capture_output=True, text=True)
+        self.assertEqual(finish.returncode, 0, finish.stderr)
+        shown = subprocess.run(base + ["work", "show", "--project", str(self.root),
+                                       "--work-record", self.identity],
+                               capture_output=True, text=True)
+        self.assertEqual(shown.returncode, 0, shown.stderr)
+        self.assertEqual(json.loads(shown.stdout)["status"], "done")
+        self.assertEqual(kosmic_completion.check_terminal_receipt(
+            self.root, SpecCatalog(self.root).resolve(self.identity))["status"], "successful")
+    def test_cli_work_accepts_relative_project_and_reports_git_errors(self):
+        cli = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
+        base = [sys.executable, str(cli)]
+        common = ["--project", ".", "--worktree", str(self.tree),
+                  "--work-record", self.identity]
+        start = subprocess.run(base + ["work", "start", *common], cwd=self.root,
+                               capture_output=True, text=True)
+        self.assertEqual(start.returncode, 0, start.stderr)
+        shown = subprocess.run(base + ["work", "show", "--project", ".",
+                                       "--work-record", self.identity], cwd=self.root,
+                               capture_output=True, text=True)
+        self.assertEqual(shown.returncode, 0, shown.stderr)
+        self.assertEqual(json.loads(shown.stdout)["identity"], self.identity)
+        invalid_tree = Path(self.tmp.name) / "not-a-git-worktree"
+        invalid_tree.mkdir()
+        failed = subprocess.run(base + ["work", "start", "--project", str(self.root),
+                                        "--worktree", str(invalid_tree),
+                                        "--work-record", self.identity],
+                                capture_output=True, text=True)
+        self.assertEqual(failed.returncode, 2)
+        self.assertIn("WORKTREE_INVALID", failed.stderr)
+        self.assertNotIn("Traceback", failed.stderr)
+
+    def test_mutating_cli_requires_work_record_before_output(self):
+        destination = self.tree / "STATUS.md"
+        cli = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
+        result = subprocess.run(
+            [sys.executable, str(cli), "generate-status", "--project", str(self.root)],
+            text=True, capture_output=True, env={**__import__("os").environ,
+                                                 "PYTHONDONTWRITEBYTECODE": "1"})
+        self.assertEqual(result.returncode, 2)
+        self.assertIn("WORK_RECORD_REQUIRED", result.stderr)
+        self.assertFalse(destination.exists())
+if __name__ == "__main__":
+    unittest.main()

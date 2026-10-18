@@ -1,0 +1,214 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/deterministic-flat-spec-migration/story/002",
+  "record_path": "subprojects/deterministic-flat-spec-migration/specs/stories/story-002.md",
+  "results": [
+    {
+      "criterion": "AC1: Both commands require the selected Project, saved plan, matching explicitly approved digest and current approved/in-progress shared Quick Task authority. Draft, terminal, foreign, revoked or owner-local records cannot authorize migration; bootstrap resolution does not require the catalog being established.",
+      "outcome": "passed",
+      "observation": "Foreign-qualified, draft and terminal task references deny execution; approved shared authority is resolved live, including authorized progress on completed rerun.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC2: Apply recomputes the canonical plan with saved inputs/assignments and checks complete source inventory, hashes, candidate bytes and destination state. Ambiguity, tampering, missing/new records, drift, collisions, traversal, symlink components and non-regular files reject without changing authoritative records.",
+      "outcome": "passed",
+      "observation": "Added and changed inputs, rehashed fabricated candidates, occupied targets and symlinked plan/destination cases reject without overwriting source or outside files.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC3: The staged candidate passes `SpecCatalog.validate` and intended live-link checks before authoritative mutation. New owner entries/indexes and record identities are correct; old feature files are removed only through checked operations.",
+      "outcome": "passed",
+      "observation": "Actual API/CLI migration produces validated owner entries, indexes and qualified local/cross-owner dependencies; original flat source files are removed.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC4: Under the existing creation lock, durable before images and ordered intent/result records precede each publication/deletion. Ordinary injected failure restores original affected bytes; unrelated work is unchanged and the Project root and lock remain intact.",
+      "outcome": "passed",
+      "observation": "Injected failure restores source bytes, prior bound STATUS and transaction-created directories; immutable history remains unchanged.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC5: Actual subprocess interruption at intent/publication boundaries leaves a recognizable incomplete transaction. Explicit recovery reconciles recorded hashes, restores incomplete application or verifies/finalizes complete output; external edits cause a conflict instead of being overwritten. A second transaction refuses while recovery is required.",
+      "outcome": "passed",
+      "observation": "Real subprocess crash/recover/retry works; external edits are preserved as conflicts; recovery finalizes the abandoned managed candidate run.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC6: A successful receipt records Project identity, exact plan/work-record identities, old-to-new mapping, input/output hashes, fingerprint review requirements and STATUS disposition. It is written last and is not work-completion authority.",
+      "outcome": "passed",
+      "observation": "Actual repository CLI receipt original-source SHA-256 was independently checked; receipts include complete inputs, before/after outputs and old-to-new mapping and remain separate from completion authority.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC7: Repeating the same completed plan verifies its receipt/output hashes and makes no new content changes, owners or receipts. Completed-output drift reports a conflict rather than overwriting later work.",
+      "outcome": "passed",
+      "observation": "Completed cutover without receipt is finalized by recovery; repeating apply returns identical receipt and unchanged content; legitimate task progress is accepted.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC8: Bound external STATUS belongs to the transaction and rollback; an unbound Project remains unbound. Lifecycle decisions, immutable evidence/log bytes and historical completion semantics are preserved without minted approvals.",
+      "outcome": "passed",
+      "observation": "Missing STATUS at an existing bound root is created from the exact reviewed bytes; existing STATUS rollback and unbound disposition were exercised; migration does not install adapters.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    },
+    {
+      "criterion": "AC9: Actual apply/recover CLI smoke and permanent state-transition regressions prove success, rejection, ordinary rollback, interruption recovery and idempotence; focused checks pass and code receives independent review.",
+      "outcome": "passed",
+      "observation": "Real command smoke, 48 focused checks and 15-module suite passed; converged Standards/Spec review is recorded.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt",
+          "sha256": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt",
+          "sha256": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json",
+          "sha256": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1"
+        },
+        {
+          "path": "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json",
+          "sha256": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "publication": "passed",
+  "library_files_pinned_before": 112,
+  "topic_assignments": 10,
+  "body_preserved_topics": 9,
+  "procedure_candidate_sha256": "3615d248a82f34eeb5f033c4ce561e2edc6963658dd61e245df8be842a79d0d2",
+  "procedure_packet_topics": [
+    "abinit/usage/export-wavefunctions",
+    "abinit/usage/spin-orbit-conventions",
+    "tb2j/development/debug-abinit-exchange"
+  ],
+  "procedure_packet_bytes": 6350,
+  "guideline_resolution": "passed",
+  "unrelated_content_preserved": true,
+  "scientific_calculation_executed": false
+}

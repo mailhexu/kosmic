@@ -1,0 +1,83 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/preserve-contained-migration-link-targets",
+  "record_path": "specs/quick-tasks/preserve-contained-migration-link-targets.md",
+  "results": [
+    {
+      "criterion": "Migrating documents keep explicit research targets reachable with query/fragment/title preserved, while research bytes are unchanged and never scheduled for write/delete.",
+      "outcome": "passed",
+      "observation": "Original bug and suffix preservation regressions pass; real preview reaches the unchanged target from both migrated documents; no research outputs/deletions.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/suite.txt",
+          "sha256": "a43f7aec1e7c39f17a2aca03b09caf84bad2b4c4b623a3a14341283ea6dc1da0"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-link-preview.json",
+          "sha256": "0d57f556b7015c62a4f7b6c05acc4be7a277e49a3acfb5e2f6ac11267335ed12"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-ancestry-blockers.json",
+          "sha256": "771244d528a9d9e1833639576c532d0a8bc5c7b151e9a43bbc33f241ccdafb60"
+        }
+      ]
+    },
+    {
+      "criterion": "Target-only inputs are hash-pinned; target changes alter the plan digest and prevent stale-plan application.",
+      "outcome": "passed",
+      "observation": "Target drift changes digest and actual CLI stale application refuses MIGRATION_INPUT_DRIFT without writes.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/suite.txt",
+          "sha256": "a43f7aec1e7c39f17a2aca03b09caf84bad2b4c4b623a3a14341283ea6dc1da0"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-link-preview.json",
+          "sha256": "0d57f556b7015c62a4f7b6c05acc4be7a277e49a3acfb5e2f6ac11267335ed12"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-ancestry-blockers.json",
+          "sha256": "771244d528a9d9e1833639576c532d0a8bc5c7b151e9a43bbc33f241ccdafb60"
+        }
+      ]
+    },
+    {
+      "criterion": "Missing targets do not become filename repair candidates, and symlink target/parent escapes fail with SCOPE_DENIED.",
+      "outcome": "passed",
+      "observation": "Broken filename lookup excludes target-only files; file and parent symlink scenarios fail SCOPE_DENIED.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/suite.txt",
+          "sha256": "a43f7aec1e7c39f17a2aca03b09caf84bad2b4c4b623a3a14341283ea6dc1da0"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-link-preview.json",
+          "sha256": "0d57f556b7015c62a4f7b6c05acc4be7a277e49a3acfb5e2f6ac11267335ed12"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-ancestry-blockers.json",
+          "sha256": "771244d528a9d9e1833639576c532d0a8bc5c7b151e9a43bbc33f241ccdafb60"
+        }
+      ]
+    },
+    {
+      "criterion": "Existing migration regressions pass and the actual EMC CLI proposal preserves both reported research references without applying the plan.",
+      "outcome": "passed",
+      "observation": "673 integrated source tests passed; actual EMC CLI output and live-link preview pass; separate historical ancestry gaps retained as blockers, no authoritative application.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/suite.txt",
+          "sha256": "a43f7aec1e7c39f17a2aca03b09caf84bad2b4c4b623a3a14341283ea6dc1da0"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-link-preview.json",
+          "sha256": "0d57f556b7015c62a4f7b6c05acc4be7a277e49a3acfb5e2f6ac11267335ed12"
+        },
+        {
+          "path": "evidence/2026-10-13-contained-migration-targets/emc-ancestry-blockers.json",
+          "sha256": "771244d528a9d9e1833639576c532d0a8bc5c7b151e9a43bbc33f241ccdafb60"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1 @@
+Actual CLI: curated template pinned; parse problem protected/report-only; no snapshot rewrite

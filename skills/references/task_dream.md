@@ -2,6 +2,8 @@
 
 Reflect on the previous workday across the whole vault and publish one dream record.
 
+Choose a compatible governing record before persistent harvest scratch or dream publication; publication requires the explicitly declared vault/dreams scope and session. Reflection cannot approve implementation, broader scope, migration or installation. Preserve the existing bounded read-set contract; read-only questions do not run mutating harvest/cleanup. The bare-harvest run caller must adopt a verified context before Story-079 enforcement activation; do not claim that migration is already active.
+
 ## When to Use
 
 - Starting the first session of a new day with prior work in the vault

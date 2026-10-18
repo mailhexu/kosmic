@@ -1,0 +1,22 @@
+PYTHONDONTWRITEBYTECODE=1 python3 tests/run_all.py
+Private implementation snapshot: /tmp/kosmic-migration-implementation-l6n9jglm
+
+ok      test_kosmic_dreams                         1.49s
+ok      test_kosmic_migration_apply                1.89s
+ok      test_kosmic_migration_plan                 0.22s
+ok      test_kosmic_navigation                     0.54s
+ok      test_kosmic_provenance                     0.12s
+ok      test_kosmic_routines                       0.41s
+ok      test_kosmic_runs                          10.94s
+ok      test_kosmic_shared_roots                   0.08s
+ok      test_kosmic_spec_creation                  0.09s
+ok      test_kosmic_specs                          0.08s
+ok      test_kosmic_work_records                   1.31s
+ok      test_kosmic_workdirs                       0.66s
+ok      test_project_skills_cli                   62.08s
+ok      test_shared_library                       12.14s
+ok      test_status_file                           0.15s
+
+15 modules in 92.2s; 0 failed: none
+
+Focused migration and temporary-policy audit run: 48 tests in 2.285s; OK.

@@ -1,0 +1,109 @@
+{
+  "schema": "kosmic.semantic-role-classification/v1",
+  "topics": [
+    {
+      "artifact_role": "guideline",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "abinit/usage/export-wavefunctions.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "abinit/usage/export-wavefunctions",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "guideline",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "abinit/usage/spin-orbit-conventions.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "abinit/usage/spin-orbit-conventions",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "knowledge",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "kosmic/development/atomic-skill-publication.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "kosmic/development/atomic-skill-publication",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "guideline",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "kosmic/development/cli-extension-conventions.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "kosmic/development/cli-extension-conventions",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "knowledge",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "kosmic/development/projection-audience-routing.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "kosmic/development/projection-audience-routing",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "guideline",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "kosmic/usage/cli-projection-commands.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "kosmic/usage/cli-projection-commands",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "knowledge",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "kosmic/usage/notation.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "kosmic/usage/notation",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "knowledge",
+      "governed_by": [],
+      "requires_procedures": [],
+      "source": "kosmic/usage/shared-domain-skill-library.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "kosmic/usage/shared-domain-skill-library",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "evidence",
+      "governed_by": [],
+      "observed_on": "2026-08-12",
+      "requires_procedures": [],
+      "source": "abinit/development/nio-gamma-ddb-validation.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "abinit/development/nio-gamma-ddb-validation",
+      "uses_knowledge": []
+    },
+    {
+      "artifact_role": "procedure",
+      "governed_by": [
+        "abinit/usage/export-wavefunctions",
+        "abinit/usage/spin-orbit-conventions"
+      ],
+      "requires_procedures": [],
+      "source": "tb2j/development/debug-abinit-exchange.md",
+      "supersedes": [],
+      "supported_by": [],
+      "target_id": "tb2j/development/debug-abinit-exchange",
+      "uses_knowledge": []
+    }
+  ]
+}

@@ -1,0 +1,8 @@
+Focused bounded source scope:
+python3 -m unittest tests.test_scratch_gate_nested_project tests.test_kosmic_work_records tests.test_kosmic_navigation tests.test_kosmic_owner_ancestry_migration tests.test_kosmic_link_audit_targets tests.test_kosmic_curated_inputs tests.test_kosmic_migration_plan tests.test_kosmic_migration_apply tests.test_kosmic_link_corrections tests.test_kosmic_yaml -q
+Ran 116 tests in 9.717s
+OK
+
+Final complete suite:
+python3 tests/run_all.py
+21 modules in 111.9s; 0 failed: none

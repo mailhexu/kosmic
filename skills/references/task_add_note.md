@@ -2,6 +2,8 @@
 
 Create or update atomic notes, and log daily progress.
 
+Before durable note/log edits, use the current compatible governing record and declared shared-note scope, or establish a standalone low-risk Quick Task and obtain approval. Reading existing knowledge is record-free; finding useful knowledge does not silently authorize publication. Preserve pre-dirty work and follow SKILL.md Record-first authority.
+
 ## When to Use This Task
 
 **AUTO-TRIGGERS - Run Add Note IF:**

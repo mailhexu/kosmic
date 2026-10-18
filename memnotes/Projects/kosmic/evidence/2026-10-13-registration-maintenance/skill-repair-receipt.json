@@ -1,0 +1,25 @@
+{
+  "completed_at": "2026-10-13T12:15:00Z",
+  "detail": "Six corrections verified and independently approved; missing registration removed with explicit approval and registry count maintained",
+  "identity": "kosmic/quick-task/repair-kosmic-skill-predictability",
+  "proof": {
+    "evidence/2026-10-13-skill-predictability/acceptance.json": "cbbaa4980ab6bc5f4cdc43806cc8b1fd12217cd0762ae9ef4f2de2da3f2619af",
+    "evidence/2026-10-13-skill-predictability/artifacts/docs__README.md": "2119c56725275934dc6af4d2e11bb352215fbb44729eea7b8ce925802ce02425",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_create_spec.md": "1e4f5f20d9127740ef746ca943a129f8c73fce89bea5043a52d10a9bacd886bb",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_implement_story.md": "4246d249a3a75803a95bb859bbccabcf91df59f2281d743c96a614442df17cb5",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_project_skills.md": "917a96d08dd3b8a31dab4a7ee3964e630d7a846189f2f1af3e3f0e9c35c371b8",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_quick_task.md": "639e7baf6710b5e0a801876953d5e0bf74f1126c6642dc853c88e6adcff4f84f",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_research.md": "8f740bde7606ed58a0680c8c4364bc5ae662486e7883e36bd9fe7b0b6f9b6057",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_review.md": "5be728aec820d930255ff76d73f789962e72f4bb2023670d9e2ba4b3b82b793e",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_review_spec.md": "6af30d023d40455c5606f6e27edefe56e2da56c9ab7a3c5452e08a2d96423bcc",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_search.md": "77e004628a6f6373c8066e59df8eb028ffdf22ece2590d0b24bccf78726fc262",
+    "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12",
+    "evidence/2026-10-13-skill-predictability/review.json": "3daed38b22a8f796afd88045c840a64e34842780b3e1731130da7da52b68aaec",
+    "evidence/2026-10-13-skill-predictability/smoke.json": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+  },
+  "record_path": "specs/quick-tasks/repair-kosmic-skill-predictability.md",
+  "record_sha256": "d9c4a919b9501cfac49470319c7ce662be8f59ec61c9ce443e87e48f2bf75bae",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

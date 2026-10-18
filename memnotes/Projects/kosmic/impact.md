@@ -30,30 +30,13 @@
 
 - date: 2026-09-06 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: null->f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940 | outcome: published | reason: ""
 
-- date: 2026-09-07 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940->4f18457431a1839345d4071fe005eb7e73f9405537feec0124474fcd12ff58c2 | outcome: published | reason: ""
-- date: 2026-09-07 | kind: publication | targets: [Skills/memnotes-skills, Skills/abinit, Skills/tb2j, Skills/kosmic] | refs: a4bfb88ff792b164152c8f7675f3d72d697a779f2d1369f64dd5525aad602dcc->4dc6f7c94288b9393cb7e8761b1dbde2f8b37f9c5711addc71403dd1c93b716c | outcome: published | reason: "Published the clean semantic-role schema, typed resolver, explicit migration, and role-aware router."
-- date: 2026-09-07 | kind: decision | targets: [stories/story-031..036] | refs: semantic-artifact-roles-task7 | outcome: accepted | reason: "Independent Standards and Spec re-reviews passed after all twelve findings were resolved."
+- date: 2026-10-11 | kind: publication | targets: [notes/atomic-skill-publication.md] | refs: 36e081cc47e2de36eac2f98ece82e8f718fed105cbf0f51f5f49fdba2144e00a->d06c6bbc8c67b7cad7db199df5697b75e92f38876233029c828a54682a71fe65 | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-11 | kind: publication | targets: [notes/cli-extension-conventions.md] | refs: d3e740bd7a6918ab5aba0d8a4d9bda516481466c7d177e4b191b79bab221d354->62d7c50a0681790a75356013724f57927bcc0fa587682be017e409659a970bf5 | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-11 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 043ea110663129939fa0113083731dee252b61dd2d8aed2c77d646a8bff73a04->103dad9fa56667727ccf3e62f34311452a4773b7eb922a917754fadfadb7b51f | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-11 | kind: publication | targets: [notes/managed-run-workspace-lifecycle.md] | refs: 4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11->46c34aa4d2152b8ac1ca489a79de87be832dd06129ca4621f5efe43599965084 | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-11 | kind: publication | targets: [notes/project-status-file.md] | refs: bb6e4fba683c27d28e098d37e972ea6c7eb6a38a04c00e8b90430e047b20a50d->221b4955688d89baf33fdf4415c8c91b6da07d8341289195b6d67780c3a8ddb5 | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-11 | kind: publication | targets: [notes/projection-audience-routing.md] | refs: 7858653a25453535b817a091b0a91c21965bd520e114253f88ea22cc70e517e3->be3cffab0cb1e0b761e7c3a553779065345ddf1ab17e9d417a36252dcb98d5ea | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-11 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: f96f86a1180b781ea5bd111a4e1cae3570532fd579daa35f52c95bad7c6acfe0->f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940 | outcome: published | reason: "" | record: kosmic/deterministic-flat-spec-migration/story/001 | provenance_source: declared
+- date: 2026-10-13 | kind: decision | targets: [library-skill://tb2j/development/debug-abinit-exchange] | refs: specs/skill-proposals/2026-10-12-debug-abinit-exchange.md | outcome: accepted | reason: "Maintainer approved exact candidate; Standards and Spec passed; typed library validation preserved prerequisites."
 
-- date: 2026-09-07 | kind: publication | targets: [notes/cli-extension-conventions.md] | refs: 12370f1ca4c1405e7062fa0338d3a80ea4661d19cb90676cad38cc2a94e3fc6d->3adaee347506b6e88345145566b830a74a60fb07d43e296d4ff7907609896806 | outcome: published | reason: ""
-- date: 2026-09-07 | kind: publication | targets: [notes/projection-audience-routing.md] | refs: 603b60733a105aac6b3c7c0025d6e52a1faaf2f3234b3db60ad5bbcb62b9a3d8->7858653a25453535b817a091b0a91c21965bd520e114253f88ea22cc70e517e3 | outcome: published | reason: ""
-
-- date: 2026-09-07 | kind: publication | targets: [notes/shared-domain-skill-library.md] | refs: 4f18457431a1839345d4071fe005eb7e73f9405537feec0124474fcd12ff58c2->f96f86a1180b781ea5bd111a4e1cae3570532fd579daa35f52c95bad7c6acfe0 | outcome: published | reason: ""
-
-- date: 2026-09-07 | kind: publication | targets: [notes/procedure-compilation-and-routine-reuse.md] | refs: null->e2bc7f98d13b09f597855f59382a5b97f672a9548eb1ffe1b195697c06bcf0bc | outcome: published | reason: ""
-
-- date: 2026-09-07 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 9e5bcdc66e14fe39c028a3066d7d39ae4bd0e8ab6cafc58c10a312d6dd20813f->0899094a9296f5391d40433f358afb9adbfa6d4e4b081d42f05616251e60561d | outcome: published | reason: ""
-
-- date: 2026-09-07 | kind: decision | targets: [routine://kosmic/atomic-publish-tree] | refs: specs/skill-proposals/2026-09-07-atomic-publish-tree-reuse.md | outcome: accepted | reason: "Existing compiled routine satisfies the repeated atomic-publication contract; reuse, do not duplicate."
-
-- date: 2026-09-15 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 0899094a9296f5391d40433f358afb9adbfa6d4e4b081d42f05616251e60561d->74fc821632e2c450b79334fcc39206d57d65c7058ee6d4455d9cd58871769639 | outcome: published | reason: ""
-
-- date: 2026-09-15 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 74fc821632e2c450b79334fcc39206d57d65c7058ee6d4455d9cd58871769639->f1accb943443488d5eaec0bf4cd39885ff2ba6d034f47a07ff14ddfb23ea0385 | outcome: published | reason: ""
-
-- date: 2026-09-16 | kind: publication | targets: [notes/atomic-skill-publication.md] | refs: d06c6bbc8c67b7cad7db199df5697b75e92f38876233029c828a54682a71fe65->36e081cc47e2de36eac2f98ece82e8f718fed105cbf0f51f5f49fdba2144e00a | outcome: published | reason: ""
-- date: 2026-09-16 | kind: publication | targets: [notes/managed-run-workspace-lifecycle.md] | refs: null->4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11 | outcome: published | reason: ""
-
-- date: 2026-09-23 | kind: publication | targets: [notes/dream-reflection-workflow.md] | refs: null->4b43a51352fc158879e264305e79135667956723819b6dac1636b53a276ab37d | outcome: published | reason: ""
-
-- date: 2026-09-24 | kind: publication | targets: [notes/note-writing-style.md] | refs: null->dbe7345fc895aa1081e2f34863a9f70b8ffa7be1f91f6471196246bbbc12ec88 | outcome: published | reason: ""
-
-- date: 2026-09-27 | kind: publication | targets: [notes/project-status-file.md] | refs: null->221b4955688d89baf33fdf4415c8c91b6da07d8341289195b6d67780c3a8ddb5 | outcome: published | reason: ""
+- date: 2026-10-15 | kind: publication | targets: [notes/cli-projection-commands.md] | refs: 103dad9fa56667727ccf3e62f34311452a4773b7eb922a917754fadfadb7b51f->64b09116ae8984418ca43b8ccf8bf77f5c2f902d4a502212be4e784de2d63344 | outcome: published | reason: "" | record: kosmic/quick-task/materialize-shared-skill-library-inventory | provenance_source: declared

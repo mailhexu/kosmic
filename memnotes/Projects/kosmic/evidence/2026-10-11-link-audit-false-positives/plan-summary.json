@@ -1,0 +1,16 @@
+{
+  "records": 112,
+  "rewrites": 155,
+  "link_corrections": 476,
+  "link_problems": 41,
+  "ambiguities": 0,
+  "authoritative_problems": 0,
+  "protected_problem_categories": {
+    "unresolved-link": 25,
+    "ambiguous-link": 2,
+    "moved-reference": 12,
+    "unparsable-document": 2
+  },
+  "applied": false,
+  "snapshot_digest": "5663af65dfb0d51a169c042fd7eb289e730eb7cd235d1c86c307c4abd168dfe0"
+}

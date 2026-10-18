@@ -2,6 +2,8 @@
 
 Create specification documents following BMAD-method workflow: PRD → optional Research → Architecture → Epics → Stories.
 
+Establish the governing draft before any other persistent planning output. For a new feature, `spec-create --kind prd` reserves its immutable subproject identity and canonical `subprojects/{ID}/specs/` root; retain the returned path/ID, not a title-derived guess. Derive Architecture/Epic/Story records only inside that owner-local hierarchy with the explicit planning handle and approval gates. Templates supply bodies/fields, not identity reassignment. Draft/PRD approval never authorizes source/config/experiment implementation. Shared low-risk maintenance uses an approved Quick Task. Current flat feature files remain bootstrap until separately approved migration; never invent runtime aliases or move them here.
+
 ## When to Use
 
 - Starting a NEW project (create all specs)
@@ -29,32 +31,42 @@ PRD (Product Requirements)
 
 ## Directory Structure
 
+Feature specs (PRD, Architecture, Epics, Stories, Research) live in the
+subproject created by `spec-create --kind prd`:
+
+```
+{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/
+├── SubprojectEntry.md
+└── specs/
+    ├── INDEX.md
+    ├── prd.md
+    ├── research/
+    │   └── {YYYY-MM-DD}-{slug}.md
+    ├── architecture.md
+    ├── epics/
+    │   └── epic-{N}.md
+    └── stories/
+        └── story-{N}.md
+```
+
+Shared Quick Tasks and Skill Proposals remain Project-level specs:
+
 ```
 {VAULT}/Projects/{TARGET}/specs/
-├── INDEX.md
-├── prd.md
-├── research/
-│   └── {YYYY-MM-DD}-{slug}.md
-├── architecture.md
 ├── quick-tasks/
 │   └── {YYYY-MM-DD}-{slug}.md
-├── epics/
-│   └── epic-{N}-{slug}.md
-└── stories/
-    └── story-{N}-{slug}.md
+└── skill-proposals/
+    └── {YYYY-MM-DD}-{slug}.md
 ```
 
-## Commands
+Use `spec-create` to reserve immutable feature-record identities and canonical
+paths. Fill the returned bodies from templates; create bounded Research memos
+inside the linked PRD's owner root (Research has no `spec-create` kind).
+Retain returned identities rather than guessing paths or introducing aliases.
 
-```bash
-# Create specs directory
-mkdir -p "{VAULT}/Projects/{TARGET}/specs/research"
-mkdir -p "{VAULT}/Projects/{TARGET}/specs/quick-tasks"
-mkdir -p "{VAULT}/Projects/{TARGET}/specs/epics"
-mkdir -p "{VAULT}/Projects/{TARGET}/specs/stories"
-```
-
-Create `{VAULT}/Projects/{TARGET}/specs/INDEX.md` from `references/templates/template-specs-index.md` if missing.
+Throughout this task, `{SPEC_ROOT}` denotes the subproject owner root
+`{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/` returned by
+`spec-create`.
 
 ---
 
@@ -68,26 +80,35 @@ Before creating ANY spec, the agent MUST:
 
 ```
 STOP CHECK: Have I searched for existing specs?
-  → grep -i "keyword" {VAULT}/Projects/{TARGET}/specs/*.md
-  → grep -i "keyword" {VAULT}/Projects/{TARGET}/specs/**/*.md
+  → grep -i "keyword" {VAULT}/Projects/{TARGET}/subprojects/*/specs/*.md
+  → grep -i "keyword" {VAULT}/Projects/{TARGET}/subprojects/*/specs/**/*.md
+  → grep -i "keyword" {VAULT}/Projects/{TARGET}/specs/quick-tasks/*.md
   If similar spec exists → inform user, ask whether to update or create new
 ```
 
 ---
 
-## Step 1: Create PRD
+## Step 1: Create PRD (reserves the subproject)
 
-**File**: `{VAULT}/Projects/{TARGET}/specs/prd.md`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind prd --title {TITLE}`
+**Returned owner root**: `{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/`
 **Template**: `references/templates/template-prd.md`
 **Prerequisites**: None (this is the starting point)
+
+`spec-create` reserves the immutable subproject identity and stages
+`prd.md` plus `specs/INDEX.md`. Retain the returned `subproject_id`,
+qualified identity, and canonical paths — never derive them from the title.
+If creation is interrupted, resume with `--resume --operation-id` and the
+original command inputs; retain the original title and identity.
 
 ### Process
 
 1. Discuss the problem and goals with the user
-2. Write the PRD using the template
-3. Set `status: draft`
-4. Update `specs/INDEX.md`
-5. Present to user for review
+2. Reserve the subproject with `spec-create --kind prd` and retain the returned identity/paths
+3. Fill in the PRD body using the template (templates supply bodies/fields, never identity)
+4. Set `status: draft`
+5. Update `specs/INDEX.md` inside the subproject owner root
+6. Present to user for review
 
 **Spec-event step**: after writing the spec and updating `specs/INDEX.md`, run `generate-status --project ...` so the working-directory STATUS.md reflects the new spec.
 
@@ -113,7 +134,7 @@ STOP: Present PRD to user. Do NOT proceed to Architecture until user says:
 
 Before Architecture, optionally run Research if open questions or technical uncertainty would make the architecture speculative.
 
-**Optional Research File**: `{VAULT}/Projects/{TARGET}/specs/research/{YYYY-MM-DD}-{slug}.md`
+**Optional Research File**: `{SPEC_ROOT}/research/{YYYY-MM-DD}-{slug}.md`
 **Template**: `references/templates/template-research.md`
 **Reference**: Task R, `references/task_research.md`
 
@@ -125,13 +146,14 @@ After creating or updating a Research memo, update `specs/INDEX.md`.
 
 ## Step 2: Create Architecture
 
-**File**: `{VAULT}/Projects/{TARGET}/specs/architecture.md`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind architecture --subproject {SUBPROJECT_ID}`
+**File**: `{SPEC_ROOT}/architecture.md`
 **Template**: `references/templates/template-architecture.md`
 **Prerequisites**: PRD must exist and be `approved`
 
 ```
 STOP CHECK: Is PRD approved?
-  → grep "status:" {VAULT}/Projects/{TARGET}/specs/prd.md
+  → grep "status:" {SPEC_ROOT}/prd.md
   If not approved → tell user "PRD must be approved first" → run Task 7 Review
 ```
 
@@ -167,14 +189,15 @@ STOP: Present Architecture to user. Do NOT proceed to Epics until user approves.
 
 ## Step 3: Create Epic
 
-**File**: `{VAULT}/Projects/{TARGET}/specs/epics/epic-{N}-{slug}.md`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind epic --subproject {SUBPROJECT_ID} --parent architecture`
+**File**: `{SPEC_ROOT}/epics/epic-{N}.md`
 **Template**: `references/templates/template-epic.md`
 **Prerequisites**: PRD and Architecture must exist and be `approved`
 
 ```
 STOP CHECK: Are PRD and Architecture approved?
-  → grep "status:" {VAULT}/Projects/{TARGET}/specs/prd.md
-  → grep "status:" {VAULT}/Projects/{TARGET}/specs/architecture.md
+  → grep "status:" {SPEC_ROOT}/prd.md
+  → grep "status:" {SPEC_ROOT}/architecture.md
   Both must be approved → if not, tell user which needs approval first
 ```
 
@@ -203,13 +226,14 @@ STOP: Present epic list to user. Wait for approval before creating stories.
 
 ## Step 4: Create Story
 
-**File**: `{VAULT}/Projects/{TARGET}/specs/stories/story-{N}-{slug}.md`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind story --subproject {SUBPROJECT_ID} --parent epic-{N}`
+**File**: `{SPEC_ROOT}/stories/story-{N}.md`
 **Template**: `references/templates/template-story.md`
 **Prerequisites**: Parent epic must exist
 
 ```
 STOP CHECK: Does parent epic exist?
-  → ls {VAULT}/Projects/{TARGET}/specs/epics/epic-{N}-*.md
+  → ls {SPEC_ROOT}/epics/epic-{N}.md
   If not → create epic first (Step 3)
 ```
 
@@ -286,11 +310,12 @@ draft → approved → in_progress → review → done
 
 ## Update Log
 
-After creating any spec, update log:
+After creating any spec, update the shared Project daily log with links
+relative to its `log/` directory:
 
 ```markdown
 ## Session {N}
-- Created: [PRD](../specs/prd.md) - {brief description}
-- Created: [Epic 001](../specs/epics/epic-001-{slug}.md) - {brief description}
-- Updated: [Specs Index](../specs/INDEX.md) - {brief description}
+- Created: [PRD](../subprojects/{SUBPROJECT_ID}/specs/prd.md) - {brief description}
+- Created: [Epic 001](../subprojects/{SUBPROJECT_ID}/specs/epics/epic-001.md) - {brief description}
+- Updated: [Specs Index](../subprojects/{SUBPROJECT_ID}/specs/INDEX.md) - {brief description}
 ```

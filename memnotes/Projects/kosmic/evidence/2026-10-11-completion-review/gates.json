@@ -1,0 +1,14 @@
+{
+  "execution_task": "done via supported work finish; receipt and six proof hashes validated",
+  "story001": "done via supported work finish; capped findings explicitly user-accepted; supplemental scratch/index reviews approved",
+  "story002": "done via supported work finish after Story001 receipt",
+  "story003": "done via supported work finish after Story002 receipt",
+  "owner_index": "verified: three owner Story rows show done; dependency/status columns are correct; unrelated Project specs INDEX retained content.",
+  "catalog": "SpecCatalog.validate passed; Epic and PRD remain approved; Project specs INDEX status matches records",
+  "canonical_projection": "regenerated before Stories 001 completion; no installation",
+  "status_binding": "unbound; STATUS_ROOT_UNBOUND is correct; no binding created",
+  "completion_cli": "WORK_PHASE_DENIED for done task is observed CLI behavior; direct terminal-receipt validator passes; not suppressed",
+  "epic_prd": "Epic 001 and PRD remain approved, matching frontmatter and INDEX; no unearned done transition.",
+  "stories": "Stories 001, 002, 003 all done via supported work finish; each terminal receipt validates.",
+  "index_column_followup": "Header-aware status fix passed focused and complete suites; separate targeted review pending; not misattributed to prior Story review revision."
+}

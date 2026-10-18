@@ -2,6 +2,10 @@
 
 Run this once per project or package to set up Kosmic.
 
+## Bounded record-first bootstrap
+
+Resolve the Project boundary from the request/instructions, then establish its bounded draft initialization Quick Task before other durable outputs. Initialization may create only the declared identity/knowledge/spec/skill/instruction structure; it grants no unrelated source/config/experiment authority. Obtain explicit registration/install/migration target approval separately. Raw initial-record edits are agent compliance, not an OS sandbox. Read-only discovery does not create records or mutate cleanup state.
+
 ## Find Vault Path
 
 Determine the vault location in this order:

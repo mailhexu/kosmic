@@ -155,3 +155,15 @@ _Avoid_: runtime plugin object, handwritten registry row
 **Procedure Compilation**:
 The governed Task 9 and Task P transition that moves repeated deterministic mechanics into a canonical routine while retaining judgment, risk, and approval in reviewed skill prose.
 _Avoid_: Automatic code generation, compiling Markdown
+
+**Subproject**:
+A named feature scope within one Project. A Subproject owns its specifications and shares the Project's knowledge.
+_Avoid_: Separate Project, private knowledge bundle
+
+**Work Record**:
+The specification or Quick Task that states the purpose, scope, and acceptance criteria of an action. Implementation requires an approved Story or Quick Task.
+_Avoid_: Session summary, chat task list
+
+**Work Context**:
+The explicit association of an agent's work with a Project, optional Subproject, Work Record, working directory, and allowed change scope.
+_Avoid_: Project-wide active task, implicit current feature

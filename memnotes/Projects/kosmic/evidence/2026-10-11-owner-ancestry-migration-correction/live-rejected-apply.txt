@@ -1,0 +1,5 @@
+error: ANCESTRY_INVALID: deterministic-flat-spec-migration: OWNER_MISMATCH: kosmic/experience-compilation-adapting-wikiskill-into-kosmic/prd/prd. Resolve the owning Project and subproject; correct owner metadata or use that explicit scope.. Repair owner-local parent links and their declared ancestor chain.
+
+Pinned-input drift immediately after rejected apply: []
+Published new targets: []
+All 112 original moved-source files present.

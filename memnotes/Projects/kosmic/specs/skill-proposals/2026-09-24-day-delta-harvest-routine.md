@@ -1,27 +1,31 @@
 ---
-status: draft
-created: 2026-09-24
-updated: 2026-09-24
-result: create
-scope: shared-routine
-target_kind: routine
-routine_action: create
-routine_id: kosmic/day-delta-harvest
+status: "draft"
+created: "2026-09-24"
+updated: "2026-09-24"
+result: "create"
+scope: "shared-routine"
+target_kind: "routine"
+routine_action: "create"
+routine_id: "kosmic/day-delta-harvest"
 linked_proposals: []
 consumer_approvals: []
-target: kosmic/day-delta-harvest
-target_ref: routine://kosmic/day-delta-harvest
-target_sha256: empty
-proposer_mode: subagent
-proposer_ref: agent://DayDeltaProposer
+target: "kosmic/day-delta-harvest"
+target_ref: "routine://kosmic/day-delta-harvest"
+target_sha256: "empty"
+proposer_mode: "subagent"
+proposer_ref: "agent://DayDeltaProposer"
 proposer_reason: "Fresh-context Task P assessment from the hash-pinned curated manifest only: three dream records establish repetition; collect_harvest's helpers form a typed, deterministic union with byte-pinned outputs, so shared-routine create is justified"
-input_manifest: [specs/skill-proposals/inputs/day-delta-harvest.md]
-related_notes: [notes/dream-reflection-workflow.md]
-evidence_packs: [2026-09-23-dream-reflection-release]
-behavioral_evidence: [evidence/2026-09-23-dream-reflection-release/dogfood-results.json]
-decision: pending
+input_manifest: ["specs/skill-proposals/inputs/day-delta-harvest.md"]
+related_notes: ["notes/dream-reflection-workflow.md"]
+evidence_packs: ["2026-09-23-dream-reflection-release"]
+behavioral_evidence: ["evidence/2026-09-23-dream-reflection-release/dogfood-results.json"]
+decision: "pending"
 fingerprint: ""
 reconsiders: ""
+project_id: "kosmic"
+subproject_id: null
+record_kind: "proposal"
+local_id: "2026-09-24-day-delta-harvest-routine"
 ---
 
 # Proposal: create shared routine kosmic/day-delta-harvest

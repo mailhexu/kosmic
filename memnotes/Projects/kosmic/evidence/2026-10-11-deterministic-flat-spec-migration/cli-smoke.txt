@@ -1,0 +1,5 @@
+plan: kosmic.subproject-migration-plan/2 feature moves: 8 ambiguities: 0
+apply: successful input provenance: verified original source SHA-256
+existing-owner dependency: ['demo/export/story/001']
+STATUS: created at bound root, matches final catalog rendering
+repeat: identical receipt; historical evidence and logs preserved

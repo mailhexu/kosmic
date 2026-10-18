@@ -1,0 +1,15 @@
+{
+  "completed_at": "2026-10-13T05:12:20Z",
+  "detail": "",
+  "identity": "kosmic/quick-task/repair-shared-library-routine-reciprocity-without-reclassifying",
+  "proof": {
+    "evidence/2026-10-12-library-consistency/acceptance.json": "9c057bf8dd7d032b2b9cd0e5f442f7e98bfaf4a5c319b94ed0b5b8e080b194bc",
+    "evidence/2026-10-12-library-consistency/publication.json": "55616b6bcffb27dc2fdef6b7d0b7ecfa71f88f6fbc4f9e6ebc8c805dd8810781",
+    "evidence/2026-10-12-library-consistency/review.json": "70207242ffd5b25345ce2b55417049ce5ca2827f56a1db9b0eaf25d5710247f8",
+    "evidence/2026-10-12-library-consistency/suite.txt": "67067a4718bc868625d9f7b137b50ea695f11659d60b271bf56f4d88b1e6e384"
+  },
+  "record_path": "specs/quick-tasks/repair-shared-library-routine-reciprocity-without-reclassifying.md",
+  "record_sha256": "75fdcbd079df8f2d03c4462fccd10b2d632bf3a8e9dfb4e7a16459801ee2f83a",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

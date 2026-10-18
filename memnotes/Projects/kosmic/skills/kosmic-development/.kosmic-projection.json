@@ -9,9 +9,15 @@
   "sources": [
     {
       "audience": "development",
+      "path": "notes/atomic-skill-publication.md",
+      "reference": "references/atomic-skill-publication.md",
+      "sha256": "d06c6bbc8c67b7cad7db199df5697b75e92f38876233029c828a54682a71fe65"
+    },
+    {
+      "audience": "development",
       "path": "notes/cli-extension-conventions.md",
       "reference": "references/cli-extension-conventions.md",
-      "sha256": "3adaee347506b6e88345145566b830a74a60fb07d43e296d4ff7907609896806"
+      "sha256": "62d7c50a0681790a75356013724f57927bcc0fa587682be017e409659a970bf5"
     },
     {
       "audience": "development",
@@ -23,7 +29,7 @@
       "audience": "development",
       "path": "notes/projection-audience-routing.md",
       "reference": "references/projection-audience-routing.md",
-      "sha256": "7858653a25453535b817a091b0a91c21965bd520e114253f88ea22cc70e517e3"
+      "sha256": "be3cffab0cb1e0b761e7c3a553779065345ddf1ab17e9d417a36252dcb98d5ea"
     }
   ],
   "working_state": "working-tree"

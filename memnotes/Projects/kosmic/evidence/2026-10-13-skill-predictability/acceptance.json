@@ -1,0 +1,172 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/repair-kosmic-skill-predictability",
+  "record_path": "specs/quick-tasks/repair-kosmic-skill-predictability.md",
+  "results": [
+    {
+      "criterion": "Feature-path examples use the catalog-returned owner-local hierarchy.",
+      "outcome": "passed",
+      "observation": "Feature creation and story/review log examples use catalog-returned owner-local paths; feature Research has no creation kind and stays beneath its linked PRD owner root.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/smoke.json",
+          "sha256": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+        }
+      ]
+    },
+    {
+      "criterion": "Isolation and commit instructions preserve unrelated changes.",
+      "outcome": "passed",
+      "observation": "Router and Quick Task/Story/session review instructions require separate clean writer, record-owned commits and byte-baseline integration; unrelated changes are preserved.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/smoke.json",
+          "sha256": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+        }
+      ]
+    },
+    {
+      "criterion": "Completion reference explains exact criteria, contained evidence, scope claims and computed source revision.",
+      "outcome": "passed",
+      "observation": "Receipt completion reference documents case-sensitive single-line criteria, Project-contained evidence copies, actual independent review decisions, computed source_revision and project/worktree scope claims; source_revision helper exercised successfully.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/smoke.json",
+          "sha256": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+        }
+      ]
+    },
+    {
+      "criterion": "One task routing table replaces duplicated routing structures.",
+      "outcome": "passed",
+      "observation": "493-line router reduced to 155 lines with exactly one routing table covering all 13 tasks and conditional disclosure links; all actual disclosure destinations resolve.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/smoke.json",
+          "sha256": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+        }
+      ]
+    },
+    {
+      "criterion": "Bootstrap resolves missing prerequisites before audience routing and search.",
+      "outcome": "passed",
+      "observation": "Entry and Search routes repair missing identity, pair or library before audience loading/search, exempting only the prerequisite being established and resuming normal checks.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/smoke.json",
+          "sha256": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+        }
+      ]
+    },
+    {
+      "criterion": "Model description names distinct triggers and governance.",
+      "outcome": "passed",
+      "observation": "Description leads with Kosmic governance and names project requirement plus knowledge/specifications/library/routines triggers; no new independently invoked skills added.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/smoke.json",
+          "sha256": "f7da302b1d9aeeca77ba6b1b157d85808e6172b6eb8f72eccb5a2c58d718607c"
+        }
+      ]
+    },
+    {
+      "criterion": "CLI/documentation smoke and independent review cover all six corrections.",
+      "outcome": "passed",
+      "observation": "53 existing work-record/workdir/spec-create/completion contract tests pass; CLI spec-create and generate-status help and documented source_revision/disclosure smoke exercised. Independent review decisions are recorded in review.json.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__SKILL.md",
+          "sha256": "62475913c15a3959e6bc14adb43cb8e7d6476b000b00014fb813e273929d996e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_create_spec.md",
+          "sha256": "1e4f5f20d9127740ef746ca943a129f8c73fce89bea5043a52d10a9bacd886bb"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_research.md",
+          "sha256": "8f740bde7606ed58a0680c8c4364bc5ae662486e7883e36bd9fe7b0b6f9b6057"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_search.md",
+          "sha256": "77e004628a6f6373c8066e59df8eb028ffdf22ece2590d0b24bccf78726fc262"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_quick_task.md",
+          "sha256": "639e7baf6710b5e0a801876953d5e0bf74f1126c6642dc853c88e6adcff4f84f"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_project_skills.md",
+          "sha256": "917a96d08dd3b8a31dab4a7ee3964e630d7a846189f2f1af3e3f0e9c35c371b8"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_implement_story.md",
+          "sha256": "4246d249a3a75803a95bb859bbccabcf91df59f2281d743c96a614442df17cb5"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_review.md",
+          "sha256": "5be728aec820d930255ff76d73f789962e72f4bb2023670d9e2ba4b3b82b793e"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__task_review_spec.md",
+          "sha256": "6af30d023d40455c5606f6e27edefe56e2da56c9ab7a3c5452e08a2d96423bcc"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/skills__references__work_completion.md",
+          "sha256": "64adfe89651a637542496911940c34df0c1b3ff56c428317fb1c64e18e5c8b12"
+        },
+        {
+          "path": "evidence/2026-10-13-skill-predictability/artifacts/docs__README.md",
+          "sha256": "2119c56725275934dc6af4d2e11bb352215fbb44729eea7b8ce925802ce02425"
+        }
+      ]
+    }
+  ]
+}

@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
@@ -629,6 +630,23 @@ class PipelineTest(unittest.TestCase):
             "- 2026-09-16-idea-x — try nightly dream — trigger: [log](../Projects/foo/log/foo-2026-09-16.md) — next: discuss (added 2026-09-16)\n",
             encoding="utf-8",
         )
+
+    def test_dream_publish_cli_resolves_record_under_projects_owner(self) -> None:
+        payload, handle = self.harvest_run()
+        self.write_candidate(payload)
+        project_root = self.vault / "Projects/foo"
+        write(project_root / "ProjectEntry.md", "---\nproject_id: foo\n---\n\n# foo\n")
+        write(project_root / "specs/quick-tasks/2026-10-04-dream-publish.md",
+              "---\nproject_id: foo\nsubproject_id: null\nrecord_kind: quick-task\n"
+              "local_id: dream-publish\nstatus: approved\n---\n\n# Dream publication\n")
+        cli = REPO_ROOT / "skills/scripts/kosmic_project_skills.py"
+        result = subprocess.run(
+            [sys.executable, str(cli), "dream-publish", "--vault", str(self.vault),
+             "--handle", str(handle), "--work-record", "foo/quick-task/dream-publish"],
+            capture_output=True, text=True,
+        )
+        self.assertEqual(result.returncode, 0, result.stderr)
+        self.assertTrue((self.vault / "dreams/2026-09-16.md").is_file())
 
     def test_full_pipeline_publishes_canonical_tree(self) -> None:
         payload, handle = self.harvest_run()

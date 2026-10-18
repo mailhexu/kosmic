@@ -1,22 +1,26 @@
 ---
-status: done
-created: 2026-09-14
-updated: 2026-09-15
-result: update
-scope: global-procedure
-target: kosmic
-target_ref: skill://kosmic
-target_sha256: 95a81cd212d1a27bfea5f094b184446b0757db7c7019902c3188bc562d1cf0b8
-proposer_mode: subagent
-proposer_ref: agent://ImplementManagedRunSuite.SkillCutoverProposer
+status: "done"
+created: "2026-09-14"
+updated: "2026-09-15"
+result: "update"
+scope: "global-procedure"
+target: "kosmic"
+target_ref: "skill://kosmic"
+target_sha256: "95a81cd212d1a27bfea5f094b184446b0757db7c7019902c3188bc562d1cf0b8"
+proposer_mode: "subagent"
+proposer_ref: "agent://ImplementManagedRunSuite.SkillCutoverProposer"
 proposer_reason: "Fresh-context Task P assessment restricted to the hash-pinned curated manifest"
-input_manifest: [specs/skill-proposals/inputs/managed-run-workflow.md]
-related_notes: [notes/managed-run-workspace-lifecycle.md, notes/cli-projection-commands.md]
-evidence_packs: [2026-09-15-managed-run-lifecycle]
-behavioral_evidence: [evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md]
-decision: accepted
-fingerprint: 7a7311f73bf174de9099103666560a44a507377ba365a2ba9e1f9425bdedd7ef
+input_manifest: ["specs/skill-proposals/inputs/managed-run-workflow.md"]
+related_notes: ["notes/managed-run-workspace-lifecycle.md", "notes/cli-projection-commands.md"]
+evidence_packs: ["2026-09-15-managed-run-lifecycle"]
+behavioral_evidence: ["evidence/2026-09-15-managed-run-lifecycle/behavioral-validation.md"]
+decision: "accepted"
+fingerprint: "7a7311f73bf174de9099103666560a44a507377ba365a2ba9e1f9425bdedd7ef"
 reconsiders: ""
+project_id: "kosmic"
+subproject_id: null
+record_kind: "proposal"
+local_id: "2026-09-14-managed-run-workflow"
 ---
 
 # Skill Proposal: Managed Run Orchestrator Step and Lifecycle Reference Cutover

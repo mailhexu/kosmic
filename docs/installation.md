@@ -38,15 +38,21 @@ Then smoke-load `kosmic` and one required skill through the adapter's native int
 After creating or migrating the vault-level Shared Skill Library, generate and validate it, then install the single router:
 
 ```bash
-python3 skills/scripts/kosmic_project_skills.py generate-library --vault memnotes
+python3 skills/scripts/kosmic_project_skills.py generate-library \
+  --vault memnotes --work-record QUALIFIED_RECORD
 python3 skills/scripts/kosmic_project_skills.py validate-library --vault memnotes
 python3 skills/scripts/kosmic_project_skills.py install-library \
-  --vault memnotes --adapter opencode --home "$HOME"
+  --vault memnotes --adapter opencode --home "$HOME" \
+  --work-record QUALIFIED_RECORD
 python3 skills/scripts/kosmic_project_skills.py check-library-installation \
   --vault memnotes --adapter opencode --home "$HOME"
 ```
 
-Use adapter `claude-code`, `codex`, or `omp` for the other supported registries. Installation exposes exactly `memnotes-skills`; Domain Skills and detailed topics remain in the vault and load dynamically. The command removes only managed legacy Project Skill Pairs and rolls back on failure. Start a new adapter session and inspect its native inventory before claiming activation.
+`generate-library` and `install-library` are checked mutations: pass the
+qualified identity of an approved governing record as `--work-record` at every
+invocation; selection is never cached across commands. A record approving
+library generation does not approve installation — installation keeps its own
+approved adapter plan. Use adapter `claude-code`, `codex`, or `omp` for the other supported registries. Installation exposes exactly `memnotes-skills`; Domain Skills and detailed topics remain in the vault and load dynamically. The command removes only managed legacy Project Skill Pairs and rolls back on failure. Start a new adapter session and inspect its native inventory before claiming activation.
 
 ## Option 1: Install with an AI agent
 

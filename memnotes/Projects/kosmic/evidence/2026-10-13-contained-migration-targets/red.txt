@@ -1,0 +1,30 @@
+EFF
+======================================================================
+ERROR: test_explicit_target_only_research_is_rebased_and_pinned_without_writes (tests.test_kosmic_migration_plan.MigrationPlanTest.test_explicit_target_only_research_is_rebased_and_pinned_without_writes)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261012T160259Z-library-consistency-repa-858b8785823aa920eff9be7d05247e11/scratch/dev/tests/test_kosmic_migration_plan.py", line 67, in test_explicit_target_only_research_is_rebased_and_pinned_without_writes
+    self.assertEqual(plan["inputs"]["research/showcase notes.md"], hashlib.sha256(original).hexdigest())
+                     ~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+KeyError: 'research/showcase notes.md'
+
+======================================================================
+FAIL: test_target_only_research_drift_changes_digest_without_enabling_filename_repair (tests.test_kosmic_migration_plan.MigrationPlanTest.test_target_only_research_drift_changes_digest_without_enabling_filename_repair)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261012T160259Z-library-consistency-repa-858b8785823aa920eff9be7d05247e11/scratch/dev/tests/test_kosmic_migration_plan.py", line 95, in test_target_only_research_drift_changes_digest_without_enabling_filename_repair
+    self.assertNotEqual(first["digest"], second["digest"])
+AssertionError: '0a742cc4796ebd26e3594c3347de9ed76e5cb2b9125325cc1c0eb50dd0090c3d' == '0a742cc4796ebd26e3594c3347de9ed76e5cb2b9125325cc1c0eb50dd0090c3d'
+
+======================================================================
+FAIL: test_explicit_target_only_research_rejects_symlink_file_and_parent (tests.test_kosmic_migration_plan.MigrationPlanTest.test_explicit_target_only_research_rejects_symlink_file_and_parent)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261012T160259Z-library-consistency-repa-858b8785823aa920eff9be7d05247e11/scratch/dev/tests/test_kosmic_migration_plan.py", line 108, in test_explicit_target_only_research_rejects_symlink_file_and_parent
+    with self.assertRaises(SpecError) as failure:
+AssertionError: SpecError not raised
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.008s
+
+FAILED (failures=2, errors=1)

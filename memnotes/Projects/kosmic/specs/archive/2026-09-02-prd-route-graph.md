@@ -4,7 +4,7 @@ archived: 2026-09-02
 archived_reason: "User abandoned the route-graph direction in favor of adapting WikiSkill (arXiv 2608.27454) into Kosmic; see ../prd.md"
 created: 2026-09-02
 updated: 2026-09-02
-linked_research: [../research/2026-09-02-route-graph-skill-projection.md]
+linked_research: [../../evidence/2026-09-02-route-graph-skill-projection/memo.md]
 linked_epics: []
 ---
 

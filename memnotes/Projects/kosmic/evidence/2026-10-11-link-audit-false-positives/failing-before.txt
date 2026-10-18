@@ -1,0 +1,37 @@
+======================================================================
+FAIL: test_escaped_table_wikilink_alias_preserves_fragment_and_display (tests.test_kosmic_link_audit_targets.LinkAuditTargetTest.test_escaped_table_wikilink_alias_preserves_fragment_and_display)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T122019Z-link-audit-false-positiv-ba4f26be6402989a17e1f73cf1072607/worktree/tests/test_kosmic_link_audit_targets.py", line 59, in test_escaped_table_wikilink_alias_preserves_fragment_and_display
+    self.assertFalse(any(row["record"] == "notes/table.md"
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         for row in plan["link_problems"]))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_prose_citations_are_not_definitions_but_line_start_definitions_rewrite (tests.test_kosmic_link_audit_targets.LinkAuditTargetTest.test_prose_citations_are_not_definitions_but_line_start_definitions_rewrite)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T122019Z-link-audit-false-positiv-ba4f26be6402989a17e1f73cf1072607/worktree/tests/test_kosmic_link_audit_targets.py", line 77, in test_prose_citations_are_not_definitions_but_line_start_definitions_rewrite
+    self.assertFalse(any(row["record"] == "notes/citations.md"
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         for row in plan["link_problems"]))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+======================================================================
+FAIL: test_protected_targets_resolve_but_are_not_repair_candidates (tests.test_kosmic_link_audit_targets.LinkAuditTargetTest.test_protected_targets_resolve_but_are_not_repair_candidates)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T122019Z-link-audit-false-positiv-ba4f26be6402989a17e1f73cf1072607/worktree/tests/test_kosmic_link_audit_targets.py", line 34, in test_protected_targets_resolve_but_are_not_repair_candidates
+    self.assertFalse(any(row["record"] == "notes/source.md"
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                         for row in plan["link_problems"]))
+                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: True is not false
+
+----------------------------------------------------------------------
+Ran 3 tests in 0.008s
+
+FAILED (failures=3)

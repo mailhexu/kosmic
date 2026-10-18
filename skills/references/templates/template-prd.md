@@ -1,4 +1,8 @@
 ---
+project_id: {PROJECT_ID}
+subproject_id: {SUBPROJECT_ID}
+record_kind: prd
+local_id: prd
 status: draft
 created: {DATE}
 updated: {DATE}

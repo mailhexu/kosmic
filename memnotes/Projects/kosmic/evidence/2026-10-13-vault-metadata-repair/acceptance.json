@@ -1,0 +1,52 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/repair-shared-vault-metadata-for-subproject-migration",
+  "record_path": "specs/quick-tasks/repair-shared-vault-metadata-for-subproject-migration.md",
+  "results": [
+    {
+      "criterion": "Every previously failing Project plans successfully or its residual blocker is a documented ownership/link decision requiring user assignment, not malformed metadata.",
+      "outcome": "passed",
+      "observation": "All 40 identified Projects produce migrate-subprojects-plan exit 0 against writer head aa577c9; previously 28 failed on malformed metadata. Verified repeatedly, final run on aa577c9.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-vault-metadata-repair/repair-manifest.json",
+          "sha256": "590917aa9ea63a5dffb45c16f4cd526457e8172e88deb6967ee38dfef804960f"
+        },
+        {
+          "path": "evidence/2026-10-13-vault-metadata-repair/campaign-stats.json",
+          "sha256": "23d859d0dc9443e1f0cb3cccaaf7a6fac3aed4954d23bc229657700a0d8d095e"
+        }
+      ]
+    },
+    {
+      "criterion": "Each repaired file retains its original body bytes; only frontmatter/identity lines changed, with before/after hashes recorded.",
+      "outcome": "passed",
+      "observation": "93 recorded repairs plus bounded sweeps: every transform is frontmatter-only or exact-line (status key rename, duplicate removal, depends_on listify, wikilink-flow quoting, linked_* path normalization); original file bodies preserved and captured by before/after hashes in repair-manifest.json.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-vault-metadata-repair/repair-manifest.json",
+          "sha256": "590917aa9ea63a5dffb45c16f4cd526457e8172e88deb6967ee38dfef804960f"
+        },
+        {
+          "path": "evidence/2026-10-13-vault-metadata-repair/campaign-stats.json",
+          "sha256": "23d859d0dc9443e1f0cb3cccaaf7a6fac3aed4954d23bc229657700a0d8d095e"
+        }
+      ]
+    },
+    {
+      "criterion": "Re-planning runs read-only against the writer copy; the live vault is byte-unchanged outside owned deltas after reviewed integration.",
+      "outcome": "passed",
+      "observation": "Planner executed read-only against the writer copy; no --output, no apply, no recover. Live vault writes are limited to the owned 111-path integration with per-file drift checks; live owner commit b0b1437 (unrelated log file) documented as environmental.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-13-vault-metadata-repair/repair-manifest.json",
+          "sha256": "590917aa9ea63a5dffb45c16f4cd526457e8172e88deb6967ee38dfef804960f"
+        },
+        {
+          "path": "evidence/2026-10-13-vault-metadata-repair/campaign-stats.json",
+          "sha256": "23d859d0dc9443e1f0cb3cccaaf7a6fac3aed4954d23bc229657700a0d8d095e"
+        }
+      ]
+    }
+  ]
+}

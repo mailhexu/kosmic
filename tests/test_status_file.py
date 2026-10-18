@@ -55,7 +55,7 @@ def build_project(base: Path) -> tuple[Path, Path]:
     )
     (specs / "quick-tasks").mkdir()
     (specs / "quick-tasks" / "2026-09-01-q.md").write_text(
-        "---\nstatus: done\nupdated: 2026-09-23\n---\n\n# Quick\n", encoding="utf-8"
+        "---\nproject_id: foo\nrecord_kind: quick-task\nlocal_id: q\nsubproject_id: null\nstatus: approved\nupdated: 2026-09-23\n---\n\n# Quick\n", encoding="utf-8"
     )
     (specs / "skill-proposals").mkdir()
     (specs / "skill-proposals" / "2026-09-02-p.md").write_text(
@@ -92,7 +92,7 @@ class StatusCoreTest(unittest.TestCase):
         self.assertIn("| [PRD X](vault/Projects/foo/specs/prd-x.md) | approved | 2026-09-20 |", text)
         self.assertIn("| [PRD Y](vault/Projects/foo/specs/prd-y.md) | draft | 2026-09-21 |", text)
         self.assertNotIn("INDEX", text)
-        self.assertIn("- 3 open item(s)", text)
+        self.assertIn("- 4 open item(s)", text)
         self.assertIn("[Story 1](vault/Projects/foo/specs/stories/story-001-a.md) - in_progress", text)
         self.assertIn("[PRD Y]", text)
         open_section = text.split("## Open Work", 1)[1]
@@ -100,7 +100,7 @@ class StatusCoreTest(unittest.TestCase):
         self.assertIn("[PRD Y]", open_section)
         self.assertIn("[Proposal]", open_section)
         self.assertNotIn("[Epic 1]", open_section)
-        self.assertNotIn("[Quick]", open_section)
+        self.assertIn("[Quick]", open_section)
 
     def test_generate_writes_bound_root_and_drift_detection(self) -> None:
         binding = self.worktree
@@ -113,7 +113,7 @@ class StatusCoreTest(unittest.TestCase):
         )
         project = load_project(self.project_root)
         self.assertTrue(status_drift(project))
-        path = generate_status(project)
+        path = generate_status(project, work_record="foo/quick-task/q")
         self.assertEqual(path, binding / "STATUS.md")
         self.assertFalse(status_drift(project))
         (self.project_root / "specs" / "stories" / "story-001-a.md").write_text(
@@ -123,7 +123,7 @@ class StatusCoreTest(unittest.TestCase):
 
     def test_unbound_fails_closed(self) -> None:
         with self.assertRaises(kosmic_project_skills.KosmicError) as ctx:
-            generate_status(load_project(self.project_root))
+            generate_status(load_project(self.project_root), work_record="foo/quick-task/q")
         self.assertIn("STATUS_ROOT_UNBOUND", str(ctx.exception))
 
     def test_binding_resolution_and_collision(self) -> None:
@@ -195,7 +195,7 @@ class GateTests(unittest.TestCase):
         with self.assertRaises(kosmic_project_skills.KosmicError) as ctx:
             kosmic_project_skills.check_completion(self.project, work_item)
         self.assertIn("STATUS_STALE", str(ctx.exception))
-        generate_status(self.project)
+        generate_status(self.project, work_record="foo/quick-task/q")
         try:
             kosmic_project_skills.check_completion(self.project, work_item)
         except kosmic_project_skills.KosmicError as error:
@@ -226,7 +226,7 @@ class GateTests(unittest.TestCase):
         locked.chmod(0o555)
         try:
             with self.assertRaises(kosmic_project_skills.KosmicError) as ctx:
-                kosmic_project_skills.generate_status(load_project(self.project_root))
+                kosmic_project_skills.generate_status(load_project(self.project_root), work_record="foo/quick-task/q")
         finally:
             locked.chmod(0o755)
         self.assertIn("STATUS_WRITE_FAILED", str(ctx.exception))

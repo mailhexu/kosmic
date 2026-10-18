@@ -1,0 +1,158 @@
+## Initial regression reproduction
+======================================================================
+ERROR: test_nested_sources_titles_belong_to_their_own_mappings (tests.test_kosmic_yaml.StructuredHeaderTest.test_nested_sources_titles_belong_to_their_own_mappings)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_yaml.py", line 34, in test_nested_sources_titles_belong_to_their_own_mappings
+    library = parse_document_text(text, Path('note.md'))
+  File "/tmp/kosmic-yaml-links-uek_miex/skills/scripts/kosmic_shared_library.py", line 108, in parse_document_text
+    raise LibraryError(f"{path}: invalid or duplicate metadata key {key!r}")
+skills.scripts.kosmic_shared_library.LibraryError: note.md: invalid or duplicate metadata key 'title'
+
+======================================================================
+FAIL: test_json_nested_values_and_quoted_commas_round_trip (tests.test_kosmic_yaml.StructuredHeaderTest.test_json_nested_values_and_quoted_commas_round_trip)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_yaml.py", line 53, in test_json_nested_values_and_quoted_commas_round_trip
+    self.assertEqual(parse_document_text(text, Path('note.md')).metadata['sources'], expected)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Lists differ: ['{"title": "Inner', 'authors": ["One', 'Two', 'Three"]}'] != [{'title': 'Inner', 'authors': ['One, Two', 'Three']}]
+
+First differing element 0:
+'{"title": "Inner'
+{'title': 'Inner', 'authors': ['One, Two', 'Three']}
+
+First list contains 3 additional elements.
+First extra element 1:
+'authors": ["One'
+
+- ['{"title": "Inner', 'authors": ["One', 'Two', 'Three"]}']
++ [{'authors': ['One, Two', 'Three'], 'title': 'Inner'}]
+
+======================================================================
+FAIL: test_real_duplicate_keys_within_one_mapping_still_fail (tests.test_kosmic_yaml.StructuredHeaderTest.test_real_duplicate_keys_within_one_mapping_still_fail) (header='sources:\n  - title: First\n    title: Second\n')
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_yaml.py", line 47, in test_real_duplicate_keys_within_one_mapping_still_fail
+    with self.assertRaises(LibraryError):
+         ~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^
+AssertionError: LibraryError not raised
+
+======================================================================
+FAIL: test_ambiguous_basenames_are_reported_and_not_guessed (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_ambiguous_basenames_are_reported_and_not_guessed)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 98, in test_ambiguous_basenames_are_reported_and_not_guessed
+    self.assertTrue(any(row.get('record') == 'notes/live.md'
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        and row.get('reason') == 'ambiguous-link'
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                        for row in plan['ambiguities']), plan['ambiguities'])
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : []
+
+======================================================================
+FAIL: test_broken_filename_links_are_repaired_in_authoritative_files_only (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_broken_filename_links_are_repaired_in_authoritative_files_only)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 81, in test_broken_filename_links_are_repaired_in_authoritative_files_only
+    self.assertEqual((note.parent / unquote(parsed.path)).resolve(),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     self.root / 'subprojects/export/specs/prd.md')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Posix[25 chars]on-apply-m1wlmst4/Project/mathdocs/wrong/folder/prd-export.md') != Posix[25 chars]on-apply-m1wlmst4/Project/subprojects/export/specs/prd.md')
+
+======================================================================
+FAIL: test_nested_header_and_local_url_variants_survive_actual_cli_migration (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_nested_header_and_local_url_variants_survive_actual_cli_migration)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 51, in test_nested_header_and_local_url_variants_survive_actual_cli_migration
+    self.apply()
+    ~~~~~~~~~~^^
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 26, in apply
+    self.assertEqual(planned.returncode, 0, planned.stderr)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 2 != 0 : error: /tmp/kosmic-migration-apply-9o2tbrxh/Project/specs/stories/story-01-export.md: invalid or duplicate metadata key 'url'
+
+
+----------------------------------------------------------------------
+Ran 20 tests in 3.156s
+
+FAILED (failures=5, errors=1)
+
+## Round1 preservation/coverage regressions
+======================================================================
+FAIL: test_nested_block_and_flow_url_repair_changes_the_actual_header (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_nested_block_and_flow_url_repair_changes_the_actual_header)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 114, in test_nested_block_and_flow_url_repair_changes_the_actual_header
+    self.assertEqual((path.parent / unquote(parsed.path)).resolve(),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     self.root / 'subprojects/export/specs/prd.md')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: Posix[21 chars]ration-apply-17bqir5s/Project/notes/missing/prd-export.md') != Posix[21 chars]ration-apply-17bqir5s/Project/subprojects/export/specs/prd.md')
+
+======================================================================
+FAIL: test_parentheses_inside_link_title_do_not_hide_the_moved_destination (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_parentheses_inside_link_title_do_not_hide_the_moved_destination)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 131, in test_parentheses_inside_link_title_do_not_hide_the_moved_destination
+    self.assertEqual(note.read_text(),
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^
+                     '[PRD](../subprojects/export/specs/prd.md "Background (reviewed)")\n')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '[PRD](../specs/prd-export.md "Background (reviewed)")\n' != '[PRD](../subprojects/export/specs/prd.md "Background (reviewed)")\n'
+- [PRD](../specs/prd-export.md "Background (reviewed)")
+?                   -------
++ [PRD](../subprojects/export/specs/prd.md "Background (reviewed)")
+?           +++++++++++++++++++
+
+
+======================================================================
+FAIL: test_symlinked_authoritative_root_or_protected_root_is_not_silently_omitted (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_symlinked_authoritative_root_or_protected_root_is_not_silently_omitted)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 141, in test_symlinked_authoritative_root_or_protected_root_is_not_silently_omitted
+    with self.assertRaisesRegex(SpecError, 'SCOPE_DENIED'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: SpecError not raised
+
+======================================================================
+FAIL: test_valid_encoded_yaml_url_is_byte_identical_when_file_stays_put (tests.test_kosmic_link_corrections.LinkCorrectionTest.test_valid_encoded_yaml_url_is_byte_identical_when_file_stays_put)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/tests/test_kosmic_link_corrections.py", line 125, in test_valid_encoded_yaml_url_is_byte_identical_when_file_stays_put
+    self.assertEqual(note.read_text(), original)
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '---\ntitle: Valid\nurl: "target.md?q=1#section"\n---\n\n# Valid\n' != '---\ntitle: Valid\nurl: "../notes/target%2Emd?q=1#section"\n---\n\n# Valid\n'
+  ---
+  title: Valid
+- url: "target.md?q=1#section"
+?             ^
++ url: "../notes/target%2Emd?q=1#section"
+?       +++++++++      ^^^
+  ---
+  
+  # Valid
+
+
+----------------------------------------------------------------------
+Ran 7 tests in 1.305s
+
+FAILED (failures=4)
+
+## Round2 scalar-isolation actual CLI failure
+unrelated title: ../subprojects/export/specs/prd.md
+Traceback (most recent call last):
+  File "<string>", line 27, in <module>
+    assert nested['title']=='missing/prd-export.md', 'URL repair corrupted non-link title'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: URL repair corrupted non-link title
+
+## Round3 JSON flow actual CLI failure
+JSON URL: missing/prd-export.md
+Traceback (most recent call last):
+  File "<string>", line 27, in <module>
+    assert nested['url']=='../subprojects/export/specs/prd.md', 'JSON flow URL left unresolved'
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: JSON flow URL left unresolved

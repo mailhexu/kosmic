@@ -1,0 +1,11 @@
+{
+  "reviewer": "parent",
+  "independent_approval": false,
+  "scope": "Three bounded authoritative-audit defects; existing Story review cap and ledger unchanged",
+  "observations": [
+    "Protected paths use the existing symlink guards and are hash-pinned; the valid target view includes them while filename repair index excludes them",
+    "Escaped WikiLink alias delimiter is separated before resolving path and fragment; displayed separator is retained",
+    "Reference definition regex is line-start anchored and only applied to the first non-code segment, preventing false line starts after code spans"
+  ],
+  "verification": "Three regressions failed before, 78 focused checks pass after; actual CLI plan/apply passes; canonical authoritative diagnostics are zero"
+}

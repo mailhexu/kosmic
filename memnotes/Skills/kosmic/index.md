@@ -3,7 +3,7 @@
 
 | ID | Audience | Summary |
 |---|---|---|
-| `kosmic/development/atomic-skill-publication` | development | Publish a staged artifact tree atomically with rollback |
+| `kosmic/development/atomic-skill-publication` | development | Atomic Skill Publication |
 | `kosmic/development/c-header-macro-anchored-edit` | development | Edit long C headers with repeated preprocessor blocks through unique multi-line anchors, never line ranges. |
 | `kosmic/development/cli-extension-conventions` | development | Projection CLI extension conventions |
 | `kosmic/development/code-review` | development | Review a diff since a fixed point along two axes, standards and spec, through parallel subagents. |

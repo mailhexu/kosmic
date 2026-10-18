@@ -4,11 +4,12 @@
 
 Find existing knowledge and specs before implementing new features.
 
-## Load the Audience Skill First
+## Bootstrap First, Then Load the Audience Skill
 
+- Before routing, check the bootstrap prerequisites: the Project's immutable `project_id`, its canonical projections (`{PROJECT_ID}-usage` and `{PROJECT_ID}-development`), and, when searching through the shared library, its installed router/library state.
+- If any identity, canonical projection, or library artifact is absent or stale, stop routing and run the validation or migration procedure in `references/task_project_skills.md` directly — this is a one-time bootstrap exception and must not re-enter Task Search or any audience-skill routing (no recursion). Resume Step 1 below once the bootstrap completes.
 - Contributor search: load `{PROJECT_ID}-development`; follow its required `{PROJECT_ID}-usage` reference for shared and consumer-facing behavior.
 - Consumer-only search: load `{PROJECT_ID}-usage` directly and do not enter implementation workflow.
-- If either canonical projection is missing or stale, stop and run the validation or migration procedure in `references/task_project_skills.md`.
 
 ## Strategy
 
@@ -61,22 +62,28 @@ git repository may `git grep` be used as a faster equivalent.
 
 **Always check specs before creating new ones or implementing features.**
 
+Feature specs live in per-subproject owner roots; Quick Tasks and proposals
+are shared at the Project root.
+
 ```bash
-# Search all specs (PRD, architecture, epics, stories)
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/specs/"
+# Search all specs across subprojects (PRD, architecture, epics, stories, research)
+git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/"
 
 # Search only stories
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/specs/stories/"
+git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/stories/"
 
 # Find stories by status
-git grep "status: approved" -- "{VAULT}/Projects/{TARGET}/specs/stories/"
-git grep "status: in_progress" -- "{VAULT}/Projects/{TARGET}/specs/stories/"
+git grep "status: approved" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/stories/"
+git grep "status: in_progress" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/stories/"
 
 # Find epics
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/specs/epics/"
+git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/epics/"
 
-# Check if a PRD already covers this feature
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/specs/prd.md"
+# Check whether a PRD already covers this feature
+git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/prd.md"
+
+# Search shared quick tasks
+git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/specs/quick-tasks/"
 ```
 
 ## 4. Search by Metadata
@@ -106,7 +113,7 @@ git grep "created: 2025-02" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
    ↓ Found?
    → Read matching notes
    ↓ Not found?
-3. git grep -i "keywords" specs/
+3. git grep -i "keywords" subprojects/*/specs/ specs/quick-tasks/
    ↓ Found?
    → Read matching specs (avoid duplicating existing work)
    ↓ Not found?

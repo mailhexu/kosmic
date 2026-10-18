@@ -1,0 +1,15 @@
+{
+  "reviewer": "parent",
+  "independent_approval": false,
+  "scope": "Valid local linked_* destination precedes Project-root namesake; Project-relative fallback retained; other metadata unchanged",
+  "evidence": [
+    "real apply failed before/passed after",
+    "actual fixture CLI apply success",
+    "full canonical staged catalog/link/identity validation",
+    "79 focused checks; 20 complete modules pass"
+  ],
+  "review_ledger": "Prior Story capped three-round ledger retained; no new independent approval claimed.",
+  "replacement_digest": "b1a87b1dd0c4626b2946b99cc2f757161ba001c7f2794ff4a2ad63991140575f",
+  "replacement_stage_verified": true,
+  "live_migration_published": false
+}

@@ -32,6 +32,18 @@ class ProjectionCliTest(unittest.TestCase):
         env: dict[str, str] | None = None,
     ) -> subprocess.CompletedProcess[str]:
         process_env = os.environ.copy()
+        if arguments and (arguments[0] in {"generate", "generate-status", "install"}
+                          or (arguments[0] == "check-math" and "--update" in arguments)):
+            project_argument = next((arguments[i + 1] for i, item in enumerate(arguments[:-1])
+                                     if item == "--project"), None)
+            if project_argument is not None and "--work-record" not in arguments:
+                project_path = Path(project_argument)
+                entry = project_path / "ProjectEntry.md"
+                import re
+                match = re.search(r"^project_id:\s*([\w.-]+)", entry.read_text(), re.M)
+                if match:
+                    arguments = (*arguments, "--work-record",
+                                 f"{match.group(1)}/quick-task/fixture-task")
         if env:
             process_env.update(env)
         result = subprocess.run(
@@ -52,7 +64,7 @@ class ProjectionCliTest(unittest.TestCase):
     def make_project(self, project_id: str = "acme-demo") -> Path:
         project = self.root / "vault" / "Projects" / "demo"
         notes = project / "notes"
-        notes.mkdir(parents=True)
+        notes.mkdir(parents=True, exist_ok=True)
         (notes / "index.md").write_text(
             '---\nokf_version: "0.2"\n---\n\n# Project Knowledge\n',
             encoding="utf-8",
@@ -70,6 +82,16 @@ class ProjectionCliTest(unittest.TestCase):
         (mathdocs / "index.md").write_text(
             MathDocsLayerTest.EMPTY_MATH_INDEX, encoding="utf-8"
         )
+        specs = project / "specs" / "quick-tasks"
+        specs.mkdir(parents=True, exist_ok=True)
+        (project / "specs" / "INDEX.md").write_text("# Specs\n", encoding="utf-8")
+        (specs / "2026-10-04-fixture-task.md").write_text(
+            "---\n"
+            f"project_id: {project_id}\n"
+            "record_kind: quick-task\nlocal_id: fixture-task\n"
+            "subproject_id: null\nstatus: approved\n---\n\n"
+            "# Fixture Task\n\n## Acceptance Criteria\n\n- [ ] Fixture behavior verified\n",
+            encoding="utf-8")
         # Story 048: validate/review/install/check-completion run their scratch
         # below a managed run, which requires a Git worktree at the vault root.
         (project.parents[1] / ".gitignore").write_text(".tmp/\n", encoding="utf-8")
@@ -318,9 +340,11 @@ class ProjectionCliTest(unittest.TestCase):
     def test_completion_gate_requires_current_consumer_knowledge(self) -> None:
         project = self.generate_ready_project()
         work_item = project / "specs" / "quick-tasks" / "change.md"
-        work_item.parent.mkdir(parents=True)
+        work_item.parent.mkdir(parents=True, exist_ok=True)
         work_item.write_text(
-            "---\nconsumer_interface_change: true\nrelated_notes: [using]\n---\n# Change\n",
+            "---\nproject_id: acme-demo\nrecord_kind: quick-task\n"
+            "local_id: change\nsubproject_id: null\nstatus: approved\n"
+            "consumer_interface_change: true\nrelated_notes: [using]\n---\n# Change\n",
             encoding="utf-8",
         )
         self.run_cli(
@@ -1721,7 +1745,8 @@ class MathDocsLayerTest(ExperienceCompilationTest):
         skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("executable file is the authority", task)
         self.assertIn("check-math --update", task)
-        self.assertIn("Task M: Math Note", skill)
+        self.assertIn("Task M: Math Note", task)
+        self.assertIn("[task_math_note.md](references/task_math_note.md)", skill)
         self.assertTrue(
             (skill_root / "references" / "templates" / "template-math-index.md").is_file()
         )
@@ -1747,7 +1772,8 @@ class SkillProposalTest(ExperienceCompilationTest):
         skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("fresh-context", task)
         self.assertIn("exactly one atomic result", task)
-        self.assertIn("Task P: Propose Skill Change", skill)
+        self.assertIn("Task P: Propose Skill Change", task)
+        self.assertIn("[task_propose_skill.md](references/task_propose_skill.md)", skill)
         self.assertIn("target_sha256:", template)
         self.assertIn("## Behavioral Validation", template)
         distill = (skill_root / "references" / "task_distill.md").read_text(

@@ -1,0 +1,54 @@
+======================================================================
+ERROR: test_proposal_inputs_are_pinned_report_only_even_with_template_headers (tests.test_kosmic_curated_inputs.CuratedInputTest.test_proposal_inputs_are_pinned_report_only_even_with_template_headers)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_shared_library.py", line 86, in parse_document_text
+    metadata = parse_mapping("".join(lines[1:end]), context=str(path))
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 548, in parse_mapping
+    mapping, index = _parse_block_mapping(lines, 0, 0, context, at_root=True,
+                     ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                          empty_scalar=empty_scalar)
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 432, in _parse_block_mapping
+    value, index = _parse_value(lines, index, indent, rest, context, line_no, empty_scalar)
+                   ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 455, in _parse_value
+    return _parse_flow_value(lines, index, rest, context)
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 287, in _parse_flow_value
+    value, end = parser.parse()
+                 ~~~~~~~~~~~~^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 184, in parse
+    value = self._node()
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 211, in _node
+    return self._collection()
+           ~~~~~~~~~~~~~~~~^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_yaml.py", line 251, in _collection
+    raise _fail(self.context, self.line_no,
+                f"expected ',' or {closing!r} in flow collection, found {char!r}")
+skills.scripts.kosmic_yaml.YAMLParseError: specs/skill-proposals/inputs/curated/template.md: line 1: expected ',' or ']' in flow collection, found '}'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_specs.py", line 2244, in _plan_spec_rewrites
+    metadata = parse_document_text(raw_text, Path(source)).metadata
+               ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_shared_library.py", line 88, in parse_document_text
+    raise LibraryError(str(error)) from error
+skills.scripts.kosmic_shared_library.LibraryError: specs/skill-proposals/inputs/curated/template.md: line 1: expected ',' or ']' in flow collection, found '}'
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/tests/test_kosmic_curated_inputs.py", line 30, in test_proposal_inputs_are_pinned_report_only_even_with_template_headers
+    plan = migration_plan(root)
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_specs.py", line 1819, in migration_plan
+    plan_rewrites = _plan_spec_rewrites(root, project_id, legacy, records, shared, inbound)
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T111955Z-curated-input-audit-corr-4b6ef8ebb306c485429065cc0ca403bd/worktree/skills/scripts/kosmic_specs.py", line 2246, in _plan_spec_rewrites
+    raise SpecError("SPEC_INVALID", f"{source}: {error}") from error
+skills.scripts.kosmic_specs.SpecError: SPEC_INVALID: specs/skill-proposals/inputs/curated/template.md: specs/skill-proposals/inputs/curated/template.md: line 1: expected ',' or ']' in flow collection, found '}'. Correct the specification identity or metadata and validate the Project again.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.004s
+
+FAILED (errors=1)

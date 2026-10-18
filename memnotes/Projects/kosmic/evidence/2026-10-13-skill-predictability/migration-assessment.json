@@ -1,0 +1,278 @@
+{
+  "vault": "/home/hexu/projects/memnotes/memnotes",
+  "project_entry_folders_checked": 40,
+  "planner_successes": 12,
+  "planner_errors": [
+    {
+      "project": "TB2J",
+      "error": "error: SCOPE_DENIED: subprojects/abinit-write-tb2j/SubprojectEntry.md: No such file or directory. Use a regular file inside the owning Project without symlink or traversal escapes."
+    },
+    {
+      "project": "abinit",
+      "error": "error: /home/hexu/projects/memnotes/memnotes/Projects/abinit/specs/prd-collinear-spin-direction-constraint.md: missing YAML frontmatter"
+    },
+    {
+      "project": "lawaf",
+      "error": "error: /home/hexu/projects/memnotes/memnotes/Projects/lawaf/specs/stories/story-010-symmetry-seed-core.md: line 10: duplicate key 'review_base' in the same mapping"
+    },
+    {
+      "project": "unfolding",
+      "error": "error: /home/hexu/projects/memnotes/memnotes/Projects/unfolding/specs/epics/epic-003-backends-paw-heff-gf.md: missing YAML frontmatter"
+    },
+    {
+      "project": "TBUpy",
+      "error": "error: /home/hexu/projects/memnotes/memnotes/Projects/TBUpy/specs/stories/story-079-afm-twosublattice-transition.md: line 4: expected a 'key: value' mapping entry"
+    },
+    {
+      "project": "siesta",
+      "error": "error: SPEC_INVALID: notes/carnall_racah_anchor.md: notes/carnall_racah_anchor.md: unterminated YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "epcdownfolding",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/epcdownfolding/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "error": "error: /home/hexu/projects/memnotes/memnotes/Projects/siesta_simplex_basis/specs/prd-autosimplex.md: line 5: duplicate key 'approved_by' in the same mapping"
+    },
+    {
+      "project": "predict_mag_dev",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/predict_mag_dev/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "easybondvalence",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/easybondvalence/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "pypao",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/pypao/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "mywebsite",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/mywebsite/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "abinao",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/abinao/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "abacus",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/abacus/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "TB2Jflows",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/TB2Jflows/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "symwannier",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/symwannier/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "pymultibinit",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/pymultibinit/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "TB2J_dev",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/TB2J_dev/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "magsym",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/magsym/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "phononkit",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/phononkit/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "symphon",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/symphon/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "MemNotes",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/MemNotes/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "QE",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/QE/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "supercellmap",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/supercellmap/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "HamiltonIO",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/HamiltonIO/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "mblammps",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/mblammps/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "abibuildbot_dev",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/abibuildbot_dev/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    },
+    {
+      "project": "basis_set",
+      "error": "error: SPEC_INVALID: /home/hexu/projects/memnotes/memnotes/Projects/basis_set/ProjectEntry.md: missing YAML frontmatter. Correct the specification identity or metadata and validate the Project again."
+    }
+  ],
+  "summary": [
+    {
+      "project": "qdmag",
+      "movable_records": 0,
+      "existing_owners": 0,
+      "ambiguities": 0,
+      "link_corrections": 4,
+      "protected_diagnostics": 0,
+      "status_binding": "bound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "non-orthogonal-spin-lattice",
+      "movable_records": 0,
+      "existing_owners": 1,
+      "ambiguities": 0,
+      "link_corrections": 2,
+      "protected_diagnostics": 0,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "software_installation_manager",
+      "movable_records": 0,
+      "existing_owners": 0,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "protected_diagnostics": 0,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "formal-charge",
+      "movable_records": 0,
+      "existing_owners": 5,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "protected_diagnostics": 13,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "Ideas",
+      "movable_records": 0,
+      "existing_owners": 0,
+      "ambiguities": 0,
+      "link_corrections": 0,
+      "protected_diagnostics": 0,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "superexchange_MFT",
+      "movable_records": 17,
+      "existing_owners": 0,
+      "ambiguities": 1,
+      "link_corrections": 75,
+      "protected_diagnostics": 13,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "electron-magnon-coupling",
+      "movable_records": 64,
+      "existing_owners": 1,
+      "ambiguities": 6,
+      "link_corrections": 276,
+      "protected_diagnostics": 19,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 0,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 0
+    },
+    {
+      "project": "fourstate",
+      "movable_records": 10,
+      "existing_owners": 0,
+      "ambiguities": 5,
+      "link_corrections": 42,
+      "protected_diagnostics": 6,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 7,
+      "apply_blocking_link_diagnostics": 4,
+      "unresolved_editable_links": 3
+    },
+    {
+      "project": "DMModel",
+      "movable_records": 18,
+      "existing_owners": 0,
+      "ambiguities": 4,
+      "link_corrections": 89,
+      "protected_diagnostics": 3,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 4,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 4
+    },
+    {
+      "project": "atomchain",
+      "movable_records": 26,
+      "existing_owners": 0,
+      "ambiguities": 17,
+      "link_corrections": 167,
+      "protected_diagnostics": 47,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 22,
+      "apply_blocking_link_diagnostics": 13,
+      "unresolved_editable_links": 9
+    },
+    {
+      "project": "siesta_plusB",
+      "movable_records": 0,
+      "existing_owners": 2,
+      "ambiguities": 3,
+      "link_corrections": 19,
+      "protected_diagnostics": 16,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 31,
+      "apply_blocking_link_diagnostics": 3,
+      "unresolved_editable_links": 28
+    },
+    {
+      "project": "magnetic_descriptor",
+      "movable_records": 15,
+      "existing_owners": 0,
+      "ambiguities": 0,
+      "link_corrections": 87,
+      "protected_diagnostics": 28,
+      "status_binding": "unbound",
+      "editable_link_diagnostics": 7,
+      "apply_blocking_link_diagnostics": 0,
+      "unresolved_editable_links": 7
+    }
+  ],
+  "totals": {
+    "proposed_records": 150,
+    "automatic_link_corrections": 761,
+    "ambiguities": 36,
+    "editable_unresolved_links": 51,
+    "editable_ambiguous_links": 20,
+    "protected_diagnostics": 145
+  },
+  "link_tests": {
+    "passed": 63
+  },
+  "cross_project_boundary": "Per-Project planner preserves external/outside-Project references; no vault-wide inbound rewrite pass.",
+  "execution": "read-only plans only; no --output, application, recovery, identity repair or target-vault modification."
+}

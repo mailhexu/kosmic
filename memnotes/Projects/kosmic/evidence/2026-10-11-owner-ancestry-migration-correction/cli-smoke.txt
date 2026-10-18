@@ -1,0 +1,2 @@
+Actual CLI apply: successful with a moving root specs/prd.md and existing owner
+Existing owner ancestry and entry bytes preserved; final catalog valid

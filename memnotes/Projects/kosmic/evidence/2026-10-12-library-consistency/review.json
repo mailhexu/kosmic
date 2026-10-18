@@ -1,0 +1,25 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/repair-shared-library-routine-reciprocity-without-reclassifying",
+  "record_path": "specs/quick-tasks/repair-shared-library-routine-reciprocity-without-reclassifying.md",
+  "review_base": "5ac4bb4bd52b786bbe9d6ef90d7ff1f46e08e75e",
+  "reviewed_revision": "fdeedb38dc3b79c1f167a209ae6cf6c5ab2fc45028256a68deb06c4f95d815c1",
+  "round": 2,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "RecoveryStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "RecoverySpec"
+  },
+  "findings": [
+    {
+      "id": "STD-01",
+      "blocking": true,
+      "status": "resolved",
+      "resolution": "Generated-output symlinks rejected before staged writes; regression confirms external target untouched."
+    }
+  ],
+  "decision": "approved"
+}

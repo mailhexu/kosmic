@@ -1,0 +1,14 @@
+{
+  "files": {
+    "skills/references/task_project_skills.md": "5112a7260826023164aa92c9a94680c7236d4b6cc1d26ed62ee6059865d073f2",
+    "skills/references/task_quick_task.md": "01a32bd9bb1616b2715fe7abfaae31724b59cbad4fa7b193abd5fd5a765c073f",
+    "skills/scripts/kosmic_migration.py": "5a0e2c65332c8d1806bf58c2472881693b060b9832fd1622370394c73f343115",
+    "skills/scripts/kosmic_project_skills.py": "295f1e8fd42048bb67ac8a23289d2fa81c19a0a11d34028cb08b245261af8139",
+    "skills/scripts/kosmic_specs.py": "1b19618d151f71d15f57de04e72cc95c5075e65f9d90b2795ce16fcd8f42b648",
+    "tests/test_kosmic_migration_apply.py": "d8271dea56911e47d12c0ed9230a5e5f58ee654b99fce82436c35ff68d257a14",
+    "tests/test_kosmic_migration_plan.py": "7adc02f27e209eb5a02001156fb4bd1a58e7634a300d6c3b18375f94587bf746"
+  },
+  "review_base": "22a36f09af5fce16c2d097c68ab9988f27c3705f",
+  "schema": "kosmic.source-checksums/1",
+  "source_root": "/home/hexu/projects/myagentskills/kosmic"
+}

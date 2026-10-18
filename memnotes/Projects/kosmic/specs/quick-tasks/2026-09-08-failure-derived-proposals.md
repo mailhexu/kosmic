@@ -1,17 +1,21 @@
 ---
-status: done
-created: 2026-09-08
-updated: 2026-09-08
-related_notes: [../../notes/abinit-procedure-skill-calibration.md]
-related_specs: [../prd-skill-proposer.md, ../architecture-skill-proposer.md]
-related_files: [skills/SKILL.md, skills/references/task_distill.md, skills/references/task_propose_skill.md]
+status: "done"
+created: "2026-09-08"
+updated: "2026-09-08"
+related_notes: ["../../notes/abinit-procedure-skill-calibration.md"]
+related_specs: ["../../subprojects/skill-proposal-loop/specs/prd.md", "../../subprojects/skill-proposal-loop/specs/architecture.md"]
+related_files: ["skills/SKILL.md", "skills/references/task_distill.md", "skills/references/task_propose_skill.md"]
 consumer_interface_change: false
 proposal_required: false
 routine_edge_change: false
 routine_decision_required: false
 routine_proposals: []
-review_base: c52ab6a15b2dab0df9cbd450a76fcdc386612cdb
+review_base: "c52ab6a15b2dab0df9cbd450a76fcdc386612cdb"
 review_round: 0
+project_id: "kosmic"
+subproject_id: null
+record_kind: "quick-task"
+local_id: "2026-09-08-failure-derived-proposals"
 ---
 
 # Quick Task: Failure-Derived Procedure Proposals
@@ -54,7 +58,7 @@ The user explicitly requested this implementation. The change is workflow prose 
 ## Links
 
 - Related notes: [ABINIT Procedure-Skill Calibration](../../notes/abinit-procedure-skill-calibration.md)
-- Related specs: [Skill Proposal Loop PRD](../prd-skill-proposer.md), [Architecture](../architecture-skill-proposer.md)
+- Related specs: [Skill Proposal Loop PRD](../../subprojects/skill-proposal-loop/specs/prd.md), [Architecture](../../subprojects/skill-proposal-loop/specs/architecture.md)
 
 ## Review
 

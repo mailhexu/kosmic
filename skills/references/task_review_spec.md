@@ -183,7 +183,7 @@ Run required tests, the Consumer Interface completion gate, diagnostics, and foc
 **Date**: {DATE}
 ```
 
-Update story status to `done`.
+Record the approved decision; retain the live implementation record until receipt-backed `work finish` publishes `done`. A provisional status word is not completion.
 
 **Request Changes**:
 ```markdown
@@ -270,9 +270,9 @@ draft ──[changes]──→ draft (with comments)
 ### After Code Review
 
 ```
-review ──[approve]──→ done
+review ──[approve]──→ review (decision recorded; checked finish still required)
 review ──[changes]──→ in_progress
-review ──[reject]───→ draft (rare)
+review ──[verified work receipt]──→ done
 ```
 
 ### Convergence Limit
@@ -285,9 +285,13 @@ Allow at most three automated rounds: one complete initial review and two re-rev
 
 ```markdown
 ## Session {N}
-- Reviewed: [Story 001](../specs/stories/story-001-{slug}.md) - ✅ Approved
-- Reviewed: [PRD](../specs/prd.md) - ⚠️ Changes requested
+- Reviewed: [Story 001](../subprojects/{SUBPROJECT_ID}/specs/stories/story-001.md) - ✅ Approved
+- Reviewed: [PRD](../subprojects/{SUBPROJECT_ID}/specs/prd.md) - ⚠️ Changes requested
 ```
+
+Before preparing implementation-review proof or completing a record, load
+[Receipt completion](work_completion.md). Review decisions and lifecycle
+completion are separate; only checked finish publishes the successful receipt.
 
 ---
 

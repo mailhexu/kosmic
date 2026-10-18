@@ -1,0 +1,7 @@
+----------------------------------------------------------------------
+Ran 74 tests in 3.657s
+
+OK
+
+Actual integrated complete suite: python3 tests/run_all.py
+17 modules in 86.0s; 0 failed: none

@@ -1,0 +1,78 @@
+{
+  "review_base": "22a36f09af5fce16c2d097c68ab9988f27c3705f",
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://MigrationStandardsReview",
+    "round": 2
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://MigrationSpecReview",
+    "round": 3
+  },
+  "findings": [
+    {
+      "id": "STD-MIG-1",
+      "axis": "standards",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Completed receipt verification permits authorized task progression while checking managed outputs."
+    },
+    {
+      "id": "STD-MIG-2",
+      "axis": "standards",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Configured STATUS bindings are validated during planning; invalid bindings fail closed."
+    },
+    {
+      "id": "SPEC-MIG-1",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Mapped inbound metadata is rewritten surgically."
+    },
+    {
+      "id": "SPEC-MIG-2",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Nested note inputs are inventoried recursively and no-follow checked."
+    },
+    {
+      "id": "SPEC-MIG-3",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Unsupported moved angle/HTML/wiki references block application."
+    },
+    {
+      "id": "SPEC-MIG-4",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Project navigation includes migrated owners while preserving unrelated content."
+    },
+    {
+      "id": "SPEC-MIG-6",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Existing-owner dependencies are mapped and cross-owner declarations maintained."
+    },
+    {
+      "id": "SPEC-MIG-7",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Nonblocking",
+      "summary": "Receipts include input and before/after output hashes."
+    },
+    {
+      "id": "SPEC-MIG-5",
+      "axis": "spec",
+      "status": "retracted",
+      "disposition": "Nonblocking",
+      "summary": "Reviewer retracted pre-existing-glob finding; implementation nevertheless inventories all legacy epic/story files and explicitly blocks unsupported filenames."
+    }
+  ]
+}

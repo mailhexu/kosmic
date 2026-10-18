@@ -81,6 +81,13 @@ class SharedLibraryTest(unittest.TestCase):
         self.vault = Path(self.temp.name) / "memnotes"
         self.skills = self.vault / "Skills"
         self.skills.mkdir(parents=True)
+        governing_project = self.vault / "Projects" / "demo-proj"
+        governing_project.mkdir(parents=True)
+        (governing_project / "ProjectEntry.md").write_text("---\nproject_id: demo-proj\nworking_state: working-tree\n---\n# Demo\n", encoding="utf-8")
+        quick_task = governing_project / "specs" / "quick-tasks" / "library.md"
+        quick_task.parent.mkdir(parents=True)
+        quick_task.write_text("---\nproject_id: demo-proj\nrecord_kind: quick-task\nlocal_id: shared-library\nsubproject_id: null\nstatus: approved\n---\n# Shared Library Tests\n", encoding="utf-8")
+        self.work_record = "demo-proj/quick-task/shared-library"
         (self.skills / "SKILL.md").write_text(ROOT, encoding="utf-8")
         self.write_domain("abinit", "alice")
         self.write_domain("tb2j", "bob")
@@ -88,9 +95,8 @@ class SharedLibraryTest(unittest.TestCase):
         self.write_topic(
             "kosmic/development/atomic-skill-publication",
             audience="development",
-            artifact_role="procedure",
-            uses_routines="[kosmic/atomic-publish-tree]",
-            body=self.procedure_body("Publish the staged tree."),
+            artifact_role="knowledge",
+            body="Atomic publication preserves one complete visible tree.",
         )
         self.write_topic(
             "abinit/usage/export-wavefunctions",
@@ -189,26 +195,66 @@ class SharedLibraryTest(unittest.TestCase):
         return path
 
     def test_procedure_packet_carries_hash_pinned_routine(self) -> None:
+        source_root = self.vault.parent / "fixture-source/skills/scripts"
+        source_root.mkdir(parents=True)
+        repo_root = source_root.parent.parent
+        (repo_root / "tests").mkdir()
+        (repo_root / "tests/test_ops.py").write_text(
+            "def test_publish():\n"
+            "    from pathlib import Path\n"
+            "    from tempfile import TemporaryDirectory\n"
+            "    from ops import publish\n"
+            "    with TemporaryDirectory() as directory:\n"
+            "        source = Path(directory) / 'source'\n"
+            "        destination = Path(directory) / 'destination'\n"
+            "        source.write_bytes(b'payload')\n"
+            "        publish(source, destination)\n"
+            "        assert destination.read_bytes() == b'payload'\n",
+            encoding="utf-8",
+        )
+        (source_root / "ops.py").write_text(
+            "def publish(source, destination):\n"
+            "    destination.write_bytes(source.read_bytes())\n"
+            "KOSMIC_ROUTINES = [{\n"
+            " 'id': 'kosmic/fixture-publish', 'symbol': 'publish',\n"
+            " 'summary': 'Publish the fixture payload', 'owner': 'hexu',\n"
+            " 'deterministic': True, 'offline': True, 'side_effects': ['filesystem'],\n"
+            " 'tests': ['tests/test_ops.py::test_publish'],\n"
+            " 'callers': ['python:client:run'],\n"
+            " 'procedures': ['topic:kosmic/development/publish-fixture']\n"
+            "}]\n",
+            encoding="utf-8",
+        )
+        (source_root / "client.py").write_text(
+            "from ops import publish\n"
+            "def run(source, destination):\n"
+            "    publish(source, destination)\n",
+            encoding="utf-8",
+        )
         self.write_topic(
-            "kosmic/development/atomic-skill-publication",
+            "kosmic/development/publish-fixture",
             audience="development",
             artifact_role="procedure",
-            uses_routines="[kosmic/atomic-publish-tree]",
-            body=self.procedure_body("Call the atomic publication routine."),
+            uses_routines="[kosmic/fixture-publish]",
+            body=self.procedure_body("Call the fixture publication routine."),
         )
-        generate_library(self.vault)
-        plan = resolve_library(
-            self.vault,
-            route="kosmic/development/atomic-skill-publication",
-            role="development",
-            intent="do",
-        )
-        self.assertEqual(
-            [row["id"] for row in plan["routines"]],
-            ["kosmic/atomic-publish-tree"],
-        )
-        packet = load_recipe_packet(self.vault, plan)
-        self.assertIn("routine:kosmic/atomic-publish-tree", packet)
+        generate_library(self.vault, source_root=source_root, work_record=self.work_record)
+        with mock.patch(
+            "skills.scripts.kosmic_shared_library.__file__",
+            str(source_root / "kosmic_shared_library.py"),
+        ):
+            plan = resolve_library(
+                self.vault,
+                route="kosmic/development/publish-fixture",
+                role="development",
+                intent="do",
+            )
+            self.assertEqual(
+                [row["id"] for row in plan["routines"]],
+                ["kosmic/fixture-publish"],
+            )
+            packet = load_recipe_packet(self.vault, plan)
+            self.assertIn("routine:kosmic/fixture-publish", packet)
 
     def test_procedure_with_unknown_routine_fails_closed(self) -> None:
         self.write_topic(
@@ -219,7 +265,7 @@ class SharedLibraryTest(unittest.TestCase):
             body=self.procedure_body("Call a missing routine."),
         )
         with self.assertRaisesRegex(LibraryError, "unknown routine"):
-            generate_library(self.vault)
+            generate_library(self.vault, work_record=self.work_record)
 
     def test_routine_procedure_outside_active_domain_fails_closed(self) -> None:
         routines = {
@@ -233,9 +279,9 @@ class SharedLibraryTest(unittest.TestCase):
             _validate_routine_edges(routines, catalog)
 
     def test_catalog_generation_is_deterministic_and_valid(self) -> None:
-        first = generate_library(self.vault)
+        first = generate_library(self.vault, work_record=self.work_record)
         snapshot = {p.relative_to(self.skills).as_posix(): p.read_bytes() for p in first}
-        second = generate_library(self.vault)
+        second = generate_library(self.vault, work_record=self.work_record)
         self.assertEqual(snapshot, {p.relative_to(self.skills).as_posix(): p.read_bytes() for p in second})
         validate_library(self.vault)
         catalog = json.loads((self.skills / ".kosmic/catalog.json").read_text())
@@ -275,7 +321,7 @@ class SharedLibraryTest(unittest.TestCase):
             build_catalog(self.vault)
 
     def test_query_resolves_cross_domain_dependency_first(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         plan = resolve_library(
             self.vault,
             query="debug exchange parameters from ABINIT",
@@ -292,7 +338,7 @@ class SharedLibraryTest(unittest.TestCase):
         self.assertIn("ABINIT wavefunction export reference", packet)
 
     def test_explicit_route_and_stale_plan(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         plan = resolve_library(self.vault, route="abinit/usage/export-wavefunctions", role="usage")
         self.assertEqual([row["id"] for row in plan["topics"]], ["abinit/usage/export-wavefunctions"])
         path = self.skills / "abinit/usage/export-wavefunctions.md"
@@ -301,7 +347,7 @@ class SharedLibraryTest(unittest.TestCase):
             load_recipe_packet(self.vault, plan)
 
     def test_domain_route_loads_only_domain_router(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         plan = resolve_library(self.vault, route="abinit", role="usage")
         self.assertEqual([row["id"] for row in plan["domains"]], ["abinit"])
         self.assertEqual(plan["topics"], [])
@@ -310,7 +356,7 @@ class SharedLibraryTest(unittest.TestCase):
         self.assertNotIn("Run ABINIT export", packet)
 
     def test_total_bytes_counts_exact_emitted_packet(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         plan = resolve_library(
             self.vault,
             route="abinit/usage/export-wavefunctions",
@@ -327,19 +373,19 @@ class SharedLibraryTest(unittest.TestCase):
             )
 
     def test_budget_overflow_returns_no_packet(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         with self.assertRaisesRegex(LibraryError, "BUDGET_EXCEEDED"):
             resolve_library(self.vault, route="tb2j/development/debug-exchange", role="development", max_bytes=10)
 
     def test_ambiguity_fails_closed(self) -> None:
         self.write_topic("abinit/usage/export-density", summary="Export density", triggers="export", artifact_role="procedure", body=self.procedure_body())
         self.write_topic("tb2j/usage/export-density", summary="Export density", triggers="export", artifact_role="procedure", body=self.procedure_body())
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         with self.assertRaisesRegex(LibraryError, "AMBIGUOUS"):
             resolve_library(self.vault, query="export", role="usage", intent="do")
 
     def test_intent_inference_origin_fallback_and_ambiguity(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         default = resolve_library(
             self.vault, query="wavefunction export reference", role="usage"
         )
@@ -391,7 +437,7 @@ class SharedLibraryTest(unittest.TestCase):
             requires_procedures="[abinit/usage/a-middle]",
             body=self.procedure_body("Run the chain."),
         )
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         plan = resolve_library(
             self.vault, query="run chain", role="usage", intent="do"
         )
@@ -420,7 +466,7 @@ class SharedLibraryTest(unittest.TestCase):
             supported_by="[abinit/usage/export-observation]",
             body=self.procedure_body(),
         )
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         without = resolve_library(
             self.vault, query="run export", role="usage", intent="do"
         )
@@ -462,7 +508,7 @@ class SharedLibraryTest(unittest.TestCase):
             build_catalog(self.vault)
 
     def test_generated_drift_fails(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         catalog = self.skills / ".kosmic/catalog.json"
         catalog.write_text("{}\n", encoding="utf-8")
         with self.assertRaisesRegex(LibraryError, "drift|catalog"):
@@ -483,11 +529,12 @@ class SharedLibraryTest(unittest.TestCase):
             encoding="utf-8",
         )
         with self.assertRaisesRegex(LibraryError, "unassigned"):
-            migrate_assignments(self.vault, project, {})
+            migrate_assignments(self.vault, project, {}, work_record=self.work_record)
         report = migrate_assignments(
             self.vault,
             project,
             {"demo-usage/references/one.md": self.migration_assignment("abinit/usage/one")},
+            work_record=self.work_record,
         )
         self.assertEqual(report["migrations"][0]["target"], "abinit/usage/one")
         self.assertTrue((self.skills / "abinit/usage/one.md").is_file())
@@ -511,10 +558,11 @@ class SharedLibraryTest(unittest.TestCase):
                 self.vault,
                 project,
                 {"demo-development/references/one.md": self.migration_assignment("abinit/usage/one")},
+                work_record=self.work_record,
             )
 
     def test_migration_failure_preserves_prior_library(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         before = (self.skills / ".kosmic/catalog.json").read_bytes()
         project = self.vault / "Projects/demo"
         source = project / "notes/one.md"
@@ -538,47 +586,48 @@ class SharedLibraryTest(unittest.TestCase):
                     self.vault,
                     project,
                     {"demo-usage/references/one.md": self.migration_assignment("abinit/usage/one")},
+                    work_record=self.work_record,
                 )
         self.assertEqual((self.skills / ".kosmic/catalog.json").read_bytes(), before)
         self.assertFalse((self.skills / "abinit/usage/one.md").exists())
 
     def test_shared_router_install_is_atomic_and_removes_managed_pairs(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         destination = Path(self.temp.name) / "agent-skills"
         old = destination / "demo-usage"
         old.mkdir(parents=True)
         (old / ".kosmic-projection.json").write_text('{"project_id":"demo"}\n', encoding="utf-8")
         unmanaged = destination / "personal"
         unmanaged.mkdir()
-        install_shared_router(self.vault, destination)
+        install_shared_router(self.vault, destination, work_record=self.work_record)
         self.assertFalse(old.exists())
         self.assertTrue(unmanaged.exists())
         self.assertEqual(check_shared_router_installation(self.vault, destination), destination / "memnotes-skills")
 
     def test_shared_router_collision_preserves_inventory(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         destination = Path(self.temp.name) / "agent-skills"
         collision = destination / "memnotes-skills"
         collision.mkdir(parents=True)
         (collision / "personal.txt").write_text("keep", encoding="utf-8")
         with self.assertRaisesRegex(LibraryError, "collision"):
-            install_shared_router(self.vault, destination)
+            install_shared_router(self.vault, destination, work_record=self.work_record)
         self.assertEqual((collision / "personal.txt").read_text(), "keep")
 
 
     def test_router_contains_executable_invocation_and_budget_policy(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         destination = Path(self.temp.name) / "agent-skills"
-        installed = install_shared_router(self.vault, destination)
+        installed = install_shared_router(self.vault, destination, work_record=self.work_record)
         body = (installed / "SKILL.md").read_text(encoding="utf-8")
         self.assertIn("python3 ", body)
         self.assertIn("kosmic_project_skills.py", body)
         self.assertIn("32768 packet bytes, 4 domains, 8 topics", body)
 
     def test_router_replace_failure_preserves_previous_router(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         destination_root = Path(self.temp.name) / "agent-skills"
-        destination = install_shared_router(self.vault, destination_root)
+        destination = install_shared_router(self.vault, destination_root, work_record=self.work_record)
         marker = destination / "keep.txt"
         marker.write_text("prior", encoding="utf-8")
         real_replace = __import__("os").replace
@@ -593,14 +642,14 @@ class SharedLibraryTest(unittest.TestCase):
             side_effect=fail_first_router_move,
         ):
             with self.assertRaisesRegex(OSError, "replace failed"):
-                install_shared_router(self.vault, destination_root)
+                install_shared_router(self.vault, destination_root, work_record=self.work_record)
         self.assertEqual(marker.read_text(encoding="utf-8"), "prior")
     def test_generation_rollback_preserves_previous_artifacts(self) -> None:
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         before = (self.skills / ".kosmic/catalog.json").read_bytes()
         with mock.patch.dict(os.environ, {"KOSMIC_FAIL_STAGE": "after-backup"}):
             with self.assertRaises(OSError):
-                generate_library(self.vault)
+                generate_library(self.vault, work_record=self.work_record)
         self.assertEqual((self.skills / ".kosmic/catalog.json").read_bytes(), before)
 
     def test_role_and_procedure_contract_fail_closed(self) -> None:
@@ -639,7 +688,7 @@ class SharedLibraryTest(unittest.TestCase):
         self.write_topic("abinit/usage/export-guide", artifact_role="guideline", summary="Export guidance", triggers="export guidance")
         self.write_topic("abinit/usage/export-facts", artifact_role="knowledge", summary="Export facts", triggers="understand export storage")
         self.write_topic("abinit/usage/export-result", artifact_role="evidence", summary="Export failure evidence", triggers="investigate export failure", observed_on="2026-03-01")
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         task = resolve_library(self.vault, query="debug exchange parameters", role="development", intent="do")
         self.assertEqual(task["mode"], "task")
         self.assertEqual(task["primary_topic"], "tb2j/development/debug-exchange")
@@ -659,7 +708,7 @@ class SharedLibraryTest(unittest.TestCase):
             "governed_by: []", "governed_by: [abinit/usage/export-rules]"
         ).replace("supported_by: []", "supported_by: [abinit/usage/export-proof]")
         topic.write_text(text, encoding="utf-8")
-        generate_library(self.vault)
+        generate_library(self.vault, work_record=self.work_record)
         plan = resolve_library(self.vault, query="debug exchange parameters", role="development", intent="do")
         rows = {row["id"]: row for row in plan["topics"]}
         self.assertEqual(rows["tb2j/development/debug-exchange"]["relation"], "primary")

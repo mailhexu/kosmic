@@ -1,0 +1,7 @@
+----------------------------------------------------------------------
+Ran 79 tests in 4.383s
+
+OK
+
+Actual integrated complete invocation: python3 tests/run_all.py
+20 modules in 84.5s; 0 failed: none

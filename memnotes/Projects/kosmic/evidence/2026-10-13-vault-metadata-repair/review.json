@@ -1,0 +1,32 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/repair-shared-vault-metadata-for-subproject-migration",
+  "record_path": "specs/quick-tasks/repair-shared-vault-metadata-for-subproject-migration.md",
+  "review_base": "24ebc6d6b84f058c34c8bee1991b77220624e873",
+  "reviewed_revision": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "round": 2,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://VaultStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://VaultSpec"
+  },
+  "findings": [
+    {
+      "id": "STD-001",
+      "disposition": "Blocking",
+      "status": "resolved",
+      "detail": "Wrong-group revert produced linked_external_linked_* in 1498 files; resolve-based normalization restored recognized keys; Standards re-approved on aa577c9."
+    },
+    {
+      "id": "LIVE-001",
+      "disposition": "Non-blocking",
+      "status": "resolved",
+      "detail": "Unrelated concurrent owner commit b0b1437 changed live HEAD during review; documented as environmental integration precondition (rebase + drift checks), not a repair defect."
+    }
+  ],
+  "decision": "approved",
+  "scope": "Metadata repairs in private vault writer aa577c9 (vs baseline 24ebc6d6); read-only planning only. Live integration executes separately under the same reviewed delta with per-file drift checks."
+}

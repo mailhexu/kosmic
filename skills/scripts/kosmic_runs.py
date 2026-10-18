@@ -33,7 +33,7 @@ INVENTORY_SCHEMA = "kosmic.runs-inventory/v1"
 INVENTORY_FILENAME = "kosmic_runs_inventory.json"
 INVENTORY_DEFAULT_PATH = Path(__file__).with_name(INVENTORY_FILENAME)
 
-CLASSIFICATIONS = ("managed-run", "atomic-single-file", "atomic-publication", "durable", "defect")
+CLASSIFICATIONS = ("managed-run", "ephemeral-scratch", "atomic-single-file", "atomic-publication", "durable", "defect")
 MANAGED_DIRECTORIES = ("runs", "quarantine", "operations", "handles")
 PRIVATE_MODE = 0o700
 SHARED_FORBIDDEN_MODE = 0o022
@@ -202,6 +202,16 @@ def _open_component(parent_fd: int, name: str, *, expected_device: int | None, p
         os.close(descriptor)
         raise
     return descriptor
+
+
+def managed_run_root_path(worktree: Path) -> Path:
+    """The concrete managed-run root path for a worktree, without opening it.
+
+    Gate helpers use this to authorize exactly the directory a command will
+    operate on; it is the same path ``resolve_run_root`` opens for the same
+    worktree.
+    """
+    return _worktree_toplevel(Path(worktree).expanduser()) / ".tmp" / "kosmic"
 
 
 def resolve_run_root(worktree: Path) -> RunRoot:
@@ -405,13 +415,14 @@ import ctypes
 import fcntl
 import hashlib
 import hmac
+import select
 import secrets
 import shutil
 import socket as _socket
 import struct
 import time as _time
 from datetime import datetime, timedelta, timezone
-from pathlib import PurePath
+from pathlib import PurePath, PurePosixPath
 from types import MappingProxyType
 from typing import Mapping, Sequence
 
@@ -523,7 +534,7 @@ def _redact_detail(detail: str) -> str:
 
 
 def _sanitize_purpose_slug(purpose: str) -> str:
-    slug = re.sub(r"[^a-z0-9]+", "-", str(purpose).strip().lower()).strip("-")[:24]
+    slug = re.sub(r"[^a-z0-9]+", "-", str(purpose).strip().lower()).strip("-")[:24].rstrip("-")
     return slug or "run"
 
 
@@ -773,6 +784,91 @@ def _git_delta_from_basis(basis: dict[str, Any], finish: GitSnapshot) -> dict[st
 
 # --- Run store (AD-MRW4) ----------------------------------------------------
 
+# Story 076: provenance_source values. "declared" means the caller passed an
+# authoritative identity resolved from the registered context; the legacy
+# fallback infers the id from the worktree basename and must be distrusted.
+PROVENANCE_SOURCES = ("declared", "worktree-basename")
+PROVENANCE_PROJECT_ID_RE = re.compile(r"[a-z0-9]+(?:-[a-z0-9]+)*\Z")
+PROVENANCE_REQUIRED_KEYS = ("project_id",)
+PROVENANCE_OPTIONAL_KEYS = (
+    "governing_record", "subproject", "record_path", "phase", "directory_id",
+)
+#: Manifest fields that may carry a value only when provenance_source is
+#: "declared"; the worktree-basename fallback must carry none of them.
+PROVENANCE_DECLARED_ONLY = PROVENANCE_OPTIONAL_KEYS
+#: Canonical qualified record id: project[/subproject]/kind/local_id.
+PROVENANCE_RECORD_RE = re.compile(
+    r"[a-z0-9]+(?:-[a-z0-9]+)*(?:/[a-z0-9]+(?:-[a-z0-9]+)*){2,3}\Z")
+#: Vault-relative canonical record path (posix, no traversal, no trailing /).
+PROVENANCE_RECORD_PATH_RE = re.compile(r"[A-Za-z0-9][A-Za-z0-9._/-]*\Z")
+#: Stable registered-directory identity (kosmic_work.directory_id).
+PROVENANCE_DIRECTORY_ID_RE = re.compile(r"wd-[0-9a-f]{16}\Z")
+
+
+def _normalized_provenance(provenance: Any) -> dict[str, Any]:
+    """Validate a declared provenance payload into its manifest fields."""
+    if not isinstance(provenance, dict):
+        raise RunError("PROVENANCE_INVALID", "provenance must be an object when declared")
+    unknown = sorted(set(provenance) - set(PROVENANCE_REQUIRED_KEYS) - set(PROVENANCE_OPTIONAL_KEYS))
+    if unknown:
+        raise RunError("PROVENANCE_INVALID", f"unknown provenance keys: {', '.join(unknown)}")
+    project_id = provenance.get("project_id")
+    if (not isinstance(project_id, str)
+            or not PROVENANCE_PROJECT_ID_RE.fullmatch(project_id)
+            or len(project_id) > 128):
+        raise RunError(
+            "PROVENANCE_INVALID",
+            f"project_id {project_id!r}; expected a lowercase hyphen-separated slug",
+        )
+    normalized: dict[str, Any] = {"project_id": project_id}
+    for key in PROVENANCE_OPTIONAL_KEYS:
+        value = provenance.get(key)
+        if value is not None:
+            # Strict typing: never coerce; a non-string identity is a bug.
+            if not isinstance(value, str):
+                raise RunError("PROVENANCE_INVALID", f"{key} must be a string")
+            value = value.strip()
+            if not value or len(value) > 512:
+                raise RunError("PROVENANCE_INVALID", f"{key} must be a non-empty string")
+            if key == "governing_record":
+                if not PROVENANCE_RECORD_RE.fullmatch(value):
+                    raise RunError(
+                        "PROVENANCE_INVALID",
+                        f"governing_record {value!r}; expected canonical "
+                        "project[/subproject]/kind/local_id",
+                    )
+                if value.split("/")[0] != project_id:
+                    raise RunError(
+                        "PROVENANCE_INVALID",
+                        f"governing_record {value!r} does not belong to declared "
+                        f"project {project_id!r}",
+                    )
+            elif key in ("subproject", "phase"):
+                if not PROVENANCE_PROJECT_ID_RE.fullmatch(value):
+                    raise RunError(
+                        "PROVENANCE_INVALID", f"{key} {value!r}; expected a slug")
+            elif key == "record_path":
+                if (not PROVENANCE_RECORD_PATH_RE.fullmatch(value)
+                        or value.endswith("/")
+                        or ".." in PurePosixPath(value).parts):
+                    raise RunError(
+                        "PROVENANCE_INVALID",
+                        f"record_path {value!r}; expected a vault-relative posix path",
+                    )
+            elif key == "directory_id":
+                if not PROVENANCE_DIRECTORY_ID_RE.fullmatch(value):
+                    raise RunError(
+                        "PROVENANCE_INVALID",
+                        f"directory_id {value!r}; expected wd- plus 16 lowercase hex",
+                    )
+        normalized[key] = value
+    if any(normalized[key] for key in PROVENANCE_OPTIONAL_KEYS) and "project_id" not in provenance:
+        raise RunError(
+            "PROVENANCE_INVALID",
+            "declared identity fields require an explicit project_id",
+        )
+    return normalized
+
 
 MANIFEST_REQUIRED = (
     "schema", "sequence", "run_id", "project_id", "purpose", "state", "retention",
@@ -824,6 +920,45 @@ def validate_run_manifest(manifest: Any, *, context: str = "manifest") -> dict[s
     requested = manifest.get("requested_outcome")
     if requested is not None and requested not in OUTCOMES:
         raise RunError("MANIFEST_INVALID", f"{context}: requested_outcome {requested!r}")
+    source = manifest.get("provenance_source")
+    if source is not None and source not in PROVENANCE_SOURCES:
+        raise RunError("MANIFEST_INVALID", f"{context}: provenance_source {source!r}")
+    for field in PROVENANCE_DECLARED_ONLY:
+        value = manifest.get(field)
+        if value is not None and (not isinstance(value, str) or not value.strip()):
+            raise RunError("MANIFEST_INVALID", f"{context}: {field} must be a non-empty string or null")
+        if value is None:
+            continue
+        if field == "governing_record":
+            if not PROVENANCE_RECORD_RE.fullmatch(value):
+                raise RunError(
+                    "MANIFEST_INVALID",
+                    f"{context}: governing_record {value!r}; expected canonical "
+                    "project[/subproject]/kind/local_id")
+            if value.split("/")[0] != manifest["project_id"]:
+                raise RunError(
+                    "MANIFEST_INVALID",
+                    f"{context}: governing_record {value!r} does not belong to "
+                    f"project {manifest['project_id']!r}")
+        elif field in ("subproject", "phase"):
+            if not PROVENANCE_PROJECT_ID_RE.fullmatch(value):
+                raise RunError("MANIFEST_INVALID", f"{context}: {field} {value!r}; expected a slug")
+        elif field == "record_path":
+            if (not PROVENANCE_RECORD_PATH_RE.fullmatch(value) or value.endswith("/")
+                    or ".." in PurePosixPath(value).parts):
+                raise RunError(
+                    "MANIFEST_INVALID",
+                    f"{context}: record_path {value!r}; expected a vault-relative posix path")
+        elif field == "directory_id":
+            if not PROVENANCE_DIRECTORY_ID_RE.fullmatch(value):
+                raise RunError(
+                    "MANIFEST_INVALID",
+                    f"{context}: directory_id {value!r}; expected wd- plus 16 lowercase hex")
+        if source != "declared":
+            raise RunError(
+                "MANIFEST_INVALID",
+                f"{context}: {field} requires declared provenance; the "
+                "worktree-basename fallback carries no identity fields")
     return manifest
 
 
@@ -836,6 +971,59 @@ def load_manifest(run_fd: int, *, run_id: str | None = None) -> dict[str, Any]:
     context = f"{run_id or 'run'}/RUN.json"
     manifest = _read_json_bounded(run_fd, "RUN.json", limit=1 << 20, context=context)
     return validate_run_manifest(manifest, context=context)
+
+
+def read_run_provenance(run_path: Path, *, project_root: Path | None = None) -> dict[str, Any]:
+    """Resolve a run directory back to its declared identity (Story 076).
+
+    Read-only: returns the manifest's provenance view so a run created by a
+    work record can be traced back to its governing record without any new
+    mutation path. Legacy manifests (no ``provenance_source``) report the
+    ``worktree-basename`` fallback explicitly.
+
+    When ``project_root`` is supplied and the manifest carries a
+    ``governing_record``, the read is bound to that Project (Revision 2):
+    the record must resolve live in the Project and the manifest's declared
+    project must match, so one record's evidence can never be attached to
+    another record of the same Project.
+    """
+    path = Path(run_path)
+    if not RUN_ID_RE.fullmatch(path.name):
+        raise RunError("RUN_ID_INVALID", f"{path}: not a managed run directory")
+    if not path.is_dir():
+        raise RunError("RUN_NOT_FOUND", str(path))
+    run_fd = os.open(path, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC)
+    try:
+        manifest = load_manifest(run_fd, run_id=path.name)
+    finally:
+        os.close(run_fd)
+    # Reader binding (Story 076): the manifest's run_id must match the
+    # directory identity, so a copied or renamed run directory can never be
+    # mistaken for the run it claims to be.
+    if manifest["run_id"] != path.name:
+        raise RunError(
+            "RUN_ID_INVALID",
+            f"{path}: manifest run_id {manifest['run_id']!r} does not match the directory name")
+    governing = manifest.get("governing_record")
+    if project_root is not None and governing:
+        module = _kosmic_work()
+        try:
+            module.authorize_run_record(Path(project_root), path, {
+                "project_id": manifest.get("project_id"),
+                "governing_record": governing,
+            })
+        except module.WorkdirError as error:
+            raise RunError("PROVENANCE_MISMATCH", str(getattr(error, "detail", error))) from error
+    return {
+        "run_id": manifest["run_id"],
+        "project_id": manifest["project_id"],
+        "provenance_source": manifest.get("provenance_source") or "worktree-basename",
+        "governing_record": manifest.get("governing_record"),
+        "subproject": manifest.get("subproject"),
+        "record_path": manifest.get("record_path"),
+        "phase": manifest.get("phase"),
+        "directory_id": manifest.get("directory_id"),
+    }
 
 
 def _transition_manifest(run_fd: int, manifest: dict[str, Any], **updates: Any) -> dict[str, Any]:
@@ -1190,8 +1378,12 @@ def _holder_process(run_fd: int, control_address: str, token: bytes, deadline: d
         os.write(ready_write, f"READY {os.getpid()}\n".encode("ascii"))
         _holder_loop(listener, run_fd, token, deadline)
         exit_code = 0
-    except BaseException:
+    except BaseException as error:
         exit_code = 4
+        try:
+            os.write(ready_write, f"HOLDER-ERROR {type(error).__name__}\n".encode("ascii"))
+        except OSError:
+            pass
     finally:
         if listener is not None:
             try:
@@ -1209,6 +1401,25 @@ def _holder_process(run_fd: int, control_address: str, token: bytes, deadline: d
         except OSError:
             pass
         os._exit(exit_code)
+
+
+def _select_ready(descriptor: int, timeout: float) -> bool:
+    """True when the descriptor has data within ``timeout`` seconds.
+
+    Uses ``poll`` rather than ``select``: long-lived processes (test suites
+    included) routinely exceed ``FD_SETSIZE``, where ``select`` fails with
+    ValueError for otherwise-valid descriptors.
+    """
+    poller = select.poll()
+    poller.register(descriptor, select.POLLIN)
+    try:
+        events = poller.poll(max(0, int(timeout * 1000)))
+    except (OSError, ValueError):
+        return False
+    return bool(events)
+
+
+HOLDER_READY_TIMEOUT = 30.0
 
 
 def _spawn_holder(
@@ -1267,7 +1478,22 @@ def _spawn_holder(
     try:
         os.waitpid(intermediate, 0)
         ready = b""
+        # Bounded readiness wait: the holder must confirm within seconds.
+        # An unbounded read here once hung the whole suite when a forked
+        # grandchild deadlocked in a multi-threaded test process.
+        deadline = _time.monotonic() + HOLDER_READY_TIMEOUT
         while b"\n" not in ready and len(ready) < 128:
+            remaining = deadline - _time.monotonic()
+            if remaining <= 0:
+                raise RunError(
+                    "HOLDER_SPAWN_TIMEOUT",
+                    f"holder did not report readiness within {HOLDER_READY_TIMEOUT}s",
+                )
+            if not _select_ready(ready_read, remaining):
+                raise RunError(
+                    "HOLDER_SPAWN_TIMEOUT",
+                    f"holder did not report readiness within {HOLDER_READY_TIMEOUT}s",
+                )
             chunk = os.read(ready_read, 128)
             if not chunk:
                 break
@@ -1333,6 +1559,9 @@ class RunReceipt:
     git_start_sha256: str
     git_finish_sha256: str | None
     code: str
+    project_id: str | None = None
+    provenance_source: str | None = None
+    governing_record: str | None = None
 
 
 @dataclass(frozen=True)
@@ -1344,6 +1573,9 @@ class PromotionReceipt:
     git_before_sha256: str
     git_after_sha256: str
     code: str
+    project_id: str | None = None
+    provenance_source: str | None = None
+    governing_record: str | None = None
 
 
 @dataclass(frozen=True)
@@ -1402,13 +1634,118 @@ def _discard_tree(parent_fd: int, name: str) -> None:
             pass
 
 
+ENFORCE_WORK_RECORDS_ENV = "KOSMIC_ENFORCE_WORK_RECORDS"
+_TRUTHY = frozenset({"1", "true", "yes", "on"})
+
+
+def work_records_enforced() -> bool:
+    """Optional staged guard for direct low-level managed-run API callers.
+
+    Public Projection CLI mutations enforce --work-record unconditionally;
+    this environment switch does not bypass those CLI gates.
+    """
+    return os.environ.get(ENFORCE_WORK_RECORDS_ENV, "").strip().lower() in _TRUTHY
+
+
+#: Bounded internal bootstrap contracts for managed-run creation. They still
+#: require declared governing-record provenance whenever enforcement is on.
+BEGIN_RUN_CONTRACTS: dict[str, str] = {
+    "workdir-registration": "registration bootstrap: begin_registration creates "
+                            "the registration run for a not-yet-registered root "
+                            "under the bounded quick-task contract "
+                            "(registration_root/registration_outputs); the issued "
+                            "context authorizes only those outputs.",
+}
+
+
+def _kosmic_work() -> Any:
+    """Import the work-record layer lazily: kosmic_work depends on this module."""
+    try:
+        from . import kosmic_work
+    except ImportError:
+        import kosmic_work
+    return kosmic_work
+
+
+def _verify_record_context(worktree: Path, declared: dict[str, Any], project_root: Path) -> None:
+    """Bind declared provenance to the live work record it claims (Rev 2).
+
+    The declared ``governing_record`` must resolve to a live authorized
+    record of the Project, and the declared project identity must be the
+    record's own — so record A's evidence can never be minted under
+    record B.
+    """
+    module = _kosmic_work()
+    try:
+        module.authorize_run_record(project_root, worktree, declared)
+    except module.WorkdirError as error:
+        raise RunError(str(getattr(error, "code", "RUN_UNAUTHORIZED")),
+                       str(getattr(error, "detail", error))) from error
+
+
+def _authorize_begin_run(worktree: Path, declared: dict[str, Any] | None, *,
+                         project_root: Path | None, contract: str | None,
+                         enforced: bool) -> None:
+    """No managed run is minted unauthenticated (Revision 2).
+
+    While work-record enforcement is active, ``begin_run`` requires declared
+    provenance carrying a ``governing_record`` plus the ``project_root`` that
+    holds it, or an explicitly documented bootstrap contract from
+    ``BEGIN_RUN_CONTRACTS``. The check runs before the run root is resolved,
+    so a denial leaves zero persistent changes.
+    """
+    if contract is not None and contract not in BEGIN_RUN_CONTRACTS:
+        raise RunError(
+            "RUN_UNAUTHORIZED",
+            f"contract {contract!r} is not a documented bootstrap contract; "
+            f"expected one of {sorted(BEGIN_RUN_CONTRACTS)}")
+    record_context = bool(declared and declared.get("governing_record")) \
+        and project_root is not None
+    if enforced and contract is None and not record_context:
+        raise RunError(
+            "RUN_UNAUTHORIZED",
+            "bare begin_run is not authorized while work-record enforcement is "
+            "active; pass declared provenance carrying a governing_record "
+            f"plus its project_root, or a documented bootstrap contract "
+            f"({sorted(BEGIN_RUN_CONTRACTS)})")
+    if enforced and contract is not None and (
+            declared is None or not str(declared.get("governing_record") or "").strip()):
+        raise RunError(
+            "RUN_UNAUTHORIZED",
+            f"bootstrap contract {contract!r} requires declared provenance "
+            "naming its governing record")
+    if record_context:
+        _verify_record_context(worktree, declared, Path(project_root))
+
+
 def begin_run(
     worktree: Path,
     purpose: str,
     retention: str = "diagnostic",
     active_for: timedelta = ACTIVE_DEFAULT,
+    *,
+    provenance: dict[str, Any] | None = None,
+    project_root: Path | None = None,
+    contract: str | None = None,
 ) -> RunHandle:
-    """Create a private leased run and return only after verified liveness."""
+    """Create a private leased run and return only after verified liveness.
+
+    provenance declares Project identity and may include a live-resolved
+    governing record, owner, record path, phase, and registered directory.
+    Without declared provenance, the manifest records the worktree-basename
+    fallback so readers can distrust the inferred Project identity.
+
+    While work-record enforcement is active, a bare worktree-only call fails
+    with RUN_UNAUTHORIZED before creating run state. A declared governing
+    record is re-resolved against its owning Project before a run is created.
+    Bootstrap contracts remain limited to BEGIN_RUN_CONTRACTS.
+    """
+    declared = _normalized_provenance(provenance) if provenance is not None else None
+    enforced = work_records_enforced()
+    _authorize_begin_run(
+        Path(worktree), declared,
+        project_root=Path(project_root) if project_root is not None else None,
+        contract=contract, enforced=enforced)
     if retention is None:
         retention = "diagnostic"
     if retention not in CREATION_RETENTIONS:
@@ -1449,7 +1786,13 @@ def begin_run(
                 "schema": 1,
                 "sequence": 1,
                 "run_id": run_id,
-                "project_id": root.worktree.name,
+                "project_id": declared["project_id"] if declared else root.worktree.name,
+                "provenance_source": "declared" if declared else "worktree-basename",
+                "governing_record": declared["governing_record"] if declared else None,
+                "subproject": declared["subproject"] if declared else None,
+                "record_path": declared["record_path"] if declared else None,
+                "phase": declared["phase"] if declared else None,
+                "directory_id": declared["directory_id"] if declared else None,
                 "purpose": purpose,
                 "state": "creating",
                 "retention": retention,
@@ -1538,6 +1881,9 @@ def _receipt_from_handle(handle: dict[str, Any]) -> RunReceipt:
         git_start_sha256=handle["git_start_sha256"],
         git_finish_sha256=handle.get("git_finish_sha256"),
         code=handle.get("code", "OK"),
+        project_id=handle.get("project_id"),
+        provenance_source=handle.get("provenance_source"),
+        governing_record=handle.get("governing_record"),
     )
 
 
@@ -1575,6 +1921,9 @@ def _terminal_receipt(
         "finished_at": finished_at,
         "expires_at": expires_at,
         "retention": manifest["retention"],
+        "project_id": manifest["project_id"],
+        "provenance_source": manifest.get("provenance_source") or "worktree-basename",
+        "governing_record": manifest.get("governing_record"),
         "git_start_sha256": manifest["git_start_sha256"],
         "git_finish_sha256": manifest["git_finish_sha256"],
         "cleanup": cleanup,
@@ -2705,6 +3054,7 @@ def promote_file(
         handle = read_handle(root.handles_fd, handle_name)
         run_id = handle["run_id"]
         run_fd = _open_run(root.runs_fd, run_id)
+        manifest = load_manifest(run_fd, run_id=run_id)
         parent_fd = -1
         try:
             source_fd = _open_run_file(run_fd, source_path.parts, device=root.device)
@@ -2859,6 +3209,9 @@ def promote_file(
                     git_before_sha256=before.sha256,
                     git_after_sha256=after.sha256,
                     code="OK",
+                    project_id=manifest["project_id"],
+                    provenance_source=manifest.get("provenance_source") or "worktree-basename",
+                    governing_record=manifest.get("governing_record"),
                 )
             finally:
                 os.close(source_fd)
@@ -3305,4 +3658,7 @@ def promotion_to_json(receipt: PromotionReceipt) -> dict[str, Any]:
         "destination_sha256": receipt.destination_sha256,
         "git_before_sha256": receipt.git_before_sha256,
         "git_after_sha256": receipt.git_after_sha256,
+        "project_id": receipt.project_id,
+        "provenance_source": receipt.provenance_source,
+        "governing_record": receipt.governing_record,
     }

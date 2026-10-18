@@ -1,4 +1,8 @@
 ---
+project_id: {PROJECT_ID}
+subproject_id: {SUBPROJECT_ID}
+record_kind: epic
+local_id: "{ALLOCATED_NNN}"
 status: draft
 created: {DATE}
 updated: {DATE}

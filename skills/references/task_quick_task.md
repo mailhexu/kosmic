@@ -30,6 +30,8 @@ If any item is false or uncertain, use Task 5: Create Spec instead.
 - Security-sensitive behavior
 - Requirements that need user discovery or approval gates
 
+Deterministic subproject flat-spec migration is such a governed workflow: it uses exactly one shared Quick Task created and approved per `task_project_skills.md` ("Subproject Flat-Spec Migration"), with the approved plan `digest` recorded in the record; the Quick Task path here covers its approval gate only, never direct application of a plan.
+
 ---
 
 ## Quick Task File
@@ -40,7 +42,9 @@ Create one file per quick task:
 {VAULT}/Projects/{TARGET}/specs/quick-tasks/{YYYY-MM-DD}-{slug}.md
 ```
 
-Create the `quick-tasks/` directory if missing.
+Quick Tasks are shared, Project-level specs — create them without
+`--subproject`; they never live in a subproject owner root. `spec-create`
+creates the `quick-tasks/` directory; do not create it by hand.
 
 Use `references/templates/template-quick-task.md`.
 
@@ -53,9 +57,10 @@ Use `references/templates/template-quick-task.md`.
    - Read related code before planning the change.
 
 2. **Create Quick Task record**
-   - Write the quick task file using `references/templates/template-quick-task.md`.
-   - Set `Status: draft`.
-   - Define scope, out of scope, and acceptance criteria.
+   - Establish the draft with `spec-create --project {PROJECT_ROOT} --kind quick-task --title {TITLE}`; retain the returned qualified identity/canonical path. Use the template for its body, not to guess owner/ID fields.
+   - Flat legacy feature specs may prevent the owner-aware catalog from loading. Shared Quick Task creation remains a bounded draft bootstrap in that case; it does not migrate feature specs, enable the catalog, or authorize implementation. After explicit approval, `work start` resolves the flat task through the migration fallback.
+   - Keep `status: draft` until the compatible approval gate passes.
+   - Define exact roots, allowed outputs, out-of-scope work, and observable acceptance criteria.
    - Declare `consumer_interface_change: true` when supported CLI, API, configuration, integration, or troubleshooting behavior changes; otherwise explicitly keep `false`.
    - For `true`, list the current stable Consumer knowledge in `related_notes`.
    - Pin `review_base` before implementation and set `review_round: 0`; do not move the baseline during re-review.
@@ -74,27 +79,21 @@ Use `references/templates/template-quick-task.md`.
    - Do not complete a symptom-only patch.
 
 5. **Implement**
-   - Set `Status: in_progress`.
-   - Make the minimal change that satisfies acceptance criteria.
-   - Add or update tests when the codebase has a relevant test pattern.
-   - Follow SKILL.md **Managed Run Before Scratch** for disposable scratch; it does not replace durable pending-test, Evidence Pack, specification, or log rules.
+   - Before substantive writes, use `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. The start check requires a clean worktree.
+   - Use one worktree and one writer per record. Every mutating command re-resolves the approved record with `--work-record`; completion checks the Git diff against its `--scope` claims.
+   - Preserve unrelated work: never commit, stash, discard, or rebase changes you did not make. If the target worktree is dirty with unrelated changes, commit/stash only with the user's work preserved, or select another worktree via `work start`. Raw editors/shell are agent compliance, not OS enforcement.
 
 6. **Verify and review**
-   - Run diagnostics and focused tests or an equivalent manual check.
-   - Run the `check-completion` command from `references/task_project_skills.md`.
-   - Set `Status: review` and run Task 7's complete two-axis Round 1 against `review_base`.
-   - Record all Standards and Spec findings in one stable ledger with Blocking or Non-blocking disposition.
-   - If changes are requested, preserve finding IDs; later rounds inspect only open findings, changed code, and regressions.
-   - A Consumer Interface change cannot pass while related Consumer knowledge or the canonical pair is stale.
-   - Approve when all Blocking findings are resolved even if Non-blocking suggestions remain.
+   - Exercise the actual path and focused checks. Record criterion-specific observations/artifact hashes in declared `acceptance_evidence`; exit success alone is not proof.
+   - Run Task 7's independent Standards/Spec review against the pinned base. Preserve its stable finding ledger, actual decision and reviewed revision in `review_record` as described in `task_project_skills.md`. Never manufacture approvals.
+   - Re-review preserves finding IDs; accept only resolved blockers or explicit recorded human acceptance. Consumer knowledge/projection gates still apply.
 
 7. **Complete**
-   - Set `Status: done` only after verification and review pass.
-   - Run `generate-status --project ...` when the task created or transitioned any spec.
-Run `git status --short`; classify every modified/untracked file as committed, recoverably preserved, or deleted.
-   - Update `{VAULT}/Projects/{TARGET}/specs/INDEX.md`.
-   - Update the log.
-   - Add notes for durable knowledge learned during the work.
+   - Run read-only `check-completion` for existing gates, then `work finish --project PROJECT_ROOT --worktree ROOT --work-record REF --scope CLAIM` (repeat scope). Never hand-edit `done`.
+   - Finish verifies evidence/review/scope first, then updates status/index/log, publishes its authoritative receipt, and derives STATUS from it — stepwise, not cross-file atomic. Interruption before the receipt leaves completion pending; interruption after it can leave stale derived reports only. Rerun finish — an already-valid receipt is kept while the derived reports regenerate.
+   - Report qualified identity/canonical path and actual acceptance/smoke/review results; terminal authority cannot start new implementation.
+   - For the exact proof mechanics — evidence schemas, review ledger fields, receipt rules, and `work finish` scope claims — follow `references/work_completion.md`.
+   - Capture durable knowledge; classify changes without bulk-committing others' work. Read-only questions/checks need no new record or durable cleanup.
 
 ---
 

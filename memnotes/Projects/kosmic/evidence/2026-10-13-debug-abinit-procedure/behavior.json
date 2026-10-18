@@ -1,0 +1,35 @@
+{
+  "baseline": {
+    "result": "rejected",
+    "observed_error": "semantic role classification has unclassified legacy dependencies: tb2j/development/debug-abinit-exchange.md"
+  },
+  "candidate": {
+    "sha256": "3615d248a82f34eeb5f033c4ce561e2edc6963658dd61e245df8be842a79d0d2",
+    "validate_library_exit": 0,
+    "resolve_exit": 0,
+    "load_exit": 0,
+    "topics": [
+      {
+        "id": "tb2j/development/debug-abinit-exchange",
+        "role": "procedure"
+      },
+      {
+        "id": "abinit/usage/export-wavefunctions",
+        "role": "guideline"
+      },
+      {
+        "id": "abinit/usage/spin-orbit-conventions",
+        "role": "guideline"
+      }
+    ],
+    "scientific_calculation_executed": false
+  },
+  "review": {
+    "standards": "passed",
+    "spec": "passed",
+    "agents": [
+      "ProcedureStandards",
+      "ProcedureSpec"
+    ]
+  }
+}

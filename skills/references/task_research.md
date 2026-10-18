@@ -4,6 +4,8 @@ Run optional discovery before Architecture when the PRD is clear enough to defin
 
 Research is not Task 3 Search. Task 3 Search is mandatory retrieval of existing notes and specs. Research starts after Search when existing knowledge is not enough and produces a written memo with findings, options, recommendations, and open questions.
 
+Read-only research/search is record-free. A persisted research memo must name its local governing planning record and stay within the bounded approved planning outputs; a PRD is not implementation authority. Persistent experiments/config/source changes require an approved Story or qualifying approved Quick Task, explicit roots/scope and observed evidence. Do not infer an extra research approval gate where this procedure supplies none.
+
 ---
 
 ## When to Use
@@ -22,11 +24,15 @@ Skip Research when Task 3 Search answers the question well enough to draft Archi
 
 ## Output
 
-Create one research memo per topic:
+Create one research memo per topic, inside the governing subproject owner
+root returned by `spec-create --kind prd`:
 
 ```text
-{VAULT}/Projects/{TARGET}/specs/research/{YYYY-MM-DD}-{slug}.md
+{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/research/{YYYY-MM-DD}-{slug}.md
 ```
+
+Never write research memos into the shared Project `specs/` tree or a
+guessed subproject path; use the recorded owner root of the linked PRD.
 
 Use `references/templates/template-research.md`.
 

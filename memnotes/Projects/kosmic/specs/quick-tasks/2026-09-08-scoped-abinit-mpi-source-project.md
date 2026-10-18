@@ -1,21 +1,20 @@
 ---
-status: done
-created: 2026-09-08
-updated: 2026-09-08
-related_notes:
-  - ../../notes/abinit-procedure-skill-calibration.md
-related_specs:
-  - ../architecture-shared-domain-skill-library.md
-  - ../architecture-semantic-artifact-roles.md
-related_files:
-  - ../../../Skills/abinit/SKILL.md
-  - ../../../../../skills/references/task_project_skills.md
+status: "done"
+created: "2026-09-08"
+updated: "2026-09-08"
+related_notes: ["../../notes/abinit-procedure-skill-calibration.md"]
+related_specs: ["../../subprojects/shared-domain-skill-library/specs/architecture.md", "../../subprojects/semantic-artifact-roles/specs/architecture.md"]
+related_files: ["../../../Skills/abinit/SKILL.md", "../../../../../skills/references/task_project_skills.md"]
 consumer_interface_change: false
 proposal_required: false
 routine_edge_change: false
 routine_decision_required: false
 review_base: "c52ab6a15b2dab0df9cbd450a76fcdc386612cdb"
 review_round: 0
+project_id: "kosmic"
+subproject_id: null
+record_kind: "quick-task"
+local_id: "2026-09-08-scoped-abinit-mpi-source-project"
 ---
 
 # Quick Task: Scoped ABINIT MPI Source Project
@@ -63,7 +62,7 @@ The user selected a scoped MPI source Project instead of full Project adoption. 
 ## Links
 
 - Related notes: [ABINIT Procedure-Skill Calibration](../../notes/abinit-procedure-skill-calibration.md)
-- Related specs: [Shared Domain Skill Library Architecture](../architecture-shared-domain-skill-library.md), [Semantic Artifact Roles Architecture](../architecture-semantic-artifact-roles.md)
+- Related specs: [Shared Domain Skill Library Architecture](../../subprojects/shared-domain-skill-library/specs/architecture.md), [Semantic Artifact Roles Architecture](../../subprojects/semantic-artifact-roles/specs/architecture.md)
 - Related files: `memnotes/Skills/abinit/SKILL.md`, `skills/references/task_project_skills.md`
 
 ## Review

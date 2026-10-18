@@ -1,10 +1,10 @@
 ---
-status: done
-created: 2026-09-24
-updated: 2026-09-24
-related_notes: [notes/dream-reflection-workflow.md]
+status: "done"
+created: "2026-09-24"
+updated: "2026-09-24"
+related_notes: ["notes/dream-reflection-workflow.md"]
 related_specs: []
-related_files: [skills/SKILL.md, skills/references/task_implement_story.md, skills/references/task_review.md]
+related_files: ["skills/SKILL.md", "skills/references/task_implement_story.md", "skills/references/task_review.md"]
 consumer_interface_change: false
 proposal_required: false
 routine_edge_change: false
@@ -12,6 +12,10 @@ routine_decision_required: false
 routine_proposals: []
 review_base: ""
 review_round: 0
+project_id: "kosmic"
+subproject_id: null
+record_kind: "quick-task"
+local_id: "2026-09-24-vault-commit-cadence"
 ---
 
 # Quick Task: Vault commit cadence

@@ -1,0 +1,70 @@
+{
+  "routes": [
+    "0",
+    "1",
+    "2",
+    "3",
+    "4",
+    "5",
+    "6",
+    "7",
+    "8",
+    "9",
+    "R",
+    "M",
+    "P"
+  ],
+  "router_lines": 155,
+  "broken_disclosure_links": [],
+  "source_revision": "b1b198b1b840913cc3b602ac22ef62348664ae73e78e23c986b29ce062fae2e9",
+  "files": [
+    "skills/SKILL.md",
+    "skills/references/task_create_spec.md",
+    "skills/references/task_research.md",
+    "skills/references/task_search.md",
+    "skills/references/task_quick_task.md",
+    "skills/references/task_project_skills.md",
+    "skills/references/task_implement_story.md",
+    "skills/references/task_review.md",
+    "skills/references/task_review_spec.md",
+    "skills/references/work_completion.md",
+    "docs/README.md"
+  ],
+  "existing_contract_tests": {
+    "count": 53,
+    "outcome": "passed"
+  },
+  "spec_create": {
+    "kind": "prd",
+    "local_id": "prd",
+    "operation_id": "46ed74e3e1da46ab8df98cfef3750dff",
+    "paths": {
+      "subprojects/owner-local-example/SubprojectEntry.md": [
+        "subprojects",
+        "owner-local-example",
+        "SubprojectEntry.md"
+      ],
+      "subprojects/owner-local-example/specs/INDEX.md": [
+        "subprojects",
+        "owner-local-example",
+        "specs",
+        "INDEX.md"
+      ],
+      "subprojects/owner-local-example/specs/prd.md": [
+        "subprojects",
+        "owner-local-example",
+        "specs",
+        "prd.md"
+      ]
+    },
+    "project_id": "skill-smoke",
+    "resumed": false,
+    "status": "published",
+    "subproject_id": "owner-local-example",
+    "title": "Owner-local example"
+  },
+  "review_fixes": [
+    "STANDARDS-01: explicit nested Project source-revision exclusions",
+    "STANDARDS-02: shared Project log and correct relative links"
+  ]
+}

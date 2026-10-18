@@ -1,4 +1,8 @@
 ---
+project_id: {PROJECT_ID}
+subproject_id: {SUBPROJECT_ID}
+record_kind: architecture
+local_id: architecture
 status: draft
 created: {DATE}
 updated: {DATE}

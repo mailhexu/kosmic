@@ -1,0 +1,9 @@
+----------------------------------------------------------------------
+Ran 55 tests in 4.419s
+
+OK
+
+Integrated repository invocation:
+python3 -m unittest tests.test_kosmic_curated_inputs tests.test_kosmic_migration_plan tests.test_kosmic_migration_apply tests.test_kosmic_link_corrections tests.test_kosmic_yaml -q
+Ran 75 tests in 3.126s
+OK

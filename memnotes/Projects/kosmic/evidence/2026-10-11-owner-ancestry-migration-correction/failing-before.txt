@@ -1,0 +1,30 @@
+======================================================================
+ERROR: test_owner_local_ancestry_wins_over_a_moving_project_root_namesake (tests.test_kosmic_owner_ancestry_migration.OwnerAncestryMigrationTest.test_owner_local_ancestry_wins_over_a_moving_project_root_namesake)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T124330Z-owner-ancestry-migration-12064571fb9ed7af84bbb8e6405b1069/worktree/skills/scripts/kosmic_specs.py", line 294, in validate
+    self.resolve(self.root / "subprojects" / owner / reference, owner=owner, kind="prd")
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T124330Z-owner-ancestry-migration-12064571fb9ed7af84bbb8e6405b1069/worktree/skills/scripts/kosmic_specs.py", line 241, in resolve
+    raise SpecError("OWNER_MISMATCH", ref.qualified_id)
+skills.scripts.kosmic_specs.SpecError: OWNER_MISMATCH: demo/root-feature/prd/prd. Resolve the owning Project and subproject; correct owner metadata or use that explicit scope.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T124330Z-owner-ancestry-migration-12064571fb9ed7af84bbb8e6405b1069/worktree/tests/test_kosmic_owner_ancestry_migration.py", line 25, in test_owner_local_ancestry_wins_over_a_moving_project_root_namesake
+    receipt = apply_migration(root, case.plan_path, plan["digest"], case.reference)
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T124330Z-owner-ancestry-migration-12064571fb9ed7af84bbb8e6405b1069/worktree/skills/scripts/kosmic_migration.py", line 645, in apply_migration
+    handle, _, catalog = _candidate(root, plan, inputs, record)
+                         ~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T124330Z-owner-ancestry-migration-12064571fb9ed7af84bbb8e6405b1069/worktree/skills/scripts/kosmic_migration.py", line 342, in _candidate
+    catalog.validate()
+    ~~~~~~~~~~~~~~~~^^
+  File "/tmp/kosmic-yaml-links-uek_miex/.tmp/kosmic/runs/20261011T124330Z-owner-ancestry-migration-12064571fb9ed7af84bbb8e6405b1069/worktree/skills/scripts/kosmic_specs.py", line 296, in validate
+    raise SpecError("ANCESTRY_INVALID", f"{owner}: {error}") from error
+skills.scripts.kosmic_specs.SpecError: ANCESTRY_INVALID: existing: OWNER_MISMATCH: demo/root-feature/prd/prd. Resolve the owning Project and subproject; correct owner metadata or use that explicit scope.. Repair owner-local parent links and their declared ancestor chain.
+
+----------------------------------------------------------------------
+Ran 1 test in 0.058s
+
+FAILED (errors=1)

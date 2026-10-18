@@ -22,6 +22,15 @@
       "rationale": "Destination-sibling staging directory feeding publish_tree atomic Skill Pair publication."
     },
     {
+      "id": "kosmic/ephemeral-command-scratch",
+      "module": "skills/scripts/kosmic_project_skills.py",
+      "function": "ephemeral_command_run",
+      "call": "tempfile.TemporaryDirectory",
+      "anchor": "tempfile\\.TemporaryDirectory\\(prefix=f\"kosmic-ephemeral-\\{purpose\\}-\"\\)",
+      "classification": "ephemeral-scratch",
+      "rationale": "Story 074 STD-074-2: read-only commands (projection validation, provenance) must not create persistent managed-run state. Their transient scratch is a throwaway TemporaryDirectory removed at command exit; startup maintenance stays report-only and no run directory, manifest, handle, or holder outlives the command."
+    },
+    {
       "id": "kosmic/notes-migration-staging",
       "module": "skills/scripts/kosmic_project_skills.py",
       "function": "migrate_notes_bundle",
@@ -85,6 +94,15 @@
       "rationale": "Destination-sibling staged copy of the library tree for the governed migration transaction."
     },
     {
+      "id": "library/role-recovery-staging",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "_migrate_classified_topics",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"kosmic-role-migration-\", dir=root\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staging for approved legacy Topic metadata recovery."
+    },
+    {
       "id": "router/generate-staging",
       "module": "skills/scripts/kosmic_shared_library.py",
       "function": "generate_router",
@@ -116,7 +134,7 @@
     {
       "id": "policy/skill-md-file-hygiene",
       "path": "skills/SKILL.md",
-      "anchor": "File Hygiene Before Coding and Before Final Status",
+      "anchor": "Managed Scratch & Hygiene",
       "classification": "managed-run",
       "rationale": "Orchestrator scratch policy replaced by one managed-run step plus the lifecycle reference in story-053; durable pending-test, evidence, patch, and generated-output rules are preserved."
     },
@@ -137,7 +155,7 @@
     {
       "id": "policy/task-quick-task-hygiene",
       "path": "skills/references/task_quick_task.md",
-      "anchor": "Managed Run Before Scratch",
+      "anchor": "Implement",
       "classification": "managed-run",
       "rationale": "Quick-task reference to the duplicated hygiene section; cut over to the managed-run step in story-053."
     },
@@ -191,16 +209,16 @@
       "module": "skills/scripts/kosmic_project_skills.py",
       "function": "validate_current_projection",
       "migrated_from": "tempfile.TemporaryDirectory(prefix=\"kosmic-validation-\")",
-      "mechanism": "managed_command_run(project.root, purpose=\"validate-projection\")",
-      "rationale": "Story 048 moved the projection drift rebuild below a disposable managed run; the run is begun and terminally finalized through the shared kosmic_runs lifecycle with the same Git boundaries as explicit scratch commands."
+      "mechanism": "ephemeral_command_run(project.root, purpose=\"validate-projection\")",
+      "rationale": "Story 048 moved the projection drift rebuild below a disposable managed run. Story 074 STD-074-2 reclassified validation as read-only: the rebuild now runs in a throwaway ephemeral scratch that leaves no persistent run state, and maintenance reporting stays report-only."
     },
     {
       "id": "kosmic/provenance-managed-run",
       "module": "skills/scripts/kosmic_project_skills.py",
       "function": "collect_provenance",
       "migrated_from": "tempfile.TemporaryDirectory()",
-      "mechanism": "managed_command_run(repo, purpose=\"provenance\")",
-      "rationale": "Story 048 moved the temporary Git index below a disposable managed run; the index lives in the run scratch tree and the run finalizes through the shared lifecycle."
+      "mechanism": "ephemeral_command_run(repo, purpose=\"provenance\")",
+      "rationale": "Story 048 moved the temporary Git index below a disposable managed run. Story 074 STD-074-2 reclassified provenance as read-only: the index now lives in a throwaway ephemeral scratch and no run directory, manifest, or handle is created."
     }
   ]
 }

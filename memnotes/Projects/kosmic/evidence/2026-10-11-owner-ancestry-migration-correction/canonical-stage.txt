@@ -1,0 +1,13 @@
+Exact replacement digest: b1a87b1dd0c4626b2946b99cc2f757161ba001c7f2794ff4a2ad63991140575f
+Full canonical candidate: catalog valid; all mapped live links valid; all 112 final identities resolve
+Existing owner entry: ---
+schema: "kosmic.subproject/1"
+project_id: "kosmic"
+subproject_id: "deterministic-flat-spec-migration"
+title: "Deterministic Flat Spec Migration"
+linked_prd: "specs/prd.md"
+status: "draft"
+---
+
+# Deterministic Flat Spec Migration
+

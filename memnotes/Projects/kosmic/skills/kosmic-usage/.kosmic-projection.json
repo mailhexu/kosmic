@@ -7,15 +7,9 @@
   "sources": [
     {
       "audience": "usage",
-      "path": "notes/atomic-skill-publication.md",
-      "reference": "references/atomic-skill-publication.md",
-      "sha256": "36e081cc47e2de36eac2f98ece82e8f718fed105cbf0f51f5f49fdba2144e00a"
-    },
-    {
-      "audience": "usage",
       "path": "notes/cli-projection-commands.md",
       "reference": "references/cli-projection-commands.md",
-      "sha256": "f1accb943443488d5eaec0bf4cd39885ff2ba6d034f47a07ff14ddfb23ea0385"
+      "sha256": "64b09116ae8984418ca43b8ccf8bf77f5c2f902d4a502212be4e784de2d63344"
     },
     {
       "audience": "usage",
@@ -27,7 +21,7 @@
       "audience": "usage",
       "path": "notes/managed-run-workspace-lifecycle.md",
       "reference": "references/managed-run-workspace-lifecycle.md",
-      "sha256": "4c3faeb35758bd15d8b257a292c372882ad931726517f1f906abe9605c2faf11"
+      "sha256": "46c34aa4d2152b8ac1ca489a79de87be832dd06129ca4621f5efe43599965084"
     },
     {
       "audience": "both",
@@ -51,7 +45,7 @@
       "audience": "usage",
       "path": "notes/shared-domain-skill-library.md",
       "reference": "references/shared-domain-skill-library.md",
-      "sha256": "f96f86a1180b781ea5bd111a4e1cae3570532fd579daa35f52c95bad7c6acfe0"
+      "sha256": "f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940"
     }
   ],
   "working_state": "working-tree"

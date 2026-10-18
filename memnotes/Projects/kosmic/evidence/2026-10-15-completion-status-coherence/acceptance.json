@@ -1,0 +1,30 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/keep-completion-status-coherent-with-terminal-receipts",
+  "record_path": "specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md",
+  "results": [
+    {
+      "criterion": "Successful finish leaves its receipt valid and every registered or bound STATUS projection current.",
+      "outcome": "passed",
+      "observation": "Real CLI work start + work finish in the existing WorkRecordTest fixture (independent subprocess): finish exit 0, check_terminal_receipt successful, status_drift(load_project) false, completed story row renders 'done' with no receipt-pending suffix while unrelated unreceipted records keep theirs. Same scenario before the fix returned status_drift true.",
+      "artifacts": [{"path": "evidence/2026-10-15-completion-status-coherence/smoke-before.json", "sha256": "107bd48beaf2a957f1dc628468d448c924e0d6f821760b33c9401b99d9bb0434"}]
+    },
+    {
+      "criterion": "Retrying after interrupted STATUS publication repairs the projections without rewriting the receipt or duplicating the completion log.",
+      "outcome": "passed",
+      "observation": "Fault-injected STATUS atomic-write failure leaves record done with a valid receipt; retry repairs both the bound status_root report and a registered-directory report; receipt bytes and completion-log bytes unchanged with exactly one log line. Covered by tests/test_kosmic_work_records.py regression test_interrupted_status_publication_recovers_without_receipt_rewrite (red before the fix with COMPLETION_PENDING on missing receipt, green after).",
+      "artifacts": [{"path": "evidence/2026-10-15-completion-status-coherence/test_kosmic_work_records.py", "sha256": "cea56af3dffc902f427435c217d4a8a20ac6e1fb6ec4a03d2cf10a167c878311"}]
+    },
+    {
+      "criterion": "Missing or stale proof still blocks completion; unrelated pending historical records remain pending.",
+      "outcome": "passed",
+      "observation": "Regression test_valid_receipt_retry_still_denies_corrupted_proof: tampering an acceptance artifact after a successful finish makes the retry fast path raise ACCEPTANCE_INVALID. No historical pending receipt was backfilled; the wave-2 closure record remains receipt-pending in STATUS by design.",
+      "artifacts": [{"path": "evidence/2026-10-15-completion-status-coherence/kosmic_completion.py", "sha256": "b0e93506188d44a509afad16dd113154f8c5382c03938b2c49578ea5ffc13d48"}]
+    },
+    {
+      "criterion": "Workflow and generated guidance use supported work-record flags and accurately describe recoverable, non-atomic publication.",
+      "outcome": "passed",
+      "observation": "record_first_contract line 1365 now emits `work show ... --work-record RECORD_REF`; task_quick_task.md:93, work_completion.md, README, task_implement_story.md:424 and the finish subcommand help distinguish receipt authority from derived reports and drop cross-file atomicity claims; mutating command examples in task_project_skills.md and docs/installation.md carry --work-record. Round-2 fresh-context review approved both round-1 findings as fixed."
+    }
+  ]
+}

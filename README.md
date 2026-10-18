@@ -150,7 +150,7 @@ interrupted publication only with that operation ID. Work-directory registration
 is a bounded bootstrap operation tied to its Quick Task. Migration planning is
 read-only; applying a plan remains a separate approved gate.
 
-### Explicit work records and receipt-last completion
+### Explicit work records and authoritative-receipt completion
 
 Mutating implementation commands resolve `--work-record REF` at invocation time.
 They do not retain a work session or approval cache. Start is a stateless check
@@ -166,10 +166,14 @@ that rejects pre-existing worktree changes; one record uses one clean worktree.
         --project PROJECT --worktree DIR --work-record QUALIFIED_ID \
         --scope worktree:src/ --scope project:evidence/PACK/
 
-Finish checks the worktree diff against declared scopes, verifies acceptance
-evidence and the pinned review, publishes status/index/STATUS/log outputs, then
-writes the successful receipt last. Until that receipt matches, `done` remains
-pending to readers; rerun finish after interruption to converge publication.
+Finish checks the worktree diff against declared scopes and verifies acceptance
+evidence and the pinned review first. It then updates status/index/log outputs,
+publishes the successful receipt as the authoritative completion marker, and
+derives the STATUS projections from that receipt — stepwise, not cross-file
+atomic. Until the receipt matches, `done` remains pending to readers; rerun
+finish after interruption. A retry with an already-valid receipt keeps it
+unchanged and regenerates only the derived reports.
+
 Read-only queries and checks need no work record. Bounded bootstrap operations
 retain only their documented first-write contracts; there is no work-session
 switch or work recovery journal.

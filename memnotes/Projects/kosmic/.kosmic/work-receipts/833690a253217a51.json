@@ -1,0 +1,17 @@
+{
+  "completed_at": "2026-10-12T07:40:58Z",
+  "detail": "Predecessor Story 001 completed with user acceptance of capped findings; approved live migration recovery/idempotence criteria and review evidence validated.",
+  "identity": "kosmic/deterministic-flat-spec-migration/story/002",
+  "proof": {
+    "evidence/2026-10-11-deterministic-flat-spec-migration/acceptance-002.json": "8452d1eb7f1b1c069d378e1f1db82e5075dd95393677444f63081403a46ec618",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/review-002.json": "9e37365b835631290f60710c87bf70fb393a5cc645c452ce4286146eb8c0528e",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+  },
+  "record_path": "subprojects/deterministic-flat-spec-migration/specs/stories/story-002.md",
+  "record_sha256": "fc39eae423b00a48a3770b6a58fe28df0defbd548850d3a8136834e44efd5e27",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

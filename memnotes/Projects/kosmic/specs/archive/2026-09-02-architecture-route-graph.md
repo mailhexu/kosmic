@@ -5,7 +5,7 @@ archived_reason: "User abandoned the route-graph direction in favor of adapting 
 created: 2026-09-02
 updated: 2026-09-02
 linked_prd: 2026-09-02-prd-route-graph.md
-linked_research: [../research/2026-09-02-route-graph-skill-projection.md]
+linked_research: [../../evidence/2026-09-02-route-graph-skill-projection/memo.md]
 linked_stories: []
 ---
 

@@ -1,0 +1,20 @@
+{
+  "live_link_validation": "passed",
+  "target_checks": [
+    {
+      "source": "specs/prd.md",
+      "destination": "subprojects/electron-magnon-coupling-standalone-emc-package-paper/specs/prd.md",
+      "reference": "../../../research/2026-10-01-visualization-and-showcase-brainstorm.md",
+      "target": "research/2026-10-01-visualization-and-showcase-brainstorm.md"
+    },
+    {
+      "source": "specs/epics/epic-004-visualization-and-showcase.md",
+      "destination": "subprojects/electron-magnon-coupling-standalone-emc-package-paper/specs/epics/epic-004-visualization-and-showcase.md",
+      "reference": "../../../../research/2026-10-01-visualization-and-showcase-brainstorm.md",
+      "target": "research/2026-10-01-visualization-and-showcase-brainstorm.md"
+    }
+  ],
+  "research_write_delete_count": 0,
+  "catalog_validation": "blocked-by-eight-legacy-ancestry-gaps",
+  "authoritative_migration_applied": false
+}

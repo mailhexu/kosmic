@@ -1,0 +1,1219 @@
+{
+  "record": "kosmic/quick-task/preserve-missing-mathdoc-knowledge-as-drafts",
+  "writer_baseline": "f4e7feabbf067ed93043cafa19aeabc557a9d060",
+  "note_count": 109,
+  "body_changes": 0,
+  "notes": [
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/afm_1d_gamma_q_magnon_report.md",
+      "reason": "afm_1d_gamma_q_magnon_report.md display math requires one MathDoc marker per equation",
+      "before_sha256": "22fbcc2f23a7fa4911e249b46de1f9e587e76809b622b8c4bc124bc2bd95b991",
+      "body_sha256": "e24352a91864bd0605a8f06c3512ddaa72ec12445970ad4dbd0db22e69da0d56",
+      "after_sha256": "6e719fcfd94e0d69eca293131c148cf6a27dea41c03c0da2b0d6cc888223eee7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/afm_1d_gamma_q_magnon_report.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/afm_1d_gamma_q_magnon_report.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/dmft_static_hamiltonian_patching.md",
+      "reason": "dmft_static_hamiltonian_patching.md display math requires one MathDoc marker per equation",
+      "before_sha256": "73e6e2baea31f96fca8264bb49597a3b85396bafe1d3ccadde2e0ce36abfd66a",
+      "body_sha256": "d55c1527be1c32a7e9c6ed3ddff18712372b66d76dbd14ae7bab264c1d8acdb4",
+      "after_sha256": "7748bfec1c57cc40763092e99ca2fcaa5cdfb6a3ab53c7dade79bd53ab845bf3",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/dmft_static_hamiltonian_patching.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/dmft_static_hamiltonian_patching.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/dmft_tb2j_workflow.md",
+      "reason": "dmft_tb2j_workflow.md display math requires one MathDoc marker per equation",
+      "before_sha256": "a835fbc00482063e6f30f8915fff95f8d8bf0258d3323d91efd06dcbba68af4a",
+      "body_sha256": "edb34c0fe4400821eba5edf21f864f64fda0e2129eee4b97ce882b01e32053d2",
+      "after_sha256": "b07494fe5f7119a080a0464fd24c87432cd484fb198552280bc775d551ceca29",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/dmft_tb2j_workflow.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/dmft_tb2j_workflow.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/exchange_tensor.md",
+      "reason": "exchange_tensor.md display math requires one MathDoc marker per equation",
+      "before_sha256": "293395d3a0ea6192c022e4cecf09f27f94492598492855534085e51befeef42c",
+      "body_sha256": "3629a89dd6b17943b1f368a6f5690e751cd9948dc67ef0cb15a61b0b8c260d06",
+      "after_sha256": "82c3af1e0a51c7b3ca25e762b7606e070058d1fe1315a069810e5d6f24306b0e",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/exchange_tensor.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/exchange_tensor.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/jzz_magnon_energy_report.md",
+      "reason": "jzz_magnon_energy_report.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e4ea11861875441df2955e33d6dc2d142611bc6c5aa6d802f1fad0053b8cc569",
+      "body_sha256": "546847a70b6040b4ad4730f2412894b72626313a440ee651194cfba061d1c3e6",
+      "after_sha256": "e9810bdbb1743f7aeeeac19096f3c48aa78260ac128b10b03e8af29a994f6894",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/jzz_magnon_energy_report.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/jzz_magnon_energy_report.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/magnon_Jq_transform.md",
+      "reason": "magnon_Jq_transform.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e4226257012434007dc72f111f63e94f040f5a67239d52ee382fbc69bf3f4fb8",
+      "body_sha256": "6ddfb00d5168f324bf918d22f5626c0f7aca1880021f0048500df7d7e7c86aba",
+      "after_sha256": "6aa3a24f24c07a7f9210a7b1f3041bbe059a8b2db158174994b2054bf398be04",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/magnon_Jq_transform.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/magnon_Jq_transform.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/magnon_diagonalization.md",
+      "reason": "magnon_diagonalization.md display math requires one MathDoc marker per equation",
+      "before_sha256": "dd4379b1038370576c583fd10ac1b6e325d65ab130833a5823951afa65172894",
+      "body_sha256": "46989e4147d3d77116bb6b42a0397c9c47ee0b454696cedfb9edd69f8a28e255",
+      "after_sha256": "b4dfda34a07ed4dc60eb5e30d1e7363b8c98636f75694408d24c8d5274c0834c",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/magnon_diagonalization.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/magnon_diagonalization.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/magnon_dos.md",
+      "reason": "magnon_dos.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e985a228330ec82939d8d98c6cff24aed4b25b8dd99dff0d455176699bb24ed5",
+      "body_sha256": "8d9f416b8edba85998366071de741713972811be5729bc64cc8bb384a5134f86",
+      "after_sha256": "507a15f5a81b5a2e087d5396d87ac33b6d3287c9e3d5318b6e0d4e2f20b891d2",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/magnon_dos.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/magnon_dos.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/magnon_hamiltonian.md",
+      "reason": "magnon_hamiltonian.md display math requires one MathDoc marker per equation",
+      "before_sha256": "787e3be14a539ff0c79df51d44c899aafed217ff7729983e5e297ba244f8cc72",
+      "body_sha256": "e147603a59ef7a1f20d369fa96b11430e2f33262dae89bd7bde8d34c646a1a95",
+      "after_sha256": "3cf191968165c7ffdb511f185ffaeeade15a04b374a00cf42d19ebbacfd61afb",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/magnon_hamiltonian.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/magnon_hamiltonian.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/paw_projector_hamiltonian_dij.md",
+      "reason": "paw_projector_hamiltonian_dij.md display math requires one MathDoc marker per equation",
+      "before_sha256": "c29c1554d17332dad5bc2964356cd28d754993acab92ea04544dc6c0f36f4ca8",
+      "body_sha256": "e3c92fdd906210d8da34289e380d512fa1e5f73651a48728435b0f1229af6bee",
+      "after_sha256": "77bbd39cdd28fc95c3e3b485daec4cb1e3c60820493628a5ddac2ab9203b0784",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/paw_projector_hamiltonian_dij.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/paw_projector_hamiltonian_dij.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/projector_green_metric_unification.md",
+      "reason": "projector_green_metric_unification.md display math requires one MathDoc marker per equation",
+      "before_sha256": "ff295d9882ea1392b394f966815147212ff38c77a56ff84f2bd9bf1a3861a368",
+      "body_sha256": "b005d3febfed04741d85ce459e8ac44469af5fbde48ca7cebd21f50a15126600",
+      "after_sha256": "cfda99602a4c538221cda917952dddd44a420ea6b7a28fbddd3715c1576e80de",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/projector_green_metric_unification.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/projector_green_metric_unification.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/projector_green_refactor_assessment.md",
+      "reason": "projector_green_refactor_assessment.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e82f3f0900bcd0f362ba4862434bc6092726d1fa62faef0f06893691cffce021",
+      "body_sha256": "3f7944c967d54de688695617d610e1e4d77059a3e72d31d46f370f2c9569feae",
+      "after_sha256": "ef3df3038804326ff0072a3b940e19cf63a2b8853d54cccf084a844204dc2a62",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/projector_green_refactor_assessment.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/projector_green_refactor_assessment.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/projector_greens_netcdf_schema.md",
+      "reason": "projector_greens_netcdf_schema.md display math requires one MathDoc marker per equation",
+      "before_sha256": "1f2e033a31137754f76fc8e79ee9c630a0f0b68ba67e883077b438378f3b1ebf",
+      "body_sha256": "82615cebbfab8cf9bef354759a500544a31360c971ec7be6c1c884840b8bb6de",
+      "after_sha256": "eeee81d2107cff902539e4bce4c1d0a75798b4ca9726eb78633f38d28f8f22ae",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/projector_greens_netcdf_schema.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/projector_greens_netcdf_schema.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/qe_mixed_pseudopotential_types.md",
+      "reason": "qe_mixed_pseudopotential_types.md display math requires one MathDoc marker per equation",
+      "before_sha256": "b9acbc1a7420748a7f28d84e29a014c464247288a8e93b411378f12fed2aa0f8",
+      "body_sha256": "5364e663efd732725bbd11dd2437e695e6c439138b9984ab8a64f694e923ce8d",
+      "after_sha256": "627443e21da3a6be35a1fcca4e8b64b81dbfd7e8ff730520084dea151e6ee6de",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/qe_mixed_pseudopotential_types.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/qe_mixed_pseudopotential_types.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/qspace_exchange_mathematics.md",
+      "reason": "qspace_exchange_mathematics.md display math requires one MathDoc marker per equation",
+      "before_sha256": "142e60aabb12c01aa9811e0bf6f67778f9aba707088101c7df40f9ff4176b680",
+      "body_sha256": "0c1bf5087ea4ac3570835f2c4f33c4017ce2a6af9277b1a26eb306fd8a50cddc",
+      "after_sha256": "df8a4395833dba702b0cbc5e112fe1d02b03a01c4df0eb9fc57a49ee676da003",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/qspace_exchange_mathematics.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/qspace_exchange_mathematics.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/qspace_ncl_mathematics.md",
+      "reason": "qspace_ncl_mathematics.md display math requires one MathDoc marker per equation",
+      "before_sha256": "cf7e57c438b360ee3162fb6db840e52bb3635c01389794b0687e291410079157",
+      "body_sha256": "d4832558f921c2437238b79cb574154a46e6efb373e59a5c3a9524d3250f4adb",
+      "after_sha256": "53040947c30b122ee8ea5a30da72b4426873fb8000aeff2da09b9ce7c03186c4",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/qspace_ncl_mathematics.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/qspace_ncl_mathematics.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/sia_tensor_refactoring.md",
+      "reason": "sia_tensor_refactoring.md display math requires one MathDoc marker per equation",
+      "before_sha256": "1d4b6b1561d1e5f56f20ff07640a44234b86f981f979ed07792cfc9beef3c0ab",
+      "body_sha256": "a93e69684f6612286028df790dcdfe74a2998c6985be69e87013920ffcd8a9ce",
+      "after_sha256": "cc62f322143249fdadc8768b64c041adb694335ebad62aaafb8c72f3ad9d6661",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/sia_tensor_refactoring.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/sia_tensor_refactoring.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/siginp_format.md",
+      "reason": "siginp_format.md display math requires one MathDoc marker per equation",
+      "before_sha256": "ef3a10c80c09e86b14b814da44a34d2553cc9362f3a8d505ebb7d47e7b16f7ab",
+      "body_sha256": "506441e7571b532277dc8218db9da215caedb19b7dba3c199161d1eb5428d694",
+      "after_sha256": "eb356ec18154030fa6a70d82c39f0e48ee6cc65df1a307f6f72478d0484abd56",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/siginp_format.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/siginp_format.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/srmo3_spiral_metal_caveats.md",
+      "reason": "srmo3_spiral_metal_caveats.md display math requires one MathDoc marker per equation",
+      "before_sha256": "6b76aa32731c5eb326bbf48268c75f28701a2037500fa04ffdb1099805285075",
+      "body_sha256": "5e38fbb9c8bc8a410c024a820f7cd9f3a232443a154ae6c300bf343dd50467e6",
+      "after_sha256": "45be62aa72937a05a0f0fcafa7352bc3c876e6a58cac4970829b33ded7d51a01",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/srmo3_spiral_metal_caveats.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/srmo3_spiral_metal_caveats.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/vasp_projector_green_exporter.md",
+      "reason": "vasp_projector_green_exporter.md display math requires one MathDoc marker per equation",
+      "before_sha256": "eac1bffb3c6a94e68a1bb85e66347bb1ecd04bd3653a7cec13d2e7ca2c7f54b6",
+      "body_sha256": "33412d46b82e8ba346e30966649cfb485516e77d9e8bd4dcf2e0b2f7dec8ecad",
+      "after_sha256": "a0d88728bc8346950d304cd3673a9c1d35500f617341c53ac68ca44271e11a96",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/vasp_projector_green_exporter.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/vasp_projector_green_exporter.md"
+    },
+    {
+      "project": "TB2J",
+      "path": "Projects/TB2J/notes/z_component_magnon.md",
+      "reason": "z_component_magnon.md display math requires one MathDoc marker per equation",
+      "before_sha256": "bba3ea41894dec76af8e1ef1e8c543a198841b43e8d861c63ab9654b931dd4f4",
+      "body_sha256": "dba972c2cd96b33addfbd08e8c8f4764de284939d7ead9b7191eaa74549ed81a",
+      "after_sha256": "4debe26b19e7e7458c75d0fc33d4351f4e02fac7140b948c0157c5bd2c4df065",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J/notes/z_component_magnon.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J/notes/z_component_magnon.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/abinit_mpi_cg_loop_template.md",
+      "reason": "abinit_mpi_cg_loop_template.md display math requires one MathDoc marker per equation",
+      "before_sha256": "0e69e16b707301eabde5f34095ec3db0c5e491ed6c11d104fa2ce8097dc5e132",
+      "body_sha256": "bc98f5451325722dbb7236e77b1f77aa92755cf27fbc0b835876f3bdab0321df",
+      "after_sha256": "8d5b9094a4bc48c852298544e0a24dfb9dc541f6bc6a57073431e57027518c61",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/abinit_mpi_cg_loop_template.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/abinit_mpi_cg_loop_template.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/equations-for-energy-forces-stress.md",
+      "reason": "equations-for-energy-forces-stress.md display math requires one MathDoc marker per equation",
+      "before_sha256": "16ccf26f1591535a0acd9f26a89cba4dccf181e22cf3fa4d3fcb94b5fcce6e86",
+      "body_sha256": "83a597592cfd0984f9f2d50abe5626377e1af8fb44120481f64b753118378167",
+      "after_sha256": "a2303ff030694cbcbc2378be0650f264257e8f8fe7e6fa5758a880827150f736",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/equations-for-energy-forces-stress.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/equations-for-energy-forces-stress.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/hgg-dftu-export-dataflow.md",
+      "reason": "hgg-dftu-export-dataflow.md display math requires one MathDoc marker per equation",
+      "before_sha256": "965e09ab7ea0541d432002848669141e54f31d6bffa45af022e3a43c0b083974",
+      "body_sha256": "722e7552221ae35dafa10d01d557001fe5662591a554c345cd1e98ab31716bf4",
+      "after_sha256": "05d9cfd4cb948cfe92478cd53de489e113373638c62df6d33b8563373fa7ec3f",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/hgg-dftu-export-dataflow.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/hgg-dftu-export-dataflow.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/hgg-reconstruction-conventions.md",
+      "reason": "hgg-reconstruction-conventions.md display math requires one MathDoc marker per equation",
+      "before_sha256": "fe3b7d782028159eef9889f8e6f7254d935ecc15cb6df3e7279a9137554cf660",
+      "body_sha256": "b1fa00b19150036880bea4d57a4f3b87c1059b6b144cec7073c8dc659884bfb4",
+      "after_sha256": "8cd73b433155a9cd588015a7277c386c6a0608e34ec897480e68432c84ed472d",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/hgg-reconstruction-conventions.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/hgg-reconstruction-conventions.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-definition-first-model.md",
+      "reason": "nc-dftu-definition-first-model.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e01c297242d59ff35f2bce3121e4bf1019e4e3a977b519f164a82a3ef98b33e9",
+      "body_sha256": "cc876e95f836a24e6035eddc2019fa00e48ea8fb960d2c2c9d6a6fa11016b46e",
+      "after_sha256": "e6d0b624f7e9a73072e2b83e1057af52dd7938e07d309a95232d7a7a768d2ff4",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-definition-first-model.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-definition-first-model.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-derivation-audit.md",
+      "reason": "nc-dftu-derivation-audit.md display math requires one MathDoc marker per equation",
+      "before_sha256": "bd18668bf0af19921e947dea580e96a7310d35d8c76afbd622c5c87f76130767",
+      "body_sha256": "107a4cd3e8f0250a143c771e8e87d992e2408eb745342da96a33dd6ec5fbf083",
+      "after_sha256": "24ce03fdf5a0e5409fd8e61c5fbe86b48a6e352199ba904cdd59fe7b1af5cfd2",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-derivation-audit.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-derivation-audit.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-dfpt-equations-and-code.md",
+      "reason": "nc-dftu-dfpt-equations-and-code.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e48f374ae7f87f9237ed55f0401d773a546ec8f2500df3dee330679b793c97ec",
+      "body_sha256": "11da8e4352bb6a71b9a9bd8bf8eecb5d010b64f8467ab57c2c334482c8f0352e",
+      "after_sha256": "c8588fa8e3a4882f7f1602ed652c5ba0cb0b8ffd74bfb6883919d5f9b380eb35",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-dfpt-equations-and-code.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-dfpt-equations-and-code.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-dfpt-implementation-report.md",
+      "reason": "nc-dftu-dfpt-implementation-report.md display math requires one MathDoc marker per equation",
+      "before_sha256": "62357ac84a7e572ce134dca4717d470c4967695f01dcf825e64b839b04eea1ab",
+      "body_sha256": "bec36894cd185e7df941fa23abef4d711e795414aa6c7833f47c02a21fd6ac93",
+      "after_sha256": "8b80ce744cec45ad2b7f82983d6dc0adf9b562eeaed44609c8396924d0d8c069",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-dfpt-implementation-report.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-dfpt-implementation-report.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-electric-bec-ddb-cache.md",
+      "reason": "nc-dftu-electric-bec-ddb-cache.md display math requires one MathDoc marker per equation",
+      "before_sha256": "d97ba341694dde6b9d70858ddea7d4d443dbbd60393593fafc26d44cf52ac922",
+      "body_sha256": "de3c4c3156cd9cb81079977c3a9d8ef493bd3323c6cb74947f496d0f94d932d5",
+      "after_sha256": "993b832c8bb8b5bfdffbb16617bdbf078831e6eecbd6aa8eca7c62fa9d97e8c8",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-electric-bec-ddb-cache.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-electric-bec-ddb-cache.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-electric-ddk-ddb-trace.md",
+      "reason": "nc-dftu-electric-ddk-ddb-trace.md display math requires one MathDoc marker per equation",
+      "before_sha256": "44ffa34ea8812c87bbf17cfb6e1ecf890a0763603c30f29fb5f2bbd8ba67d551",
+      "body_sha256": "2e441a7534b220beb0fff77b55514362f758501e3519d9a16a73d2839cc392b0",
+      "after_sha256": "45ece5ad60ad310e9b1c4283b6fda6af81bbbc98f141290e4d1c68eef91a051a",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-electric-ddk-ddb-trace.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-electric-ddk-ddb-trace.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-electric-dielectric-ddb-cache.md",
+      "reason": "nc-dftu-electric-dielectric-ddb-cache.md display math requires one MathDoc marker per equation",
+      "before_sha256": "c7e08598ae07431746edcb894adc2774c758b9dd7e8b747366b3283d40c55311",
+      "body_sha256": "844a964d5475affa7211dd18804e9ed2dfa9567f7b818c5a00aae9c2afceeddd",
+      "after_sha256": "cc565ab36bc9f0e510632c9305edff75e0bfdb5695375b9c826f71fb3d9b624b",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-electric-dielectric-ddb-cache.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-electric-dielectric-ddb-cache.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-electric-fixed-projector-source.md",
+      "reason": "nc-dftu-electric-fixed-projector-source.md display math requires one MathDoc marker per equation",
+      "before_sha256": "195aacfcdb3acbcb3314b4125a819300c19067bfd9586c7a835f3719dbf79ab4",
+      "body_sha256": "2bd09615b9bebcef3408b76bc097a3340603f7f0646b4b9ced70e8f8ab3cb6e4",
+      "after_sha256": "9c8edff7fb1562be3367106f582c69c8cb3d23e5657e72c223400a118f3a8695",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-electric-fixed-projector-source.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-electric-fixed-projector-source.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-electric-occ1-v1-diagnostics.md",
+      "reason": "nc-dftu-electric-occ1-v1-diagnostics.md display math requires one MathDoc marker per equation",
+      "before_sha256": "46578e5217aa0a27adce2946cd92f476ac94aedbdbad342b08337ffab0df8d46",
+      "body_sha256": "f8ac45c0660042471dc0aa269af9dcf054a8109240b6f1bf150b06393215aeb4",
+      "after_sha256": "0791054ca3ce168a2999ddb12a683e9af2ff623e10dfcd761750641c11d0aed7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-electric-occ1-v1-diagnostics.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-electric-occ1-v1-diagnostics.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-finite-q-response-trace.md",
+      "reason": "nc-dftu-finite-q-response-trace.md display math requires one MathDoc marker per equation",
+      "before_sha256": "de80fe0b8647bd59911fd86f0991c73f395cbecd488e178961201cd1fc03f26f",
+      "body_sha256": "001d6d5c832da0d4fab70b19aed11d82c4b3467eba2d7c9b6a76e353560c0ba1",
+      "after_sha256": "e1b5a4238f8016236d63abd72103cd4c2a23fda868552164a7c7879b068e567b",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-finite-q-response-trace.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-finite-q-response-trace.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-lichtenstein-libpaw-refactor-report.md",
+      "reason": "nc-dftu-lichtenstein-libpaw-refactor-report.md display math requires one MathDoc marker per equation",
+      "before_sha256": "6c78463eaec06c71759396fc9509ad407534935f91854d41059ae56d7980595d",
+      "body_sha256": "e3eb25f4c3a8411f6d94badf3685e6ded833e5678feea76b94748e7bd500faca",
+      "after_sha256": "d7f3c5c1da33692c29066a96b4118389cd1ae036e58d396d253f89a5e9308586",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-lichtenstein-libpaw-refactor-report.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-lichtenstein-libpaw-refactor-report.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-packed-spinor-cartesian-rotation.md",
+      "reason": "nc-dftu-packed-spinor-cartesian-rotation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "84226c15c79eca76b4fed37569b322afcbff947fa125c4f347bccebb0aec913c",
+      "body_sha256": "4dd1b5ff515884c6861af07dd2926100539cb7a63ef1c9d0d92d8c89ea8485d5",
+      "after_sha256": "b40d43f9f90b7299c1a04c9f51fb010cf0312dee6d64652969e6ab0e3c96a9dc",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-packed-spinor-cartesian-rotation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-packed-spinor-cartesian-rotation.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-scalar-dudarev-2dte-audit.md",
+      "reason": "nc-dftu-scalar-dudarev-2dte-audit.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e1e72f969bb798b825bca95d6cfc35fde9c38a40f0222c958c7b96c39bb10e87",
+      "body_sha256": "dec84ea5ab62b52cf99238e7d98d772b6568d1e3613c164decef1d60b5f3fc98",
+      "after_sha256": "8e9d055dac668a2e0ce8d270ea0d182ea1244a8551b2451d0ff805924329f4f0",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-scalar-dudarev-2dte-audit.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-scalar-dudarev-2dte-audit.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-spinor-electric-ddb-validation.md",
+      "reason": "nc-dftu-spinor-electric-ddb-validation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "b620b5427432c783d9a910fad2a46ab6088b2293763c557f9171d9797b38727f",
+      "body_sha256": "5e3dab0366914373f20474b518b8610008f3eb5ddef51eabed21f42e1e2250d7",
+      "after_sha256": "687fef98e2e4623a17c51882e8c71a56da0c9caad57d82b9f953e5fb19f894c8",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-spinor-electric-ddb-validation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-spinor-electric-ddb-validation.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-spinor-finite-q-frozen-curvature.md",
+      "reason": "nc-dftu-spinor-finite-q-frozen-curvature.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e730856dd4945b731604321ca57ee3698cd9069804119275b0b2545478db1033",
+      "body_sha256": "c6c8d093295773c826ed23830a65bc2313e649ae42a70cc7d766c8e8c6c68f6e",
+      "after_sha256": "890ed1ffc7deb0297a03bc2d4ab7b88b46a2c7c8e836c891b320d85602ac4af0",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-spinor-finite-q-frozen-curvature.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-spinor-finite-q-frozen-curvature.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-spinor-gamma-ddb-validation.md",
+      "reason": "nc-dftu-spinor-gamma-ddb-validation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "0c0ed11dc06bfd28695afee533d33094e24838b4e7600662c37aafe0b5b5e2fa",
+      "body_sha256": "d962a58f56951a83c775bf78fec301646601113a268b72becb0bbfd2d5090872",
+      "after_sha256": "30af6ca1e4297f9b0e08079942a80c679fac2a959ecf43aaaf53d67f6675453c",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-spinor-gamma-ddb-validation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-spinor-gamma-ddb-validation.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc-dftu-vs-ordinary-nonlocal-dfpt.md",
+      "reason": "nc-dftu-vs-ordinary-nonlocal-dfpt.md display math requires one MathDoc marker per equation",
+      "before_sha256": "8d1a92d02220a7442a3544df8e751bfd7a20cf27d62f9830a5adb8020779acf7",
+      "body_sha256": "83b167fb7a4d52ef75d1e0985fe19b6557f10eb74d24eb73e6d44fd47805336c",
+      "after_sha256": "fb45d8044adce5712a7c88f40ff2c2738ac6f9f613f7fc2cbbcb673c7305bbe9",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc-dftu-vs-ordinary-nonlocal-dfpt.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc-dftu-vs-ordinary-nonlocal-dfpt.md"
+    },
+    {
+      "project": "abinit",
+      "path": "Projects/abinit/notes/nc_pao_modules.md",
+      "reason": "nc_pao_modules.md display math requires one MathDoc marker per equation",
+      "before_sha256": "fceb1c1d9eabd24befacb004a58f6fab81db6c84133b92bd31f4513f1a6c9676",
+      "body_sha256": "58a7e50f7925794f6b2f0797a16bedfc962c67173c4dd7cd71534ffe748b7dc4",
+      "after_sha256": "1657a54371033ca477e2483f069dbdc79b7eaac00787865eb067e4b57eee99a9",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinit/notes/nc_pao_modules.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinit/notes/nc_pao_modules.md"
+    },
+    {
+      "project": "superexchange_MFT",
+      "path": "Projects/superexchange_MFT/notes/hund_path_90deg_mft.md",
+      "reason": "hund_path_90deg_mft.md display math requires one MathDoc marker per equation",
+      "before_sha256": "ed8a9375326cac3dce18dbaba71417c38dc2cdb7f0c5ca3d749c854d24c7db35",
+      "body_sha256": "64085ca6c9f0761f1b1ad592f4ec0b9d36a81e0f30bab9ed58e2348937ba1b53",
+      "after_sha256": "5a666b9858172d5483a43d871ab796c582df4ea64496a67ea8440a44f397e870",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/superexchange_MFT/notes/hund_path_90deg_mft.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/superexchange_MFT/notes/hund_path_90deg_mft.md"
+    },
+    {
+      "project": "superexchange_MFT",
+      "path": "Projects/superexchange_MFT/notes/tb2j_fe_o_orbital_decomposition.md",
+      "reason": "tb2j_fe_o_orbital_decomposition.md display math requires one MathDoc marker per equation",
+      "before_sha256": "8d64d7f2c985ec4f201131f01d7d9919e5abfd9be0d5a678a62f2a71927c3350",
+      "body_sha256": "9dadd55e4fc336d2c3e9d0c1a4c54cc224d93dd5c7a642916c78162db296e75f",
+      "after_sha256": "fa9618dfe492ddec5d1203fe8f253c1b9f76eefe69e8cb34ffd99098b1fbc745",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/superexchange_MFT/notes/tb2j_fe_o_orbital_decomposition.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/superexchange_MFT/notes/tb2j_fe_o_orbital_decomposition.md"
+    },
+    {
+      "project": "fourstate",
+      "path": "Projects/fourstate/notes/ase_consumer_interface.md",
+      "reason": "ase_consumer_interface.md display math requires one MathDoc marker per equation",
+      "before_sha256": "9f7f2ebb67c0db1d2e5f4c139b7b0b64a582568f3b2effed8d614810b60df718",
+      "body_sha256": "b1de4ef2fffe5248f92a3dd6c6f11cd10142e9b550ac3d979570715e5f5b679a",
+      "after_sha256": "b1100fb08bb6d824589a47c9cd6e94aa9b9172b055ff62a53c6ee578b42a19dd",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/fourstate/notes/ase_consumer_interface.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/fourstate/notes/ase_consumer_interface.md"
+    },
+    {
+      "project": "unfolding",
+      "path": "Projects/unfolding/notes/abinit-wfk-planewave.md",
+      "reason": "abinit-wfk-planewave.md display math requires one MathDoc marker per equation",
+      "before_sha256": "7cb59b7db34750cae3f7291eb0d75fbd7d28b9f86f39b04ae7426760cd1c9d4d",
+      "body_sha256": "85f05e9c06021d7b31dbe259dbdf187919f5f0f111be5a4b1cf29c8ef9362dc5",
+      "after_sha256": "cad54fbd0c2b49b77915b5b5149980153aa251facef1f68f416dc0c0f5642da6",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/unfolding/notes/abinit-wfk-planewave.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/unfolding/notes/abinit-wfk-planewave.md"
+    },
+    {
+      "project": "TBUpy",
+      "path": "Projects/TBUpy/notes/multisublattice_generalized_bloch.md",
+      "reason": "multisublattice_generalized_bloch.md display math requires one MathDoc marker per equation",
+      "before_sha256": "3fe164d7e553e3ae3efec951d82f258b3e9f2afd55b6a6bfc4284bc3b824f6a1",
+      "body_sha256": "349e6c2563744ef55f5ba846b6e6651191027c8e24e976a0e3a6032f3fc85fb0",
+      "after_sha256": "e8b12b34d247682a469f59675bd82616bd4275160b3893ba160dae64a48ffed3",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TBUpy/notes/multisublattice_generalized_bloch.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TBUpy/notes/multisublattice_generalized_bloch.md"
+    },
+    {
+      "project": "TBUpy",
+      "path": "Projects/TBUpy/notes/noncollinear_hubbard_u_design.md",
+      "reason": "noncollinear_hubbard_u_design.md display math requires one MathDoc marker per equation",
+      "before_sha256": "aa2494b2d45fda3e9838b812ae5478336d30a80b44175d06b29eb051f347e4b8",
+      "body_sha256": "a2c5591d9b1ee8c4d3fd9e339335a340761ac3f218c1c1e102d6ccd72ac0cb58",
+      "after_sha256": "4437dcb51793958a9a1922b0f93d358071500408e4590c709bf73c62db2b7134",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TBUpy/notes/noncollinear_hubbard_u_design.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TBUpy/notes/noncollinear_hubbard_u_design.md"
+    },
+    {
+      "project": "TBUpy",
+      "path": "Projects/TBUpy/notes/noncollinear_hubbard_u_implementation.md",
+      "reason": "noncollinear_hubbard_u_implementation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "b9cc06d26ab0cfcb09eac8f8672680a5422115f54317c859ca32e9b9e36e7d6b",
+      "body_sha256": "06bb85c5cace1b39d9e5c0ae65f4486fbeabc8d1b7a87df5ff33ebe193049f57",
+      "after_sha256": "a4180b60ecd84d2102352011caa791fec6b9f2108a3b8bb24405dac321a1166d",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TBUpy/notes/noncollinear_hubbard_u_implementation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TBUpy/notes/noncollinear_hubbard_u_implementation.md"
+    },
+    {
+      "project": "siesta",
+      "path": "Projects/siesta/notes/grid_transformation.md",
+      "reason": "grid_transformation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "c0bb2765aa6973de631d17675a7576d0ccc22cc62b463732d33f284a27c2ffaf",
+      "body_sha256": "dd1f0c6cac26281954e87ee1c9ab8f569961d39ba8c4603ef79e8502e4ae2f46",
+      "after_sha256": "e89a137b5cfe0286555889a31201cb4d9c1df679da900092e251b1a60e31e739",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta/notes/grid_transformation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta/notes/grid_transformation.md"
+    },
+    {
+      "project": "siesta",
+      "path": "Projects/siesta/notes/rhoatm_scf_bootstrap.md",
+      "reason": "rhoatm_scf_bootstrap.md display math requires one MathDoc marker per equation",
+      "before_sha256": "829e71fd71a70499b7f29074ace541d9cd1e6e0eb4140de6e390135effe96136",
+      "body_sha256": "59468870c315bee669531e90e0141341c21c4ede5a32eb086a4c48ddb63a590f",
+      "after_sha256": "1beeb2ea42a53dc43f96c4968f3fbfea8e47e76d13e33c4b17674c28e5c404c7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta/notes/rhoatm_scf_bootstrap.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta/notes/rhoatm_scf_bootstrap.md"
+    },
+    {
+      "project": "siesta",
+      "path": "Projects/siesta/notes/vna_pp_harris_consistency.md",
+      "reason": "vna_pp_harris_consistency.md display math requires one MathDoc marker per equation",
+      "before_sha256": "9e0624e9f22a75608b0ae3caaf06dd3ab104ff42e6700bcc2c526cfe4cd00428",
+      "body_sha256": "243ef98c09f27b3f8fdad1433a65f6dae87c328ef9c74d63a99b631b6a6b81d8",
+      "after_sha256": "b0c5c8dc177c9c5262d064edd767275bff11aafdcf001a24ddb4e1678340d852",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta/notes/vna_pp_harris_consistency.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta/notes/vna_pp_harris_consistency.md"
+    },
+    {
+      "project": "siesta_plusB",
+      "path": "Projects/siesta_plusB/notes/op-local-axis-projector.md",
+      "reason": "op-local-axis-projector.md display math requires one MathDoc marker per equation",
+      "before_sha256": "51028e46e4972d55df0164d55cf635ecf131f5f9307e52357aa4aedf13e600ca",
+      "body_sha256": "318f849ed7a70f3de25974536ae441197e404d790d2191345ccaa801177d4967",
+      "after_sha256": "f4b802e887f2a24a93c72378f20b178a9e2d64221e64b7b5575082a9d79b01e7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_plusB/notes/op-local-axis-projector.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_plusB/notes/op-local-axis-projector.md"
+    },
+    {
+      "project": "siesta_plusB",
+      "path": "Projects/siesta_plusB/notes/scf-convergence-lanthanides.md",
+      "reason": "scf-convergence-lanthanides.md display math requires one MathDoc marker per equation",
+      "before_sha256": "dcb5d3106d24d1b489433dc0b149f03a635bece4985bd4df9ec43fd4cfdfbf0f",
+      "body_sha256": "f7be12abf72f79bb8fe60fd0ddf74b5411ad6583ffb5c1493c4df6aa737c9a19",
+      "after_sha256": "8b58c6ec33397051471b91c881f5c70652cf10ceb03a2005398f9b16a84441ec",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_plusB/notes/scf-convergence-lanthanides.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_plusB/notes/scf-convergence-lanthanides.md"
+    },
+    {
+      "project": "epcdownfolding",
+      "path": "Projects/epcdownfolding/notes/co3sn2s2-mbc-vs-epc-downfolding.md",
+      "reason": "co3sn2s2-mbc-vs-epc-downfolding.md display math requires one MathDoc marker per equation",
+      "before_sha256": "a39a36efe03c9dd4d3809ff6ee3bceea34e8acc5b77caa58b4509bc6dd0383f5",
+      "body_sha256": "85e1157b2c80b65e9f801501fab18f31b2530db10956114b338311b8f5c5c3fc",
+      "after_sha256": "ec6fce2ec04c243b2e6238870a3ac0426c48ed71f7c5ff0288b148d94845c5b3",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/epcdownfolding/notes/co3sn2s2-mbc-vs-epc-downfolding.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/epcdownfolding/notes/co3sn2s2-mbc-vs-epc-downfolding.md"
+    },
+    {
+      "project": "epcdownfolding",
+      "path": "Projects/epcdownfolding/notes/magnon-mediated-chiral-phonon-splitting.md",
+      "reason": "magnon-mediated-chiral-phonon-splitting.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e23bc476c78a95d0afe42b249bffe549a30200d17514a41a4c8097652d2ccc0a",
+      "body_sha256": "381d8804a0ce850c87f1ddbbc7c69750f1ecf2e296aeee2cceb579be5498fccc",
+      "after_sha256": "c8c3a2b97e785292a9b640b673bca31e56aed5112c39c49f20a82c2e5b54bbe9",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/epcdownfolding/notes/magnon-mediated-chiral-phonon-splitting.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/epcdownfolding/notes/magnon-mediated-chiral-phonon-splitting.md"
+    },
+    {
+      "project": "magnetic_descriptor",
+      "path": "Projects/magnetic_descriptor/notes/all-electron-soc-guide.md",
+      "reason": "all-electron-soc-guide.md display math requires one MathDoc marker per equation",
+      "before_sha256": "43da11b9abe593e4bbe0852bca4238f70a65f067d44a32e60ea5c0ecf229072e",
+      "body_sha256": "0fcc1baa394b3e6b47394fc9badd2d79e30f3fa915f1409552976dfb4b8bcc13",
+      "after_sha256": "688581819ae5bf618cdfbddc1654a48ad68dd445f4e7f006132ad9c20daf2c52",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magnetic_descriptor/notes/all-electron-soc-guide.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magnetic_descriptor/notes/all-electron-soc-guide.md"
+    },
+    {
+      "project": "magnetic_descriptor",
+      "path": "Projects/magnetic_descriptor/notes/fr_pseudopotential_soc_encoding.md",
+      "reason": "fr_pseudopotential_soc_encoding.md display math requires one MathDoc marker per equation",
+      "before_sha256": "789eda86fc1c826b6ac0334b61c02bb7f44f026321a5ca2e727319df8169972c",
+      "body_sha256": "7bbd11e558b7b0fca80ac9bc25ee744e68f26c41f743e038c103e22fc7e86382",
+      "after_sha256": "f6efa492a3ac790fec086912005281c961a4c949dda62d74401802d3c6643369",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magnetic_descriptor/notes/fr_pseudopotential_soc_encoding.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magnetic_descriptor/notes/fr_pseudopotential_soc_encoding.md"
+    },
+    {
+      "project": "magnetic_descriptor",
+      "path": "Projects/magnetic_descriptor/notes/magnetic_interaction_descriptor_factorization.md",
+      "reason": "magnetic_interaction_descriptor_factorization.md display math requires one MathDoc marker per equation",
+      "before_sha256": "bb0b8da97eef409e0f40a44f8ac9582ff4ace2f136af653e52f16fb074602ffe",
+      "body_sha256": "a1720bb5ea2f69f522cb88f224ecaebe1c48ec27ade1683079eb4d31ed5587f5",
+      "after_sha256": "7662df6f8de4c0f2a8e9f5ad43d695a92e9abc4db2240ffda0db52dbe88450b3",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magnetic_descriptor/notes/magnetic_interaction_descriptor_factorization.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magnetic_descriptor/notes/magnetic_interaction_descriptor_factorization.md"
+    },
+    {
+      "project": "magnetic_descriptor",
+      "path": "Projects/magnetic_descriptor/notes/siesta_onsite_soc_hamiltonian.md",
+      "reason": "siesta_onsite_soc_hamiltonian.md display math requires one MathDoc marker per equation",
+      "before_sha256": "656bb9ad11fa5b4b48af094cd81fd2126138cf834a000152627244816f424b31",
+      "body_sha256": "a8e54764dbb4050075b623ea1e6764850f520d9833dcf211744a5d765c467d50",
+      "after_sha256": "d23cc20bf12e13d22941364e933b0c9f61c424c46ed92be3882e90e4e92bc837",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magnetic_descriptor/notes/siesta_onsite_soc_hamiltonian.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magnetic_descriptor/notes/siesta_onsite_soc_hamiltonian.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/abacusv3_siab_bessel_cascade.md",
+      "reason": "abacusv3_siab_bessel_cascade.md display math requires one MathDoc marker per equation",
+      "before_sha256": "db6c4387aa4cea50109fd0e334666a60de4f16896ac5dd798114eb8c4c973b90",
+      "body_sha256": "1def8dbfc07a1c0ebc8e09de0750090a9d0b94e79243d1ddad70eb8a19a585e7",
+      "after_sha256": "c39ba0a99ccaddfe8f94611608509fea4bfe5a254c55d01186a6d7ef887ee3c3",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/abacusv3_siab_bessel_cascade.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/abacusv3_siab_bessel_cascade.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/ae_soc_oncvpspr_reference.md",
+      "reason": "ae_soc_oncvpspr_reference.md display math requires one MathDoc marker per equation",
+      "before_sha256": "ba4fd193bc0b340b0cc9398a3f0f1b410a2b0a6034786ad24f13e4f8690748ab",
+      "body_sha256": "2674d9d90a1d0603bb5679ad3618355865937a0c762fb586df9ea21e7a633d69",
+      "after_sha256": "d19a892e9706a185265b6d825b3b91d1ad0757134fab994bb303b4bea1bcff7f",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/ae_soc_oncvpspr_reference.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/ae_soc_oncvpspr_reference.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/delta_eos_acceptance.md",
+      "reason": "delta_eos_acceptance.md display math requires one MathDoc marker per equation",
+      "before_sha256": "d80ae0032bc6bcf85a03a974d9c675d01646f55c36ca4f96b0323a0f355df430",
+      "body_sha256": "cacdc5ddaee089c21e5fb2d57f6e9c238229c3a50f93e41bafc21cc4defd1028",
+      "after_sha256": "934d40e39acb27be548c96a1c622c6359734a0048b546dac6498d21a0bb7249f",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/delta_eos_acceptance.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/delta_eos_acceptance.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/equal_budget_optimizer_composition.md",
+      "reason": "equal_budget_optimizer_composition.md display math requires one MathDoc marker per equation",
+      "before_sha256": "348a4a252a60058baf61e7cf8eb847e7953a6b82332e26c8f0834da26b1d77ce",
+      "body_sha256": "dccfb0ad02a521e76810e4efd185fe095885bac72af98fa01fa396d8451824a1",
+      "after_sha256": "5e244bd91abd3e759d0ccb6df5810311ce2e396e5db4c8a7b2a73fdce0f4de0d",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/equal_budget_optimizer_composition.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/equal_budget_optimizer_composition.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/gpaw_paw_nc_soc_calibration.md",
+      "reason": "gpaw_paw_nc_soc_calibration.md display math requires one MathDoc marker per equation",
+      "before_sha256": "b2b6ad135298f3e2f3a97788fb316d3720105848e4e478090158d969d6b15ce5",
+      "body_sha256": "e4b6ca22e51c93f113596874813d9bc633d832b32f82d5573359d8f11ab7fdb7",
+      "after_sha256": "5dabfd96c8027ad3b600a6cbf036489346bfd051bdef5edc49ef3b5f01d82a37",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/gpaw_paw_nc_soc_calibration.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/gpaw_paw_nc_soc_calibration.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/gpaw_paw_soc_descriptor_limit.md",
+      "reason": "gpaw_paw_soc_descriptor_limit.md display math requires one MathDoc marker per equation",
+      "before_sha256": "522e4f6935650695fb2390195f2ee3dea1779ee1a419cd9b7a0747e14d901236",
+      "body_sha256": "c7135d46a91268ee6a79df3272971b487ee90e443bc0a0fe3b52322ea5c033fc",
+      "after_sha256": "700a34d1370c1549374afa6fd86bd29e6ce2a56a623523076a9257f7bbbb70e0",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/gpaw_paw_soc_descriptor_limit.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/gpaw_paw_soc_descriptor_limit.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/logdet_barrier_conditioning.md",
+      "reason": "logdet_barrier_conditioning.md display math requires one MathDoc marker per equation",
+      "before_sha256": "11145d05c37052b23f868b00f7ad9a6d87202be0b3044c70e0b3640ac79174d4",
+      "body_sha256": "c81f66a18c85ce88c514b352a568c2c7681b882917423e9551053bbce24990a1",
+      "after_sha256": "6ddaf698b70ded0eaeee99df77d3dbb6663f57e02503c310f44be5facba08a52",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/logdet_barrier_conditioning.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/logdet_barrier_conditioning.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/manuscript_workflow_scope.md",
+      "reason": "manuscript_workflow_scope.md display math requires one MathDoc marker per equation",
+      "before_sha256": "6b78306eaf4db21120458d7147136355753bc734190f31483dd6960538beb3fb",
+      "body_sha256": "db16f720ef003da85bd21c65ead5ad290081913aab4d2ab930a658d4d2e3fac8",
+      "after_sha256": "197141250a515956fa4f766d556d7c592f01d4d7080909d44a0350d89bd0a529",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/manuscript_workflow_scope.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/manuscript_workflow_scope.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/pao_basis_acceptance_constraints.md",
+      "reason": "pao_basis_acceptance_constraints.md display math requires one MathDoc marker per equation",
+      "before_sha256": "fc9ecfa9ab5931bd80188e066adcca90e17d2cf8bd4ec3c25d323e568f818018",
+      "body_sha256": "2914def596a76cfe9821d3d6c6cac8362a057796d80c75e9e7db0a5c24fbaf8b",
+      "after_sha256": "1afa0ae44f97f232ab2841180becce57e557e6607ef6c557337d8046fddb9faf",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/pao_basis_acceptance_constraints.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/pao_basis_acceptance_constraints.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/pp_independent_soc_validation.md",
+      "reason": "pp_independent_soc_validation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "57196b33518ffdde566c0cf6fabbee0359554a794742c44d445a530333bb0235",
+      "body_sha256": "c25cd3c839c410448875423fd703472e093f3e76fb71d2c09679879d87f17ea0",
+      "after_sha256": "fd5c8b0e50193b0f02825f386e3a0821bb333eef10dead3bb2f7ca30529758c7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/pp_independent_soc_validation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/pp_independent_soc_validation.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/psml_full_relativistic_j_averaging.md",
+      "reason": "psml_full_relativistic_j_averaging.md display math requires one MathDoc marker per equation",
+      "before_sha256": "7284fa97aa3e65537ebb2eb1718c3bd94fff66ad3935e0a3da82027043393853",
+      "body_sha256": "7c46dc9867dc1f32b02d108bdad373bf7113da2a66858a6ca9373377a0a729dc",
+      "after_sha256": "dc963598d72455874e763a9d51083d163ca980c5fb114f9d749fe392a8540ccc",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/psml_full_relativistic_j_averaging.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/psml_full_relativistic_j_averaging.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/si_abacusv3_external_orb_per_structure_spillage.md",
+      "reason": "si_abacusv3_external_orb_per_structure_spillage.md display math requires one MathDoc marker per equation",
+      "before_sha256": "9e09b7c5f54470a1820e308edba6df127cee7bae221f2560233aed70d4b1969c",
+      "body_sha256": "79385c5b286db685388cfe5ba436c9355dc3758e98ea978b301d317ee7913ed7",
+      "after_sha256": "c6bc8404e24dfd103004bf0dfa11c1940c5701a09dd113eb7aed6199e12b99d0",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/si_abacusv3_external_orb_per_structure_spillage.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/si_abacusv3_external_orb_per_structure_spillage.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/siesta_pao_basis_structure.md",
+      "reason": "siesta_pao_basis_structure.md display math requires one MathDoc marker per equation",
+      "before_sha256": "8055331c82f40f3c00a9418c630764cdb76199c2ef4ea09240174e0744fbbc0b",
+      "body_sha256": "3d17cf4e0b87849424c6c48a786f7e588d5155a5a2f6ea669acaa6651de0a61e",
+      "after_sha256": "8c2fd02fddfbf3094c004990317fd205415fd0e2e1bfa2e20a880716bd653cff",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/siesta_pao_basis_structure.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/siesta_pao_basis_structure.md"
+    },
+    {
+      "project": "siesta_simplex_basis",
+      "path": "Projects/siesta_simplex_basis/notes/soc_strength_descriptor.md",
+      "reason": "soc_strength_descriptor.md display math requires one MathDoc marker per equation",
+      "before_sha256": "8acf02f6e9708c280dbfa2532a54263f9bb92e6cddefb5d9cebc2258fa937685",
+      "body_sha256": "a6c16c65efe5ae867c13c0e191f7494043f987f0d428f44a04e0a3308df8050a",
+      "after_sha256": "3f2ce4f4f372662cf3f70c4a4f868d94001d28eb8fd14db5e8e6e89cde37c6d0",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/siesta_simplex_basis/notes/soc_strength_descriptor.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/siesta_simplex_basis/notes/soc_strength_descriptor.md"
+    },
+    {
+      "project": "predict_mag_dev",
+      "path": "Projects/predict_mag_dev/notes/active-space-electron-counting.md",
+      "reason": "active-space-electron-counting.md display math requires one MathDoc marker per equation",
+      "before_sha256": "f2615b07f058e6406e07f7843048e3d715331c802a1e84dc638449d824146971",
+      "body_sha256": "b5301ccfde918c0b4491ccd5e2980572521a4d84f1cd7642730e07ccd5cfa9dd",
+      "after_sha256": "70187466dd2b0b8750786e17524132e4ecb6777c1683cdeecef97d8832a51336",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/predict_mag_dev/notes/active-space-electron-counting.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/predict_mag_dev/notes/active-space-electron-counting.md"
+    },
+    {
+      "project": "predict_mag_dev",
+      "path": "Projects/predict_mag_dev/notes/bond-descriptor-physics.md",
+      "reason": "bond-descriptor-physics.md display math requires one MathDoc marker per equation",
+      "before_sha256": "333ba2449dce9db0ad3a3b2a7018c19a173a37b27f4f48614c4e550c102ea732",
+      "body_sha256": "1846a3e68712f36b5ea7b7e5b424f475a7fdedad619efa326ac26c942d365ce9",
+      "after_sha256": "4ba229714f3002e047d09140acd9179359d86eb3b25ad8471cd88f0db2f43d71",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/predict_mag_dev/notes/bond-descriptor-physics.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/predict_mag_dev/notes/bond-descriptor-physics.md"
+    },
+    {
+      "project": "predict_mag_dev",
+      "path": "Projects/predict_mag_dev/notes/cov-soc-two-channel.md",
+      "reason": "cov-soc-two-channel.md display math requires one MathDoc marker per equation",
+      "before_sha256": "62f1b8913176326c06b6f34edba82990f726447f1444572e60bd5eb89c073fcb",
+      "body_sha256": "16dcfeb01732364755594cc091cd93526cf3d627c4f279400569129726f2d9bc",
+      "after_sha256": "2d29f8503edb776bfe28b436432556c0660087967654bebd9819493a3cb546b8",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/predict_mag_dev/notes/cov-soc-two-channel.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/predict_mag_dev/notes/cov-soc-two-channel.md"
+    },
+    {
+      "project": "predict_mag_dev",
+      "path": "Projects/predict_mag_dev/notes/mae-reference-dataset.md",
+      "reason": "mae-reference-dataset.md display math requires one MathDoc marker per equation",
+      "before_sha256": "5cf49f9f4090518efd82b733c989af83a783c035001f8ddd4bca66e857baad10",
+      "body_sha256": "a608f3f3932627c103d19c655d9b8a51e5ced1a151ed9af645346a7a02180e81",
+      "after_sha256": "df57ca36a6df21ae365888448fe1ed94fc8f5133f5174f79cdb0ec88e526f269",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/predict_mag_dev/notes/mae-reference-dataset.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/predict_mag_dev/notes/mae-reference-dataset.md"
+    },
+    {
+      "project": "predict_mag_dev",
+      "path": "Projects/predict_mag_dev/notes/overlap-to-hopping.md",
+      "reason": "overlap-to-hopping.md display math requires one MathDoc marker per equation",
+      "before_sha256": "75c40679d9ca655578f168ed48c6f260a4ef3a3bad32880121f97f622dff4117",
+      "body_sha256": "90a4d52d3538b51ada9abcf4359f05d04c775ec644ab9ad20e916c94851a5b1a",
+      "after_sha256": "94511eed371f9b2f5f59e082e93d0e85c3e902b2cd7ada637009243ac1376f5c",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/predict_mag_dev/notes/overlap-to-hopping.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/predict_mag_dev/notes/overlap-to-hopping.md"
+    },
+    {
+      "project": "easybondvalence",
+      "path": "Projects/easybondvalence/notes/bond-valence-model-boundaries.md",
+      "reason": "bond-valence-model-boundaries.md display math requires one MathDoc marker per equation",
+      "before_sha256": "aa4b6e5873d42ce2986ca0714799d84930a13684a4c991f76dcbcb821d7bb217",
+      "body_sha256": "94086f44ccc15a8517e0981081c466fce76db88b097a9137c1f0910975671886",
+      "after_sha256": "9a1e57e7b0d7caa1965fe4bd48ec96e3c89e356c22eb24710b477e3337465109",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/easybondvalence/notes/bond-valence-model-boundaries.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/easybondvalence/notes/bond-valence-model-boundaries.md"
+    },
+    {
+      "project": "easybondvalence",
+      "path": "Projects/easybondvalence/notes/reproducible-fitting-invariants.md",
+      "reason": "reproducible-fitting-invariants.md display math requires one MathDoc marker per equation",
+      "before_sha256": "1d56c2ea73f1324cc0f3a453e3a9c563aa240aee7b9ff555bbe957042cf5cb55",
+      "body_sha256": "40f0260a4fbd7e921800ed276b420f6d4600f83c0c570462aae159ffb1a303fd",
+      "after_sha256": "c5867bee77566f6d70f075f5b754a34452c44d47d116237c519ea7822099db70",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/easybondvalence/notes/reproducible-fitting-invariants.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/easybondvalence/notes/reproducible-fitting-invariants.md"
+    },
+    {
+      "project": "easybondvalence",
+      "path": "Projects/easybondvalence/notes/valence-multipole-descriptors.md",
+      "reason": "valence-multipole-descriptors.md display math requires one MathDoc marker per equation",
+      "before_sha256": "3d62ed337fb9b7c0274ee4f55049bea7f294f1a0f51905b69cf6b2ffc0645742",
+      "body_sha256": "149c7eb3a42db3d648678c005b9c4d958ad3e01c47efa5ccb4dd0c55a4412cd2",
+      "after_sha256": "0be1727b55e8b25caeb212cef0864ade9af27b0053bb75d2afb7a677b25ba8ba",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/easybondvalence/notes/valence-multipole-descriptors.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/easybondvalence/notes/valence-multipole-descriptors.md"
+    },
+    {
+      "project": "pypao",
+      "path": "Projects/pypao/notes/upf-pswfc-conventions.md",
+      "reason": "upf-pswfc-conventions.md display math requires one MathDoc marker per equation",
+      "before_sha256": "8d25a3eaec22acabfaa5e2bcfc7df37c68c90dd7951466f910c3ec1a427c65f2",
+      "body_sha256": "e44aac0c4cb36f619f5e793cf4abffe66567f2d3118c38fd7cfdda5703dec6c1",
+      "after_sha256": "9ae3dc5e5535c85b9c39052667f87fa443127a4a4e5231fe0d54fc949ba3ba6e",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/pypao/notes/upf-pswfc-conventions.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/pypao/notes/upf-pswfc-conventions.md"
+    },
+    {
+      "project": "abinao",
+      "path": "Projects/abinao/notes/ibz-bz-delta-xc-averaging.md",
+      "reason": "ibz-bz-delta-xc-averaging.md display math requires one MathDoc marker per equation",
+      "before_sha256": "029ae96d6fc20f3300b43ffbf085596cda6dd289219fd58ebb43963203564812",
+      "body_sha256": "6a3fc3f5352fe20e43dee359d846f1ce34d557096d69ba594cbc724d3212600e",
+      "after_sha256": "0a18ddcabca19b1e7a121d924b3e4cde4f4af13db656f3bfbd0567ec3fc3fbb7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abinao/notes/ibz-bz-delta-xc-averaging.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abinao/notes/ibz-bz-delta-xc-averaging.md"
+    },
+    {
+      "project": "abacus",
+      "path": "Projects/abacus/notes/abacus_nspin4_spinor_layout.md",
+      "reason": "abacus_nspin4_spinor_layout.md display math requires one MathDoc marker per equation",
+      "before_sha256": "757037a824d2d6161184011d9b8de79a5ed27a27dce3dfbfb676de01f8b5904e",
+      "body_sha256": "dc06a590de3daf3d9f6c4c4209936156ddaaba978084bab41611ccb746127054",
+      "after_sha256": "93dcd1e92fb139bab931664c7bf97ec112d1ee33fd0b35a0dd8ed9b1d2e897cc",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abacus/notes/abacus_nspin4_spinor_layout.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abacus/notes/abacus_nspin4_spinor_layout.md"
+    },
+    {
+      "project": "abacus",
+      "path": "Projects/abacus/notes/one_dft_soc_tb2j_workflow.md",
+      "reason": "one_dft_soc_tb2j_workflow.md display math requires one MathDoc marker per equation",
+      "before_sha256": "cc8f755ad17b40b092f54cb33b016d88d77b9f593df8edff1eeab3bb8fe50c84",
+      "body_sha256": "9c47a131b7e114455a8560112dd6eb6c53bf768bae60a5a3f7363277fa649cc4",
+      "after_sha256": "6dab2b473b58dac9c0b72fbf8352f138164abb0e2203b9157057a18159aa7b1b",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/abacus/notes/one_dft_soc_tb2j_workflow.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/abacus/notes/one_dft_soc_tb2j_workflow.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/abinit_bz_to_sym_c3_direction.md",
+      "reason": "abinit_bz_to_sym_c3_direction.md display math requires one MathDoc marker per equation",
+      "before_sha256": "057562522702a933d923bbe2204ff329c927109895abe2df0c25145b137cc2c9",
+      "body_sha256": "070d7a7bc85df10e3510dbc70adbba4ce4921b6a5780c143e80b52223a0566a0",
+      "after_sha256": "5a483627ed26c1e6f927257e21351eff94321cfa8f3da6c206bbbffde09596fa",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/abinit_bz_to_sym_c3_direction.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/abinit_bz_to_sym_c3_direction.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/abinit_indsym_overlap_phase.md",
+      "reason": "abinit_indsym_overlap_phase.md display math requires one MathDoc marker per equation",
+      "before_sha256": "f83a5c3ee01c640cff18a93a40b97a5ed6323f7ed47ead8f3d759e095a04f8c4",
+      "body_sha256": "156f9a50e85d80d1556d9603a90ca1c03d3445e082a421c3aa8acea65f5f818b",
+      "after_sha256": "332b87c1198af35e50b1d4004cd124746e70abde0ae25f0d1a1f674b53602608",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/abinit_indsym_overlap_phase.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/abinit_indsym_overlap_phase.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/abinit_pao_hs_nc_schema.md",
+      "reason": "abinit_pao_hs_nc_schema.md display math requires one MathDoc marker per equation",
+      "before_sha256": "2428cf58a96232b50a9529a81fd4eb54394317b06299d0a72c4b4ce1ae37f45d",
+      "body_sha256": "1514e92f242284df79c435383e5137361f084e34261b54a58ea6876f510685e6",
+      "after_sha256": "a5aa2e602afe8de81f5722359021a10858b53cfb01b389db66a10bd02beec29e",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/abinit_pao_hs_nc_schema.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/abinit_pao_hs_nc_schema.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/delta_xc_realspace_lattice_sum.md",
+      "reason": "delta_xc_realspace_lattice_sum.md display math requires one MathDoc marker per equation",
+      "before_sha256": "75cb22e77f3a7e9a6638eacd9a5b06716724bd2c58ed60320366f43b737891db",
+      "body_sha256": "965c0206ab4f87e68dc26c4c7614a492b1b04b09ec0f7243c3b70a9cca1a7ad9",
+      "after_sha256": "6da964e4726adc2f6e304a0cb5592c0f5cb37cc52b4c3dde084c013c98b87cda",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/delta_xc_realspace_lattice_sum.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/delta_xc_realspace_lattice_sum.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/green-function-conventions.md",
+      "reason": "green-function-conventions.md display math requires one MathDoc marker per equation",
+      "before_sha256": "915484d964af3c7f81c153dcde0881d2b7612088724b5f55e174a4ce2b5227ae",
+      "body_sha256": "6fd7385a1beb6af69dc537e4f89408a83a186bd7fcb52f0a585144a9991984ad",
+      "after_sha256": "25319e345fa29843293435962260774a43afe2e2f5ebfa378e122e7a2dbc40e6",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/green-function-conventions.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/green-function-conventions.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/projector_green_coefficient_order.md",
+      "reason": "projector_green_coefficient_order.md display math requires one MathDoc marker per equation",
+      "before_sha256": "89f5da6a9fed9fe53bdfcde464d2377ccffd7c4d398fa48efe09bfcf6fc98f9b",
+      "body_sha256": "9204569ad13f59cda88fd208476b69fc786e3ae5f36f71d8b11a3cc30d34c911",
+      "after_sha256": "fbcfa1e0e08165f5d4d4a2e37680dfa62ce7bcfaf1a6100e3dfe025c44b6169a",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/projector_green_coefficient_order.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/projector_green_coefficient_order.md"
+    },
+    {
+      "project": "symwannier",
+      "path": "Projects/symwannier/notes/realspace_projector_green_kernel.md",
+      "reason": "realspace_projector_green_kernel.md display math requires one MathDoc marker per equation",
+      "before_sha256": "0c442d581c16dbbf3b8981bafbb395ee37a4b3bd5b4cb193092623b34816f164",
+      "body_sha256": "cb5420a8a4af1e87aef7153bc5f1b9465804c8798693b03e4ece1eea5d14d88b",
+      "after_sha256": "c9e6c190ef662e1a693f63985440b22c6e4f3f0f0f9c7a912fb6a0755fd46b30",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symwannier/notes/realspace_projector_green_kernel.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symwannier/notes/realspace_projector_green_kernel.md"
+    },
+    {
+      "project": "TB2J_dev",
+      "path": "Projects/TB2J_dev/notes/gpaw-dftu-paw-operator.md",
+      "reason": "gpaw-dftu-paw-operator.md display math requires one MathDoc marker per equation",
+      "before_sha256": "937f672995405859fa203f3cba7e740c5a63f476fb96ba5f96786440816b597d",
+      "body_sha256": "c7562cf74c48ce3eb496b3c18040e9b58443621d02be4eb5ae428049f13d72b9",
+      "after_sha256": "03155f3f45b1e4985e83ce84b5c7c24dd9d8c7b91b207f1a957dcc4e71d424ec",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J_dev/notes/gpaw-dftu-paw-operator.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J_dev/notes/gpaw-dftu-paw-operator.md"
+    },
+    {
+      "project": "TB2J_dev",
+      "path": "Projects/TB2J_dev/notes/paw-basis-choices-lkag.md",
+      "reason": "paw-basis-choices-lkag.md display math requires one MathDoc marker per equation",
+      "before_sha256": "770ece41e73587ef0014a973bc37f3ab0f6e6b8d4be8b367badcaed521d8ec71",
+      "body_sha256": "532340dd295912243b941515e02d5997b646263c73fd09a4f8dbd285dd9eb7d9",
+      "after_sha256": "2bf805ae6487325dabd619ce346853a3ffa1407b4ccfb5a1deb318c4a4e2a0c7",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J_dev/notes/paw-basis-choices-lkag.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J_dev/notes/paw-basis-choices-lkag.md"
+    },
+    {
+      "project": "TB2J_dev",
+      "path": "Projects/TB2J_dev/notes/paw-projector-snapshot-contract.md",
+      "reason": "paw-projector-snapshot-contract.md display math requires one MathDoc marker per equation",
+      "before_sha256": "ca13d228e08c0fccdbd1df7a6d304b0c46143f0df0baab12b7e926ebca518715",
+      "body_sha256": "659a4422b514b2bd6e1b273202d8a49e43fbeb5dacd40446c8c6c37aebe9db3e",
+      "after_sha256": "56cdfb81ec25b9f482ad277608ded9ebca7b96903b60c4d822fc2a160de60dfe",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J_dev/notes/paw-projector-snapshot-contract.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J_dev/notes/paw-projector-snapshot-contract.md"
+    },
+    {
+      "project": "TB2J_dev",
+      "path": "Projects/TB2J_dev/notes/tb2j-paw-exchange-terms.md",
+      "reason": "tb2j-paw-exchange-terms.md display math requires one MathDoc marker per equation",
+      "before_sha256": "4b64a23024ccc1c4f2e79bbdc96974bf69bc7168b64c050e16ce12515277fbbb",
+      "body_sha256": "19f7af403b932adb18ea1030c54bcb790afc83c8182214d7510b1076c9a1e9d5",
+      "after_sha256": "d1005b19527b8f2e775708b5a369935017045335dbd35df04bfba2e00ec1dcb2",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J_dev/notes/tb2j-paw-exchange-terms.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J_dev/notes/tb2j-paw-exchange-terms.md"
+    },
+    {
+      "project": "TB2J_dev",
+      "path": "Projects/TB2J_dev/notes/wannier90_ws_weight_conventions.md",
+      "reason": "wannier90_ws_weight_conventions.md display math requires one MathDoc marker per equation",
+      "before_sha256": "0b92deac43af80e1716093aa36879152d43b84629894db63ed1be1db8fc9e689",
+      "body_sha256": "c339d5518b8e7220648b5723b0b09ac741ab81cef1c5d2afe683eb777be0afec",
+      "after_sha256": "d58fc8a5b4b60f3670366f1ae045eb47902b10ace85361ffa3da4a1be35bc19a",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/TB2J_dev/notes/wannier90_ws_weight_conventions.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/TB2J_dev/notes/wannier90_ws_weight_conventions.md"
+    },
+    {
+      "project": "magsym",
+      "path": "Projects/magsym/notes/ase_spglib_backend.md",
+      "reason": "ase_spglib_backend.md display math requires one MathDoc marker per equation",
+      "before_sha256": "64f5361009e99db61d430b2f33c6e1c09d7066e1a29541f5a68eeb17f86875e2",
+      "body_sha256": "40853b34a746d4938b4186dd178c96b8767710ac9e5d5703e1d326596fb495d6",
+      "after_sha256": "05a3c3af7eb582f0446bc60e23712d6805a78c1e5f221bdcb4fa06b02a109873",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magsym/notes/ase_spglib_backend.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magsym/notes/ase_spglib_backend.md"
+    },
+    {
+      "project": "magsym",
+      "path": "Projects/magsym/notes/core_api.md",
+      "reason": "core_api.md display math requires one MathDoc marker per equation",
+      "before_sha256": "5153ee5b6613b89f4d7b19c2f6d16b7b20fd7df65657a81922f82513db2684a6",
+      "body_sha256": "cf4e3750260d6ccafed1c9092030063ae9cf4b158fadf44cf9fef56984872086",
+      "after_sha256": "8baeefcfe756f0eacfbd7722bbd700563f95bf367e915a10a339ae63304649db",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magsym/notes/core_api.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magsym/notes/core_api.md"
+    },
+    {
+      "project": "magsym",
+      "path": "Projects/magsym/notes/paper_fe2o3_magsym.md",
+      "reason": "paper_fe2o3_magsym.md display math requires one MathDoc marker per equation",
+      "before_sha256": "1fc61e494e869169bb147db38b4e316c84ec78677abfede590348c1d47c52a66",
+      "body_sha256": "37651764133d63b5472b5fd54d59c3ca86513c918d622c618ccc365f9cdae46d",
+      "after_sha256": "152c749fc064355e299004c01093f74ce1f9acf27cff945912503cb8cbee2594",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/magsym/notes/paper_fe2o3_magsym.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/magsym/notes/paper_fe2o3_magsym.md"
+    },
+    {
+      "project": "phononkit",
+      "path": "Projects/phononkit/notes/frequency_fd_energy.md",
+      "reason": "frequency_fd_energy.md display math requires one MathDoc marker per equation",
+      "before_sha256": "c998581bcd876c0dad3ac11082d5152482e40c867e6a1d2fd71be3e2338b9335",
+      "body_sha256": "632d7bc2c51cc3a8c3c2a785845582bdb3650cabb1e732d2d945bc4c79f6dc71",
+      "after_sha256": "45ca3f86f92f3fc278d4859c34a24492e3416c774d4572f4cba16da58acfbb31",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/phononkit/notes/frequency_fd_energy.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/phononkit/notes/frequency_fd_energy.md"
+    },
+    {
+      "project": "symphon",
+      "path": "Projects/symphon/notes/chiral_domain_multiplicity.md",
+      "reason": "chiral_domain_multiplicity.md display math requires one MathDoc marker per equation",
+      "before_sha256": "336f18ddc9b83da54a032fbf1283e149cd62b5518c6d8b630eebfaf4f8deeaaa",
+      "body_sha256": "fdc213c835754727b76da3e25640c6ea37a79f53554afa7044f07abaf19794ab",
+      "after_sha256": "8beef7c5cc40edec5d6de577d1c77db4585c56b7cf02455de0f285395e4ef7a0",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symphon/notes/chiral_domain_multiplicity.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symphon/notes/chiral_domain_multiplicity.md"
+    },
+    {
+      "project": "symphon",
+      "path": "Projects/symphon/notes/magnetic_chiral_phase_transitions.md",
+      "reason": "magnetic_chiral_phase_transitions.md display math requires one MathDoc marker per equation",
+      "before_sha256": "105ccb14408928931751e9acd07a647b682d5cc941789bd469ee7cc543713931",
+      "body_sha256": "00847625ed5ca053a6d09c5cb0a4bf52075808d74546cb739db2169b14ebfdc9",
+      "after_sha256": "94578207f556139908a65a2d835bc16d86a291fd9830761f7ee849cf6f19acab",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symphon/notes/magnetic_chiral_phase_transitions.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symphon/notes/magnetic_chiral_phase_transitions.md"
+    },
+    {
+      "project": "symphon",
+      "path": "Projects/symphon/notes/spgrep_modulation_methods.md",
+      "reason": "spgrep_modulation_methods.md display math requires one MathDoc marker per equation",
+      "before_sha256": "a006025393587905451fd2bea61f0f91aaa5de849febe56682277d6907bc76af",
+      "body_sha256": "7cccc5bd402d230b3866c4af9d66da38b732cac7a2d845a00a4824caa9b1880e",
+      "after_sha256": "8c24064af44007cee0d425ff0a43482676f1abdf068e48441271b37b67387c81",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/symphon/notes/spgrep_modulation_methods.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/symphon/notes/spgrep_modulation_methods.md"
+    },
+    {
+      "project": "QE",
+      "path": "Projects/QE/notes/qe-7-4-dfpt-u-implementation.md",
+      "reason": "qe-7-4-dfpt-u-implementation.md display math requires one MathDoc marker per equation",
+      "before_sha256": "a0af3777c562e771050ae7466b65c1c326e98f5021aba478ff83663dfeb114b4",
+      "body_sha256": "54352f137d82a311f834ca579be76848979f9a3398316228dc4e80ca78551e89",
+      "after_sha256": "42846b3003bcb325efd4946117f54209acea293a622bd2623daf8e2c660321fd",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/QE/notes/qe-7-4-dfpt-u-implementation.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/QE/notes/qe-7-4-dfpt-u-implementation.md"
+    },
+    {
+      "project": "basis_set",
+      "path": "Projects/basis_set/notes/bessel_radius_and_grid_limitations.md",
+      "reason": "bessel_radius_and_grid_limitations.md display math requires one MathDoc marker per equation",
+      "before_sha256": "ab1456f1955b8f5e244869c5553a620e6377f4295a8c9e6619a7b3a72a1b6a23",
+      "body_sha256": "b7e3c5e9e5db79cd51f8965c1b6d98a6325234055184a31710cf74f2ad693bbe",
+      "after_sha256": "27bebd2c0bb51d12d18f3548949c81cd9aacd8621f86002bf706b94bbac9ee23",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/basis_set/notes/bessel_radius_and_grid_limitations.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/basis_set/notes/bessel_radius_and_grid_limitations.md"
+    },
+    {
+      "project": "basis_set",
+      "path": "Projects/basis_set/notes/mixed_radius_solution_options.md",
+      "reason": "mixed_radius_solution_options.md display math requires one MathDoc marker per equation",
+      "before_sha256": "e17951892b7cbe214683c8ac65b54c4f6b91755f209c38487610cf21b7a15052",
+      "body_sha256": "2b62a88a49e0336fec60fddcff7d3c20f7d184782d119c2ffc4e3fdfd68a8efb",
+      "after_sha256": "24b0c27928ad4d31598bfb42c8707d6f6600094e6ae7fd0dab38928e8e75c6ef",
+      "before_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/before/Projects/basis_set/notes/mixed_radius_solution_options.md",
+      "after_artifact": "evidence/2026-10-13-missing-mathdoc-drafts/after/Projects/basis_set/notes/mixed_radius_solution_options.md"
+    }
+  ],
+  "independent_portability_issues": [
+    {
+      "path": "Projects/epcdownfolding/notes/co3sn2s2-mbc-vs-epc-downfolding.md",
+      "issue": "non-portable Wikilink in Project Knowledge: co3sn2s2-mbc-vs-epc-downfolding.md"
+    },
+    {
+      "path": "Projects/epcdownfolding/notes/magnon-mediated-chiral-phonon-splitting.md",
+      "issue": "non-portable Wikilink in Project Knowledge: magnon-mediated-chiral-phonon-splitting.md"
+    },
+    {
+      "path": "Projects/predict_mag_dev/notes/active-space-electron-counting.md",
+      "issue": "non-portable Wikilink in Project Knowledge: active-space-electron-counting.md"
+    },
+    {
+      "path": "Projects/predict_mag_dev/notes/bond-descriptor-physics.md",
+      "issue": "non-portable Wikilink in Project Knowledge: bond-descriptor-physics.md"
+    },
+    {
+      "path": "Projects/predict_mag_dev/notes/mae-reference-dataset.md",
+      "issue": "non-portable Wikilink in Project Knowledge: mae-reference-dataset.md"
+    },
+    {
+      "path": "Projects/predict_mag_dev/notes/overlap-to-hopping.md",
+      "issue": "non-portable Wikilink in Project Knowledge: overlap-to-hopping.md"
+    },
+    {
+      "path": "Projects/easybondvalence/notes/bond-valence-model-boundaries.md",
+      "issue": "non-portable Wikilink in Project Knowledge: bond-valence-model-boundaries.md"
+    },
+    {
+      "path": "Projects/easybondvalence/notes/reproducible-fitting-invariants.md",
+      "issue": "non-portable Wikilink in Project Knowledge: reproducible-fitting-invariants.md"
+    },
+    {
+      "path": "Projects/easybondvalence/notes/valence-multipole-descriptors.md",
+      "issue": "non-portable Wikilink in Project Knowledge: valence-multipole-descriptors.md"
+    },
+    {
+      "path": "Projects/abinao/notes/ibz-bz-delta-xc-averaging.md",
+      "issue": "non-portable Wikilink in Project Knowledge: ibz-bz-delta-xc-averaging.md"
+    },
+    {
+      "path": "Projects/abacus/notes/abacus_nspin4_spinor_layout.md",
+      "issue": "non-portable Wikilink in Project Knowledge: abacus_nspin4_spinor_layout.md"
+    },
+    {
+      "path": "Projects/symwannier/notes/abinit_bz_to_sym_c3_direction.md",
+      "issue": "non-portable Wikilink in Project Knowledge: abinit_bz_to_sym_c3_direction.md"
+    },
+    {
+      "path": "Projects/symwannier/notes/abinit_indsym_overlap_phase.md",
+      "issue": "non-portable Wikilink in Project Knowledge: abinit_indsym_overlap_phase.md"
+    },
+    {
+      "path": "Projects/symwannier/notes/abinit_pao_hs_nc_schema.md",
+      "issue": "non-portable Wikilink in Project Knowledge: abinit_pao_hs_nc_schema.md"
+    },
+    {
+      "path": "Projects/symwannier/notes/delta_xc_realspace_lattice_sum.md",
+      "issue": "non-portable Wikilink in Project Knowledge: delta_xc_realspace_lattice_sum.md"
+    },
+    {
+      "path": "Projects/symwannier/notes/projector_green_coefficient_order.md",
+      "issue": "non-portable Wikilink in Project Knowledge: projector_green_coefficient_order.md"
+    },
+    {
+      "path": "Projects/symwannier/notes/realspace_projector_green_kernel.md",
+      "issue": "non-portable Wikilink in Project Knowledge: realspace_projector_green_kernel.md"
+    },
+    {
+      "path": "Projects/TB2J_dev/notes/gpaw-dftu-paw-operator.md",
+      "issue": "non-portable Wikilink in Project Knowledge: gpaw-dftu-paw-operator.md"
+    },
+    {
+      "path": "Projects/TB2J_dev/notes/paw-projector-snapshot-contract.md",
+      "issue": "non-portable Wikilink in Project Knowledge: paw-projector-snapshot-contract.md"
+    },
+    {
+      "path": "Projects/TB2J_dev/notes/wannier90_ws_weight_conventions.md",
+      "issue": "non-portable Wikilink in Project Knowledge: wannier90_ws_weight_conventions.md"
+    },
+    {
+      "path": "Projects/magsym/notes/ase_spglib_backend.md",
+      "issue": "non-portable Wikilink in Project Knowledge: ase_spglib_backend.md"
+    },
+    {
+      "path": "Projects/magsym/notes/core_api.md",
+      "issue": "non-portable Wikilink in Project Knowledge: core_api.md"
+    },
+    {
+      "path": "Projects/magsym/notes/paper_fe2o3_magsym.md",
+      "issue": "non-portable Wikilink in Project Knowledge: paper_fe2o3_magsym.md"
+    },
+    {
+      "path": "Projects/phononkit/notes/frequency_fd_energy.md",
+      "issue": "non-portable Wikilink in Project Knowledge: frequency_fd_energy.md"
+    },
+    {
+      "path": "Projects/symphon/notes/chiral_domain_multiplicity.md",
+      "issue": "non-portable Wikilink in Project Knowledge: chiral_domain_multiplicity.md"
+    },
+    {
+      "path": "Projects/symphon/notes/magnetic_chiral_phase_transitions.md",
+      "issue": "non-portable Wikilink in Project Knowledge: magnetic_chiral_phase_transitions.md"
+    },
+    {
+      "path": "Projects/symphon/notes/spgrep_modulation_methods.md",
+      "issue": "non-portable Wikilink in Project Knowledge: spgrep_modulation_methods.md"
+    }
+  ],
+  "draft_registry_companion": {
+    "path": "Projects/TB2J/mathdocs/siesta-spiral-frozen-response.md",
+    "status": "draft",
+    "verified_results": 0,
+    "verified_at": null,
+    "existing_script_changed": false
+  },
+  "unchanged_verified_registry_entries": [
+    "siesta-spiral-vector",
+    "siesta-spiral-vertex"
+  ]
+}

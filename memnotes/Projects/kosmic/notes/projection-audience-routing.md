@@ -5,7 +5,7 @@ status: stable
 audience: development
 tags: [projection, audience, routing]
 created: '2026-09-02'
-updated: 2026-09-02
+updated: '2026-09-02' # promoted
 validation_procedure: "Read collect_projection_plan and router_text in skills/scripts/kosmic_project_skills.py; cross-check references/task_project_skills.md invariants"
 project: kosmic
 ---
@@ -24,7 +24,7 @@ Consequence: a `both` note is **not** copied into the Development package. The D
 
 ## Change direction
 
-The route-graph redesign (project `both` notes into Development routes, intent-keyed routers) was drafted and then **abandoned on 2026-09-02** before implementation; see the archived [PRD](../specs/archive/2026-09-02-prd-route-graph.md) and [Architecture](../specs/archive/2026-09-02-architecture-route-graph.md). The routing behavior described above therefore remains current. The active improvement direction is WikiSkill-style experience compilation (see [PRD](../specs/prd.md)).
+The route-graph redesign (project `both` notes into Development routes, intent-keyed routers) was drafted and then **abandoned on 2026-09-02** before implementation; see the archived [PRD](../specs/archive/2026-09-02-prd-route-graph.md) and [Architecture](../specs/archive/2026-09-02-architecture-route-graph.md). The routing behavior described above therefore remains current. The active improvement direction is WikiSkill-style experience compilation (see [PRD](../subprojects/experience-compilation-adapting-wikiskill-into-kosmic/specs/prd.md)).
 
 
 ## Related

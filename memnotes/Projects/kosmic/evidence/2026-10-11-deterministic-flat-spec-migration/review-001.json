@@ -1,0 +1,125 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/deterministic-flat-spec-migration/story/001",
+  "record_path": "subprojects/deterministic-flat-spec-migration/specs/stories/story-001.md",
+  "review_base": "22a36f09af5fce16c2d097c68ab9988f27c3705f",
+  "reviewed_revision": "92f0110fc51b4aa7140cff3b02c0344a66e5ed8f120b89dbf7e3c218026fb854",
+  "round": 3,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://MigrationStandardsReview"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://MigrationSpecReview"
+  },
+  "findings": [
+    {
+      "id": "STD-MIG-1",
+      "axis": "standards",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Completed receipt verification permits authorized task progression while checking managed outputs."
+    },
+    {
+      "id": "STD-MIG-2",
+      "axis": "standards",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Configured STATUS bindings are validated during planning; invalid bindings fail closed."
+    },
+    {
+      "id": "SPEC-MIG-1",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Mapped inbound metadata is rewritten surgically."
+    },
+    {
+      "id": "SPEC-MIG-2",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Nested note inputs are inventoried recursively and no-follow checked."
+    },
+    {
+      "id": "SPEC-MIG-3",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Unsupported moved angle/HTML/wiki references block application."
+    },
+    {
+      "id": "SPEC-MIG-4",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Project navigation includes migrated owners while preserving unrelated content."
+    },
+    {
+      "id": "SPEC-MIG-6",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Blocking",
+      "summary": "Existing-owner dependencies are mapped and cross-owner declarations maintained."
+    },
+    {
+      "id": "SPEC-MIG-7",
+      "axis": "spec",
+      "status": "resolved",
+      "disposition": "Nonblocking",
+      "summary": "Receipts include input and before/after output hashes."
+    },
+    {
+      "id": "SPEC-MIG-5",
+      "axis": "spec",
+      "status": "retracted",
+      "disposition": "Nonblocking",
+      "summary": "Reviewer retracted pre-existing-glob finding; implementation nevertheless inventories all legacy epic/story files and explicitly blocks unsupported filenames."
+    }
+    ,
+    {
+      "id": "STD-YL-10",
+      "axis": "standards",
+      "status": "user-accepted",
+      "disposition": "Blocking",
+      "summary": "Quoted YAML flow-mapping keys and no-space JSON separators must bind nested URL leaves to their actual key."
+    },
+    {
+      "id": "STD-YL-11",
+      "axis": "standards",
+      "status": "user-accepted",
+      "disposition": "Blocking",
+      "summary": "Multiline YAML flow-map key context must persist across physical lines."
+    },
+    {
+      "id": "SPEC-YL-6",
+      "axis": "spec",
+      "status": "user-accepted",
+      "disposition": "Blocking",
+      "summary": "Quoted JSON-style nested URL keys must be repaired or reported, never silently left stale."
+    }
+  ],
+  "decision": "user-accepted",
+  "approved_by": "user",
+  "human_acceptance": {
+    "recorded": "2026-10-12",
+    "decision": "The user explicitly accepted the post-round-3 fixes for STD-YL-10, STD-YL-11, and SPEC-YL-6.",
+    "evidence": "The exact live migrated plan was approved and applied successfully; 116 focused source-scope tests pass; the 21-module complete suite is rerun below; scratch-path and owner-index deltas have separate Standards and Spec approvals."
+  },
+  "supplemental_reviews": [
+    {
+      "scope": "Nested-project scratch gate root-alignment bugfix only",
+      "standards": {"decision": "approved", "reviewer": "agent://ScratchPathStandards"},
+      "spec": {"decision": "approved", "reviewer": "agent://ScratchPathSpec"},
+      "reviewed_revision": "92f0110fc51b4aa7140cff3b02c0344a66e5ed8f120b89dbf7e3c218026fb854"
+    }
+    ,
+    {
+      "scope": "Owner-local work-finish index publication and retry bugfix only",
+      "standards": {"decision": "approved", "reviewer": "agent://OwnerIndexStandards"},
+      "spec": {"decision": "approved", "reviewer": "agent://OwnerIndexSpec"},
+      "reviewed_revision": "92f0110fc51b4aa7140cff3b02c0344a66e5ed8f120b89dbf7e3c218026fb854"
+    }
+  ]
+}

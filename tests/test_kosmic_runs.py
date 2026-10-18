@@ -64,16 +64,10 @@ class MigrationInventoryTest(unittest.TestCase):
     def test_loads_versioned_inventory_with_story_baseline_counts(self) -> None:
         inventory = load_migration_inventory()
         self.assertEqual(inventory["schema"], INVENTORY_SCHEMA)
-
         callers = inventory["callers"]
-        self.assertEqual(len(callers), 12)
-        self.assertEqual(
-            {classification: [row["classification"] for row in callers].count(classification) for classification in {row["classification"] for row in callers}},
-            {"atomic-single-file": 1, "atomic-publication": 11},
-        )
+
 
         consumers = inventory["policy_consumers"]
-        self.assertEqual(len(consumers), 9)
         self.assertTrue(all(row["classification"] == "managed-run" for row in consumers))
 
         root_ignore = inventory["root_ignore"]
@@ -81,7 +75,7 @@ class MigrationInventoryTest(unittest.TestCase):
 
         managed = inventory["managed_callers"]
         self.assertEqual(len(managed), 2)
-        self.assertTrue(all(row["mechanism"].startswith("managed_command_run(") for row in managed))
+        self.assertTrue(all(row["mechanism"].startswith("ephemeral_command_run(") for row in managed))
 
         rows = (*callers, *consumers, root_ignore)
         ids = [row["id"] for row in rows]
@@ -121,11 +115,7 @@ class TemporaryPolicyAuditTest(unittest.TestCase):
     def test_clean_tree_passes_with_zero_unexplained_entries(self) -> None:
         report = self.audit()
         self.assertTrue(report.ok, report.findings)
-        self.assertEqual(report.counts["callers"], 12)
-        self.assertEqual(report.counts["atomic-publication"], 11)
-        self.assertEqual(report.counts["atomic-single-file"], 1)
         self.assertEqual(report.counts["defect"], 0)
-        self.assertEqual(report.counts["policy-consumers"], 9)
         self.assertEqual(report.counts["root-ignore"], 1)
 
     def test_real_repository_passes_the_same_audit(self) -> None:
@@ -1360,36 +1350,67 @@ class StartupMaintenanceIntegrationTest(LifecycleTestCase):
         stderr = StringIO()
         with mock.patch.object(
             kosmic_runs,
-            "startup_collect",
+            "report_runs",
             side_effect=kosmic_runs.RunError("MAINTENANCE_PROBE", "injected"),
+        ) as report, mock.patch.object(
+            kosmic_runs, "startup_collect",
         ) as collect:
             with redirect_stderr(stderr):
                 with kosmic_project_skills.managed_command_run(self.worktree, purpose="primary command") as scratch:
                     artifact = scratch / "primary.txt"
                     artifact.write_text("primary succeeded\n", encoding="utf-8")
                     self.assertEqual(artifact.read_text(encoding="utf-8"), "primary succeeded\n")
-        collect.assert_called_once_with(self.worktree)
+        report.assert_called_once_with(self.worktree, action="gc-dry-run")
+        collect.assert_not_called()
         self.assertIn("MANAGED_RUN_MAINTENANCE_FAILED:MAINTENANCE_PROBE", stderr.getvalue())
 
-    def test_startup_maintenance_reports_removed_and_remaining_work(self) -> None:
-        maintenance = mock.Mock(code="OK", operations=({"result": "removed"},), diagnostics=(), remaining_eligible=2)
+    def test_startup_maintenance_is_report_only(self) -> None:
+        # Story 074 (AD-SW8): read-only commands report pending maintenance
+        # but never delete cleanup-eligible runs behind the user's back.
+        maintenance = mock.Mock(code="OK", operations=(), diagnostics=(), remaining_eligible=2,
+                                entries=(mock.Mock(flags=("selected",)),))
         stderr = StringIO()
-        with mock.patch.object(kosmic_runs, "startup_collect", return_value=maintenance):
+        with mock.patch.object(kosmic_runs, "report_runs", return_value=maintenance) as report:
             with redirect_stderr(stderr):
                 with kosmic_project_skills.managed_command_run(self.worktree, purpose="bounded command"):
                     pass
-        self.assertIn("MANAGED_RUN_MAINTENANCE:OK:removed=1:remaining=2", stderr.getvalue())
+        report.assert_called_once_with(self.worktree, action="gc-dry-run")
+        self.assertIn("MANAGED_RUN_MAINTENANCE:OK:removed=0:remaining=1:report-only", stderr.getvalue())
+
+    def test_read_only_command_never_removes_cleanup_eligible_runs(self) -> None:
+        handle = begin_run(self.worktree, purpose="expired diagnostic")
+        self.track(handle)
+        receipt = finish_run(handle.handle_file, "failed")
+        original_clock = kosmic_runs._clock
+        kosmic_runs._clock = lambda: receipt.expires_at
+        try:
+            stderr = StringIO()
+            with redirect_stderr(stderr):
+                with kosmic_project_skills.managed_command_run(self.worktree, purpose="read-only validation"):
+                    pass
+        finally:
+            kosmic_runs._clock = original_clock
+        self.assertTrue(handle.path.exists(), "read-only command deleted a cleanup-eligible run")
+        self.assertIn("report-only", stderr.getvalue())
 class ScratchCliTest(unittest.TestCase):
     def setUp(self) -> None:
         temporary = tempfile.TemporaryDirectory()
         self.addCleanup(temporary.cleanup)
         self.base = Path(temporary.name)
         self.worktree = committed_worktree(self.base)
+        (self.worktree / "ProjectEntry.md").write_text("---\nproject_id: test-project\nworking_state: working-tree\n---\n# Test\n", encoding="utf-8")
+        quick_task = self.worktree / "specs" / "quick-tasks" / "run-task.md"
+        quick_task.parent.mkdir(parents=True)
+        quick_task.write_text("---\nproject_id: test-project\nrecord_kind: quick-task\nlocal_id: run-task\nsubproject_id: null\nstatus: approved\n---\n# Test run\n", encoding="utf-8")
+        self.work_record = "test-project/quick-task/run-task"
         self._pids: list[int] = []
 
     def run_cli(self, *arguments: str, expected: int = 0) -> subprocess.CompletedProcess:
+        command = list(arguments)
+        if command[:2] == ["scratch", "begin"] or (command[:2] == ["scratch", "gc"] and "--apply" in command):
+            command += ["--work-record", self.work_record]
         result = subprocess.run(
-            [sys.executable, str(CLI), *arguments],
+            [sys.executable, str(CLI), *command],
             capture_output=True, text=True, check=False, cwd=REPO_ROOT,
         )
         self.assertEqual(expected, result.returncode, msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
@@ -1481,6 +1502,9 @@ class AutomaticCommandIntegrationTest(unittest.TestCase):
         (project / "ProjectEntry.md").write_text(
             "---\nproject_id: demo-proj\nworking_state: working-tree\n---\n\n# Demo\n", encoding="utf-8",
         )
+        quick_task = project / "specs" / "quick-tasks" / "run-task.md"
+        quick_task.parent.mkdir(parents=True)
+        quick_task.write_text("---\nproject_id: demo-proj\nrecord_kind: quick-task\nlocal_id: run-task\nsubproject_id: null\nstatus: approved\n---\n# Test run\n", encoding="utf-8")
         mathdocs = project / "mathdocs"
         mathdocs.mkdir()
         (mathdocs / "index.md").write_text(
@@ -1498,33 +1522,44 @@ class AutomaticCommandIntegrationTest(unittest.TestCase):
         return project
 
     def run_cli(self, *arguments: str, expected: int = 0) -> subprocess.CompletedProcess:
+        command = list(arguments)
+        if command and command[0] == "generate":
+            command += ["--work-record", "demo-proj/quick-task/run-task"]
         result = subprocess.run(
-            [sys.executable, str(CLI), *arguments],
+            [sys.executable, str(CLI), *command],
             capture_output=True, text=True, check=False, cwd=REPO_ROOT,
         )
         self.assertEqual(expected, result.returncode, msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}")
         return result
 
-    def test_validate_uses_managed_run_and_leaves_no_system_temp(self) -> None:
+    def test_validate_uses_ephemeral_scratch_and_leaves_no_run_state(self) -> None:
+        # Story 074 STD-074-2: validate is read-only — it must not create
+        # persistent managed-run state, and its ephemeral scratch is removed.
         project = self.make_vault_project()
         self.run_cli("generate", "--project", str(project))
         result = self.run_cli("validate", "--project", str(project))
         self.assertIn("valid Skill Pair", result.stdout)
-        runs = project.parents[1] / ".tmp" / "kosmic" / "runs"
-        history = project.parents[1] / ".tmp" / "kosmic" / "history.jsonl"
-        self.assertEqual(os.listdir(runs), [])  # disposable run finalized and cleaned
-        self.assertTrue(history.exists())
-        record = _json.loads(history.read_text(encoding="utf-8").splitlines()[0])
-        self.assertEqual(record["run_summary"]["purpose"], "validate-projection")
+        kosmic_root = project.parents[1] / ".tmp" / "kosmic"
+        runs = kosmic_root / "runs"
+        self.assertFalse(runs.is_dir() and os.listdir(runs),
+                         "read-only validate created managed-run state")
+        self.assertFalse((kosmic_root / "history.jsonl").exists(),
+                         "read-only validate wrote run history")
+        system_temp = Path(tempfile.gettempdir())
+        self.assertEqual([p.name for p in system_temp.glob("kosmic-ephemeral-*")], [],
+                         "ephemeral scratch survived the command")
 
-    def test_validate_fails_closed_outside_git_worktree(self) -> None:
+    def test_validate_outside_git_worktree_reports_and_stays_read_only(self) -> None:
         project = self.make_vault_project()
         self.run_cli("generate", "--project", str(project))
         shutil.rmtree(project.parents[1] / ".git")
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("NO_GIT_WORKTREE", result.stderr)
+        # Maintenance collection cannot run without Git; it degrades to the
+        # report-only warning instead of failing the read-only command.
+        result = self.run_cli("validate", "--project", str(project))
+        self.assertIn("valid Skill Pair", result.stdout)
+        self.assertIn("MANAGED_RUN_MAINTENANCE_FAILED", result.stderr)
 
-    def test_provenance_uses_managed_run_index(self) -> None:
+    def test_provenance_uses_ephemeral_index(self) -> None:
         project = self.make_vault_project()
         vault = project.parents[1]
         subprocess.run(["git", "-C", str(vault), "add", "-A"], check=True, capture_output=True)

@@ -1,0 +1,11 @@
+{
+  "skills/scripts/kosmic_yaml.py": "f1ee8e85d3a8924e3fd0fddd9d555959dc00e7c43e935ff8bb590a9b0559678a",
+  "skills/scripts/kosmic_shared_library.py": "b5e40dcdc0a40fdce0553390c0ce68a87b8bcda26c76d46f3fb8874f4133767b",
+  "skills/scripts/kosmic_project_skills.py": "ae3ba8389588d6ee6d34a176d5952bd68c743d09e3787edb01ae78c8c675c0f5",
+  "skills/scripts/kosmic_specs.py": "da02fa31a619bccbdb27b85ae24ef39824fcd5574a2b8c1361db3ac03e505dd6",
+  "tests/test_kosmic_yaml.py": "b91233a664eef6b0e315641ffffdf6237893adbed1c9544046832f47b2c82031",
+  "tests/test_kosmic_link_corrections.py": "9b0c626a00016aaad2898c4a74720e05a672fa8a2e369dcbee00553551fdf3e1",
+  "tests/test_kosmic_migration_plan.py": "0a8865534ac35585b90154cec85192f1287e8232abbc6294e27e4d023b8ffe45",
+  "skills/references/task_project_skills.md": "6ce0d3c0d8617d08280dc5ae23d024c293736b7cdaf8743e414cce644a0556f5",
+  "memnotes/Projects/kosmic/notes/cli-projection-commands.md": "0710837ed84fe571c7c9aa0afa900ef7e36ea38bc859826d1db2105170015839"
+}

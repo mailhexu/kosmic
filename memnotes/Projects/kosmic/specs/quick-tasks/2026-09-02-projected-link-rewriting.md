@@ -1,11 +1,15 @@
 ---
-status: done
-created: 2026-09-02
-updated: 2026-09-02 (done)
+status: "done"
+created: "2026-09-02"
+updated: "2026-09-02 (done)"
 consumer_interface_change: true
-related_notes: [cli-projection-commands.md]
-review_base: uncommitted-working-tree
+related_notes: ["cli-projection-commands.md"]
+review_base: "uncommitted-working-tree"
 review_round: 0
+project_id: "kosmic"
+subproject_id: null
+record_kind: "quick-task"
+local_id: "2026-09-02-projected-link-rewriting"
 ---
 
 # Quick Task: Package-consistent link rewriting in projection

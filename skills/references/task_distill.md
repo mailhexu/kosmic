@@ -9,6 +9,8 @@ title: Task 9 - Distill
 
 **Reference**: this document is self-sufficient — no hidden prompt state is required.
 
+Use the triggering compatible record and explicitly declared shared-note scope before durable distillation edits; preserve its draft-only output contract. Evidence reads alone are record-free and never authorize cleanup/publication. A separate approval remains required for stable promotion, installation, migration or scope expansion.
+
 ## Purpose
 
 A Maintainer (any capable coding agent executing this task) analyzes Evidence Packs into root-cause knowledge expressed as draft atomic notes, updates to existing notes, or deprecations. Distillation output is **always `draft`** — promotion to stable happens only through human review (Task 7 or Task 4).

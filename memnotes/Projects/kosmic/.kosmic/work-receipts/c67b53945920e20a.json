@@ -1,0 +1,17 @@
+{
+  "completed_at": "2026-10-11T14:03:55Z",
+  "detail": "Approved live migration verified; independent execution-data review approved both axes; capped source implementation review not re-approved.",
+  "identity": "kosmic/quick-task/apply-reviewed-flat-spec-migration",
+  "proof": {
+    "evidence/2026-10-11-live-flat-spec-migration/acceptance.json": "6aed4caa6ecaed5e2dac8b5e5cb8f84588c56ace35c6752278676f2c6e01142b",
+    "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c",
+    "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431",
+    "evidence/2026-10-11-live-flat-spec-migration/receipt.json": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb",
+    "evidence/2026-10-11-live-flat-spec-migration/review.json": "cbcec696fe0e70516a8084eba0bae8f6b3c50d8894a3d3e82528a3327caf20d1",
+    "evidence/2026-10-11-live-flat-spec-migration/verification.json": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+  },
+  "record_path": "specs/quick-tasks/apply-reviewed-flat-spec-migration.md",
+  "record_sha256": "e6ab1e3fcf9ab8acc5d13e4648ff82140d4c288bb37045c4b35652f72f4afb42",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

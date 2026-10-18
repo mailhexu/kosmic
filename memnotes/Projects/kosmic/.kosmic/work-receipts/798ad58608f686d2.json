@@ -1,0 +1,16 @@
+{
+  "completed_at": "2026-10-13T05:31:08Z",
+  "detail": "",
+  "identity": "kosmic/quick-task/preserve-contained-migration-link-targets",
+  "proof": {
+    "evidence/2026-10-13-contained-migration-targets/acceptance.json": "9000507c7fb1339c73598b20e9a163cb1ca5a08bf8c29e2d35bd41680feae769",
+    "evidence/2026-10-13-contained-migration-targets/emc-ancestry-blockers.json": "771244d528a9d9e1833639576c532d0a8bc5c7b151e9a43bbc33f241ccdafb60",
+    "evidence/2026-10-13-contained-migration-targets/emc-link-preview.json": "0d57f556b7015c62a4f7b6c05acc4be7a277e49a3acfb5e2f6ac11267335ed12",
+    "evidence/2026-10-13-contained-migration-targets/review.json": "f99ae8b6fb0cf8927da548c224a3485f5f5a6309b6ed5f1a5d379743ab4da893",
+    "evidence/2026-10-13-contained-migration-targets/suite.txt": "a43f7aec1e7c39f17a2aca03b09caf84bad2b4c4b623a3a14341283ea6dc1da0"
+  },
+  "record_path": "specs/quick-tasks/preserve-contained-migration-link-targets.md",
+  "record_sha256": "fc14d6bff66955adaef8f7a21626006704e54aa3dd8a4abd12b2df5307af305c",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

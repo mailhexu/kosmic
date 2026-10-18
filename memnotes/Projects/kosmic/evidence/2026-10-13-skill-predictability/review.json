@@ -1,0 +1,47 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/repair-kosmic-skill-predictability",
+  "record_path": "specs/quick-tasks/repair-kosmic-skill-predictability.md",
+  "review_base": "31e41c9bef03d8930bb39a270564162cf200421e",
+  "reviewed_revision": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+  "round": 2,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "agent://SkillStandards"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "agent://SkillSpec"
+  },
+  "findings": [
+    {
+      "id": "STANDARDS-01",
+      "disposition": "Blocking",
+      "status": "resolved",
+      "detail": "Document actual nested Project exclusion boundary and preserve independent review coverage."
+    },
+    {
+      "id": "STANDARDS-02",
+      "disposition": "Blocking",
+      "status": "resolved",
+      "detail": "Use shared Project daily log with owner-local log-relative links."
+    }
+  ],
+  "decision": "approved",
+  "scope": [
+    "skills/SKILL.md",
+    "skills/references/task_create_spec.md",
+    "skills/references/task_research.md",
+    "skills/references/task_search.md",
+    "skills/references/task_quick_task.md",
+    "skills/references/task_project_skills.md",
+    "skills/references/task_implement_story.md",
+    "skills/references/task_review.md",
+    "skills/references/task_review_spec.md",
+    "skills/references/work_completion.md",
+    "docs/README.md"
+  ],
+  "verification_cleanup": "Removed generated verification bytecode from writer; documentation reviewed bytes unchanged.",
+  "committed_reviewed_source": "0062efb8410a343d1b5003d1da4b0ddc129607c6",
+  "binding_note": "Reviewed documentation committed in isolated writer; retained artifact hashes and pinned baseline preserve actual reviewed bytes. Current uncommitted delta is empty; this digest alone is not review proof."
+}

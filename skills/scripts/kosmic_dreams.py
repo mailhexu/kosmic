@@ -14,6 +14,7 @@ import hashlib
 import json
 import os
 import re
+import stat
 import subprocess
 import unicodedata
 from datetime import date as date_cls
@@ -25,9 +26,11 @@ from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 try:
     from . import kosmic_runs
     from .kosmic_routines import publish_tree
+    from .kosmic_specs import SpecCatalog, SpecError, read_document
 except ImportError:  # direct script import
     import kosmic_runs
     from kosmic_routines import publish_tree
+    from kosmic_specs import SpecCatalog, SpecError, read_document
 
 HARVEST_SCHEMA = "kosmic.dream.harvest/1"
 RECORD_SCHEMA = "kosmic.dream.record/1"
@@ -400,8 +403,184 @@ def _parse_list_value(value: str) -> list[str]:
 
 SPEC_TERMINAL = {"done", "rejected", "deprecated"}
 
+# --- Story070: one-catalog navigation and the pending-transaction seam --------
+
+BOOTSTRAP_CATALOG_CODES = frozenset({"MIGRATION_REQUIRED", "PROJECT_ID_INVALID"})
+WORK_RECEIPTS_RELATIVE = ".kosmic/work-receipts"
+RECEIPT_PENDING_BLOCKER = "receipt-pending"
+RECEIPT_SCHEMA = "kosmic.work-receipt/1"
+RECEIPT_STATUS_SUCCESSFUL = "successful"
+RECEIPT_MAX_BYTES = 65536
+
+
+class UnsafeReceiptStore(RuntimeError):
+    """The receipt store exists but cannot be read safely through no-follow descriptors."""
+
+
+def try_project_catalog(project_root: Path):
+    """Return the one owner-aware SpecCatalog, or None while bootstrap-flat.
+
+    None is returned only for sanctioned bootstrap states: no ProjectEntry.md,
+    an unassigned/invalid ``project_id``, or flat feature specifications that
+    raise ``MIGRATION_REQUIRED`` until the approved migration (Story 079) runs.
+    The catalog is fully validated (shared roots, ancestry, dependencies), so
+    every other defect propagates and navigation readers never fall back to a
+    second scanner over a broken Project.
+    """
+    root = Path(project_root)
+    if not (root / "ProjectEntry.md").is_file():
+        return None
+    try:
+        catalog = SpecCatalog(root)
+        catalog.validate()
+    except SpecError as error:
+        if error.code in BOOTSTRAP_CATALOG_CODES:
+            return None
+        raise
+    return catalog
+
+
+def receipt_name(record_identity: str) -> str:
+    """Deterministic terminal-receipt file name Story 075 publishes per record."""
+    return hashlib.sha256(record_identity.encode("utf-8")).hexdigest()[:16] + ".json"
+
+
+def _open_receipt_store(root: Path) -> int:
+    """Descriptor-open ``Project/.kosmic/work-receipts`` without following links.
+
+    Returns a retained store directory descriptor, or ``-1`` while the store
+    is absent (the sanctioned clean degradation). Raises
+    :class:`UnsafeReceiptStore` when the store path exists but is not a
+    no-follow directory, so callers fail closed instead of trusting it.
+    """
+    try:
+        fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    except FileNotFoundError:
+        return -1
+    except OSError as error:
+        raise UnsafeReceiptStore(f"{root / WORK_RECEIPTS_RELATIVE}: {error.strerror}") from error
+    try:
+        for part in WORK_RECEIPTS_RELATIVE.split("/"):
+            try:
+                next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            except FileNotFoundError:
+                os.close(fd)
+                return -1
+            os.close(fd)
+            fd = next_fd
+        return fd
+    except OSError as error:
+        os.close(fd)
+        raise UnsafeReceiptStore(f"{root / WORK_RECEIPTS_RELATIVE}: {error.strerror}") from error
+
+
+def _successful_receipt(store_fd: int, name: str, identity: str, root: Path, catalog) -> bool:
+    """True only for a bounded regular receipt proving ``identity`` succeeded.
+
+    The receipt must be a regular file opened no-follow under the retained
+    store descriptor, hold at most ``RECEIPT_MAX_BYTES`` of strict UTF-8 JSON,
+    declare ``schema: kosmic.work-receipt/1`` and match the canonical record
+    hash and current acceptance/review artifacts. Only explicit flat-bootstrap
+    path identities retain the minimal identity/status format until migration.
+    Unsafe, malformed, foreign, stale or failed receipts deny completion.
+    """
+    try:
+        file_fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=store_fd)
+    except OSError:
+        return False
+    try:
+        if not stat.S_ISREG(os.fstat(file_fd).st_mode):
+            return False
+        chunks: list[bytes] = []
+        remaining = RECEIPT_MAX_BYTES + 1
+        while remaining > 0:
+            data = os.read(file_fd, min(remaining, 65536))
+            if not data:
+                break
+            chunks.append(data)
+            remaining -= len(data)
+    finally:
+        os.close(file_fd)
+    payload_bytes = b"".join(chunks)
+    if len(payload_bytes) > RECEIPT_MAX_BYTES:
+        return False
+    try:
+        payload = json.loads(payload_bytes.decode("utf-8"))
+    except (UnicodeDecodeError, ValueError):
+        return False
+    if not isinstance(payload, dict):
+        return False
+    matching = (payload.get("schema") == RECEIPT_SCHEMA and payload.get("identity") == identity
+                and payload.get("status") == RECEIPT_STATUS_SUCCESSFUL)
+    if not matching or identity.startswith(("specs/", "subprojects/")):
+        return matching  # Explicit flat bootstrap identity, not a catalog alias.
+    if catalog is None:
+        return False
+    try:
+        if __package__:
+            from .kosmic_completion import validate_receipt_payload
+        else:
+            from kosmic_completion import validate_receipt_payload
+        validate_receipt_payload(root, catalog.resolve(identity), payload)
+    except (RuntimeError, ValueError, OSError):
+        return False
+    return True
+
+
+def pending_terminal_receipts(project_root: Path, records, *, catalog=None) -> dict[str, str]:
+    """Read-only pending-transaction seam (AD-SW9; receipts are Story 075's).
+
+    ``records`` yields ``(identity, status)`` pairs where identity is the
+    caller's canonical record identity: the qualified catalog identity for
+    owner-aware readers, or the Project-relative record path for bootstrap
+    flat readers. Returns ``{identity: expected_receipt_path}`` for records
+    whose frontmatter says ``done`` but which lack a matching successful
+    terminal receipt under ``Project/.kosmic/work-receipts/``.
+
+    A receipt settles a record only when :func:`_successful_receipt` accepts
+    its current canonical record and proof bindings, read descriptor-safe from
+    the no-follow store. Wrong-record, stale, failed, malformed or symlinked
+    receipts remain pending, as does an unsafe store. An absent
+    store leaves qualified catalog records pending. Explicit flat
+    bootstrap records retain their pre-migration completed meaning only when
+    the store is absent. Callers surface pending records as work, not completed.
+    This helper never writes and never creates the store.
+    """
+    root = Path(project_root)
+    done = [str(identity) for identity, status in records if str(status or "") == "done"]
+    if not done:
+        return {}
+    try:
+        store_fd = _open_receipt_store(root)
+    except UnsafeReceiptStore:
+        return {
+            identity: f"{WORK_RECEIPTS_RELATIVE}/{receipt_name(identity)}"
+            for identity in done
+        }
+    if store_fd < 0:
+        # Qualified catalog records require receipts even before the first
+        # transaction. Only flat bootstrap path identities remain exempt.
+        return {identity: f"{WORK_RECEIPTS_RELATIVE}/{receipt_name(identity)}"
+                for identity in done if not identity.startswith(("specs/", "subprojects/"))}
+    try:
+        if catalog is None:
+            catalog = try_project_catalog(root)
+        return {
+            identity: f"{WORK_RECEIPTS_RELATIVE}/{receipt_name(identity)}"
+            for identity in done
+            if not _successful_receipt(store_fd, receipt_name(identity), identity, root, catalog)
+        }
+    finally:
+        os.close(store_fd)
+
 
 def _spec_kind(relative: str) -> str | None:
+    """Legacy bootstrap-flat spec classifier; catalog readers never use it.
+
+    Catalog-mode discovery enumerates ``SpecCatalog.records`` directly, so
+    this bounded filename scan only serves Projects still in the sanctioned
+    bootstrap state (no catalog until the approved migration runs).
+    """
     if not relative.startswith(PROJECTS_PREFIX) or "/specs/" not in relative:
         return None
     tail = relative.split("/specs/", 1)[1]
@@ -424,44 +603,100 @@ def _spec_kind(relative: str) -> str | None:
     return None
 
 
+def _open_blocker(kind: str, status: str, decision: str) -> str:
+    """Current open-work blocker for one record; empty means not open."""
+    if kind in {"story", "epic", "quick-task", "research"}:
+        return "" if status in SPEC_TERMINAL else (status or "unknown-status")
+    if kind in {"prd", "architecture"}:
+        return "draft-awaiting-approval" if status == "draft" else ""
+    return "" if decision and decision != "pending" else "decision-pending"
+
+
 def _open_work_scan(vault: Path, project: str | None) -> dict[str, list[dict[str, Any]]]:
-    """Authoritative current open work per project, terminal records excluded."""
-    result: dict[str, list[dict[str, Any]]] = {}
+    """Authoritative current open work per project, terminal records excluded.
+
+    Projects that resolve through the one owner-aware catalog enumerate
+    ``SpecCatalog.records`` directly — every kind, including nonnumeric
+    proposal filenames — with qualified ownership; the legacy bounded path
+    scan serves only bootstrap flat Projects and keeps their legacy entry
+    shape. A ``done`` frontmatter value without a matching successful
+    terminal receipt is surfaced as pending, never as completed.
+    """
+    vault = vault.expanduser().resolve()
+    collected: dict[str, list[tuple[dict[str, Any], str]]] = {}
+    identities: dict[str, list[tuple[str, str]]] = {}
+    catalog_owners: set[str] = set()
+    projects_root = vault / PROJECTS_PREFIX
+    if projects_root.is_dir():
+        for child in sorted(projects_root.iterdir()):
+            owner = child.name
+            if owner.startswith(".") or child.is_symlink() or not child.is_dir():
+                continue
+            if project is not None and owner != project:
+                continue
+            catalog = try_project_catalog(child)
+            if catalog is None:
+                continue
+            catalog_owners.add(owner)
+            pairs = []
+            for ref in catalog.records:
+                status = ref.status
+                decision = str(ref.metadata.get("decision") or "")
+                identity = ref.qualified_id
+                pairs.append((
+                    {
+                        "kind": ref.kind,
+                        "path": ref.path.relative_to(vault).as_posix(),
+                        "status": status or None,
+                        "blocker": _open_blocker(ref.kind, status, decision),
+                        "updated": ref.metadata.get("updated") or None,
+                        "record": identity,
+                        "subproject": ref.subproject_id,
+                    },
+                    identity,
+                ))
+            collected[owner] = pairs
+            identities[owner] = [(ref.qualified_id, ref.status) for ref in catalog.records]
     for relative in _vault_markdown(vault):
         kind = _spec_kind(relative)
         if kind is None:
             continue
         owner = _project_of(relative)
-        if owner is None:
+        if owner is None or owner in catalog_owners:
             continue
         if project is not None and owner != project:
             continue
-        metadata = parse_frontmatter((vault / relative).read_text(encoding="utf-8", errors="replace"))
-        status = metadata.get("status") or ""
-        decision = metadata.get("decision") or ""
-        if kind in {"story", "epic", "quick-task"}:
-            if status in SPEC_TERMINAL:
-                continue
-            blocker = status or "unknown-status"
-        elif kind in {"prd", "architecture"}:
-            if status != "draft":
-                continue
-            blocker = "draft-awaiting-approval"
-        else:
-            if decision and decision != "pending":
-                continue
-            blocker = "decision-pending"
-        result.setdefault(owner, []).append(
-            {
-                "kind": kind,
-                "path": relative,
-                "status": status or None,
-                "blocker": blocker,
-                "updated": metadata.get("updated") or None,
-            }
+        document = read_document(vault, vault / relative)
+        metadata = document.metadata
+        status = str(metadata.get("status") or "")
+        decision = str(metadata.get("decision") or "")
+        identity = relative.removeprefix(f"{PROJECTS_PREFIX}{owner}/")
+        entry = {
+            "kind": kind,
+            "path": relative,
+            "status": status or None,
+            "blocker": _open_blocker(kind, status, decision),
+            "updated": metadata.get("updated") or None,
+        }
+        collected.setdefault(owner, []).append((entry, identity))
+        identities.setdefault(owner, []).append((identity, status))
+
+    result: dict[str, list[dict[str, Any]]] = {}
+    for owner, pairs in collected.items():
+        pending = pending_terminal_receipts(
+            vault / PROJECTS_PREFIX / owner, identities.get(owner, [])
         )
-    for entries in result.values():
-        entries.sort(key=lambda entry: entry["path"])
+        open_entries = []
+        for entry, identity in pairs:
+            if entry["blocker"]:
+                open_entries.append(entry)
+            elif identity in pending:
+                revived = dict(entry)
+                revived["blocker"] = RECEIPT_PENDING_BLOCKER
+                open_entries.append(revived)
+        open_entries.sort(key=lambda entry: entry["path"])
+        if open_entries:
+            result[owner] = open_entries
     return result
 
 

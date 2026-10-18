@@ -31,7 +31,8 @@ Kosmic creates or uses a Markdown vault, defaults to `./memnotes`, assigns an im
 ├── ProjectEntry.md
 ├── notes/                 # index.md + line-1 YAML concept notes
 ├── log/
-├── specs/
+├── specs/                 # shared Quick Tasks/proposals
+├── subprojects/{ID}/specs/ # feature hierarchy returned by spec-create
 └── skills/
     ├── {PROJECT_ID}-usage/
     └── {PROJECT_ID}-development/
@@ -47,3 +48,11 @@ For normal work, use this loop:
 6. **Project** stable notes through the atomic Skill Pair and run the Consumer Interface completion gate when applicable.
 
 See [../skills/README.md](../skills/README.md) for the full task list.
+
+The [skill routing table](../skills/SKILL.md#tasks) selects the branch reference.
+Before preparing evidence or completing a Story/Quick Task, load
+[Receipt completion](../skills/references/work_completion.md): exact checklist
+syntax, contained artifact hashes, computed review revision, scope claims and
+successful terminal receipt define completion. Work in an isolated writer and
+integrate only baseline-checked owned deltas; installed skills have a separate
+publication/installation gate.

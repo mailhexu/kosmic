@@ -1,0 +1,93 @@
+{
+  "baseline": "6e7b8bff170cff979015ef85899aad42b4714d8a",
+  "rounds": [
+    {
+      "round": 1,
+      "standards": "changes-requested",
+      "spec": "changes-requested",
+      "findings": [
+        "STD-YL-1",
+        "STD-YL-2",
+        "STD-YL-3",
+        "STD-YL-4",
+        "STD-YL-5",
+        "STD-YL-6",
+        "SPEC-YL-1",
+        "SPEC-YL-2",
+        "SPEC-YL-3",
+        "SPEC-YL-4"
+      ]
+    },
+    {
+      "round": 2,
+      "standards": "changes-requested",
+      "spec": "changes-requested",
+      "resolved": [
+        "STD-YL-1",
+        "STD-YL-2",
+        "STD-YL-3",
+        "STD-YL-4",
+        "STD-YL-5",
+        "STD-YL-6",
+        "SPEC-YL-1",
+        "SPEC-YL-2",
+        "SPEC-YL-3",
+        "SPEC-YL-4"
+      ],
+      "findings": [
+        "STD-YL-7",
+        "STD-YL-8",
+        "STD-YL-9",
+        "SPEC-YL-5"
+      ]
+    },
+    {
+      "round": 3,
+      "standards": "changes-requested",
+      "spec": "changes-requested",
+      "resolved": [
+        "STD-YL-1",
+        "STD-YL-2",
+        "STD-YL-3",
+        "STD-YL-4",
+        "STD-YL-5",
+        "STD-YL-6",
+        "STD-YL-7",
+        "STD-YL-8",
+        "STD-YL-9",
+        "SPEC-YL-1",
+        "SPEC-YL-2",
+        "SPEC-YL-3",
+        "SPEC-YL-4",
+        "SPEC-YL-5"
+      ],
+      "findings": [
+        "STD-YL-10",
+        "STD-YL-11",
+        "SPEC-YL-6"
+      ]
+    }
+  ],
+  "scope": "Source corrections only; no live migration or installed skill changes.",
+  "post_round3_resolution": {
+    "reviewer_approval": false,
+    "verification_owner": "parent",
+    "resolved": [
+      "STD-YL-10",
+      "STD-YL-11",
+      "SPEC-YL-6"
+    ],
+    "evidence": [
+      "Actual integrated CLI resolves quoted JSON flow keys without changing title",
+      "Actual CLI resolves multiline flow context",
+      "82 focused tests pass on isolated source scope",
+      "The 21-module complete suite passes",
+      "Unplaceable corrected scalar retains unsupported-link-rewrite apply blocker",
+      "Nested scratch CLI path fix has separate Standards and Spec approvals"
+    ],
+    "decision": "user-accepted",
+    "approved_by": "user",
+    "recorded": "2026-10-12",
+    "note": "The user explicitly accepted the three post-round-3 fixes. No fourth automated source review or independent reviewer approval is claimed."
+  }
+}

@@ -1,22 +1,26 @@
 ---
-status: done
-created: 2026-09-06
-updated: 2026-09-06
-result: no_action
-scope: project-procedure
-target:
-target_ref:
-target_sha256:
-proposer_mode: subagent
-proposer_ref: agent://KosmicFreshProposer
+status: "done"
+created: "2026-09-06"
+updated: "2026-09-06"
+result: "no_action"
+scope: "project-procedure"
+target: ""
+target_ref: ""
+target_sha256: ""
+proposer_mode: "subagent"
+proposer_ref: "agent://KosmicFreshProposer"
 proposer_reason: "Task P dogfood run: fresh-context subagent proposer restricted to the curated manifest"
-input_manifest: [specs/skill-proposals/inputs/kosmic-proposer-dogfood.md]
-related_notes: [notes/cli-extension-conventions.md]
-evidence_packs: [2026-09-02-experience-compilation-impl]
+input_manifest: ["specs/skill-proposals/inputs/kosmic-proposer-dogfood.md"]
+related_notes: ["notes/cli-extension-conventions.md"]
+evidence_packs: ["2026-09-02-experience-compilation-impl"]
 behavioral_evidence: []
-decision: accepted
-fingerprint: 30d2d8021f4eee71d4f896545ee89f0ba171206b3ffad857dc90b941c931bd1a
+decision: "accepted"
+fingerprint: "30d2d8021f4eee71d4f896545ee89f0ba171206b3ffad857dc90b941c931bd1a"
 reconsiders: ""
+project_id: "kosmic"
+subproject_id: null
+record_kind: "proposal"
+local_id: "2026-09-06-kosmic-proposer-dogfood"
 ---
 
 # Skill Proposal: Projection CLI Extension Conventions — Projection Sufficiency

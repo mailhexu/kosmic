@@ -1,0 +1,17 @@
+{
+  "completed_at": "2026-10-12T07:40:48Z",
+  "detail": "User accepted capped YAML findings; scratch gate and owner-index completion fixes received separate Standards/Spec approvals; verified 116 focused tests.",
+  "identity": "kosmic/deterministic-flat-spec-migration/story/001",
+  "proof": {
+    "evidence/2026-10-11-deterministic-flat-spec-migration/acceptance-001.json": "d46eb881423cba93b296de51cfbb1013a2a34a6fb6990562120cb8db906c9b88",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/cli-smoke.txt": "ab028a83f3d020368f38de1879055b03689acf03175113ec6c229ee1a11ee497",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/review-001.json": "c45acae5d303606d0d7dafb569aefc067207a218d1a3c8842faee585d7be544f",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/review-ledger.json": "2d507fafffec64e4df13ff6941e9795f3d3649403058d209be3f2bbca46e31b1",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/source-checksums.json": "9883a6135a880df6b93e33c0bd6d0188bec2e546e5b2f8cd33cf21ffe793da76",
+    "evidence/2026-10-11-deterministic-flat-spec-migration/tests.txt": "04e48b71f99c626bf4c9cbb94d5f670187a216a484b099f7a76806362418c038"
+  },
+  "record_path": "subprojects/deterministic-flat-spec-migration/specs/stories/story-001.md",
+  "record_sha256": "d93673b61dc89e9733400b33a499e67aa120cea6a32029cab006c2ea51ca7d49",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

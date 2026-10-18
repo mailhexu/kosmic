@@ -1,0 +1,3 @@
+Same approved command repeated before documentation updates.
+Exit: 0
+Parsed receipt: identical to first successful result.

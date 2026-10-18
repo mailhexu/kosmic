@@ -1,0 +1,14 @@
+{
+  "status": "publication-blocked-pending-procedure-proposal",
+  "review_base": "5ac4bb4bd52b786bbe9d6ef90d7ff1f46e08e75e",
+  "checks": [
+    {"scenario": "complete source suite before provenance-pin addition", "result": "passed", "tests": 666},
+    {"scenario": "focused recovery regressions including provenance-pin addition", "result": "passed", "tests": 7},
+    {"scenario": "real six-topic metadata migration", "result": "rejected atomically", "reason": "ABINIT legacy topics lack artifact_role"},
+    {"scenario": "real ten-topic approved map with explicit source provenance pins", "result": "rejected atomically", "reason": "TB2J procedure has unclassified legacy dependencies and incomplete procedural structure"}
+  ],
+  "standards_review": {"finding": "STD-01", "status": "resolved", "reviewer": "RecoveryStandards", "remaining_blockers": 0},
+  "authoritative_library_published": false,
+  "main_source_integrated": false,
+  "emc_catalog_migration_applied": false
+}

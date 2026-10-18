@@ -2,6 +2,8 @@
 
 Periodically review log entries and update atomic notes.
 
+Read-only inspection is record-free and performs no durable cleanup. Before editing notes, status decisions or extracted-marker logs, select compatible review/maintenance authority and exact declared outputs. Use the triggering record when its scope covers maintenance, otherwise obtain an approved narrow Quick Task or reviewed expansion; do not claim other agents' pre-existing work. Follow SKILL.md record-first and receipt completion rules.
+
 ## 1. Review Log Entries
 
 Extract knowledge from log entries to create/update atomic notes.
@@ -172,7 +174,8 @@ git grep "confidence: 0\.[0-5]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
 ## Vault Commit Cadence
 
-Before closing a session in which any vault record changed, commit the entire
-vault tree (`git add -A && git commit`) — the classification step says *what*
-changed; this step makes it history. Multi-session uncommitted vault state
-silently degrades dream harvests, provenance, and manifest pinning.
+Before closing a session with vault changes, commit the verified record-owned
+outputs in the isolated writer so provenance remains available. Load
+[Receipt completion](work_completion.md) for completion and integration.
+Preserve unrelated destination work; use the captured baseline to reconcile
+each owned delta before integrating it.

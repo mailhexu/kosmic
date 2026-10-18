@@ -3,7 +3,7 @@ type: Agent Skill
 title: kosmic Usage Skill
 status: stable
 name: kosmic-usage
-description: Use when invoking, configuring, integrating, validating, installing, or troubleshooting kosmic consumer interfaces.
+description: "Use when invoking, configuring, integrating, validating, installing, or troubleshooting kosmic consumer interfaces."
 audience: usage
 ---
 
@@ -13,9 +13,21 @@ audience: usage
 
 Working State: `working-tree`
 
+## Work record authority
+
+- Project: `kosmic`; canonical records: `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/specs` and `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/subprojects`.
+- Shared knowledge stays at `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/notes`, `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/mathdocs`, and `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/skills`; never copy it into a subproject.
+- Before substantive source, docs, vault, config or experiment changes, select/create a governing record through Kosmic. Feature implementation requires an approved owner-local Story/Epic/Architecture/PRD hierarchy; standalone low-risk work requires an approved Quick Task.
+- Draft planning/initialization creates only its explicitly bounded record and planning outputs. PRD success is not implementation approval. Migration and installation still require their own approved plans.
+- Register the exact working root; a fixed subproject constrains that directory, never selects an active task. Inspect the current record with `work show --project /home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic --work-record RECORD_REF`. No shared mutable selection pointer is permitted.
+- Start writable work in a clean dedicated worktree. Pass the approved governing record explicitly as --work-record to each checked mutating command. One record, one worktree, one writer; reconcile concurrent changes through Git.
+- Every changed worktree path must fit the declared --scope at work finish. Dirty worktrees are refused at start; out-of-scope paths block completion. Raw editors/shell remain agent compliance, not an OS sandbox.
+- Questions, searches and unchanged checks are record-free and read-only: no implicit cleanup, generated publication or installation. Read-only maintenance reports instead of deleting.
+- After actual acceptance/smoke evidence and pinned two-axis review, use `work finish --work-record RECORD_REF --worktree PATH --scope worktree:PATH`. It updates status/index/log, publishes the successful receipt, then derives STATUS from that receipt — stepwise, not cross-file atomic. Unreceipted done is pending; rerun finish after interruption, and a retry with a valid existing receipt keeps the receipt and regenerates only the derived reports.
+- Completion reports name the qualified record and canonical path plus actual acceptance/smoke/review results; a command exit code or checkbox alone is not acceptance evidence.
+
 ## Topics
 
-- [Atomic Skill Publication](references/atomic-skill-publication.md)
 - [Projection CLI experience commands](references/cli-projection-commands.md)
 - [Dream Reflection workflow](references/dream-reflection-workflow.md)
 - [Managed Run Workspace Lifecycle](references/managed-run-workspace-lifecycle.md)

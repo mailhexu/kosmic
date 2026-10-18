@@ -14,6 +14,7 @@ import json
 import os
 import re
 import shutil
+import stat as stat_module
 import sys
 import socket
 import subprocess
@@ -21,7 +22,7 @@ import unicodedata
 import tempfile
 from datetime import date, datetime, timedelta, timezone
 from contextlib import contextmanager
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path, PurePosixPath
 from typing import Any, Iterable, Sequence
 from urllib.parse import quote, unquote
@@ -54,6 +55,11 @@ except ImportError:
     )
 
 try:
+    from .kosmic_yaml import YAMLParseError, parse_mapping, parse_scalar as _parse_yaml_scalar, render_entry, render_value
+except ImportError:
+    from kosmic_yaml import YAMLParseError, parse_mapping, parse_scalar as _parse_yaml_scalar, render_entry, render_value
+
+try:
     from .kosmic_routines import (
         RoutineError, RoutineQuery, publish_tree, query_routines, validate_routine_inventory,
     )
@@ -68,6 +74,21 @@ try:
 except ImportError:
     import kosmic_runs
     import kosmic_dreams
+try:
+    from . import kosmic_work
+    from .kosmic_specs import SpecCatalog, SpecError, create_spec, migration_plan, read_document
+except ImportError:
+    import kosmic_work
+    from kosmic_specs import SpecCatalog, SpecError, create_spec, migration_plan, read_document
+
+try:
+    from .kosmic_migration import (
+        MigrationError, apply_migration, recover_migration, save_migration_plan,
+    )
+except ImportError:
+    from kosmic_migration import (
+        MigrationError, apply_migration, recover_migration, save_migration_plan,
+    )
 
 GENERATOR_VERSION = 4
 OKF_VERSION = "0.2"
@@ -85,6 +106,10 @@ EVIDENCE_KINDS = {"execution", "research"}
 EVIDENCE_PACK_RE = re.compile(r"^\d{4}-\d{2}-\d{2}-[a-z0-9]+(?:-[a-z0-9]+)*$")
 PROVENANCE_HASH_RE = re.compile(r"^[0-9a-f]{40}$|^[0-9a-f]{64}$")
 LEDGER_KEYS = ("date", "kind", "targets", "refs", "outcome", "reason")
+#: Optional governing-identity fields on publication entries (Story 076):
+#: the triggering qualified record id and the provenance source that
+#: authored the entry. Legacy entries without them stay valid.
+LEDGER_IDENTITY_KEYS = ("record", "provenance_source")
 LEDGER_KINDS = {"publication", "decision"}
 LEDGER_OUTCOMES = {"published", "accepted", "rejected"}
 MATHDOCS_DIR_NAME = "mathdocs"
@@ -284,29 +309,11 @@ def sha256_bytes(content: bytes) -> str:
 
 
 def parse_scalar(raw: str) -> Any:
-    value = raw.strip()
-    if not value:
-        return ""
-    if value.startswith("[") and value.endswith("]"):
-        inner = value[1:-1].strip()
-        if not inner:
-            return []
-        return [parse_scalar(item) for item in inner.split(",")]
-    if (value.startswith('"') and value.endswith('"')) or (
-        value.startswith("'") and value.endswith("'")
-    ):
-        return value[1:-1]
-    lowered = value.lower()
-    if lowered == "true":
-        return True
-    if lowered == "false":
-        return False
-    if lowered in {"null", "none", "~"}:
-        return None
-    return value
+    """Resolve a single raw scalar value (used by ledger and inline fields)."""
+    return _parse_yaml_scalar(raw)
 
 
-def parse_markdown(text: str) -> MarkdownDocument:
+def parse_markdown(text: str, context: str = "frontmatter") -> MarkdownDocument:
     lines = text.splitlines(keepends=True)
     delimiters = [index for index, line in enumerate(lines) if line.strip() == "---"]
     frontmatter_range: tuple[int, int] | None = None
@@ -315,14 +322,11 @@ def parse_markdown(text: str) -> MarkdownDocument:
     if len(delimiters) >= 2 and delimiters[0] <= 10:
         start, end = delimiters[0], delimiters[1]
         frontmatter_range = (start, end)
-        for line in lines[start + 1 : end]:
-            stripped = line.strip()
-            if not stripped or stripped.startswith("#") or ":" not in line:
-                continue
-            key, raw_value = line.split(":", 1)
-            key = key.strip()
-            if key:
-                metadata[key] = parse_scalar(raw_value)
+        try:
+            metadata = parse_mapping("".join(lines[start + 1 : end]), context=context,
+                                     empty_scalar="")
+        except YAMLParseError as error:
+            raise KosmicError(str(error)) from error
         body = "".join(lines[:start] + lines[end + 1 :])
     else:
         body = text
@@ -331,24 +335,8 @@ def parse_markdown(text: str) -> MarkdownDocument:
 
 
 def render_scalar(value: Any) -> str:
-    if isinstance(value, bool):
-        return "true" if value else "false"
-    if isinstance(value, list):
-        return "[" + ", ".join(render_scalar(item) for item in value) + "]"
-    if value is None:
-        return "null"
-    text = str(value)
-    if (
-        not text
-        or text.lower() in {"true", "false", "null", "none", "~"}
-        or re.fullmatch(r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)", text)
-        or text[0] in "-?:,[]{}#&*!|>'\"%@`"
-        or ": " in text
-        or " #" in text
-        or "\n" in text
-    ):
-        return json.dumps(text, ensure_ascii=False)
-    return text
+    """Render a value as JSON-compatible flow YAML on a single line."""
+    return render_value(value)
 
 
 def update_markdown_metadata(text: str, updates: dict[str, Any]) -> str:
@@ -356,69 +344,54 @@ def update_markdown_metadata(text: str, updates: dict[str, Any]) -> str:
     lines = text.splitlines(keepends=True)
     if document.frontmatter_range is None:
         metadata_lines = ["---\n"]
-        metadata_lines.extend(f"{key}: {render_scalar(value)}\n" for key, value in updates.items())
+        for key, value in updates.items():
+            metadata_lines.extend(render_entry(key, value))
         metadata_lines.extend(["---\n", "\n"])
         return "".join(metadata_lines) + text.lstrip("\n")
 
     start, end = document.frontmatter_range
     existing = lines[start + 1 : end]
-    positions: dict[str, int] = {}
+    spans: dict[str, tuple[int, int]] = {}
+    current: str | None = None
     for index, line in enumerate(existing):
-        if ":" in line and not line.lstrip().startswith("#") and not line[:1].isspace():
-            key = line.split(":", 1)[0].strip()
-            if key:
-                positions[key] = index
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        if not line[:1].isspace() and not stripped.startswith("-"):
+            key = stripped.split(":", 1)[0].strip().strip("\"'")
+            current = key
+            if key not in spans:
+                spans[key] = (index, index)
+        elif current is not None:
+            first, last = spans[current]
+            spans[current] = (first, index)
+    span_by_start = {span[0]: key for key, span in spans.items()}
 
+    rebuilt: list[str] = []
+    index = 0
+    while index < len(existing):
+        key = span_by_start.get(index)
+        if key is not None and key in updates:
+            rebuilt.extend(render_entry(key, updates[key]))
+            index = spans[key][1] + 1
+            continue
+        rebuilt.append(existing[index])
+        index += 1
     for key, value in updates.items():
-        rendered = f"{key}: {render_scalar(value)}\n"
-        if key in positions:
-            existing[positions[key]] = rendered
-        else:
-            existing.append(rendered)
+        if key not in spans:
+            rebuilt.extend(render_entry(key, value))
 
-    frontmatter = "".join([lines[start], *existing, lines[end]])
+    frontmatter = "".join([lines[start], *rebuilt, lines[end]])
     body = "".join(lines[:start] + lines[end + 1 :]).lstrip("\n")
     return frontmatter.rstrip("\n") + "\n\n" + body
 
 
 def require_frontmatter(text: str, relative_path: str) -> MarkdownDocument:
-    document = parse_markdown(text)
+    document = parse_markdown(text, context=relative_path)
     if document.frontmatter_range is None or document.frontmatter_range[0] != 0:
         raise KosmicError(
             f"OKF concept requires YAML frontmatter on line 1: {relative_path}"
         )
-
-    lines = text.splitlines()
-    _, end = document.frontmatter_range
-    seen: set[str] = set()
-    parent_key: str | None = None
-    for line_number, line in enumerate(lines[1:end], start=2):
-        if "\t" in line:
-            raise KosmicError(
-                f"invalid YAML tab indentation in {relative_path}:{line_number}"
-            )
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        if line[:1].isspace():
-            if parent_key is None:
-                raise KosmicError(
-                    f"invalid YAML indentation in {relative_path}:{line_number}"
-                )
-            continue
-        if ":" not in line:
-            raise KosmicError(
-                f"invalid YAML frontmatter in {relative_path}:{line_number}"
-            )
-        key = line.split(":", 1)[0].strip()
-        if not key:
-            raise KosmicError(
-                f"invalid YAML key in {relative_path}:{line_number}"
-            )
-        if key in seen:
-            raise KosmicError(f"duplicate YAML key '{key}' in {relative_path}")
-        seen.add(key)
-        parent_key = key
     return document
 
 
@@ -561,28 +534,30 @@ def validate_artifact_role(document: MarkdownDocument, relative: str, *, require
     return role
 
 
+def _note_derivation_slugs(document: MarkdownDocument, relative: str) -> set[str]:
+    declared: set[str] = set()
+    for path in as_path_list(document.metadata.get("derivations")):
+        match = re.fullmatch(r"mathdocs/([a-z0-9]+(?:-[a-z0-9]+)*)\.py", path)
+        if match is None:
+            raise KosmicError(
+                f"{relative} derivations entry must be mathdocs/<slug>.py: {path}"
+            )
+        declared.add(match.group(1))
+    return declared
+
+
 def validate_note_math_markers(
     document: MarkdownDocument,
     relative: str,
     registry: MathRegistry,
 ) -> None:
-    declared_paths = as_path_list(document.metadata.get("derivations"))
-    declared: set[str] = set()
-    for path in declared_paths:
-        match = re.fullmatch(
-            r"mathdocs/([a-z0-9]+(?:-[a-z0-9]+)*)\.py", path
-        )
-        if match is None:
-            raise KosmicError(
-                f"{relative} derivations entry must be mathdocs/<slug>.py: {path}"
-            )
-        slug = match.group(1)
+    declared = _note_derivation_slugs(document, relative)
+    for slug in sorted(declared):
         entry = registry.entries.get(slug)
         if entry is None or entry.status == "deprecated":
             raise KosmicError(
-                f"{relative} derivations references unknown active MathDoc: {path}"
+                f"{relative} derivations references unknown active MathDoc: mathdocs/{slug}.py"
             )
-        declared.add(slug)
 
     outside_lines: list[str] = []
 
@@ -638,39 +613,48 @@ def validate_note_math_markers(
             )
 
 
+def _validate_note_document(
+    document: MarkdownDocument,
+    relative: str,
+    project_root: Path,
+    math_registry: MathRegistry | None = None,
+) -> None:
+    if not str(document.metadata.get("type") or "").strip():
+        raise KosmicError(f"OKF concept requires a non-empty type: {relative}")
+    status = str(document.metadata.get("status") or "").strip().lower()
+    if status not in NOTE_STATUSES:
+        raise KosmicError(
+            f"invalid Project Knowledge status '{status}' in {relative}; "
+            "expected draft, stable, or deprecated"
+        )
+    updated = str(document.metadata.get("updated") or "")
+    if updated and not ISO_DATE_RE.fullmatch(updated):
+        raise KosmicError(f"updated must be YYYY-MM-DD in {relative}")
+    validate_artifact_role(
+        document, relative,
+        required=bool(updated and updated >= "2026-09-07"),
+    )
+    validated_stale_after(document.metadata.get("stale_after"), relative)
+    if status == "stable":
+        validate_note_evidence_paths(
+            document.metadata.get("evidence"), relative, project_root
+        )
+        if math_registry is not None:
+            validate_note_math_markers(document, relative, math_registry)
+    if has_nonportable_wikilink(document.body):
+        raise KosmicError(f"non-portable Wikilink in Project Knowledge: {relative}")
+
+
 def validate_notes_bundle(
     notes_dir: Path, math_registry: MathRegistry | None = None
 ) -> None:
     validate_okf_bundle(notes_dir, require_index=True, forbid_log=True)
-    project_root = notes_dir.parent
     for path in sorted(notes_dir.rglob("*.md")):
         if path.name in {"index.md", "log.md"}:
             continue
         relative = path.relative_to(notes_dir).as_posix()
-        text = path.read_text(encoding="utf-8")
-        document = require_frontmatter(text, relative)
-        status = str(document.metadata.get("status") or "").strip().lower()
-        if status not in NOTE_STATUSES:
-            raise KosmicError(
-                f"invalid Project Knowledge status '{status}' in {relative}; "
-                "expected draft, stable, or deprecated"
-            )
-        updated = str(document.metadata.get("updated") or "")
-        if updated and not ISO_DATE_RE.fullmatch(updated):
-            raise KosmicError(f"updated must be YYYY-MM-DD in {relative}")
-        validate_artifact_role(
-            document, relative,
-            required=bool(updated and updated >= "2026-09-07"),
-        )
-        validated_stale_after(document.metadata.get("stale_after"), relative)
-        if status == "stable":
-            validate_note_evidence_paths(
-                document.metadata.get("evidence"), relative, project_root
-            )
-            if math_registry is not None:
-                validate_note_math_markers(document, relative, math_registry)
-        if has_nonportable_wikilink(document.body):
-            raise KosmicError(f"non-portable Wikilink in Project Knowledge: {relative}")
+        document = require_frontmatter(path.read_text(encoding="utf-8"), relative)
+        _validate_note_document(document, relative, notes_dir.parent, math_registry)
 
 
 def validate_math_metadata(
@@ -792,7 +776,15 @@ def load_math_registry(
     mathdocs_dir: Path | None = None,
     *,
     require_current_source: bool = True,
+    only_slugs: Sequence[str] | None = None,
 ) -> MathRegistry:
+    selected = None if only_slugs is None else set(only_slugs)
+    if selected is not None:
+        for slug in selected:
+            if not MATH_SLUG_RE.fullmatch(slug):
+                raise KosmicError(f"invalid selected derivation slug: {slug}")
+        if not selected:
+            return MathRegistry(project_id=project.project_id, entries={})
     root = mathdocs_dir or project.mathdocs_dir
     index_path = root / "index.md"
     if not root.is_dir() or not index_path.is_file():
@@ -808,6 +800,8 @@ def load_math_registry(
         if path.suffix not in {".py", ".md"}:
             continue
         slug = path.stem
+        if selected is not None and slug not in selected:
+            continue
         if not MATH_SLUG_RE.fullmatch(slug):
             raise KosmicError(f"invalid mathdocs slug in {path.name}")
         target = scripts if path.suffix == ".py" else notes
@@ -822,6 +816,10 @@ def load_math_registry(
             "unpaired mathdocs files: " + ", ".join(details)
         )
 
+    if selected is not None:
+        missing_selected = sorted(selected - set(scripts))
+        if missing_selected:
+            raise KosmicError("selected MathDoc is missing: " + ", ".join(missing_selected))
     entries: dict[str, MathEntry] = {}
     for slug in sorted(scripts):
         note_path = notes[slug]
@@ -875,9 +873,26 @@ def load_math_registry(
     for line in index_text.splitlines()[4:]:
         if not line.strip() or line.lstrip().startswith("<!--"):
             continue
+        match = MATH_INDEX_ROW_RE.fullmatch(line.strip())
+        if selected is not None and (match is None or match.group(1) not in selected):
+            if match is None:
+                columns = line.strip().strip("|").split("|")
+                slug_column = columns[0].strip() if columns else ""
+                link = re.fullmatch(r"\[([^\]]+)\]\([^)]*\)", slug_column)
+                if link:
+                    row_slug = link.group(1)
+                elif slug_column.startswith("["):
+                    # Broken link syntax still names its slug before "]".
+                    row_slug = slug_column[1:].split("]", 1)[0].strip()
+                else:
+                    row_slug = slug_column.removesuffix(".md").strip()
+                if row_slug in selected:
+                    raise KosmicError(
+                        f"invalid mathdocs index row for selected derivation: {line}"
+                    )
+            continue
         if not line.lstrip().startswith("|"):
             raise KosmicError(f"invalid mathdocs index line: {line}")
-        match = MATH_INDEX_ROW_RE.fullmatch(line.strip())
         if match is None:
             raise KosmicError(f"invalid mathdocs index row: {line}")
         slug, href, status, summary = match.groups()
@@ -915,6 +930,34 @@ def validate_project_content(project: Project) -> MathRegistry:
     registry = load_math_registry(project)
     validate_notes_bundle(project.notes_dir, registry)
     return registry
+
+
+def _validate_record_content(
+    project: Project, document: MarkdownDocument
+) -> MathRegistry:
+    """Validate the record's explicitly declared knowledge and math closure."""
+    slugs = set(as_string_list(document.metadata.get("derivations")))
+    notes: list[tuple[MarkdownDocument, str]] = []
+    for reference in as_string_list(document.metadata.get("related_notes")):
+        path = resolve_related_note(project, reference)
+        if not path.is_file():
+            raise KosmicError(f"declared Project knowledge is missing: {reference}")
+        relative = path.relative_to(project.notes_dir).as_posix()
+        note = require_frontmatter(path.read_text(encoding="utf-8"), relative)
+        if str(note.metadata.get("status") or "").strip().lower() == "deprecated":
+            raise KosmicError(f"declared Project knowledge is deprecated: {reference}")
+        stale_after = validated_stale_after(note.metadata.get("stale_after"), relative)
+        if stale_after is not None and date.today() >= stale_after:
+            raise KosmicError(f"declared Project knowledge is stale: {reference}")
+        if note.metadata.get("usage_stale") is True:
+            raise KosmicError(f"declared Project knowledge is Usage-stale: {reference}")
+        slugs.update(_note_derivation_slugs(note, relative))
+        notes.append((note, relative))
+    registry = load_math_registry(project, only_slugs=sorted(slugs))
+    for note, relative in notes:
+        _validate_note_document(note, relative, project.root, registry)
+    return registry
+
 
 def validate_evidence_pack(pack_dir: Path) -> None:
     slug = pack_dir.name
@@ -1016,12 +1059,19 @@ def parse_ledger_entry(line: str, ledger_path: Path, index: int) -> dict[str, An
             f"Impact Ledger entry {index} in {ledger_path.name} is missing fields: "
             + ", ".join(missing)
         )
-    extra = sorted(set(fields) - set(LEDGER_KEYS))
+    extra = sorted(set(fields) - set(LEDGER_KEYS) - set(LEDGER_IDENTITY_KEYS))
     if extra:
         raise KosmicError(
             f"Impact Ledger entry {index} in {ledger_path.name} has unknown fields: "
             + ", ".join(extra)
         )
+    for key in LEDGER_IDENTITY_KEYS:
+        value = fields.get(key)
+        if value is not None and not isinstance(value, str):
+            raise KosmicError(
+                f"Impact Ledger entry {index} in {ledger_path.name} has a "
+                f"non-string {key}"
+            )
     if not ISO_DATE_RE.fullmatch(str(fields["date"])):
         raise KosmicError(
             f"Impact Ledger entry {index} in {ledger_path.name} has an invalid date"
@@ -1065,8 +1115,11 @@ def validate_impact_ledger(project: Project) -> None:
 
 
 def render_ledger_entry(entry: dict[str, Any]) -> str:
+    keys = LEDGER_KEYS + tuple(
+        key for key in LEDGER_IDENTITY_KEYS if entry.get(key) is not None
+    )
     return "- " + " | ".join(
-        f"{key}: {render_scalar(entry[key])}" for key in LEDGER_KEYS
+        f"{key}: {render_scalar(entry[key])}" for key in keys
     )
 
 
@@ -1301,6 +1354,23 @@ def demote_unshipped_links(
 
 
 
+def record_first_contract(project: Project) -> list[str]:
+    """One approval/scope contract projected unchanged by every adapter."""
+    return [
+        "## Work record authority", "",
+        f"- Project: `{project.project_id}`; canonical records: `{project.root / 'specs'}` and `{project.root / 'subprojects'}`.",
+        f"- Shared knowledge stays at `{project.notes_dir}`, `{project.mathdocs_dir}`, and `{project.canonical_root}`; never copy it into a subproject.",
+        "- Before substantive source, docs, vault, config or experiment changes, select/create a governing record through Kosmic. Feature implementation requires an approved owner-local Story/Epic/Architecture/PRD hierarchy; standalone low-risk work requires an approved Quick Task.",
+        "- Draft planning/initialization creates only its explicitly bounded record and planning outputs. PRD success is not implementation approval. Migration and installation still require their own approved plans.",
+        f"- Register the exact working root; a fixed subproject constrains that directory, never selects an active task. Inspect the current record with `work show --project {project.root} --work-record RECORD_REF`. No shared mutable selection pointer is permitted.",
+        "- Start writable work in a clean dedicated worktree. Pass the approved governing record explicitly as --work-record to each checked mutating command. One record, one worktree, one writer; reconcile concurrent changes through Git.",
+        "- Every changed worktree path must fit the declared --scope at work finish. Dirty worktrees are refused at start; out-of-scope paths block completion. Raw editors/shell remain agent compliance, not an OS sandbox.",
+        "- Questions, searches and unchanged checks are record-free and read-only: no implicit cleanup, generated publication or installation. Read-only maintenance reports instead of deleting.",
+        "- After actual acceptance/smoke evidence and pinned two-axis review, use `work finish --work-record RECORD_REF --worktree PATH --scope worktree:PATH`. It updates status/index/log, publishes the successful receipt, then derives STATUS from that receipt — stepwise, not cross-file atomic. Unreceipted done is pending; rerun finish after interruption, and a retry with a valid existing receipt keeps the receipt and regenerates only the derived reports.",
+        "- Completion reports name the qualified record and canonical path plus actual acceptance/smoke/review results; a command exit code or checkbox alone is not acceptance evidence.", "",
+    ]
+
+
 def router_text(project: Project, role: str, notes: Sequence[Note]) -> str:
     name = project.usage_name if role == "usage" else project.development_name
     description = (
@@ -1336,6 +1406,7 @@ def router_text(project: Project, role: str, notes: Sequence[Note]) -> str:
                 "",
             ]
         )
+    lines.extend(record_first_contract(project))
     lines.extend(["## Topics", ""])
     if notes:
         for note in notes:
@@ -1530,11 +1601,60 @@ def validate_current_projection(project: Project, output: Path) -> None:
     plan = collect_projection_plan(project)
     if not plan.usage_notes:
         raise KosmicError("Usage Skill requires at least one stable usage or both note")
-    with managed_command_run(project.root, purpose="validate-projection") as scratch:
+    with ephemeral_command_run(project.root, purpose="validate-projection") as scratch:
         expected = scratch / "skills"
         build_projection_root(plan, expected)
         if directory_snapshot(expected) != directory_snapshot(output):
             raise KosmicError("canonical Skill Pair is stale; regenerate it from Project Knowledge")
+
+
+def _validate_record_projection(project: Project, references: Sequence[str]) -> None:
+    """Keep whole-pair integrity; check source freshness only for declared usage."""
+    root = project.canonical_root
+    validate_projection_root(project, root, check_sources=False)
+    package = root / project.usage_name
+    manifest = read_json(package / PROJECTION_MANIFEST)
+    sources = manifest.get("sources")
+    if not isinstance(sources, list):
+        raise KosmicError("invalid usage projection source provenance")
+    source_by_path: dict[str, dict[str, Any]] = {}
+    for source in sources:
+        if (not isinstance(source, dict) or not isinstance(source.get("path"), str)
+                or not isinstance(source.get("sha256"), str)):
+            raise KosmicError("invalid usage projection source provenance")
+        if source["path"] in source_by_path:
+            raise KosmicError(f"duplicate usage projection source: {source['path']}")
+        source_by_path[source["path"]] = source
+    package_paths = set(source_by_path)
+    router = (package / "SKILL.md").read_text(encoding="utf-8")
+    router_targets = {match.group(2) for match in MARKDOWN_LINK_RE.finditer(router)}
+    for reference in references:
+        path = resolve_related_note(project, reference)
+        relative = path.relative_to(project.root).as_posix()
+        source = path.read_bytes()
+        document = parse_markdown(source.decode("utf-8"))
+        body = document.body.strip()
+        if not body:
+            raise KosmicError(f"stable note has no projectable content: {relative}")
+        audience, unscoped = normalize_audience(document.metadata.get("audience"), relative)
+        note = Note(
+            path=path, relative_path=relative, title=note_title(body, path),
+            body=body + "\n", source_hash=sha256_bytes(source), audience=audience,
+            artifact_role=str(document.metadata.get("artifact_role") or ""), unscoped=unscoped,
+        )
+        provenance = source_by_path.get(relative)
+        expected_reference = safe_reference_path(note).as_posix()
+        if provenance is None or provenance.get("reference") != expected_reference:
+            raise KosmicError(f"declared Consumer knowledge is not projected: {relative}")
+        if provenance["sha256"] != note.source_hash:
+            raise KosmicError(f"projection drift detected for source: {relative}")
+        if expected_reference not in router_targets:
+            raise KosmicError(f"declared Consumer knowledge is not routed: {relative}")
+        projected_body, _ = demote_unshipped_links(note.body, note, package_paths)
+        expected = projected_reference(project, note, projected_body)
+        target = package / expected_reference
+        if not target.is_file() or target.read_text(encoding="utf-8") != expected:
+            raise KosmicError(f"projection drift detected for declared reference: {relative}")
 
 
 
@@ -1551,7 +1671,39 @@ def prior_source_hashes(destination: Path, project: Project) -> dict[str, str]:
     return hashes
 
 
-def generate(project: Project, output: Path | None = None) -> Path:
+def generate(project: Project, output: Path | None = None, *,
+             work_record: str | None = None) -> Path:
+    """Publish the atomic Skill Pair behind a work-record gate (Rev 2).
+
+    The destination is a command-declared derived target: in enforcement
+    mode the explicit --work-record reference must resolve live (AD-SW5-R2);
+    derived outputs inherit the triggering record (FR-WR04).
+    """
+    # Validate read-only inputs first so malformed source reports its actual
+    # defect; no destination or persistent state is touched before the record gate.
+    collect_projection_plan(project)
+    destination = (output or project.canonical_root).expanduser().resolve()
+    record = require_work_record(
+        project.root, [destination, project.ledger_path],
+        work_record=work_record, purpose="generate")
+    provenance = (
+        {"record": record.qualified_id, "provenance_source": "declared"}
+        if record is not None else {"provenance_source": "bootstrap"}
+    )
+    return _publish_projection(project, destination, provenance=provenance)
+
+
+def _publish_projection(project: Project, output: Path | None = None, *,
+                        provenance: dict[str, Any] | None = None) -> Path:
+    """Projection body shared by the gated generate and the bootstrap paths.
+
+    Bootstrap callers (init/migrate first write) publish before any session
+    can exist; this helper must stay private to those bootstrap paths.
+    ``provenance`` carries the governing publication identity written into
+    Impact Ledger entries: the triggering qualified record id plus the
+    provenance source ("declared" for a gated session, "bootstrap" for the
+    first-write bootstrap families). Never a private handle or token.
+    """
     destination = (output or project.canonical_root).expanduser().resolve()
     destination.parent.mkdir(parents=True, exist_ok=True)
     prior = prior_source_hashes(destination, project) if destination.is_dir() else {}
@@ -1591,6 +1743,9 @@ def generate(project: Project, output: Path | None = None) -> Path:
                     "refs": f"{old_hash or 'null'}->{new_hash or 'null'}",
                     "outcome": "published",
                     "reason": "",
+                    "record": (provenance or {}).get("record"),
+                    "provenance_source": (provenance or {}).get("provenance_source")
+                    or "bootstrap",
                 }
             )
         append_ledger_entries(project, entries)
@@ -1609,32 +1764,161 @@ def generate(project: Project, output: Path | None = None) -> Path:
     return destination
 
 
-@contextmanager
-def managed_command_run(root: Path, purpose: str) -> "Iterator[Path]":
-    """Automatic managed-run integration for ordinary command scratch (FR-MRW24).
+# --- Story 074: record-first mutation gates (AD-SW6, AD-SW8) -----------------
 
-    Non-exempt Kosmic commands begin and terminally finalize one disposable
-    managed run through the shared lifecycle module instead of choosing their
-    own scratch paths.
+## --- Revision 2: explicit work-record mutation gates -----------------------
+
+
+
+def require_work_record(
+    project_root: Path,
+    targets: Sequence[Path] | None = None,
+    *,
+    work_record: str | None = None,
+    purpose: str = "",
+) -> "kosmic_work.SpecRef":
+    """Resolve the explicit --work-record reference (AD-SW5-R2).
+
+    Every call resolves ownership, ancestry, and lifecycle at invocation time.
+    Command-declared derived outputs inherit the record (FR-WR04). Bootstrap
+    operations use their own bounded exemptions and do not call this gate.
     """
+    if work_record is None or not str(work_record).strip():
+        raise kosmic_work.WorkdirError(
+            "WORK_RECORD_REQUIRED",
+            f"{purpose or 'this command'} requires --work-record; pass the "
+            "governing Story or Quick Task reference")
+    return kosmic_work.resolve_work_record(project_root, str(work_record).strip())
+
+
+
+MUTATION_GATE_EXEMPTIONS: dict[str, str] = {
+    "init": "bootstrap first write: assigns Project identity and publishes initial notes/pair",
+    # later gates consume; they keep bounded first-write contracts.
+    "migrate": "bootstrap first write: records identity and migrates the notes "
+               "bundle under the approved migration task",
+    "assign_project_id": "bootstrap: records Project identity only",
+    "spec-create": "bounded governing-record creation: reserves and publishes "
+                   "exactly one draft spec record plus its index entry; "
+                   "uses an explicit operation_id for interrupted resume",
+    "workdir-register": "bounded registration: requires a quick-task record and "
+                        "writes only the registration outputs declared by "
+                        "begin_registration",
+    "scratch begin/succeed/fail/extend/promote": "managed-run lifecycle over "
+                     "the worktree scratch root (gated at `begin` and "
+                     "`gc --apply` in enforcement mode; finalize/extend/"
+                     "promote only finalize state of an already-created run)",
+    "dream-harvest / dream-abort": "bounded managed-run lifecycle: the dream "
+                   "run lives under the worktree scratch root and publishes "
+                   "nothing until the gated dream-publish",
+    # Read-only by construction, with one bounded exception:
+    "migrate-subprojects-plan": "read-only planning; prints a proposal and, "
+                "with --output, writes only the exclusive plan file. The plan "
+                "file is bounded planning output, not unchecked migration "
+                "authority: applying it requires migrate-subprojects-apply "
+                "with a matching approved digest",
+    "validate / review / check-completion / check-installation / provenance / "
+    "validate-* / query-routines / resolve-library / load-library / "
+    "check-library-installation / check-math (without --update)": "read-only",
+}
+
+
+def gate_scratch_mutation(args: argparse.Namespace, *, apply: bool) -> "kosmic_work.SpecRef | None":
+    """Gate the mutating scratch entry points that carry a --project root.
+
+    scratch begin and scratch gc --apply create/delete run state under the
+    worktree .tmp/kosmic root. Resolve the explicit governing record before
+    starting; no session scope or lease is created.
+    """
+    worktree = Path(args.project).expanduser().resolve()
+    scratch_root = kosmic_runs.managed_run_root_path(worktree)
+    # managed_run_root_path resolves through the Git toplevel, which may be an
+    # ancestor of a nested --project directory. The command executes against
+    # exactly that toplevel root (begin_run resolves the same managed-run root
+    # for the same --project), so the authorized claim is that concrete
+    # directory under the Git toplevel. Work-record resolution stays anchored
+    # at the Project root itself.
     try:
-        maintenance = kosmic_runs.startup_collect(root)
+        relative = scratch_root.relative_to(worktree).as_posix()
+        gate_root = worktree
+    except ValueError:
+        toplevel = kosmic_runs._worktree_toplevel(worktree)
+        if scratch_root != toplevel / ".tmp" / "kosmic":
+            raise kosmic_work.WorkdirError(
+                "SCRATCH_ROOT_MISMATCH",
+                f"{scratch_root}: managed-run root does not belong to "
+                f"{toplevel} or {worktree}")
+        gate_root = toplevel
+        relative = scratch_root.relative_to(gate_root).as_posix()
+    return require_work_record(
+        worktree, [f"project:{relative}/"],
+        work_record=getattr(args, "work_record", None),
+        purpose=f"scratch {'gc --apply' if apply else 'begin'}")
+
+
+def _report_run_maintenance(root: Path) -> None:
+    """Report-only startup maintenance: never deletes or modifies state."""
+    try:
+        maintenance = kosmic_runs.report_runs(root, action="gc-dry-run")
     except (OSError, kosmic_runs.RunError, kosmic_runs.RunRootError) as error:
         print(
             f"warning: MANAGED_RUN_MAINTENANCE_FAILED:{getattr(error, 'code', type(error).__name__)}",
             file=sys.stderr,
         )
-    else:
-        removed = sum(1 for operation in maintenance.operations if operation.get("result") == "removed")
-        if removed or maintenance.remaining_eligible or maintenance.diagnostics:
-            print(
-                f"warning: MANAGED_RUN_MAINTENANCE:{maintenance.code}:"
-                f"removed={removed}:remaining={maintenance.remaining_eligible}",
-                file=sys.stderr,
-            )
+        return
+    remaining = sum(1 for entry in maintenance.entries if "selected" in entry.flags)
+    if remaining or maintenance.diagnostics:
+        print(
+            f"warning: MANAGED_RUN_MAINTENANCE:{maintenance.code}:"
+            f"removed=0:remaining={remaining}:"
+            "report-only; run `scratch gc --apply` or an authorized mutating command",
+            file=sys.stderr,
+        )
+
+
+@contextmanager
+def ephemeral_command_run(root: Path, purpose: str) -> "Iterator[Path]":
+    """Transient scratch for READ-ONLY commands (Story 074 STD-074-2).
+
+    A read-only command must never create persistent run state, so this
+    variant performs the same report-only maintenance pass as
+    ``managed_command_run`` and then yields a throwaway ``TemporaryDirectory``
+    scratch that the OS removes when the command exits. No ``begin_run`` /
+    ``finish_run`` is called: no run directory, manifest, handle, or holder
+    process outlives the command. Mutating commands keep real managed runs
+    via ``managed_command_run``.
+    """
+    _report_run_maintenance(root)
+    with tempfile.TemporaryDirectory(prefix=f"kosmic-ephemeral-{purpose}-") as scratch:
+        yield Path(scratch)
+
+
+@contextmanager
+def managed_command_run(root: Path, purpose: str, *,
+                        work_record: str | None = None
+                        ) -> "Iterator[Path]":
+    """Automatic managed-run integration for ordinary command scratch (FR-MRW24).
+
+    Non-exempt Kosmic commands begin and terminally finalize one disposable
+    managed run through the shared lifecycle module. Reserved for MUTATING
+    commands; read-only commands use ``ephemeral_command_run``.
+
+    Revision 2 (AD-SW5-R2): ``work_record`` is the explicit triggering
+    reference; its declared identity becomes the managed run's provenance,
+    so the run manifest carries the governing record instead of the
+    worktree basename. While enforcement is active, ``begin_run`` rejects a
+    record-less command run before any state is created.
+    """
+    _report_run_maintenance(root)
+    provenance = None
+    project_root = None
+    if work_record is not None:
+        provenance = kosmic_work.record_run_provenance(root, work_record, root)
+        project_root = Path(root)
     try:
         handle = kosmic_runs.begin_run(
-            root, purpose=purpose, retention="disposable", active_for=timedelta(hours=1)
+            root, purpose=purpose, retention="disposable", active_for=timedelta(hours=1),
+            provenance=provenance, project_root=project_root,
         )
     except (kosmic_runs.RunError, kosmic_runs.RunRootError) as error:
         code = getattr(error, "code", type(error).__name__)
@@ -1662,6 +1946,148 @@ def managed_command_run(root: Path, purpose: str) -> "Iterator[Path]":
             f"{getattr(error, 'detail', error)}",
             exit_code=2,
         ) from error
+
+
+# --- Story 074 SPEC-074-1: complete mutation inventory -----------------------
+
+@dataclass(frozen=True)
+class MutationOperation:
+    """One mutating CLI/programmatic entry point and its authority contract.
+
+    ``phase``: lifecycle phase whose authority governs the mutation.
+    ``authority``: what must be authorized before the first durable side
+    effect.
+    ``allowed_outputs``: the only persistent writes the operation may make.
+    ``bootstrap``: True when the operation creates its own governing record.
+    Enforcement is command-time work-record resolution, inherited derived
+    outputs, managed-run lifecycle, or bounded bootstrap.
+    """
+
+    operation: str
+    phase: str
+    authority: str
+    allowed_outputs: tuple[str, ...]
+    bootstrap: bool
+    enforcement: str
+
+
+MUTATION_INVENTORY: tuple[MutationOperation, ...] = (
+    MutationOperation(
+        "init", "bootstrap", "bootstrap Quick Task contract (bounded first write)",
+        ("project_id/ProjectEntry", "notes bundle", "canonical Skill Pair",
+         "Impact Ledger"), True, "bootstrap-record"),
+    MutationOperation(
+        "migrate", "bootstrap", "approved migration task (bounded first write)",
+        ("project identity", "migrated notes bundle", "canonical Skill Pair",
+         "Impact Ledger"), True, "bootstrap-record"),
+    MutationOperation(
+        "assign_project_id", "bootstrap", "bounded identity write",
+        ("ProjectEntry project_id",), True, "bootstrap-record"),
+    MutationOperation(
+        "spec-create", "planning", "bounded record bootstrap; operation_id resumes interruption",
+        ("one draft spec record", "index entry"), True, "bootstrap-record"),
+    MutationOperation(
+        "workdir-register", "setup",
+        "approved project-level Quick Task declaring registration_root/outputs",
+        (".kosmic/working-directories.json", "worktree .kosmic/workdir.json"),
+        True, "bootstrap-record"),
+    MutationOperation(
+        "generate", "implementation",
+        "explicit --work-record; command-declared Skill Pair/ledger outputs inherit it",
+        ("Skill Pair projection", "Impact Ledger entries"), False,
+        "work-record"),
+    MutationOperation(
+        "generate-status", "implementation",
+        "explicit --work-record; STATUS output inherits it",
+        ("bound STATUS.md",), False,
+        "work-record"),
+    MutationOperation(
+        "check-math --update", "implementation",
+        "explicit --work-record; mathdocs output is command-declared",
+        ("mathdocs registry/results",), False, "work-record"),
+    MutationOperation(
+        "install (adapter/pointer)", "implementation",
+        "explicit --work-record; adapter output is command-declared",
+        ("adapter skill packages", "pointer instructions section"), False,
+        "work-record"),
+    MutationOperation(
+        "generate-library", "implementation",
+        "explicit --work-record plus existing Shared Library approval carrier",
+        ("generated library index/manifest/routines",), False,
+        "work-record"),
+    MutationOperation(
+        "migrate-library", "implementation",
+        "explicit --work-record plus existing Shared Library approval carrier",
+        ("migrated library artifacts + report",), False, "work-record"),
+    MutationOperation(
+        "install-library", "implementation",
+        "explicit --work-record plus existing Shared Library approval carrier",
+        ("Shared Skill Router bytes",), False, "work-record"),
+    MutationOperation(
+        "dream-publish", "publication",
+        "explicit --work-record for dream publication",
+        ("published dream record",), False, "work-record"),
+    MutationOperation(
+        "scratch begin", "any",
+        "explicit --work-record for the managed-run root",
+        ("one managed run under the authorized root",), False, "lifecycle"),
+    MutationOperation(
+        "scratch gc --apply", "maintenance",
+        "explicit --work-record for managed-run cleanup",
+        ("expired/abandoned run deletion inside that root",), False,
+        "lifecycle"),
+    MutationOperation(
+        "scratch promote", "publication",
+        "live managed-run handle (already gated at begin); promotes run files only",
+        ("promoted worktree files",), False, "lifecycle"),
+    MutationOperation(
+        "dream-harvest / dream-abort", "collection",
+        "bounded managed-run lifecycle under the worktree scratch root; "
+        "publishes nothing",
+        ("dream run state under .tmp",), False, "lifecycle"),
+    MutationOperation(
+        "scratch succeed/fail/extend", "any",
+        "managed-run handle; finalizes already-created state only",
+        ("terminal receipt",), False, "lifecycle"),
+    MutationOperation(
+        "migrate-subprojects-apply", "implementation",
+        "explicit --work-record plus plan digest approved by the record; "
+        "writes exactly the plan outputs/deletions",
+        ("plan-declared spec records, indexes, rewrites, and STATUS",), False,
+        "work-record"),
+    MutationOperation(
+        "migrate-subprojects-recover", "implementation",
+        "explicit --work-record; finalizes an interrupted apply of the same "
+        "plan/digest only",
+        ("plan-declared spec records, indexes, rewrites, and STATUS",), False,
+        "work-record"),
+)
+
+#: Read-only by construction — never gated, never allowed to mutate (they use
+#: ``ephemeral_command_run`` scratch and report-only maintenance): validate,
+#: review, check-completion, check-installation, provenance, validate-*,
+#: query-routines, resolve-library, load-library, check-library-installation,
+#: check-math (without --update), scratch status,
+#: scratch gc --dry-run. ``migrate-subprojects-plan`` is likewise ungated and
+#: never mutates Project state; its optional ``--output`` writes only the
+#: bounded plan file, which is planning output, not migration authority.
+MUTATION_INVENTORY_SCHEMA = "kosmic.mutation-inventory/v1"
+
+
+def mutation_inventory() -> tuple[dict[str, Any], ...]:
+    """Machine-readable view of ``MUTATION_INVENTORY`` (Story 074 SPEC-074-1)."""
+    return tuple(
+        {
+            "schema": MUTATION_INVENTORY_SCHEMA,
+            "operation": item.operation,
+            "phase": item.phase,
+            "authority": item.authority,
+            "allowed_outputs": list(item.allowed_outputs),
+            "bootstrap": item.bootstrap,
+            "enforcement": item.enforcement,
+        }
+        for item in MUTATION_INVENTORY
+    )
 
 
 def rewrite_outside_fences(text: str, rewrite: Any) -> str:
@@ -1998,7 +2424,7 @@ def migrate(root: Path, project_id: str, status_root: Path | None = None) -> Pat
             "publication is blocked until at least one stable note has audience: "
             "usage or audience: both"
         )
-    return generate(project)
+    return _publish_projection(project)
 
 
 def adapter_root(adapter: str, home: Path) -> Path:
@@ -2044,9 +2470,15 @@ def installed_project_id(package: Path) -> str | None:
     return str(read_json(manifest).get("project_id") or "") or None
 
 
-def install_named_adapter(project: Project, adapter: str, home: Path) -> Path:
-    validate_current_projection(project, project.canonical_root)
+def install_named_adapter(project: Project, adapter: str, home: Path, *,
+                          work_record: str | None = None) -> Path:
+    # AD-SW8-R2: the canonical Skill Pair is the triggering source; the
+    # adapter destination is a command-declared derived target authorized by
+    # the same record's derived_outputs before any directory creation.
     destination_root = adapter_root(adapter, home.expanduser().resolve())
+    record = require_work_record(project.root, [project.canonical_root],
+                                 work_record=work_record, purpose="install")
+    validate_current_projection(project, project.canonical_root)
     destination_root.mkdir(parents=True, exist_ok=True)
     names = (project.usage_name, project.development_name)
     for name in names:
@@ -2136,16 +2568,23 @@ def collect_provenance(repo: Path) -> tuple[str, str]:
 
     head = git("rev-parse", "HEAD")
     head_tree = git("rev-parse", "HEAD^{tree}")
-    with managed_command_run(repo, purpose="provenance") as scratch:
+    with ephemeral_command_run(repo, purpose="provenance") as scratch:
         env = {**os.environ, "GIT_INDEX_FILE": str(scratch / "index")}
         git("add", "-A", "--", env=env)
         worktree_tree = git("write-tree", env=env)
     return head, "clean" if worktree_tree == head_tree else worktree_tree
 
 
-def install_pointer(project: Project, instructions: Path) -> Path:
+def install_pointer(project: Project, instructions: Path, *,
+                    work_record: str | None = None) -> Path:
+    # AD-SW8-R2: source authority is the canonical pair; the instructions
+    # file is a command-declared derived target of the same triggering
+    # record, authorized before any write.
+    resolved_instructions = instructions.expanduser().resolve()
+    record = require_work_record(project.root, [project.canonical_root],
+                                 work_record=work_record, purpose="install")
     validate_current_projection(project, project.canonical_root)
-    instructions = instructions.expanduser().resolve()
+    instructions = resolved_instructions
     start = f"<!-- KOSMIC-SKILLS:{project.project_id}:START -->"
     end = f"<!-- KOSMIC-SKILLS:{project.project_id}:END -->"
     section = "\n".join(
@@ -2156,6 +2595,7 @@ def install_pointer(project: Project, instructions: Path) -> Path:
             f"- Usage Skill: `{project.canonical_root / project.usage_name}`",
             f"- Development Skill: `{project.canonical_root / project.development_name}`",
             f"- Contributor work must consult Development, which requires `{project.usage_name}` for consumer and shared guidance.",
+            *record_first_contract(project),
             end,
         ]
     )
@@ -2205,9 +2645,22 @@ def note_links_evidence_pack(notes_dir: Path, slug: str) -> bool:
     for path in sorted(notes_dir.rglob("*.md")):
         if path.name in {"index.md", "log.md"}:
             continue
-        document = parse_markdown(path.read_text(encoding="utf-8"))
+        try:
+            document = parse_markdown(path.read_text(encoding="utf-8"))
+        except KosmicError:
+            # Discovery is existential, not a whole-vault audit: an invalid
+            # candidate cannot establish the link. Declared related notes are
+            # validated separately; full validate still rejects this file.
+            continue
         status = str(document.metadata.get("status") or "").strip().lower()
         if status not in {"draft", "stable"}:
+            continue
+        relative = path.relative_to(notes_dir).as_posix()
+        try:
+            # A candidate that names this pack must itself be valid Project
+            # Knowledge; a malformed note cannot establish the evidence link.
+            _validate_note_document(document, relative, notes_dir.parent)
+        except KosmicError:
             continue
         for raw in as_path_list(document.metadata.get("evidence")):
             cleaned = raw.strip()
@@ -2441,8 +2894,10 @@ def update_mathdocs(
     timeout: float,
     source_root: Path,
 ) -> tuple[str, ...]:
-    registry = load_math_registry(project, require_current_source=False)
-    validate_notes_bundle(project.notes_dir, registry)
+    selected = slugs if slugs else None
+    registry = load_math_registry(project, require_current_source=False, only_slugs=selected)
+    if selected is None:
+        validate_notes_bundle(project.notes_dir, registry)
     entries = selected_math_entries(registry, slugs)
     executed, failures = execute_math_entries(entries, timeout)
     report_math_statuses(entries, failures)
@@ -2481,12 +2936,12 @@ def update_mathdocs(
                     updates,
                 ),
             )
-        load_math_registry(project, temporary)
+        load_math_registry(project, temporary, only_slugs=selected)
         publish_tree(temporary, project.mathdocs_dir)
     finally:
         if temporary.exists():
             shutil.rmtree(temporary, ignore_errors=True)
-    load_math_registry(project)
+    load_math_registry(project, only_slugs=selected)
     return tuple(entry.slug for entry in entries)
 
 
@@ -2497,17 +2952,22 @@ def check_math(
     *,
     update: bool = False,
     source_root: Path | None = None,
+    work_record: str | None = None,
 ) -> tuple[str, ...]:
     if timeout <= 0:
         raise KosmicError("check-math timeout must be positive")
+    if update:
+        # AD-SW8: --update rewrites verified Math Derivation notes in place;
+        # without --update the command is strictly read-only.
+        require_work_record(project.root, [project.mathdocs_dir],
+                             work_record=work_record, purpose="check-math --update")
+        return update_mathdocs(project, slugs, timeout, source_root or Path.cwd())
     print(
         "warning: executing trusted Project derivation code without an OS sandbox",
         file=sys.stderr,
     )
-    if update:
-        return update_mathdocs(project, slugs, timeout, source_root or Path.cwd())
-
-    registry = validate_project_content(project)
+    registry = (load_math_registry(project, only_slugs=slugs)
+                if slugs else validate_project_content(project))
     entries = selected_math_entries(registry, slugs)
     executable: list[MathEntry] = []
     failures: dict[str, str] = {}
@@ -3155,12 +3615,24 @@ def migrate_routines_report(
     output.write_text("\n".join(lines), encoding="utf-8")
     return output
 
-def check_completion(
-    project: Project, work_item: Path, source_root: Path = Path.cwd()
+def _check_existing_completion(
+    project: Project, work_item: Path, source_root: Path = Path.cwd(), *,
+    check_status: bool = True, record_scoped: bool = False,
+    record_owner: str | None = None,
 ) -> None:
+    if not work_item.is_file():
+        raise KosmicError(f"missing work item: {work_item}")
     dependencies = as_string_list(parse_markdown(work_item.read_text(encoding="utf-8")).metadata.get("depends_on"))
     for reference in dependencies:
-        dependency = (work_item.parent / reference.strip()).resolve()
+        if reference.startswith(project.project_id + "/"):
+            try:
+                dependency = SpecCatalog(project.root).resolve(reference).path
+            except SpecError:
+                # Record-bound view keyed to the dependency's own owner.
+                dependency = SpecCatalog.bounded_for_reference(
+                    project.root, reference).resolve(reference).path
+        else:
+            dependency = (work_item.parent / reference.strip()).resolve()
         if not dependency.is_file():
             raise KosmicError(f"depends_on work item is missing: {reference}")
         status = str(parse_markdown(dependency.read_text(encoding="utf-8")).metadata.get("status") or "")
@@ -3168,14 +3640,16 @@ def check_completion(
             raise KosmicError(f"depends_on work item is not done: {reference} ({status or 'unknown'})")
     if not work_item.is_file():
         raise KosmicError(f"missing work item: {work_item}")
-    if project.status_root is not None and status_drift(project):
+    if (check_status and project.status_root is not None
+            and status_drift(project, record_scoped=record_scoped,
+                             record_owner=record_owner)):
         raise KosmicError(
             "STATUS_STALE: STATUS.md is missing or drifts from spec state; run "
             "generate-status --project <PROJECT>",
             exit_code=2,
         )
     document = parse_markdown(work_item.read_text(encoding="utf-8"))
-    registry = validate_project_content(project)
+    registry = _validate_record_content(project, document)
     if "consumer_interface_change" not in document.metadata:
         raise KosmicError(
             "work item must declare consumer_interface_change: true or false before completion"
@@ -3276,7 +3750,43 @@ def check_completion(
             raise KosmicError(
                 f"related note is not Consumer-visible knowledge: {reference}"
             )
-    validate_current_projection(project, project.canonical_root)
+    _validate_record_projection(project, references)
+
+
+def check_completion(
+    project: Project, work_item: Path, source_root: Path = Path.cwd(), *,
+    work_record: str | None = None,
+) -> None:
+    """Run record/receipt gates before all existing completion early returns."""
+    record_scoped = False
+    record_owner: str | None = None
+    if work_record is not None:
+        if __package__:
+            from . import kosmic_completion
+        else:
+            import kosmic_completion
+        try:
+            catalog = SpecCatalog(project.root)
+            record = catalog.resolve(work_item)
+        except SpecError:
+            # Record-bound view: an unrelated subproject's defect must not
+            # hide this record's own authorization and completion gates.
+            catalog = SpecCatalog.bounded_for_reference(project.root, str(work_item))
+            record = catalog.resolve(work_item)
+        record_scoped = True
+        record_owner = record.subproject_id
+        resolved = kosmic_work.resolve_work_record(project.root, work_record)
+        if resolved.qualified_id != record.qualified_id:
+            raise kosmic_work.WorkdirError(
+                "RECORD_NOT_AUTHORIZED",
+                f"{record.path}: --work-record names {resolved.qualified_id}")
+        kosmic_completion.check_completion_gates(project.root, work_item, source_root)
+        if record.status == "done":
+            return
+    # Diagnostic-only completion checks remain read-only and record-free.
+    _check_existing_completion(project, work_item, source_root,
+                               record_scoped=record_scoped,
+                               record_owner=record_owner)
 
 
 def review(project: Project) -> None:
@@ -3299,56 +3809,255 @@ def path_argument(value: str) -> Path:
 STATUS_CLASSES = ("PRD", "Architecture", "Epics", "Stories", "Quick Tasks", "Skill Proposals")
 SPEC_TERMINAL_STATUSES = {"done", "rejected", "deprecated"}
 STATUS_GENERATED_MARKER = "<!-- Generated by the Kosmic Projection CLI. Do not edit. -->"
+STATUS_CLASS_BY_RECORD_KIND = {
+    "prd": "PRD",
+    "architecture": "Architecture",
+    "epic": "Epics",
+    "story": "Stories",
+    "quick-task": "Quick Tasks",
+    "proposal": "Skill Proposals",
+}
+RECEIPT_PENDING_SUFFIX = " (receipt pending)"
 
 
-def _spec_rows(project: Project) -> dict[str, list[dict[str, Any]]]:
-    """Collect status/title/updated rows for every spec class."""
-    specs = project.root / "specs"
-    classes: dict[str, list[Path]] = {name: [] for name in STATUS_CLASSES}
-    for path in sorted(specs.glob("*.md")) if specs.is_dir() else []:
-        name = path.name.lower()
-        if name == "index.md":
-            continue
-        if name.startswith("prd"):
-            classes["PRD"].append(path)
-        elif name.startswith("architecture"):
-            classes["Architecture"].append(path)
-    for class_name, pattern in (
-        ("Epics", "epics/epic-*.md"),
-        ("Stories", "stories/story-*.md"),
-        ("Quick Tasks", "quick-tasks/*.md"),
-        ("Skill Proposals", "skill-proposals/*.md"),
-    ):
-        classes[class_name].extend(sorted(specs.glob(pattern)))
+def _map_catalog_path(catalog: SpecCatalog, project: Project, path: Path) -> Path:
+    """Map a catalog record path onto the final Project root.
+
+    A staged catalog enumerates records under its own ``root`` (for example a
+    staging worktree). Rebase each reference onto the final ``project.root``
+    so emitted STATUS links target final locations while row metadata and
+    pending-receipt evaluation stay keyed to catalog identities.
+    """
+    try:
+        relative = path.resolve().relative_to(catalog.root)
+    except (ValueError, OSError):
+        return path
+    return project.root / relative
+
+
+class _RebasedCatalog:
+    """Read-only staged-catalog view with every record rebased to project.root.
+
+    Receipt evidence is validated against the final Project filesystem, so
+    pending-terminal-receipt evaluation must resolve records through paths
+    under ``project.root``; the staged catalog's own paths would invalidate
+    valid existing owner receipts. Only ``root``, ``project_id``,
+    ``records``, and ``resolve`` are provided — no filesystem scans.
+    """
+
+    def __init__(self, catalog: SpecCatalog, project: Project) -> None:
+        self.root = Path(project.root).expanduser().resolve()
+        self.project_id = catalog.project_id
+        self.records = tuple(
+            replace(ref, path=_map_catalog_path(catalog, project, ref.path))
+            for ref in catalog.records
+        )
+        self._records = {ref.qualified_id: ref for ref in self.records}
+
+    def resolve(self, reference: str | Path) -> SpecRef:
+        ref = self._records.get(str(reference))
+        if ref is None:
+            raise SpecError("RECORD_NOT_FOUND", str(reference))
+        return ref
+
+
+def _read_record_bytes(root: Path, path: Path) -> bytes:
+    """Descriptor-safe, no-follow read of a record file known to sit under root."""
+    parts = path.relative_to(root).parts
+    fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for part in parts[:-1]:
+            next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+        file_fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
+        info = os.fstat(file_fd)
+        if not stat_module.S_ISREG(info.st_mode):
+            raise OSError(f"not a regular file: {path}")
+        with os.fdopen(file_fd, "rb") as stream:
+            return stream.read()
+    finally:
+        os.close(fd)
+
+
+def _candidate_bytes_changed(catalog: SpecCatalog, project: Project, ref: SpecRef) -> bool:
+    """True when a staged candidate record differs from the final-root bytes.
+
+    Root receipt validation hashes the ORIGINAL record bytes; a candidate
+    whose links change must not inherit an existing owner receipt's approval
+    until publication. A missing or unreadable final file counts as changed
+    (fail-closed: the record stays pending completion).
+    """
+    final_path = _map_catalog_path(catalog, project, ref.path)
+    try:
+        current = _read_record_bytes(project.root, final_path)
+    except (OSError, ValueError):
+        return True
+    try:
+        candidate = _read_record_bytes(catalog.root, ref.path)
+    except (OSError, ValueError):
+        return True
+    return candidate != current
+
+
+def _spec_rows(
+    project: Project, catalog: SpecCatalog | None = None
+) -> tuple[dict[str, list[dict[str, Any]]], SpecCatalog | None]:
+    """Collect status/title/updated rows for every spec class.
+
+    Owner-aware Projects are enumerated through the one SpecCatalog so every
+    owned and shared record appears with its qualified identity and owning
+    subproject. Bootstrap flat Projects keep the single-root scan and their
+    existing row shape (``owner``/``record`` are None); their spec frontmatter
+    is read descriptor-safe and fail-closed (no symlink following, strict
+    UTF-8). Rows also carry ``receipt_pending`` for unreceipted ``done``
+    records surfaced as pending.
+
+    ``catalog`` may be supplied by the caller (for example a validated staged
+    catalog during subproject migration); when given it is used as-is and each
+    reference path is mapped from ``catalog.root`` onto ``project.root``.
+    """
+    if catalog is None:
+        catalog = kosmic_dreams.try_project_catalog(project.root)
     rows: dict[str, list[dict[str, Any]]] = {name: [] for name in STATUS_CLASSES}
-    for class_name, paths in classes.items():
-        for path in paths:
-            document = parse_markdown(path.read_text(encoding="utf-8", errors="replace"))
-            body = document.body
-            title = path.stem
-            for line in body.splitlines():
-                if line.startswith("# "):
-                    title = line[2:].strip()
-                    break
-            rows[class_name].append(
-                {
-                    "path": path,
-                    "title": title,
-                    "status": str(document.metadata.get("status") or "?"),
-                    "updated": str(document.metadata.get("updated") or "?"),
-                }
-            )
-    return rows
+    if catalog is None:
+        specs = project.root / "specs"
+        classes: dict[str, list[Path]] = {name: [] for name in STATUS_CLASSES}
+        for path in sorted(specs.glob("*.md")) if specs.is_dir() else []:
+            name = path.name.lower()
+            if name == "index.md":
+                continue
+            if name.startswith("prd"):
+                classes["PRD"].append(path)
+            elif name.startswith("architecture"):
+                classes["Architecture"].append(path)
+        for class_name, pattern in (
+            ("Epics", "epics/epic-*.md"),
+            ("Stories", "stories/story-*.md"),
+            ("Quick Tasks", "quick-tasks/*.md"),
+            ("Skill Proposals", "skill-proposals/*.md"),
+        ):
+            classes[class_name].extend(sorted(specs.glob(pattern)))
+        identities: list[tuple[str, str]] = []
+        documents: dict[Path, Any] = {}
+        for class_name, paths in classes.items():
+            for path in paths:
+                document = read_document(project.root, path)
+                documents[path] = document
+                status = str(document.metadata.get("status") or "?")
+                identities.append((_project_relative_identity(project, path), status))
+        pending = kosmic_dreams.pending_terminal_receipts(project.root, identities)
+        for class_name, paths in classes.items():
+            for path in paths:
+                document = documents[path]
+                title = path.stem
+                for line in document.body.splitlines():
+                    if line.startswith("# "):
+                        title = line[2:].strip()
+                        break
+                status = str(document.metadata.get("status") or "?")
+                identity = _project_relative_identity(project, path)
+                rows[class_name].append(
+                    {
+                        "path": path,
+                        "title": title,
+                        "status": status,
+                        "updated": str(document.metadata.get("updated") or "?"),
+                        "decision": str(document.metadata.get("decision") or ""),
+                        "owner": None,
+                        "record": None,
+                        "receipt_pending": identity in pending,
+                    }
+                )
+        return rows, None
+    records = [
+        (ref.qualified_id, ref.status)
+        for ref in catalog.records
+        if ref.kind in STATUS_CLASS_BY_RECORD_KIND
+    ]
+    staged = Path(catalog.root).resolve() != Path(project.root).expanduser().resolve()
+    pending = kosmic_dreams.pending_terminal_receipts(
+        project.root, records,
+        catalog=catalog if not staged else _RebasedCatalog(catalog, project),
+    )
+    if staged:
+        # Root receipts hash original record bytes; terminal records whose
+        # staged candidate bytes differ from the final root must stay pending
+        # so candidate link rewrites cannot inherit old record-hash approval.
+        pending = dict(pending)
+        for ref in catalog.records:
+            if ref.status in SPEC_TERMINAL_STATUSES and _candidate_bytes_changed(
+                catalog, project, ref
+            ):
+                pending.setdefault(ref.qualified_id, "staged-candidate-changed")
+    for ref in catalog.records:
+        class_name = STATUS_CLASS_BY_RECORD_KIND.get(ref.kind)
+        if class_name is None:
+            continue
+        status = ref.status or "?"
+        rows[class_name].append(
+            {
+                "path": _map_catalog_path(catalog, project, ref.path),
+                "title": ref.title,
+                "status": status,
+                "updated": str(ref.metadata.get("updated") or "?"),
+                "decision": str(ref.metadata.get("decision") or ""),
+                "owner": ref.subproject_id,
+                "record": ref.qualified_id,
+                "receipt_pending": ref.qualified_id in pending,
+            }
+        )
+    return rows, catalog
+
+
+def _project_relative_identity(project: Project, path: Path) -> str:
+    """Canonical bootstrap-flat record identity shared by every reader."""
+    return path.resolve().relative_to(project.root.resolve()).as_posix()
 
 
 def _status_link(path: Path, status_root: Path) -> str:
     return os.path.relpath(path, status_root).replace(os.sep, "/")
 
 
-def render_status(project: Project, head: str) -> bytes:
-    """Render the deterministic STATUS.md bytes (never writes)."""
+def _row_is_open(class_name: str, row: dict[str, Any]) -> bool:
+    """Open Work membership; pending transactions are never completed work."""
+    if row["receipt_pending"]:
+        return True
+    if class_name in ("Epics", "Stories", "Quick Tasks"):
+        return row["status"] not in SPEC_TERMINAL_STATUSES
+    if class_name in ("PRD", "Architecture"):
+        return row["status"] == "draft"
+    return row["decision"] in ("", "pending")
+
+
+def _directory_constraint(project: Project, status_root: Path) -> str:
+    """Fixed subproject constraint of the output directory, if registered."""
+    if project.status_root is None:
+        return "unknown (no bound working directory)"
+    registry = kosmic_work.load_registry(project.root)
+    entry = next(
+        (item for item in registry["directories"] if item["path"] == str(status_root)), None
+    )
+    if entry is None:
+        return "none (this output directory is not a registered working directory)"
+    fixed = entry.get("fixed_subproject_id")
+    if fixed:
+        return f"subproject {fixed}"
+    return "none (registered working directory without a fixed subproject)"
+
+
+def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = None) -> bytes:
+    """Render receipt-aware STATUS; unreceipted done is always pending.
+
+    Callers may pass a validated staged ``catalog``; its references are
+    rebased onto the final ``project.root`` for emitted links while pending
+    completion is still evaluated against the Project root. Record-bound
+    (``bounded``) catalogs are rendered with an explicit scope note instead
+    of the Project-wide statement, so a scoped view never poses as a
+    full-catalog audit. Existing callers without ``catalog`` are unchanged.
+    """
     status_root = (project.status_root or Path(".")).expanduser().resolve()
-    rows = _spec_rows(project)
+    rows, catalog = _spec_rows(project, catalog)
     lines = [
         STATUS_GENERATED_MARKER,
         f"# Status: {project.project_id}",
@@ -3359,30 +4068,66 @@ def render_status(project: Project, head: str) -> bytes:
         "",
     ]
     open_items: list[dict[str, Any]] = []
-    for class_name in STATUS_CLASSES:
-        entries = rows[class_name]
-        lines.extend([f"### {class_name}", "", "| Spec | Status | Updated |", "|------|--------|---------|"])
-        if not entries:
-            lines.append("| — | — | — |")
-        for entry in entries:
-            link = _status_link(entry["path"], status_root)
-            lines.append(f"| [{entry['title']}]({link}) | {entry['status']} | {entry['updated']} |")
-            is_open = False
-            if class_name in ("Epics", "Stories", "Quick Tasks"):
-                is_open = entry["status"] not in SPEC_TERMINAL_STATUSES
-            elif class_name in ("PRD", "Architecture"):
-                is_open = entry["status"] == "draft"
-            else:
-                decision = parse_markdown(entry["path"].read_text(encoding="utf-8", errors="replace")).metadata.get("decision") or ""
-                is_open = decision in ("", "pending")
-            if is_open:
-                open_items.append(entry)
-        lines.append("")
-    lines.append(f"## Open Work")
+    if catalog is None:
+        for class_name in STATUS_CLASSES:
+            entries = rows[class_name]
+            lines.extend([f"### {class_name}", "", "| Spec | Status | Updated |", "|------|--------|---------|"])
+            if not entries:
+                lines.append("| — | — | — |")
+            for entry in entries:
+                status = entry["status"] + (RECEIPT_PENDING_SUFFIX if entry["receipt_pending"] else "")
+                link = _status_link(entry["path"], status_root)
+                lines.append(f"| [{entry['title']}]({link}) | {status} | {entry['updated']} |")
+                if _row_is_open(class_name, entry):
+                    open_items.append({**entry, "status": status})
+            lines.append("")
+    else:
+        groups: dict[str | None, dict[str, list[dict[str, Any]]]] = {}
+        for class_name in STATUS_CLASSES:
+            for entry in rows[class_name]:
+                groups.setdefault(entry["owner"], {}).setdefault(class_name, []).append(entry)
+        owner_keys: list[str | None] = [None] if None in groups else []
+        owner_keys.extend(sorted(owner for owner in groups if owner is not None))
+        for owner in owner_keys:
+            heading = "### Project" if owner is None else f"### Subproject: {owner}"
+            lines.extend([heading, ""])
+            for class_name in STATUS_CLASSES:
+                entries = groups[owner].get(class_name) or []
+                if not entries:
+                    continue
+                lines.extend([
+                    f"#### {class_name}",
+                    "",
+                    "| Spec | Status | Updated |",
+                    "|------|--------|---------|",
+                ])
+                for entry in entries:
+                    status = entry["status"] + (RECEIPT_PENDING_SUFFIX if entry["receipt_pending"] else "")
+                    link = _status_link(entry["path"], status_root)
+                    lines.append(f"| [{entry['title']}]({link}) | {status} | {entry['updated']} |")
+                    if _row_is_open(class_name, entry):
+                        open_items.append({**entry, "status": status})
+                lines.append("")
+    lines.append("## Open Work")
     lines.append("")
     lines.append(f"- {len(open_items)} open item(s)")
     for entry in open_items:
-        lines.append(f"- [{entry['title']}]({_status_link(entry['path'], status_root)}) - {entry['status']}")
+        label = entry["title"] if entry["owner"] is None else f"{entry['owner']}/{entry['title']}"
+        lines.append(f"- [{label}]({_status_link(entry['path'], status_root)}) - {entry['status']}")
+    if catalog is not None:
+        if getattr(catalog, "bounded", False):
+            owner = getattr(catalog, "bounded_owner", None)
+            scope = f"subproject {owner} plus shared records" if owner else "shared records only"
+            scope_line = f"- Scope: bounded active-record view ({scope}); not a full-catalog audit."
+        else:
+            scope_line = "- This report is Project-wide; no agent task selection is recorded in this file."
+        lines.extend([
+            "## Work Context",
+            "",
+            scope_line,
+            f"- Fixed directory constraint: {_directory_constraint(project, status_root)}.",
+            "- Work selection is explicit per command (`--work-record`); no shared active-task pointer is stored.",
+        ])
     return unicodedata.normalize("NFC", "\n".join(lines) + "\n").encode("utf-8")
 
 
@@ -3413,8 +4158,17 @@ def status_root_collisions(project: Project) -> list[str]:
     return collisions
 
 
-def status_drift(project: Project) -> bool:
-    """True when a bound STATUS.md is missing or differs from generated bytes."""
+def status_drift(project: Project, *, record_scoped: bool = False,
+                 record_owner: str | None = None) -> bool:
+    """True when a bound STATUS.md is missing or differs from generated bytes.
+
+    Expected bytes come from the strict full-catalog projection. A
+    record-bound completion check (``record_scoped=True``) falls back to the
+    record-bound bounded view for ``record_owner`` — which is None for
+    shared Project records — expecting the same honestly scoped bytes
+    bounded publication writes. Unscoped callers keep the strict
+    full-catalog expectation and still fail on an unenumerable catalog.
+    """
     if project.status_root is None:
         return False
     status_root = project.status_root.expanduser().resolve()
@@ -3426,15 +4180,29 @@ def status_drift(project: Project) -> bool:
     except OSError:
         completed = None
     head = completed.stdout.strip() if completed is not None and completed.returncode == 0 else "no-head"
-    expected = render_status(project, head)
+    try:
+        expected = render_status(project, head)
+    except SpecError:
+        if not record_scoped:
+            raise
+        expected = render_status(
+            project, head, catalog=SpecCatalog.bounded(project.root, record_owner))
     return not path.is_file() or path.read_bytes() != expected
 
 
-def generate_status(project: Project) -> Path:
-    """Generate STATUS.md into the bound working directory."""
+
+
+def generate_status(project: Project, *, work_record: str | None = None) -> Path:
+    """Generate STATUS.md into the bound working directory.
+
+    STATUS is a deterministic projection; explicit work-record authority is
+    checked before publication. No separate provenance artifact is written.
+    """
     if project.status_root is None:
         raise KosmicError("STATUS_ROOT_UNBOUND", exit_code=2)
     status_root = project.status_root.expanduser().resolve()
+    require_work_record(project.root, [status_root / "STATUS.md"],
+                        work_record=work_record, purpose="generate-status")
     if not status_root.is_dir():
         raise KosmicError(f"STATUS_ROOT_MISSING: {status_root}", exit_code=2)
     try:
@@ -3455,10 +4223,30 @@ def generate_status(project: Project) -> Path:
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="kosmic-project-skills")
     subparsers = parser.add_subparsers(dest="command", required=True)
+    work_parser = subparsers.add_parser(
+        "work", help="record-bound operations (Revision 2: explicit references)")
+    work_commands = work_parser.add_subparsers(dest="work_command", required=True)
+    start_command = work_commands.add_parser(
+        "start", help="verify an approved record and clean writable worktree")
+    start_command.add_argument("--project", type=path_argument, required=True)
+    start_command.add_argument("--worktree", type=path_argument, required=True)
+    start_command.add_argument("--work-record", required=True)
+    finish_command = work_commands.add_parser(
+        "finish", help="verify evidence/review/scope, publish the receipt, then derive STATUS")
+    finish_command.add_argument("--project", type=path_argument, required=True)
+    finish_command.add_argument("--worktree", type=path_argument, required=True)
+    finish_command.add_argument("--work-record", required=True)
+    finish_command.add_argument("--scope", action="append", required=True)
+    finish_command.add_argument("--detail", default="")
+    show_command = work_commands.add_parser("show", help="resolve a work record reference")
+    show_command.add_argument("--project", type=path_argument, required=True)
+    show_command.add_argument("--work-record", required=True)
+
 
     generate_parser = subparsers.add_parser("generate", help="generate an atomic Skill Pair")
     generate_parser.add_argument("--project", type=path_argument, required=True)
     generate_parser.add_argument("--output", type=path_argument)
+    generate_parser.add_argument("--work-record", default=None)
 
     validate_parser = subparsers.add_parser(
         "validate", help="validate OKF notes, pair provenance, and drift"
@@ -3497,6 +4285,48 @@ def build_parser() -> argparse.ArgumentParser:
     completion_parser.add_argument(
         "--source-root", type=path_argument, default=Path.cwd()
     )
+    completion_parser.add_argument("--work-record")
+
+    spec_create_parser = subparsers.add_parser(
+        "spec-create", help="reserve and publish one specification record"
+    )
+    spec_create_parser.add_argument("--project", type=path_argument, required=True)
+    spec_create_parser.add_argument("--kind", required=True,
+                                    choices=("prd", "architecture", "epic", "story", "quick-task"))
+    spec_create_parser.add_argument("--title", required=True)
+    spec_create_parser.add_argument("--subproject")
+    spec_create_parser.add_argument("--parent")
+    spec_create_parser.add_argument("--resume", action="store_true")
+    spec_create_parser.add_argument("--operation-id")
+
+    workdir_parser = subparsers.add_parser(
+        "workdir-register", help="register a working directory under its Project"
+    )
+    workdir_parser.add_argument("--project", type=path_argument, required=True)
+    workdir_parser.add_argument("--worktree", type=path_argument, required=True)
+    workdir_parser.add_argument("--quick-task", required=True)
+    workdir_parser.add_argument("--subproject")
+
+    migration_plan_parser = subparsers.add_parser(
+        "migrate-subprojects-plan", help="read-only subproject migration proposal"
+    )
+    migration_plan_parser.add_argument("--project", type=path_argument, required=True)
+    migration_plan_parser.add_argument("--work-record")
+    migration_plan_parser.add_argument("--assignments", type=path_argument)
+    migration_plan_parser.add_argument(
+        "--output", type=path_argument,
+        help="also save the plan JSON exclusively to this path (bounded "
+             "planning output, not migration authority)",
+    )
+    for name, help_text in (
+        ("migrate-subprojects-apply", "apply an approved subproject migration plan"),
+        ("migrate-subprojects-recover", "recover an interrupted subproject migration apply"),
+    ):
+        migration_apply_parser = subparsers.add_parser(name, help=help_text)
+        migration_apply_parser.add_argument("--project", type=path_argument, required=True)
+        migration_apply_parser.add_argument("--plan", type=path_argument, required=True)
+        migration_apply_parser.add_argument("--approve-digest", required=True)
+        migration_apply_parser.add_argument("--work-record", required=True)
 
     math_parser = subparsers.add_parser(
         "check-math", help="execute and verify Project Math Derivations"
@@ -3506,6 +4336,7 @@ def build_parser() -> argparse.ArgumentParser:
     math_parser.add_argument("--timeout", type=float, default=30.0)
     math_parser.add_argument("--update", action="store_true")
     math_parser.add_argument("--source-root", type=path_argument, default=Path.cwd())
+    math_parser.add_argument("--work-record", default=None)
 
 
     provenance_parser = subparsers.add_parser(
@@ -3521,6 +4352,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     install_parser.add_argument("--home", type=path_argument, default=Path.home())
     install_parser.add_argument("--instructions", type=path_argument)
+    install_parser.add_argument("--work-record", default=None)
 
     installation_parser = subparsers.add_parser(
         "check-installation", help="verify an installed named-adapter Skill Pair"
@@ -3545,6 +4377,7 @@ def build_parser() -> argparse.ArgumentParser:
     )
     library_generate.add_argument("--vault", type=path_argument, required=True)
     library_generate.add_argument("--source-root", type=path_argument)
+    library_generate.add_argument("--work-record", default=None)
     library_validate = subparsers.add_parser(
         "validate-library", help="validate Shared Skill Library sources and generated indexes"
     )
@@ -3596,12 +4429,14 @@ def build_parser() -> argparse.ArgumentParser:
     library_migrate.add_argument("--vault", type=path_argument, required=True)
     library_migrate.add_argument("--project", type=path_argument, required=True)
     library_migrate.add_argument("--assignments", type=path_argument, required=True)
+    library_migrate.add_argument("--work-record", default=None)
     library_install = subparsers.add_parser(
         "install-library", help="install one Shared Skill Router and remove managed Project pairs"
     )
     library_install.add_argument("--vault", type=path_argument, required=True)
     library_install.add_argument("--adapter", choices=("opencode", "claude-code", "codex", "omp"), required=True)
     library_install.add_argument("--home", type=path_argument, default=Path.home())
+    library_install.add_argument("--work-record", default=None)
     library_check = subparsers.add_parser(
         "check-library-installation", help="verify the installed Shared Skill Router"
     )
@@ -3618,6 +4453,7 @@ def build_parser() -> argparse.ArgumentParser:
     scratch_begin.add_argument("--purpose", required=True)
     scratch_begin.add_argument("--retention", choices=("diagnostic", "disposable"))
     scratch_begin.add_argument("--active-for", default="24h")
+    scratch_begin.add_argument("--work-record", default=None)
     scratch_finish = scratch_subparsers.add_parser("succeed", help="finalize a run as succeeded")
     scratch_finish.add_argument("--project", type=path_argument, required=True)
     scratch_finish.add_argument("--handle-file", type=path_argument, required=True)
@@ -3643,6 +4479,7 @@ def build_parser() -> argparse.ArgumentParser:
     scratch_gc_mode = scratch_gc.add_mutually_exclusive_group(required=True)
     scratch_gc_mode.add_argument("--dry-run", action="store_true")
     scratch_gc_mode.add_argument("--apply", action="store_true")
+    scratch_gc.add_argument("--work-record", default=None)
     dream_harvest_parser = subparsers.add_parser("dream-harvest", help="begin a managed dream harvest run")
     dream_harvest_parser.add_argument("--vault", required=True, type=path_argument)
     dream_harvest_parser.add_argument("--date", default=None)
@@ -3655,12 +4492,14 @@ def build_parser() -> argparse.ArgumentParser:
     dream_publish_parser.add_argument("--vault", required=True, type=path_argument)
     dream_publish_parser.add_argument("--handle", required=True, type=path_argument)
     dream_publish_parser.add_argument("--replace", action="store_true")
+    dream_publish_parser.add_argument("--work-record", default=None)
     dream_abort_parser = subparsers.add_parser("dream-abort", help="finalize a dream run as failed")
     dream_abort_parser.add_argument("--vault", required=True, type=path_argument)
     dream_abort_parser.add_argument("--handle", required=True, type=path_argument)
     dream_abort_parser.add_argument("--reason", default="aborted")
     generate_status_parser = subparsers.add_parser("generate-status", help="regenerate the bound STATUS.md")
     generate_status_parser.add_argument("--project", required=True, type=path_argument)
+    generate_status_parser.add_argument("--work-record", default=None)
     return parser
 
 
@@ -3676,6 +4515,35 @@ def _parse_duration(value: str) -> "timedelta":
     return timedelta(seconds=seconds)
 
 
+def _run_work(args: argparse.Namespace) -> int:
+    if __package__:
+        from . import kosmic_completion
+    else:
+        import kosmic_completion
+    project_root = Path(args.project).expanduser().resolve()
+    operation = args.work_command
+    if operation == "start":
+        record = kosmic_work.check_work_start(
+            project_root, args.worktree, args.work_record)
+        payload = {"identity": record.qualified_id,
+                   "record_path": record.path.relative_to(project_root).as_posix(),
+                   "kind": record.kind, "status": record.status,
+                   "subproject_id": record.subproject_id, "worktree": str(args.worktree)}
+    elif operation == "finish":
+        payload = kosmic_completion.finish_work(
+            project_root, args.worktree, args.work_record, args.scope, detail=args.detail)
+    elif operation == "show":
+        record = kosmic_work.resolve_work_record(
+            project_root, args.work_record, allow_terminal=True)
+        payload = {"identity": record.qualified_id,
+                   "record_path": record.path.relative_to(project_root).as_posix(),
+                   "kind": record.kind, "status": record.status,
+                   "subproject_id": record.subproject_id}
+    else:
+        raise KosmicError(f"unknown work operation: {operation}", exit_code=2)
+    _print_json(payload)
+    return 0
+
 def _print_json(payload: dict[str, Any]) -> None:
     print(json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
 
@@ -3684,11 +4552,19 @@ def _run_scratch(args: argparse.Namespace) -> int:
     """Adapter over the managed-run lifecycle module (AD-MRW1 CLI design)."""
     try:
         if args.scratch_command == "begin":
+            record = gate_scratch_mutation(args, apply=False)
+            provenance = None
+            project_root = None
+            if record is not None:
+                provenance = kosmic_work.record_run_provenance(
+                    args.project, record.qualified_id, args.project)
+                project_root = Path(args.project)
             handle = kosmic_runs.begin_run(
                 args.project,
                 purpose=args.purpose,
                 retention=args.retention or "diagnostic",
                 active_for=_parse_duration(args.active_for),
+                provenance=provenance, project_root=project_root,
             )
             _print_json({
                 "code": "OK",
@@ -3730,6 +4606,8 @@ def _run_scratch(args: argparse.Namespace) -> int:
         elif args.scratch_command == "gc":
             if not args.dry_run and not args.apply:
                 raise KosmicError("scratch gc requires exactly one of --dry-run or --apply", exit_code=2)
+            if args.apply:
+                gate_scratch_mutation(args, apply=True)
             report = kosmic_runs.report_runs(args.project, action="gc-apply" if args.apply else "gc-dry-run")
             _print_json(kosmic_runs.report_to_json(report))
         else:
@@ -3741,6 +4619,8 @@ def _run_scratch(args: argparse.Namespace) -> int:
 def run(arguments: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(arguments)
+    if args.command == "work":
+        return _run_work(args)
 
     if args.command == "provenance":
         head, worktree_tree = collect_provenance(args.repo.expanduser().resolve())
@@ -3762,6 +4642,19 @@ def run(arguments: Sequence[str] | None = None) -> int:
         print(f"valid dreams tree: {root_text}")
         return 0
     if args.command == "dream-publish":
+        # AD-SW8: publication into vault/dreams is a gated mutation; the staged
+        # run itself stays inside the bounded managed-run lifecycle.
+        reference = getattr(args, "work_record", None)
+        if reference:
+            project_id = str(reference).strip().split("/", 1)[0]
+            validate_project_id(project_id)
+            project_root = Path(args.vault).expanduser().resolve() / "Projects" / project_id
+        else:
+            project_root = Path(args.vault).expanduser().resolve()
+        require_work_record(
+            project_root,
+            [Path(args.vault).expanduser().resolve() / kosmic_dreams.DREAMS_DIR_NAME],
+            work_record=reference, purpose="dream-publish")
         _print_json(kosmic_dreams.dream_publish(args.vault, args.handle, replace=args.replace))
         return 0
     if args.command == "dream-abort":
@@ -3771,14 +4664,14 @@ def run(arguments: Sequence[str] | None = None) -> int:
 
 
     if args.command == "generate-status":
-        path = generate_status(load_project(args.project))
+        path = generate_status(load_project(args.project), work_record=args.work_record)
         print(f"generated {path}")
         return 0
     if args.command == "init":
         project = assign_project_id(args.project, args.project_id, status_root=args.status_root)
         migrate_notes_bundle(project)
         project = load_project(args.project)
-        output = generate(project)
+        output = _publish_projection(project)
         print(f"initialized Project '{project.project_id}' and published {output}")
         return 0
     if args.command == "migrate":
@@ -3791,8 +4684,59 @@ def run(arguments: Sequence[str] | None = None) -> int:
         print(f"required skills available for {args.adapter}")
         return 0
 
+    if args.command == "spec-create":
+        created = create_spec(
+            args.project, args.kind, args.title, subproject=args.subproject,
+            parent=args.parent, resume=args.resume, operation_id=args.operation_id,
+        )
+        print(json.dumps(created, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 0
+    if args.command == "workdir-register":
+        context = kosmic_work.begin_registration(
+            args.project, args.worktree, args.quick_task
+        )
+        try:
+            entry = kosmic_work.register_workdir(context, subproject_id=args.subproject)
+        except BaseException:
+            kosmic_runs.finish_run(context.run.handle_file, "failed", "workdir-register")
+            raise
+        kosmic_runs.finish_run(context.run.handle_file, "succeeded", "workdir-register")
+        print(json.dumps(entry, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 0
+    if args.command == "migrate-subprojects-plan":
+        assignments = None
+        if args.assignments is not None:
+            assignments = read_json(args.assignments.expanduser().resolve())
+            if not isinstance(assignments, dict):
+                raise KosmicError("migration assignments must be a JSON object")
+        plan = migration_plan(
+            args.project, work_record=args.work_record, assignments=assignments,
+            fingerprint_fn=proposal_fingerprint,
+        )
+        if args.output is not None:
+            # Exclusive/no-follow creation is enforced by save_migration_plan;
+            # never resolve() the target or an attacker symlink would win.
+            save_migration_plan(plan, args.output.expanduser().absolute())
+        print(json.dumps(plan, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 0
+    if args.command in ("migrate-subprojects-apply", "migrate-subprojects-recover"):
+        if args.command == "migrate-subprojects-apply":
+            result = apply_migration(
+                args.project, args.plan, args.approve_digest, args.work_record,
+                fingerprint_fn=proposal_fingerprint,
+            )
+        else:
+            result = recover_migration(
+                args.project, args.plan, args.approve_digest, args.work_record,
+            )
+        print(json.dumps(result, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
+        return 0
+
     if args.command == "generate-library":
-        generated = generate_library(args.vault, source_root=args.source_root)
+        # Shared-library mutation resolves --work-record against the owning
+        # Project record; API entry points apply the same live gate.
+        generated = generate_library(args.vault, source_root=args.source_root,
+                                     work_record=args.work_record)
         print("generated Shared Skill Library: " + ", ".join(str(path) for path in generated))
         return 0
     if args.command == "validate-library":
@@ -3872,17 +4816,27 @@ def run(arguments: Sequence[str] | None = None) -> int:
             }
             if len(assignments) != len(rows):
                 raise LibraryError("semantic role classification has invalid sources")
+            if __package__:
+                from .kosmic_shared_library import _migrate_classified_topics
+            else:
+                from kosmic_shared_library import _migrate_classified_topics
+            report = _migrate_classified_topics(args.vault, args.project, assignments,
+                                                work_record=args.work_record)
         else:
-            assignments = raw_assignments
-        if not isinstance(assignments, dict):
-            raise LibraryError("migration assignments must be a JSON object")
-        report = migrate_assignments(args.vault, args.project, assignments)
+            if not isinstance(raw_assignments, dict):
+                raise LibraryError("migration assignments must be a JSON object")
+            # The ordinary Project Skill Pair migration remains independently gated.
+            report = migrate_assignments(args.vault, args.project, raw_assignments,
+                                         work_record=args.work_record)
         print(json.dumps(report, ensure_ascii=False, sort_keys=True, separators=(",", ":")))
         return 0
     if args.command in {"install-library", "check-library-installation"}:
         destination_root = adapter_root(args.adapter, args.home.expanduser().resolve())
         if args.command == "install-library":
-            installed = install_shared_router(args.vault, destination_root)
+            # Gated at the programmatic API, including derived-destination
+            # authorization (Story 074 SPEC-074-1 / STD-074-2).
+            installed = install_shared_router(args.vault, destination_root,
+                                              work_record=args.work_record)
             print(
                 f"installed Shared Skill Router bytes and identity at {installed}; "
                 f"active-session discovery unverified; {adapter_reload_action(args.adapter)}"
@@ -3897,7 +4851,7 @@ def run(arguments: Sequence[str] | None = None) -> int:
 
     project = load_project(args.project)
     if args.command == "generate":
-        output = generate(project, args.output)
+        output = generate(project, args.output, work_record=args.work_record)
         print(f"published atomic Skill Pair at {output}")
     elif args.command == "validate":
         output = (args.output or project.canonical_root).expanduser().resolve()
@@ -3936,6 +4890,7 @@ def run(arguments: Sequence[str] | None = None) -> int:
             project,
             args.work_item.expanduser().resolve(),
             args.source_root,
+            work_record=args.work_record,
         )
         print("completion gate passed")
     elif args.command == "check-math":
@@ -3945,15 +4900,18 @@ def run(arguments: Sequence[str] | None = None) -> int:
             args.timeout,
             update=args.update,
             source_root=args.source_root,
+            work_record=args.work_record,
         )
         print("math check passed: " + ", ".join(checked))
     elif args.command == "install":
         if args.adapter == "pointer":
             if args.instructions is None:
                 raise KosmicError("pointer adapter requires --instructions", exit_code=4)
-            installed = install_pointer(project, args.instructions)
+            installed = install_pointer(project, args.instructions,
+                                        work_record=args.work_record)
         else:
-            installed = install_named_adapter(project, args.adapter, args.home)
+            installed = install_named_adapter(project, args.adapter, args.home,
+                                              work_record=args.work_record)
         if args.adapter == "pointer":
             print(f"exposed atomic Skill Pair via pointer: {installed}")
         else:
@@ -3975,10 +4933,21 @@ def main() -> int:
     except KosmicError as error:
         print(f"error: {error}", file=sys.stderr)
         return error.exit_code
+    except MigrationError as error:
+        detail = getattr(error, "detail", "") or str(error)
+        code = getattr(error, "code", "")
+        print(f"error: {code}: {detail}" if code else f"error: {detail}", file=sys.stderr)
+        return 2
     except LibraryError as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     except RoutineError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
+    except SpecError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
+    except kosmic_work.WorkdirError as error:
         print(f"error: {error}", file=sys.stderr)
         return 2
     except OSError as error:

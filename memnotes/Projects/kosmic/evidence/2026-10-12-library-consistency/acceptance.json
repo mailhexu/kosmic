@@ -1,0 +1,82 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/repair-shared-library-routine-reciprocity-without-reclassifying",
+  "record_path": "specs/quick-tasks/repair-shared-library-routine-reciprocity-without-reclassifying.md",
+  "results": [
+    {
+      "criterion": "Knowledge remains knowledge; the routine has no fake procedure edge and strict reciprocity validation remains.",
+      "outcome": "passed",
+      "observation": "Published knowledge retains knowledge role and real routine inventory validates without false procedure edge.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-12-library-consistency/publication.json",
+          "sha256": "55616b6bcffb27dc2fdef6b7d0b7ecfa71f88f6fbc4f9e6ebc8c805dd8810781"
+        },
+        {
+          "path": "evidence/2026-10-12-library-consistency/suite.txt",
+          "sha256": "67067a4718bc868625d9f7b137b50ea695f11659d60b271bf56f4d88b1e6e384"
+        }
+      ]
+    },
+    {
+      "criterion": "Ten approved classifications preserve IDs and provenance; nine bodies remain byte-identical and the TB2J procedure matches the exact separately approved candidate.",
+      "outcome": "passed",
+      "observation": "Transaction pinned112 original files; nine bodies unchanged, approved candidate hash matched, identities and provenance unchanged.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-12-library-consistency/publication.json",
+          "sha256": "55616b6bcffb27dc2fdef6b7d0b7ecfa71f88f6fbc4f9e6ebc8c805dd8810781"
+        },
+        {
+          "path": "evidence/2026-10-12-library-consistency/suite.txt",
+          "sha256": "67067a4718bc868625d9f7b137b50ea695f11659d60b271bf56f4d88b1e6e384"
+        }
+      ]
+    },
+    {
+      "criterion": "Canonical library validation and CLI-extension guideline resolution/load succeed.",
+      "outcome": "passed",
+      "observation": "Actual main-library validate, CLI-extension understand/load, and TB2J do/load passed.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-12-library-consistency/publication.json",
+          "sha256": "55616b6bcffb27dc2fdef6b7d0b7ecfa71f88f6fbc4f9e6ebc8c805dd8810781"
+        },
+        {
+          "path": "evidence/2026-10-12-library-consistency/suite.txt",
+          "sha256": "67067a4718bc868625d9f7b137b50ea695f11659d60b271bf56f4d88b1e6e384"
+        }
+      ]
+    },
+    {
+      "criterion": "Conflicting assignments and symlink inputs/outputs reject without partial publication or external writes.",
+      "outcome": "passed",
+      "observation": "Consumer-visible recovery tests reject conflict, source/output symlink and later assignment failure while preserving bytes.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-12-library-consistency/publication.json",
+          "sha256": "55616b6bcffb27dc2fdef6b7d0b7ecfa71f88f6fbc4f9e6ebc8c805dd8810781"
+        },
+        {
+          "path": "evidence/2026-10-12-library-consistency/suite.txt",
+          "sha256": "67067a4718bc868625d9f7b137b50ea695f11659d60b271bf56f4d88b1e6e384"
+        }
+      ]
+    },
+    {
+      "criterion": "Integration preserves unrelated source/library content and actual verification and independent review are recorded.",
+      "outcome": "passed",
+      "observation": "Source drift guards preserved existing work; main source667 tests passed and independent reviews passed.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-12-library-consistency/publication.json",
+          "sha256": "55616b6bcffb27dc2fdef6b7d0b7ecfa71f88f6fbc4f9e6ebc8c805dd8810781"
+        },
+        {
+          "path": "evidence/2026-10-12-library-consistency/suite.txt",
+          "sha256": "67067a4718bc868625d9f7b137b50ea695f11659d60b271bf56f4d88b1e6e384"
+        }
+      ]
+    }
+  ]
+}

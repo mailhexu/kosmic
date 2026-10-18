@@ -23,6 +23,11 @@ try:
 except ImportError:
     from kosmic_routines import build_routine_inventory, publish_tree
 
+try:
+    from .kosmic_yaml import YAMLParseError, parse_mapping, render_entry
+except ImportError:
+    from kosmic_yaml import YAMLParseError, parse_mapping, render_entry
+
 SCHEMA_VERSION = "kosmic.shared-library/v2"
 GENERATOR_VERSION = 2
 ID_RE = re.compile(r"^[a-z0-9]+(?:-[a-z0-9]+)*(?:/(?:usage|development)/[a-z0-9]+(?:-[a-z0-9]+)*)?$")
@@ -61,42 +66,26 @@ class Document:
     body: str
 
 
-def _parse_scalar(raw: str) -> Any:
-    value = raw.strip()
-    if value == "[]":
-        return []
-    if value.startswith("[") and value.endswith("]"):
-        inner = value[1:-1].strip()
-        return [] if not inner else [item.strip().strip('"\'') for item in inner.split(",")]
-    if value in {"true", "false"}:
-        return value == "true"
-    if re.fullmatch(r"\d+", value):
-        return int(value)
-    return value.strip('"\'')
-
-
 def parse_document(path: Path) -> Document:
-    text = path.read_text(encoding="utf-8")
+    return parse_document_text(path.read_text(encoding="utf-8"), path)
+
+
+def parse_document_text(text: str, path: Path) -> Document:
+    """Parse captured bytes without reopening an already verified source path."""
     lines = text.splitlines(keepends=True)
     if not lines or lines[0].strip() != "---":
         raise LibraryError(f"{path}: missing YAML frontmatter")
-    metadata: dict[str, Any] = {}
     end = None
-    for index, line in enumerate(lines[1:], 1):
-        if line.strip() == "---":
+    for index in range(1, len(lines)):
+        if lines[index].strip() == "---":
             end = index
             break
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        if ":" not in line:
-            raise LibraryError(f"{path}: invalid flat frontmatter line {index + 1}")
-        key, value = line.split(":", 1)
-        key = key.strip()
-        if not key or key in metadata:
-            raise LibraryError(f"{path}: invalid or duplicate metadata key {key!r}")
-        metadata[key] = _parse_scalar(value)
     if end is None:
         raise LibraryError(f"{path}: unterminated YAML frontmatter")
+    try:
+        metadata = parse_mapping("".join(lines[1:end]), context=str(path))
+    except YAMLParseError as error:
+        raise LibraryError(str(error)) from error
     return Document(metadata, "".join(lines[end + 1 :]))
 
 
@@ -135,6 +124,21 @@ def _library_root(vault: Path) -> Path:
     if not root.is_dir():
         raise LibraryError(f"missing Shared Skill Library: {root}")
     return root
+
+def _authorize_library_mutation(vault: Path, work_record: str | None, purpose: str) -> None:
+    if not isinstance(work_record, str) or not work_record.strip():
+        try:
+            from .kosmic_work import WorkdirError
+        except ImportError:
+            from kosmic_work import WorkdirError  # type: ignore[no-redef]
+        raise WorkdirError("WORK_RECORD_REQUIRED", f"{purpose} requires --work-record")
+    try:
+        from . import kosmic_work
+    except ImportError:
+        import kosmic_work  # type: ignore[no-redef]
+    project_id = work_record.strip().split("/", 1)[0]
+    project_root = Path(vault).expanduser().resolve() / "Projects" / project_id
+    kosmic_work.resolve_work_record(project_root, work_record.strip())
 
 
 def _validate_root(path: Path) -> dict[str, Any]:
@@ -427,7 +431,9 @@ def _generated_payloads(
 
 
 
-def generate_library(vault: Path, source_root: Path | None = None) -> tuple[Path, ...]:
+def generate_library(vault: Path, source_root: Path | None = None, *,
+                     work_record: str | None = None) -> tuple[Path, ...]:
+    _authorize_library_mutation(vault, work_record, "generate-library")
     root = _library_root(vault)
     payloads = _generated_payloads(vault, source_root=source_root)
     staging = Path(tempfile.mkdtemp(prefix="kosmic-library-stage-", dir=root.parent))
@@ -812,7 +818,100 @@ def load_recipe_packet(vault: Path, plan: dict[str, Any]) -> str:
     return packet
 
 
-def migrate_assignments(vault: Path, project: Path, assignments: dict[str, Any]) -> dict[str, Any]:
+def _migrate_classified_topics(vault: Path, project: Path, assignments: dict[str, Any], *,
+                              work_record: str | None = None) -> dict[str, Any]:
+    """Recover existing legacy Topic metadata from explicit typed assignments."""
+    _authorize_library_mutation(vault, work_record, "migrate-library")
+    root = _library_root(vault)
+    project = project.expanduser().resolve()
+    project_id = str(parse_document(project / "ProjectEntry.md").metadata.get("project_id") or "")
+    if not assignments:
+        raise LibraryError("semantic role classification must name existing topics")
+    staging = Path(tempfile.mkdtemp(prefix="kosmic-role-migration-", dir=root.parent))
+    staged_root = staging / "Skills"
+    migrations: list[dict[str, Any]] = []
+    try:
+        shutil.copytree(root, staged_root, symlinks=True)
+        for key, assignment in sorted(assignments.items()):
+            if not isinstance(assignment, dict):
+                raise LibraryError(f"invalid semantic role classification for {key}")
+            required = {"source", "target_id", "artifact_role", *RELATION_ROLES}
+            if required - set(assignment):
+                raise LibraryError(f"semantic role classification for {key} lacks typed fields")
+            target_id = assignment["target_id"]
+            if not isinstance(target_id, str) or not ID_RE.fullmatch(target_id) \
+                    or target_id.count("/") != 2 or key != target_id + ".md" \
+                    or assignment["source"] != key:
+                raise LibraryError(f"semantic role classification changes topic identity: {key}")
+            candidate = root
+            for part in Path(key).parts:
+                candidate = candidate / part
+                if candidate.is_symlink():
+                    raise LibraryError(f"semantic role classification source is a symlink: {key}")
+            source = _contained(root, root / key)
+            if not source.is_file():
+                raise LibraryError(f"semantic role classification source is missing: {key}")
+            raw = source.read_bytes()
+            document = parse_document_text(raw.decode("utf-8"), source)
+            expected_provenance = assignment.get("source_project", project_id)
+            if not isinstance(expected_provenance, str) or not expected_provenance \
+                    or document.metadata.get("id") != target_id \
+                    or document.metadata.get("source_project") != expected_provenance:
+                raise LibraryError(f"semantic role classification source ownership mismatch: {key}")
+            role = assignment["artifact_role"]
+            if not isinstance(role, str) or role not in ARTIFACT_ROLES:
+                raise LibraryError(f"invalid semantic artifact role for {key}")
+            relationships = {
+                field: _string_list(assignment[field], field, source)
+                for field in RELATION_ROLES
+            }
+            current_type = document.metadata.get("type")
+            if current_type == "Domain Topic":
+                if document.metadata.get("artifact_role") != role \
+                        or any(_string_list(document.metadata.get(field, []), field, source) != values
+                               for field, values in relationships.items()):
+                    raise LibraryError(f"semantic role classification conflicts with typed topic: {key}")
+                continue
+            if current_type != "Skill Topic":
+                raise LibraryError(f"semantic role classification requires a legacy Skill Topic: {key}")
+            if document.metadata.get("artifact_role") not in (None, "", role):
+                raise LibraryError(f"semantic role classification conflicts with existing role: {key}")
+            if _string_list(document.metadata.get("requires", []), "requires", source):
+                raise LibraryError(f"semantic role classification has unclassified legacy dependencies: {key}")
+            metadata = dict(document.metadata)
+            metadata["type"] = "Domain Topic"
+            metadata["artifact_role"] = role
+            metadata.pop("requires", None)
+            metadata.update(relationships)
+            for field in ("outcome", "observed_on"):
+                if field in assignment:
+                    metadata[field] = assignment[field]
+            body = document.body.encode("utf-8")
+            header = "---\n" + "".join(
+                line for name, value in metadata.items() for line in render_entry(name, value)
+            ) + "---\n"
+            (staged_root / key).write_bytes(header.encode("utf-8") + body)
+            migrations.append({"source": key, "target": target_id, "artifact_role": role,
+                               "body_sha256": hashlib.sha256(body).hexdigest()})
+        payloads = _generated_payloads(staging, evidence_vault=vault)
+        for relative, content in payloads.items():
+            destination = staged_root / relative
+            candidate = staged_root
+            for part in Path(relative).parts:
+                candidate = candidate / part
+                if candidate.is_symlink():
+                    raise LibraryError(f"generated library output is a symlink: {relative}")
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            destination.write_bytes(content)
+        publish_tree(staged_root, root)
+        return {"schema": SCHEMA_VERSION, "project": project_id, "migrations": migrations}
+    finally:
+        shutil.rmtree(staging, ignore_errors=True)
+
+
+def migrate_assignments(vault: Path, project: Path, assignments: dict[str, Any], *,
+                        work_record: str | None = None) -> dict[str, Any]:
+    _authorize_library_mutation(vault, work_record, "migrate-library")
     root = _library_root(vault)
     project = project.expanduser().resolve()
     references = sorted(path for path in (project / "skills").glob("*/references/**/*.md") if path.is_file())
@@ -829,22 +928,15 @@ def migrate_assignments(vault: Path, project: Path, assignments: dict[str, Any])
         for source, key in zip(references, keys):
             assignment = assignments[key]
             if not isinstance(assignment, dict):
-                raise LibraryError(
-                    f"migration assignment for {key} must declare target_id, "
-                    "artifact_role, and all typed relationships"
-                )
+                raise LibraryError(f"migration assignment for {key} must declare target_id, artifact_role, and all typed relationships")
             required_assignment = {"target_id", "artifact_role", *RELATION_ROLES}
             missing_fields = sorted(required_assignment - set(assignment))
             if missing_fields:
-                raise LibraryError(
-                    f"migration assignment for {key} missing {missing_fields}"
-                )
+                raise LibraryError(f"migration assignment for {key} missing {missing_fields}")
             target_id = str(assignment["target_id"])
             artifact_role = str(assignment["artifact_role"])
             if artifact_role not in ARTIFACT_ROLES:
-                raise LibraryError(
-                    f"invalid migration artifact_role for {key}: {artifact_role}"
-                )
+                raise LibraryError(f"invalid migration artifact_role for {key}: {artifact_role}")
             if not ID_RE.fullmatch(target_id) or target_id.count("/") != 2:
                 raise LibraryError(f"invalid migration target: {target_id}")
             domain, audience, slug = target_id.split("/")
@@ -853,9 +945,7 @@ def migrate_assignments(vault: Path, project: Path, assignments: dict[str, Any])
             document = parse_document(source)
             source_audience = str(document.metadata.get("audience") or "")
             if source_audience not in {audience, "both"}:
-                raise LibraryError(
-                    f"{source}: audience {source_audience!r} does not permit target audience {audience!r}"
-                )
+                raise LibraryError(f"{source}: audience {source_audience!r} does not permit target audience {audience!r}")
             target = staged_root / domain / audience / f"{slug}.md"
             if target.exists():
                 raise LibraryError(f"migration collision: {target_id}")
@@ -871,32 +961,21 @@ def migrate_assignments(vault: Path, project: Path, assignments: dict[str, Any])
             if not authoritative.is_file() or _sha(authoritative) != source_hash:
                 raise LibraryError(f"{source}: stale or missing authoritative source {source_reference}")
             authoritative_document = parse_document(authoritative)
-            evidence = _string_list(
-                authoritative_document.metadata.get("evidence", []),
-                "evidence",
-                authoritative,
-            )
-            relationships = {
-                field: _string_list(assignment[field], field, source)
-                for field in RELATION_ROLES
-            }
+            evidence = _string_list(authoritative_document.metadata.get("evidence", []), "evidence", authoritative)
+            relationships = {field: _string_list(assignment[field], field, source) for field in RELATION_ROLES}
             outcome = str(assignment.get("outcome") or "")
             observed_on = str(assignment.get("observed_on") or "")
             summary = next((line[2:].strip() for line in document.body.splitlines() if line.startswith("# ")), slug)
-            metadata = [
-                "---", "type: Domain Topic", f"id: {target_id}", f"domain: {domain}",
-                f"audience: {audience}", f"artifact_role: {artifact_role}", "status: stable",
-                f"summary: {summary}", f"triggers: [{summary}]",
-                f"outcome: {outcome}", "aliases: []",
-                *(f"{field}: [{', '.join(relationships[field])}]" for field in RELATION_ROLES),
-                f"observed_on: {observed_on}", f"evidence: [{', '.join(evidence)}]",
-                f"source_project: {project.name}", f"source_sha256: {source_hash}", "---", "",
-            ]
+            metadata = ["---", "type: Domain Topic", f"id: {target_id}", f"domain: {domain}",
+                        f"audience: {audience}", f"artifact_role: {artifact_role}", "status: stable",
+                        f"summary: {summary}", f"triggers: [{summary}]", f"outcome: {outcome}",
+                        "aliases: []", *(f"{field}: [{', '.join(relationships[field])}]" for field in RELATION_ROLES),
+                        f"observed_on: {observed_on}", f"evidence: [{', '.join(evidence)}]",
+                        f"source_project: {project.name}", f"source_sha256: {source_hash}", "---", ""]
             target.parent.mkdir(parents=True, exist_ok=True)
             target.write_text("\n".join(metadata) + document.body, encoding="utf-8")
             migrations.append({"source": key, "target": target_id, "source_sha256": source_hash, "evidence": evidence})
-        staged_vault = staging
-        payloads = _generated_payloads(staged_vault, evidence_vault=vault)
+        payloads = _generated_payloads(staging, evidence_vault=vault)
         for relative, content in payloads.items():
             path = staged_root / relative
             path.parent.mkdir(parents=True, exist_ok=True)
@@ -985,7 +1064,9 @@ def _router_matches(vault: Path, path: Path) -> bool:
     return all((path / relative).is_file() and (path / relative).read_bytes() == content for relative, content in expected.items())
 
 
-def install_shared_router(vault: Path, destination_root: Path) -> Path:
+def install_shared_router(vault: Path, destination_root: Path, *,
+                          work_record: str | None = None) -> Path:
+    _authorize_library_mutation(vault, work_record, "install-library")
     source = generate_router(vault)
     destination_root = destination_root.expanduser().resolve()
     destination_root.mkdir(parents=True, exist_ok=True)
@@ -993,10 +1074,8 @@ def install_shared_router(vault: Path, destination_root: Path) -> Path:
     identity = destination / ".kosmic-library-router.json"
     if destination.exists() and not identity.is_file():
         raise LibraryError(f"INSTALLATION_COLLISION: installation collision at unmanaged path: {destination}")
-    managed_pairs = sorted(
-        path for path in destination_root.iterdir()
-        if path.is_dir() and (path / ".kosmic-projection.json").is_file()
-    )
+    managed_pairs = sorted(path for path in destination_root.iterdir()
+                           if path.is_dir() and (path / ".kosmic-projection.json").is_file())
     staging = Path(tempfile.mkdtemp(prefix=".memnotes-skills-stage-", dir=destination_root))
     shutil.copytree(source, staging, dirs_exist_ok=True)
     backup = Path(tempfile.mkdtemp(prefix=".memnotes-skills-backup-", dir=destination_root))

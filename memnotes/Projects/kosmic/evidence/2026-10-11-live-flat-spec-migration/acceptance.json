@@ -1,0 +1,145 @@
+{
+  "schema": "kosmic.acceptance-evidence/1",
+  "identity": "kosmic/quick-task/apply-reviewed-flat-spec-migration",
+  "record_path": "specs/quick-tasks/apply-reviewed-flat-spec-migration.md",
+  "results": [
+    {
+      "criterion": "The final saved plan has no ownership/path ambiguity and no authoritative unresolved-link diagnostic; protected diagnostics remain report-only.",
+      "outcome": "passed",
+      "observation": "The approved corrected plan has zero ambiguities and zero authoritative link problems; its 41 remaining diagnostics are protected/report-only.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/receipt.json",
+          "sha256": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/verification.json",
+          "sha256": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt",
+          "sha256": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt",
+          "sha256": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431"
+        }
+      ]
+    },
+    {
+      "criterion": "Actual application succeeds with the exact reviewed digest and currently approved or in-progress shared task.",
+      "outcome": "passed",
+      "observation": "Actual migrate-subprojects-apply exited 0 for explicitly approved digest b1a87b1dd0c4626b2946b99cc2f757161ba001c7f2794ff4a2ad63991140575f under the approved shared task.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/receipt.json",
+          "sha256": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/verification.json",
+          "sha256": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt",
+          "sha256": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt",
+          "sha256": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431"
+        }
+      ]
+    },
+    {
+      "criterion": "Every moved source maps to its planned final identity; the final catalog and recorded live targets validate.",
+      "outcome": "passed",
+      "observation": "Fresh-process live validation confirmed all 112 final qualified identities and statuses, a valid owner-aware catalog, and every recorded live target.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/receipt.json",
+          "sha256": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/verification.json",
+          "sha256": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt",
+          "sha256": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt",
+          "sha256": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431"
+        }
+      ]
+    },
+    {
+      "criterion": "Protected inputs remain byte-identical, and no installed skill or unrelated path changes.",
+      "outcome": "passed",
+      "observation": "Before documentation maintenance, all 99 protected Markdown hashes matched and all 146 managed output hashes verified. The existing owner entry was unchanged; the approved plan has no adapter outputs.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/receipt.json",
+          "sha256": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/verification.json",
+          "sha256": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt",
+          "sha256": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt",
+          "sha256": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431"
+        }
+      ]
+    },
+    {
+      "criterion": "The migration receipt records original source hashes; repeating the completed plan verifies outputs and returns the same receipt.",
+      "outcome": "passed",
+      "observation": "The durable successful receipt retains all original moved-source SHA-256 values. Repeating the exact command before documentation updates returned an identical parsed receipt.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/receipt.json",
+          "sha256": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/verification.json",
+          "sha256": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt",
+          "sha256": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt",
+          "sha256": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431"
+        }
+      ]
+    },
+    {
+      "criterion": "No unrelated lifecycle approval or completion receipt is fabricated. Complete this task only through the checked workflow after actual acceptance evidence and review.",
+      "outcome": "passed",
+      "observation": "No unrelated lifecycle approval or completion was created. This task is in progress for formal completion; done will be published only through checked work finish after independent review.",
+      "artifacts": [
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/receipt.json",
+          "sha256": "b88d68911d04ff127870473d97fb045199d852dcde956561b7c607260f71a5cb"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/verification.json",
+          "sha256": "340278e9254a73f8710344446eccc10531ecc3980a8302f99f7a57b954aa6010"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/cli-verification.txt",
+          "sha256": "c362795a4c1ae0edf194ff4f8d5454b9fb20dceb9914735f4f24c67b74b82e6c"
+        },
+        {
+          "path": "evidence/2026-10-11-live-flat-spec-migration/idempotence.txt",
+          "sha256": "8285ec51907f158cb2257ab4b9179d4038fd8135f6fccdf25bf108b84b01c431"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema": "kosmic.work-review/1",
+  "identity": "kosmic/quick-task/keep-completion-status-coherent-with-terminal-receipts",
+  "record_path": "specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md",
+  "review_base": "906c0ab",
+  "reviewed_revision": "f725d3d9ebe5e458e11bd9b59b6f7d9c1e7c8648f06db514ae04143167f68be9",
+  "round": 2,
+  "standards": {
+    "decision": "approved",
+    "reviewer": "completion-coherence-standards-slow-fresh-context"
+  },
+  "spec": {
+    "decision": "approved",
+    "reviewer": "completion-coherence-spec-slow-fresh-context"
+  },
+  "findings": [
+    {
+      "id": "COMP-001",
+      "disposition": "Non-blocking",
+      "status": "resolved",
+      "summary": "task_quick_task.md:93 claimed interrupted completion remains pending unconditionally; contradicted receipt-first ordering."
+    },
+    {
+      "id": "SPEC-001",
+      "disposition": "Blocking",
+      "status": "resolved",
+      "summary": "Generated authority prose used unsupported work show --record flag; replaced with --work-record at kosmic_project_skills.py:1365."
+    },
+    {
+      "id": "SPEC-002",
+      "disposition": "Non-blocking",
+      "status": "resolved",
+      "summary": "Duplicate of COMP-001 interruption semantics; wording now distinguishes pre-receipt and post-receipt interruption."
+    }
+  ],
+  "decision": "approved"
+}

@@ -1,0 +1,10 @@
+{
+  "scenario": "Real work finish CLI in disposable WorkRecordTest fixture",
+  "observed_at": "2026-10-15",
+  "fixture_identity": "nav/alpha/story/001",
+  "finish_exit_code": 0,
+  "checked_terminal_receipt_status": "successful",
+  "status_drift_immediately_after_finish": true,
+  "observed_status": "done (receipt pending)",
+  "limitation": "Fixture review approvals are test data, not approval of production work. No real historical receipt was backfilled."
+}

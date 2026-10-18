@@ -1,0 +1,42 @@
+[
+  {
+    "identity": "electron-magnon-coupling/fe-spectrum-performance-and-gpu-acceleration/story/001",
+    "path": "subprojects/fe-spectrum-performance-and-gpu-acceleration/specs/stories/story-001-story-p0-memory-metric.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/fe-spectrum-performance-and-gpu-acceleration/story/001: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/fe-spectrum-performance-and-gpu-acceleration/story/002",
+    "path": "subprojects/fe-spectrum-performance-and-gpu-acceleration/specs/stories/story-002-story-p1-batched-contraction.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/fe-spectrum-performance-and-gpu-acceleration/story/002: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/fe-spectrum-performance-and-gpu-acceleration/story/003",
+    "path": "subprojects/fe-spectrum-performance-and-gpu-acceleration/specs/stories/story-003-story-p2-jax-gpu-backend.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/fe-spectrum-performance-and-gpu-acceleration/story/003: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/p3a-cpu-certification-batching-and-numpy-path-memory-target/story/001",
+    "path": "subprojects/p3a-cpu-certification-batching-and-numpy-path-memory-target/specs/stories/story-001-story-p3a-1-batched-certification-hamiltonians.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/p3a-cpu-certification-batching-and-numpy-path-memory-target/story/001: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/p3a-cpu-certification-batching-and-numpy-path-memory-target/story/002",
+    "path": "subprojects/p3a-cpu-certification-batching-and-numpy-path-memory-target/specs/stories/story-002-story-p3a-2-keyed-j0-cache.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/p3a-cpu-certification-batching-and-numpy-path-memory-target/story/002: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/p3a-cpu-certification-batching-and-numpy-path-memory-target/story/003",
+    "path": "subprojects/p3a-cpu-certification-batching-and-numpy-path-memory-target/specs/stories/story-003-story-p3a-3-numpy-memory-remeasure.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/p3a-cpu-certification-batching-and-numpy-path-memory-target/story/003: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/p3b-keyed-oracle-memoization-and-the-10x-dense-group-decision/story/001",
+    "path": "subprojects/p3b-keyed-oracle-memoization-and-the-10x-dense-group-decision/specs/stories/story-001-story-p3b-1-orbital-memoization.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/p3b-keyed-oracle-memoization-and-the-10x-dense-group-decision/story/001: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  },
+  {
+    "identity": "electron-magnon-coupling/p3b-keyed-oracle-memoization-and-the-10x-dense-group-decision/story/002",
+    "path": "subprojects/p3b-keyed-oracle-memoization-and-the-10x-dense-group-decision/specs/stories/story-002-story-p3b-2-envelope-verdict.md",
+    "error": "ANCESTRY_INVALID: electron-magnon-coupling/p3b-keyed-oracle-memoization-and-the-10x-dense-group-decision/story/002: missing linked_epic. Repair owner-local parent links and their declared ancestor chain."
+  }
+]
