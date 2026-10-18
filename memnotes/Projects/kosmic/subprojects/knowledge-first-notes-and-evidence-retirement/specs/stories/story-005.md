@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "knowledge-first-notes-and-evidence-retirement"
-status: "in_progress"
+status: done
 record_kind: "story"
 local_id: "005"
 created: 2026-10-18
@@ -30,7 +30,7 @@ completion_review:
   decision: approved
   review_base: "139f91b"
   reviewed_revision: "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
-  binding_scope: "Canonical source_revision binds the clean uncommitted delta; the full owned committed and formerly dirty source was independently reviewed against fixed base 139f91b and retained in commit 72e2d82. This approval does not close Story 004."
+  binding_scope: "Canonical source_revision binds the clean uncommitted delta; the full owned committed and formerly dirty source was independently reviewed against fixed base 139f91b and retained in commit 72e2d82. The user's manual Spec closure of Story 004 and its successful checked finish (receipt af0badba9f8fe6d3) are recorded separately and leave this binding and its scope unchanged."
   scope: ["worktree:skills/", "worktree:tests/", "worktree:docs/", "worktree:README.md", "worktree:CONTEXT.md", "worktree:memnotes/Skills/", "project:notes/", "project:skills/", "project:specs/skill-proposals/2026-09-24-day-delta-harvest-routine.md", "project:specs/skill-proposals/2026-10-11-migration-routine-decision.md", "project:subprojects/knowledge-first-notes-and-evidence-retirement/specs/", "project:.kosmic/work-receipts/", "project:log/kosmic-2026-10-18.md"]
   findings:
     - id: "05STD-01"
@@ -348,4 +348,5 @@ Verification scope (2026-10-18): the final cutover tree passed all 31 test modul
 | 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |
 | 2026-10-18 | Started | Work start accepted at setup commit 139f91b; implementation delegated |
 | 2026-10-18 | Whole-CLI smoke completed | Managed run `20261018T191012Z-smokewholeworkflow005-sy-db62268080b2ac6649343ec2e7d929bd` cycle 2: pre-receipt FULL `check-completion` rc=0, receipted `work finish` (`7dbd9da571c8807e.json`), no `evidence/` tree or sidecars, pre-seeded note bytes unchanged, no_action finding manufactured no note; cycle-1 pre-receipt-check gap admitted and remediated. Feature completion not yet claimed |
-| 2026-10-18 | Review and verification complete; dependency gate retained | Twenty exact criterion observations; latest 31-module suite green, 15 publication regressions green, real six-topic publisher/consumer green. StandardsAxis005 and SpecAxis005 approved Round 2. Stories 001–003 receipted and portable; Story 004 human closure remains required, so no Story 005 finish or main-tree cutover is claimed |
+| 2026-10-18 | Review and verification complete; dependency gate retained | Twenty exact criterion observations; latest 31-module suite green, 15 publication regressions green, real six-topic publisher/consumer green. StandardsAxis005 and SpecAxis005 approved Round 2. Stories 001–003 receipted and portable; superseded the same day when the user approved manual Spec closure of Story 004 (checked finish, receipt af0badba9f8fe6d3), removing this dependency |
+| 2026-10-18 | User closure of Story 004 and Story 005 checked finish | User approved manual Spec closure of Story 004; its immutable done record and receipt af0badba9f8fe6d3.json were imported byte-intact into this Project. Full pre-finish checking then passed every gate for Story 005 (twenty exact criterion observations; Round-2 two-axis approval at fixed review base 139f91b), and the checked finish captured the final native receipt over these record bytes |

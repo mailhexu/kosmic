@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-18T21:01:25Z",
+  "detail": "",
+  "identity": "kosmic/knowledge-first-notes-and-evidence-retirement/story/004",
+  "proof": {
+    "subprojects/knowledge-first-notes-and-evidence-retirement/specs/stories/story-004.md": "32e01c6a5546a9cfc30f5bd6934cc710fe8a436adb75203a6f31124dd789e8fe"
+  },
+  "record_path": "subprojects/knowledge-first-notes-and-evidence-retirement/specs/stories/story-004.md",
+  "record_sha256": "32e01c6a5546a9cfc30f5bd6934cc710fe8a436adb75203a6f31124dd789e8fe",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}
