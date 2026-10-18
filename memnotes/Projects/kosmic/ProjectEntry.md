@@ -1,7 +1,7 @@
 ---
 project_id: kosmic
 working_state: working-tree
-status_root: /home/hexu/projects/myagentskills/kosmic
+status_root: /home/hexu/projects/myagentskills/kosmic-kf-002-d6030fcb
 ---
 
 # kosmic
