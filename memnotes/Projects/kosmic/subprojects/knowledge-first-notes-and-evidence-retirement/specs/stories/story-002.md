@@ -118,6 +118,17 @@ Story's metadata contract.
 | Invalid-shape parsing behavior is unapproved and decided in Research | ⬜ | Implementation check, not approved schema |
 | Which frontmatter readers exist in the runtime today (gates TEST-003 permanence) | ⬜ | Phase 1 Research |
 
+### Implementation decisions (2026-10-18, observed in `skills/scripts/kosmic_project_skills.py`)
+
+- Runtime note-metadata reader is `_validate_note_document`, reached via `validate_project_content` → `validate_notes_bundle` and via `_validate_record_content` for record-declared related notes; no other runtime parser reads note curation fields today.
+- Invalid-shape handling (AC17, unapproved schema → decided here, fail-closed): new module-level readers `note_skill_candidate(metadata, relative) -> bool` and `note_skill_resources(metadata, relative) -> list[str]`; absent/empty read defaults; non-bool candidate, non-list resources, and non-string/empty/whitespace-containing resource entries raise `KosmicError`. A "stable id" is a non-empty string without whitespace (bounded shape check; no registry lookup, no name pattern invented).
+- `updated` accepts legacy `YYYY-MM-DD` or aware UTC instant `YYYY-MM-DDTHH:MM:SS[.ffffff]Z` (`validated_note_updated`); naive or offset timestamps are rejected; nothing is invented for date-only legacy values. The artifact_role requirement cutoff compares the first 10 characters, so both forms keep the 2026-09-07 semantics.
+- No scientific/keyword classification anywhere: only declared metadata shape is machine-checked.
+- Emission/timestamp-bump behavior stays prose (`note-writing-style.md`, `skills/references/task_add_note.md`); no writer API exists in the runtime, so TEST-002/003 remain reviewed smoke per spec. Generated audience copies untouched for the Story 005 publisher to regenerate.
+- Bounded consumer smoke (managed scratch run, synthetic authority fixture — not a Feature approval): 16/16 checks on the real `load_project` + `validate_project_content` seam. Valid: keys absent; declared false/[] with aware-UTC `updated`; legacy date-only `updated`. Rejected: quoted/explicit-null/blank `skill_candidate`; scalar/explicit-null/blank/non-string/whitespace-id `skill_resources`; naive and offset timestamps. Nomination via existing `update_markdown_metadata` wrote candidate true + bumped `updated` (2026-10-18T15:52:10.500000Z); bookkeeping resources sync left `updated` unchanged; no writer API added. Dataset-local `data/README.md` outside `notes/` produced no central index pointer. Full CLI `validate` not run (needs projection/STATUS scaffolding owned by Stories 001/003/005); exercised seam is the `validate_notes_bundle` path that command calls.
+- Explicit-null/blank fail-closed correction applied during smoke prep (only an absent key defaults; null/blank fail closed in both readers); negative regressions added to the existing shape test methods. Keyword-prose classification test removed per test-policy review — no scientific classifier is asserted by source review plus this smoke, not a permanent prose test.
+- Run terminalized via real CLI `scratch succeed` (2026-10-18T15:52:46Z, `state: succeeded`): scratch discarded on success; cleanup receipt in the fixture's `history.jsonl` with empty git delta; synthetic authority root `/tmp/kf002-story002-smoke` preserved untouched for parent-confirmed cleanup. Source sha256 `b8eb36a6…c295ba0`; tests sha256 `63eadd31…752359`.
+
 ## Progress Log
 
 | Date | Action | Notes |

@@ -52,77 +52,78 @@ Before writing, check notation.md for existing variable definitions:
     type: Project Knowledge
     title: {Topic Title}
     description: {One-sentence description}
-    confidence: 0.8
-    created: '{TIMESTAMP}'
-    updated: '{TIMESTAMP}'
-    validation_procedure: "How to verify"
+    created: '{UTC_TIMESTAMP_OR_DATE}'
+    updated: '{UTC_TIMESTAMP_OR_DATE}'
+    skill_candidate: {true|false}
+    skill_resources: []
     project: {TARGET}
     status: draft
     audience: {development|usage|both}
-    usage_stale: false
-    evidence: []
     ---
 
     # {Topic Title}
-    
+
+    ## Current Takeaway
+    {The supported current conclusion, stated first. Superseded readings are
+    labeled below, never deleted.}
+
     ## Overview
-    This note describes {brief description of the concept and its purpose}.
-    
-    ## Principles
-    This concept follows these key principles:
-    - {Principle 1 with explanation}
-    - {Principle 2 with explanation}
-    
+    This note describes {the concept and its purpose}.
+
+    ## Assumptions and Conditions
+    {Where this holds; where it does not; known uncertainty.}
+
     ## Details
-    {Main content written in full sentences explaining the concept clearly. 
-    Break into paragraphs for readability. Include examples where helpful.
-    Use relative Markdown links such as [display text](./note_name.md) when referencing related concepts.}
-    
-    ## Variables
-    The following variables are used in this note (see [Notation](./notation.md) for full definitions):
-    
-    | Symbol | Description | Units |
-    |--------|-------------|-------|
-    | `x` | The position of the object in space | meters (m) |
-    
-    ## Equations
-    The fundamental equation for this concept is:
-    
-    $$
-    E = mc^2
-    $$
-    
-    In this equation, E represents the energy, m represents the mass, and c represents the speed of light.
-    
-    ## Workflow
-    The following diagram shows the workflow for this process:
-    
-        ```mermaid
-        flowchart TD
-            A[Start: Initialize variables] --> B[Process: Apply equation]
-            B --> C[End: Return result]
-        ```
-    
-    ## Conventions
-    When implementing this concept, follow these conventions:
-    - {Convention 1}: {Explanation of why and how}
-    
+    {Content written in full sentences explaining the concept clearly.
+    Include examples where helpful. Use relative Markdown links such as
+    [display text](./note_name.md) when referencing related concepts.}
+
+    ## Sources
+    - [{Reproducibility source}](https://...): {what it shows}
+
     ## Linked Concepts
-    - [Related note](./related_note.md): {Brief explanation of how this note relates}
-    - [Notation](./notation.md): Standard variable notations used in this note
+    - [Related note](./related_note.md): {How this note relates}
+    - [Notation](./notation.md): {Standard variable definitions used}
+
+### Curation Metadata (required on creation)
+
+New notes emit exactly:
+
+- `skill_candidate`: `true` only when you judge at creation that the note is
+  suitable to evolve into skill material; otherwise `false`. The default is
+  `false`. Candidacy never forces a skill proposal, and an explicit
+  no-proposal outcome is valid.
+- `skill_resources`: `[]` until an approved skill actually publishes (or
+  removes) a use of this note; then list the stable skill-topic ids. It is
+  never a wish list. A note may be in use and still `skill_candidate: true`;
+  the two fields are independent.
+
+Legacy notes without the fields stay valid: readers treat missing
+`skill_candidate` as `false` and missing `skill_resources` as `[]`. Never
+bulk-rewrite legacy frontmatter.
+
+**Timestamp bump rule**: setting `skill_candidate` false→true, or clearing it
+for reassessment, is a semantic change — bump `updated` with a real UTC
+instant so the note enters the next curation window. Syncing
+`skill_resources` after approved publication/removal, and any check- or
+bookkeeping-only write, never bumps `updated`.
+
+**Timestamps**: `created`/`updated` take a real UTC instant
+(`YYYY-MM-DDTHH:MM:SS[.ffffff]Z`) or, for legacy values, a date
+(`YYYY-MM-DD`). Never invent or round a past instant.
 
 ### Principles
 
 - **One Concept**: Each note covers ONE concept only
-- **Self-Contained**: Understandable without external context
+- **Current Truth First**: The supported current conclusion opens the note; superseded readings stay labeled, never deleted
+- **Self-Contained**: Assumptions, conditions, uncertainty, and sources are present or explicitly bounded; no external context required
+- **No Length Cap, No Confidence Scores**: Note length is unbounded; confidence metadata is banned
 - **Full Sentences**: Use complete sentences, not just bullet points
-- **Explicit Variables**: All variables, subscripts, superscripts documented
-- **Equations**: Always use Markdown display math with `$$` delimiters for standalone equations. Do not leave raw LaTeX equation paragraphs without `$$`.
-- **Workflows**: Use Mermaid diagrams for processes
 - **Links**:
   - Use relative standard Markdown links: `[Note](./note_name.md)`
   - URL-encode spaces and preserve explicit heading fragments
   - Do not use Wikilinks, Obsidian embeds, or block references in Project Knowledge
+  - Record reproducibility as ungated `sources:` links in the note body; an old `evidence: []` frontmatter value stays valid
 
 ## Step 4: Update the OKF Index
 
@@ -153,7 +154,13 @@ After review succeeds, change `status: draft` to `status: stable`. A newly detec
 
 Any change to a stable note's content, status, Audience Scope, or staleness can change a Skill Projection. Run `generate` and `validate` from `references/task_project_skills.md`. Both the authoritative `notes/` bundle and generated Skill Pair must pass; publication is atomic.
 
-If the note was distilled from captured experience (Task 9), its `evidence:` frontmatter must list Project-root-relative paths into the motivating Evidence Pack (for example `evidence: [evidence/2026-09-02-debug-socket/evidence.md]`). `validate` fails a **stable** note whose evidence paths do not resolve; drafts may reference pending packs. Evidence packs themselves live outside `notes/`, are append-only, and never project into the Skill Pair.
+Reproducibility links are ungated `sources:` links in the note body (see the
+template). A stable note is never rejected for missing `evidence:` metadata;
+existing notes that carry `evidence:` values keep them valid, and the
+`validate` command still resolves those legacy paths. Evidence packs
+themselves are a legacy mechanism: no new pack, sidecar, or distillation is
+required for a note, and criterion-specific observations belong compactly in
+the existing work record.
 
 When creating an Evidence Pack, record the code state it was produced under:
 run the Projection CLI's `provenance` command in the source repo and paste its
@@ -174,9 +181,10 @@ with a stable change id.
 5. **Links**: Do all relative Markdown links resolve to their intended concepts?
 6. **Workflows** (when present): Mermaid diagrams syntactically correct?
 7. **Metadata**: Does line-1 frontmatter contain `type`, a valid OKF status, and explicit Audience Scope?
-8. **Index**: Is `notes/index.md` updated using its reserved OKF structure?
-9. **Notation**: Consistent with notation.md?
-10. **Projection**: Did the atomic Skill Pair regenerate and validate?
+8. **Curation fields**: Are `skill_candidate` and `skill_resources` emitted with their declared shapes (boolean / list of stable ids), and was the timestamp bump rule applied if candidacy changed?
+9. **Index**: Is `notes/index.md` updated using its reserved OKF structure?
+10. **Notation**: Consistent with notation.md?
+11. **Projection**: Did the atomic Skill Pair regenerate and validate?
 
 ### Check Command
 

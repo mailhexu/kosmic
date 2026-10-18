@@ -3,7 +3,7 @@ type: Project Knowledge
 title: Note writing style
 status: stable
 created: 2026-09-24
-updated: 2026-09-24
+updated: 2026-10-18
 audience: both
 artifact_role: guideline
 ---
@@ -44,6 +44,41 @@ can understand without session context.
 
 Version-control history, log entries, and Evidence Packs stay in their own
 registers; these rules bind `notes/*.md` and `mathdocs/*.md` prose.
+
+## Note format
+
+Name a note by concept, question, or result. Open the note with the current
+takeaway. Make the note self-contained: state assumptions, conditions,
+uncertainty, supporting links, and reproducibility links. Connect the note to
+related concepts and to `notes/index.md`. A note has no length cap. A note
+has no confidence score. Use the ungated `sources:` links for
+reproducibility; an old `evidence: []` frontmatter value stays valid.
+
+## Curation metadata
+
+Every new note emits two frontmatter fields:
+
+    skill_candidate: false   # true only when the writer judges skill material
+    skill_resources: []      # stable ids of skills that actually use this note
+
+The writer assesses candidacy at creation and at each substantive content
+update. The default is false. Candidacy never forces a skill proposal. An
+explicit no-proposal outcome is valid. `skill_resources` lists only skill
+topics that actually use this note. Fill it only after an approved skill
+publication or removal. It is never a wish list. The two fields are
+independent. Absent fields read as the defaults; legacy notes stay valid
+without a rewrite.
+
+Changing `skill_candidate` from false to true, or clearing it for a new
+assessment, is a semantic change. It must bump `updated`. A
+`skill_resources` sync and any check-only write never bump `updated`.
+
+## Timestamps
+
+`updated` accepts a legacy date `YYYY-MM-DD` or a real UTC instant
+`YYYY-MM-DDTHH:MM:SS[.ffffff]Z`. Never invent a past instant. Never round a
+timestamp back into a consumed interval. A date-only legacy value stays a
+date; a reader that needs an exact instant resolves the note explicitly.
 
 ## Linked Concepts
 

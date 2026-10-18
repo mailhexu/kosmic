@@ -501,6 +501,58 @@ def validate_note_evidence_paths(value: Any, relative_path: str, project_root: P
                 f"stable note evidence path does not resolve: {raw} (in {relative_path})"
             )
 
+def note_skill_candidate(metadata: dict[str, Any], relative_path: str) -> bool:
+    """ADR-F reader: skill-material candidacy; only an absent key reads false."""
+    if "skill_candidate" not in metadata:
+        return False
+    value = metadata.get("skill_candidate")
+    if not isinstance(value, bool):
+        raise KosmicError(
+            f"invalid skill_candidate in {relative_path}; "
+            f"expected true or false, got {value!r}"
+        )
+    return value
+
+
+def note_skill_resources(metadata: dict[str, Any], relative_path: str) -> list[str]:
+    """ADR-F reader: stable ids of skill topics actually using this note; only an absent key reads empty."""
+    if "skill_resources" not in metadata:
+        return []
+    value = metadata.get("skill_resources")
+    if not isinstance(value, list):
+        raise KosmicError(
+            f"invalid skill_resources in {relative_path}; expected a list of "
+            f"stable skill-topic ids, got {value!r}"
+        )
+    resources: list[str] = []
+    for item in value:
+        if (
+            not isinstance(item, str)
+            or not item.strip()
+            or re.search(r"\s", item.strip())
+        ):
+            raise KosmicError(
+                f"invalid skill_resources entry {item!r} in {relative_path}; "
+                "expected a non-empty stable skill-topic id without whitespace"
+            )
+        resources.append(item.strip())
+    return resources
+
+
+def validated_note_updated(value: Any, relative_path: str) -> str:
+    """Note ``updated`` reader: legacy YYYY-MM-DD or an aware UTC instant; never invented."""
+    updated = str(value or "").strip()
+    if not updated:
+        return ""
+    if ISO_DATE_RE.fullmatch(updated) or UTC_TIMESTAMP_RE.fullmatch(updated):
+        return updated
+    raise KosmicError(
+        f"invalid updated in {relative_path}; expected YYYY-MM-DD or an "
+        "ISO-8601 UTC instant (YYYY-MM-DDTHH:MM:SS[.ffffff]Z): "
+        f"{updated!r}"
+    )
+
+
 def validate_artifact_role(document: MarkdownDocument, relative: str, *, required: bool) -> str:
     role = str(document.metadata.get("artifact_role") or "").strip()
     if not role:
@@ -627,13 +679,13 @@ def _validate_note_document(
             f"invalid Project Knowledge status '{status}' in {relative}; "
             "expected draft, stable, or deprecated"
         )
-    updated = str(document.metadata.get("updated") or "")
-    if updated and not ISO_DATE_RE.fullmatch(updated):
-        raise KosmicError(f"updated must be YYYY-MM-DD in {relative}")
+    updated = validated_note_updated(document.metadata.get("updated"), relative)
     validate_artifact_role(
         document, relative,
-        required=bool(updated and updated >= "2026-09-07"),
+        required=bool(updated[:10] >= "2026-09-07"),
     )
+    note_skill_candidate(document.metadata, relative)
+    note_skill_resources(document.metadata, relative)
     validated_stale_after(document.metadata.get("stale_after"), relative)
     if status == "stable":
         validate_note_evidence_paths(
