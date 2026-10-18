@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "knowledge-first-notes-and-evidence-retirement"
-status: "approved"
+status: "in_progress"
 record_kind: "story"
 local_id: "005"
 created: 2026-10-18
@@ -138,3 +138,4 @@ This story lands last (after [Story 001](story-001.md), [Story 002](story-002.md
 |------|--------|-------|
 | 2026-10-18 | Created | Initial draft; approved - awaiting implementation |
 | 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |
+| 2026-10-18 | Started | Work start accepted at setup commit 139f91b; implementation delegated |
