@@ -26,44 +26,14 @@ So that planning progress is visible in derived status without granting
 receipt semantics (ADR-E; FR-008 renderer seam; Epic slice 1, no dependencies).
 
 ## Acceptance Criteria
-
-- [ ] AC1: Given a Project with a bound status root and an **approved** PRD
-  record, when `python3 skills/scripts/kosmic_project_skills.py generate-status
-  --project <ROOT> --work-record <qualified PRD reference>` runs, then it exits
-  0, the only mutated path is `<status-root>/STATUS.md`, and the file is the
-  deterministic generated render for the catalog as it stands; STATUS_STALE on
-  that path clears.
-- [ ] AC2: An **approved** Architecture record grants the same single-target
-  derived-output refresh as AC1.
-- [ ] AC3: Given a `draft` planning record of subproject S, when
-  `generate-status` refreshes STATUS during S's planning using that record,
-  then the refresh succeeds through the **existing** status-root/directory
-  semantics unchanged: the derived output path and its existing view (including
-  any fixed-subproject binding) are preserved — the record's ancestry governs
-  the derived output path; a narrowed hierarchy-only listing never replaces a
-  bound Project-wide STATUS, and no new projection shape is introduced.
-- [ ] AC4: Given a planning record whose ancestry does **not** govern the
-  derived output path — an owner/subproject mismatch against a fixed-subproject
-  bound directory, or a foreign owner/scope — the command refuses
-  (`WORK_PHASE_DENIED`) and writes nothing; conversely, a draft record is not
-  refused for an otherwise valid refresh of the existing Project-wide derived
-  render that includes its own hierarchy.
-- [ ] AC5: Given no bound status root (or a bound root that is not a directory),
-  `generate-status` refuses for any planning record (`STATUS_ROOT_UNBOUND` /
-  `STATUS_ROOT_MISSING`); planning authority never creates, replaces, or
-  silently drops a status-root binding.
-- [ ] AC6: `work start`/`work finish` still refuse planning records
-  (`WORK_PHASE_DENIED`); no receipt is written or validated for a planning
-  record; `resolve_work_record`'s implementation kinds/statuses are unchanged
-  for every other caller.
-- [ ] AC7: Receipt-aware rendering is preserved: with a mixed catalog (approved,
-  draft, done-with-receipt, done-without-receipt rows), the regenerated STATUS
-  reflects each row's actual recorded state, counts unreceipted done as open
-  (`done (receipt pending)`), and mutates no record/receipt/source file.
-- [ ] AC8: The existing hand-edit invariant holds: a manually edited STATUS.md
-  is never preserved or merged — the next authorized run regenerates over it
-  (demonstrated in smoke; no new enforcement or permanent wording pins).
-
+- [ ] AC1: Given a Project with a bound status root and an **approved** PRD record, when `python3 skills/scripts/kosmic_project_skills.py generate-status --project <ROOT> --work-record <qualified PRD reference>` runs, then it exits 0, the only mutated path is `<status-root>/STATUS.md`, and the file is the deterministic generated render for the catalog as it stands; STATUS_STALE on that path clears.
+- [ ] AC2: An **approved** Architecture record grants the same single-target derived-output refresh as AC1.
+- [ ] AC3: Given a `draft` planning record of subproject S, when `generate-status` refreshes STATUS during S's planning using that record, then the refresh succeeds through the **existing** status-root/directory semantics unchanged: the derived output path and its existing view (including any fixed-subproject binding) are preserved — the record's ancestry governs the derived output path; a narrowed hierarchy-only listing never replaces a bound Project-wide STATUS, and no new projection shape is introduced.
+- [ ] AC4: Given a planning record whose ancestry does **not** govern the derived output path — an owner/subproject mismatch against a fixed-subproject bound directory, or a foreign owner/scope — the command refuses (`WORK_PHASE_DENIED`) and writes nothing; conversely, a draft record is not refused for an otherwise valid refresh of the existing Project-wide derived render that includes its own hierarchy.
+- [ ] AC5: Given no bound status root (or a bound root that is not a directory), `generate-status` refuses for any planning record (`STATUS_ROOT_UNBOUND` / `STATUS_ROOT_MISSING`); planning authority never creates, replaces, or silently drops a status-root binding.
+- [ ] AC6: `work start`/`work finish` still refuse planning records (`WORK_PHASE_DENIED`); no receipt is written or validated for a planning record; `resolve_work_record`'s implementation kinds/statuses are unchanged for every other caller.
+- [ ] AC7: Receipt-aware rendering is preserved: with a mixed catalog (approved, draft, done-with-receipt, done-without-receipt rows), the regenerated STATUS reflects each row's actual recorded state, counts unreceipted done as open (`done (receipt pending)`), and mutates no record/receipt/source file.
+- [ ] AC8: The existing hand-edit invariant holds: a manually edited STATUS.md is never preserved or merged — the next authorized run regenerates over it (demonstrated in smoke; no new enforcement or permanent wording pins).
 ## Tasks
 
 ### Phase 1: Research
@@ -159,6 +129,58 @@ ADR-E's bounds.
   embedded completion fields or Story 005's cutover.
 - Error surface unchanged: `STATUS_ROOT_UNBOUND`, `STATUS_ROOT_MISSING`,
   `WORK_PHASE_DENIED`, `WORK_RECORD_REQUIRED`; no new error codes.
+- Implemented at HEAD of this worktree (uncommitted, review_base 0b29a99
+  preserved), selective matrix per parent GREEN-batch corrections:
+  `generate_status` resolves through one `require_work_record` call with
+  union kind/status sets and then applies `_generate_status_denial`
+  (`kosmic_project_skills.py`): legacy implementation grants (story/
+  quick-task with approved/in_progress) stay exact and bypass the planning
+  scope guard, so project-level quick-task authority is not retroactively
+  denied by a fixed-subproject bound directory; planning grants are
+  approved PRD/Architecture plus draft PRD/Architecture/Epic/Story (draft
+  story additionally gated on approved ancestry by `resolve_work_record`),
+  guarded by the ADR-E hierarchy-governs-output rule reusing
+  `load_registry`'s `fixed_subproject_id` entry lookup. Everything else at
+  this seam denies `WORK_PHASE_DENIED`: draft quick-task, in-progress
+  PRD/Architecture, approved epic, terminal statuses. The flat
+  `PLANNING_KINDS`/`PLANNING_STATUSES` constants were removed; the generic
+  `statuses` parameter on `resolve_work_record` stays (union sets, defaults
+  byte-identical for every other caller). Fixture recipes discovered for the consumer tests: registry
+  entry shape (`kosmic.workdirs/1`, `directory_id = "wd-"+sha256(path)[:16]`,
+  `authority.record`/`run_id` required, `.kosmic/working-directories.json`
+  under the Project root — `kosmic_work.py:155-208`); a successful receipt is
+  `.kosmic/work-receipts/<sha256(qualified_id)[:16]>.json` whose `proof`
+  equals `validate_completion_proof` (acceptance-evidence + review JSON under
+  the Project root, story frontmatter `acceptance_evidence`/
+  `review_record`/`review_base`, criteria text identical to `- [x]` lines —
+  `kosmic_completion.py:101-163`); receipt schema bytes taken from the
+  validator itself in the fixture. `work start` resolves the record before
+  any worktree check (`check_work_start:614-616`), so planning records are
+  refused CLI-level regardless of registration. No
+  `cli-projection-commands.md` existed at base in either tree; the owned
+  `generate-status` section now seeds `skills/references/cli-projection-commands.md`
+  (Story 005 reconciles the rest). Acceptance Criteria normalized to one
+  physical `- [ ]` line per criterion (whitespace-only diff, machine-verified)
+  so receipt-side proof coverage matches the exact checkbox lines contract.
+  All changes statically verified (compile, signatures, call sites, fixture
+  protocol parity, symtable); test execution stays with the parent's GREEN
+  batch.
+- Real-CLI smoke (managed scratch run 20261018T164034Z-kosmic-kf-001-planning-s-678fc317…,
+  fresh synthetic Project below the run scratch; no copied registry/user
+  data): approved PRD, approved Architecture, draft story (approved
+  ancestry), and legacy approved/in_progress quick-task records all refresh
+  the bound STATUS.md with rc=0 and status_drift True→False; the
+  wrong-fixed-owner probe (other vs main) and `work start`/`work finish`
+  with the planning record all exit 2 WORK_PHASE_DENIED writing nothing;
+  hand-edit stale → authorized regen → clean drift demonstrated with real
+  rows — the Project-wide view survived every step (both subprojects' rows
+  visible; identity/status columns match recorded state; "Fixed directory
+  constraint: subproject main" rendered from the registry binding).
+  Per-step whole-sandbox digests: only STATUS.md ever mutated;
+  `.kosmic/work-receipts` never created. Limits: full `validate` not
+  exercised (needs unrelated projection/library fixtures) — public
+  `status_drift` plus observed rows are the demonstrated surface; synthetic
+  fixture approvals are test data, not real feature approvals.
 
 ## Assumptions & Verification
 
@@ -183,3 +205,5 @@ ADR-E's bounds.
 | 2026-10-18 | Created | Initial draft |
 | 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |
 | 2026-10-18 | Revised | Review corrections: output-shape neutrality, consumer-state tests, real CLI invocation, scope trims |
+| 2026-10-18 | Started | Work start accepted at setup commit 0b29a99; implementation delegated |
+| 2026-10-18 | Implemented | Planning-phase authorization staged at the renderer seam + consumer regression suite in `tests/test_status_planning_authority.py`; all changes uncommitted for binding/review; Acceptance Criteria lines normalized to one physical checkbox per criterion per the receipt contract |

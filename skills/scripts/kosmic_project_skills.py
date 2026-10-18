@@ -1828,19 +1828,25 @@ def require_work_record(
     *,
     work_record: str | None = None,
     purpose: str = "",
+    kinds: Sequence[str] = kosmic_work.IMPLEMENTATION_KINDS,
+    statuses: Sequence[str] | None = None,
 ) -> "kosmic_work.SpecRef":
     """Resolve the explicit --work-record reference (AD-SW5-R2).
 
     Every call resolves ownership, ancestry, and lifecycle at invocation time.
     Command-declared derived outputs inherit the record (FR-WR04). Bootstrap
     operations use their own bounded exemptions and do not call this gate.
+    ``kinds``/``statuses`` re-authorize the same seam for one bounded caller
+    (ADR-E planning refresh); defaults keep implementation authorization
+    unchanged for every existing caller.
     """
     if work_record is None or not str(work_record).strip():
         raise kosmic_work.WorkdirError(
             "WORK_RECORD_REQUIRED",
             f"{purpose or 'this command'} requires --work-record; pass the "
             "governing Story or Quick Task reference")
-    return kosmic_work.resolve_work_record(project_root, str(work_record).strip())
+    return kosmic_work.resolve_work_record(
+        project_root, str(work_record).strip(), kinds=kinds, statuses=statuses)
 
 
 
@@ -4244,17 +4250,76 @@ def status_drift(project: Project, *, record_scoped: bool = False,
 
 
 
+#: ADR-E record matrix at the generate-status seam. Planning grants are
+#: selective by design: no draft quick-task, no in-progress PRD/Architecture,
+#: no approved epic. Legacy implementation grants (story/quick-task with
+#: approved/in_progress) keep their exact kind/status set and bypass the
+#: planning scope guard, so project-level quick-task authority is not
+#: retroactively denied by a fixed-subproject bound directory.
+_PLANNING_GRANTS: dict[str, frozenset[str]] = {
+    "prd": frozenset(("approved", "draft")),
+    "architecture": frozenset(("approved", "draft")),
+    "epic": frozenset(("draft",)),
+    "story": frozenset(("draft",)),
+}
+
+#: Union sets for the single resolve; the selective matrix is applied after.
+_GENERATE_STATUS_KINDS = (*kosmic_work.IMPLEMENTATION_KINDS, "prd", "architecture", "epic")
+_GENERATE_STATUS_STATUSES = (*kosmic_work.IMPLEMENTATION_STATUSES, "draft")
+
+
+def _generate_status_denial(
+    project_root: Path, status_root: Path, record: "kosmic_work.SpecRef"
+) -> str | None:
+    """Selective kind/status matrix plus the ADR-E scope rule for one record
+    at the generate-status seam. Legacy implementation grants return None
+    unchanged and unguarded; planning grants pass only while the record's own
+    hierarchy governs the derived output path — a fixed-subproject bound
+    output directory accepts only records owned by that subproject, and an
+    unregistered output directory takes the Project-wide derived render, which
+    any Project planning record governs. Registry defects fail closed through
+    ``load_registry``."""
+    if (record.kind in kosmic_work.IMPLEMENTATION_KINDS
+            and record.status in kosmic_work.IMPLEMENTATION_STATUSES):
+        return None
+    if record.status not in _PLANNING_GRANTS.get(record.kind, frozenset()):
+        return (f"{record.qualified_id}: {record.kind} record with status "
+                f"{record.status!r} is not authorized for generate-status")
+    entry = next(
+        (item for item in kosmic_work.load_registry(project_root)["directories"]
+         if item["path"] == str(status_root)),
+        None,
+    )
+    fixed = entry.get("fixed_subproject_id") if entry is not None else None
+    if fixed is not None and record.subproject_id != fixed:
+        return (f"{record.qualified_id}: {status_root} is bound to subproject "
+                f"{fixed}, not to {record.subproject_id or 'the Project'}")
+    return None
+
+
 def generate_status(project: Project, *, work_record: str | None = None) -> Path:
     """Generate STATUS.md into the bound working directory.
 
     STATUS is a deterministic projection; explicit work-record authority is
-    checked before publication. No separate provenance artifact is written.
+    checked before publication. Record matrix at this seam: implementation
+    records keep their exact legacy grants (story/quick-task with
+    approved/in_progress, unguarded); planning records authorize this one
+    derived-output refresh as approved PRD/Architecture or as draft
+    PRD/Architecture/Epic/Story while the record's own hierarchy governs this
+    derived output path. Planning authority writes no receipt, touches no
+    record, and never changes the Project-wide rendered view or the
+    status-root binding. No separate provenance artifact is written.
     """
     if project.status_root is None:
         raise KosmicError("STATUS_ROOT_UNBOUND", exit_code=2)
     status_root = project.status_root.expanduser().resolve()
-    require_work_record(project.root, [status_root / "STATUS.md"],
-                        work_record=work_record, purpose="generate-status")
+    record = require_work_record(
+        project.root, [status_root / "STATUS.md"],
+        work_record=work_record, purpose="generate-status",
+        kinds=_GENERATE_STATUS_KINDS, statuses=_GENERATE_STATUS_STATUSES)
+    denial = _generate_status_denial(project.root, status_root, record)
+    if denial is not None:
+        raise kosmic_work.WorkdirError("WORK_PHASE_DENIED", denial)
     if not status_root.is_dir():
         raise KosmicError(f"STATUS_ROOT_MISSING: {status_root}", exit_code=2)
     try:

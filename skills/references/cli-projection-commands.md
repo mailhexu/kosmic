@@ -1,0 +1,51 @@
+# CLI Projection Commands
+
+Consumer reference for Projection CLI commands. Each command's owning story
+maintains its section here; cross-cutting reconciliation is Story 005's.
+
+## generate-status
+
+Regenerate the derived `STATUS.md` inside the Project's bound status root:
+
+```bash
+python3 skills/scripts/kosmic_project_skills.py generate-status \
+    --project {VAULT}/Projects/{TARGET} \
+    --work-record {QUALIFIED_RECORD}
+```
+
+STATUS is a deterministic, receipt-aware projection of the spec catalog. The
+explicit `--work-record` authority is re-resolved at invocation time and
+never cached; the only mutated path is the bound `<status-root>/STATUS.md` —
+records, receipts, and sources are never written by this command.
+
+**Record authority (ADR-E).** Implementation records keep their exact legacy
+grants at this command: a `story` or `quick-task` with `approved` or
+`in_progress` status authorizes the refresh unchanged, including
+project-level quick-task authority against a fixed-subproject bound
+directory. Additionally, bounded planning records authorize this one
+derived-output refresh under a selective matrix:
+
+- an **approved** `prd` or `architecture` record;
+- a **draft** `prd`, `architecture`, `epic`, or `story` record, while the
+  record's own hierarchy governs the derived output path — with a
+  Project-wide (unregistered) status root, or with a registered directory
+  whose binding is fixed to the record's own subproject; a draft `story`
+  additionally requires its approved ancestry chain.
+
+Everything else is refused with `WORK_PHASE_DENIED` and nothing is written:
+a `draft` quick-task, an `in_progress` prd/architecture, an approved
+`epic`, terminal statuses, and any planning record whose ancestry does not
+govern the bound directory (for example, a foreign owner against a
+fixed-subproject bound directory). A draft record never narrows the
+Project-wide rendered view, and planning authority never creates, replaces,
+or silently drops the status-root binding.
+
+**Failure codes**: `STATUS_ROOT_UNBOUND` (no bound status root),
+`STATUS_ROOT_MISSING` (bound root is not a directory), `WORK_PHASE_DENIED`
+(record kind/status or scope does not authorize this refresh),
+`WORK_RECORD_REQUIRED` (missing `--work-record`).
+
+Planning refreshes validate no receipt and write none; validation and
+completion checks still fail with `STATUS_STALE` while the generated file
+drifts. STATUS is generated — hand edits are never preserved or merged; the
+next authorized run regenerates over them.

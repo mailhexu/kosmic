@@ -413,12 +413,18 @@ def resolve_directory(project_root: Path, worktree: Path) -> dict[str, Any]:
 
 def resolve_work_record(project_root: Path, reference: str,
                         *, kinds: Sequence[str] = IMPLEMENTATION_KINDS,
+                        statuses: Sequence[str] | None = None,
                         allow_terminal: bool = False) -> SpecRef:
     """Resolve an explicit work-record reference at command time.
 
     Re-resolved on every invocation; approval is never cached. The record
-    must belong to this Project, have an implementation kind, hold an
-    implementation-authorized status, and (Stories) approved ancestry.
+    must belong to this Project, hold the caller's kind, hold an
+    authorized status, and (Stories) approved ancestry.
+
+    ``kinds`` and ``statuses`` let one bounded caller re-authorize this same
+    seam (ADR-E: ``generate-status`` passes union sets and then applies its
+    own selective record matrix); the defaults leave every other caller on
+    the implementation kinds/statuses unchanged.
 
     Authorization is record-bound: when the whole Project catalog cannot be
     enumerated, the record is resolved from its owner subtree plus the shared
@@ -447,10 +453,11 @@ def resolve_work_record(project_root: Path, reference: str,
             except SpecError as bounded_error:
                 raise WorkdirError("RECORD_INVALID", str(bounded_error)) from bounded_error
     _deny(record.kind not in kinds, "WORK_PHASE_DENIED",
-          f"{record.qualified_id}: {record.kind} is not an implementation record")
-    allowed_statuses = (*IMPLEMENTATION_STATUSES, "done") if allow_terminal else IMPLEMENTATION_STATUSES
+          f"{record.qualified_id}: {record.kind} is not an authorized record kind")
+    base_statuses = IMPLEMENTATION_STATUSES if statuses is None else tuple(statuses)
+    allowed_statuses = (*base_statuses, "done") if allow_terminal else base_statuses
     _deny(record.status not in allowed_statuses, "WORK_PHASE_DENIED",
-           f"{record.qualified_id}: status {record.status!r} does not authorize implementation")
+          f"{record.qualified_id}: status {record.status!r} does not authorize this command")
     if record.kind == "story" and catalog is not None:
         _ancestry_approved(catalog, record)
     return record
