@@ -1866,6 +1866,13 @@ MUTATION_GATE_EXEMPTIONS: dict[str, str] = {
                      "the worktree scratch root (gated at `begin` and "
                      "`gc --apply` in enforcement mode; finalize/extend/"
                      "promote only finalize state of an already-created run)",
+    "curation-prepare / curation-finalize": "deterministic incremental curation "
+                     "stages over the Project notes scope: prepare freezes the "
+                     "cutoff and snapshots interval-eligible note identities "
+                     "under a managed run with a per-scope reservation; "
+                     "finalize validates recorded review dispositions and "
+                     "snapshot revalidation, then advances the per-scope "
+                     "checkpoint to exactly the frozen cutoff",
     "dream-harvest / dream-abort": "bounded managed-run lifecycle: the dream "
                    "run lives under the worktree scratch root and publishes "
                    "nothing until the gated dream-publish",
@@ -4613,6 +4620,24 @@ def build_parser() -> argparse.ArgumentParser:
     generate_status_parser = subparsers.add_parser("generate-status", help="regenerate the bound STATUS.md")
     generate_status_parser.add_argument("--project", required=True, type=path_argument)
     generate_status_parser.add_argument("--work-record", default=None)
+    curation_prepare = subparsers.add_parser(
+        "curation-prepare",
+        help="freeze cutoff U, snapshot interval-eligible note identities, reserve the scope",
+    )
+    curation_prepare.add_argument("--project", required=True, type=path_argument)
+    curation_prepare.add_argument("--work-record", required=True)
+    curation_prepare.add_argument("--scope", default="notes")
+    curation_prepare.add_argument("--from", dest="from_instant", default=None)
+    curation_prepare.add_argument("--baseline", action="store_true")
+    curation_prepare.add_argument("--note", nargs="*", default=[])
+    curation_finalize = subparsers.add_parser(
+        "curation-finalize",
+        help="validate review coverage and snapshot drift, then advance the scope checkpoint",
+    )
+    curation_finalize.add_argument("--project", required=True, type=path_argument)
+    curation_finalize.add_argument("--run", required=True, type=path_argument)
+    curation_finalize.add_argument("--work-record", required=True)
+    curation_finalize.add_argument("--scope", default="notes")
     return parser
 
 
@@ -4742,6 +4767,19 @@ def run(arguments: Sequence[str] | None = None) -> int:
         return 0
     if args.command == "scratch":
         return _run_scratch(args)
+
+    if args.command in ("curation-prepare", "curation-finalize"):
+        if __package__:
+            from . import kosmic_curation
+        else:
+            import kosmic_curation
+        try:
+            payload = kosmic_curation.run_cli(args)
+        except kosmic_curation.CurationError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return getattr(error, "exit_code", 2)
+        _print_json(payload)
+        return 0
 
     if args.command == "dream-harvest":
         payload = kosmic_dreams.dream_harvest(

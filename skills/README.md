@@ -287,7 +287,12 @@ Use inline `$...$` only for short symbols or expressions inside prose.
 
 ## File Hygiene
 
-Kosmic-owned scratch starts with the mandatory **Managed Run Before Scratch** step in `SKILL.md`: `scratch begin` returns the sole writable run path below the active worktree’s `.tmp/kosmic/`; `scratch succeed|fail` closes it with Git evidence. Keep durable source/docs in the project tree and pending tests under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`. See `references/managed_run_lifecycle.md` for retention, promotion, status, cleanup, and the destination-sibling staging exception.
+Kosmic-owned scratch starts with the mandatory **Managed Run Before Scratch** step in `SKILL.md`: `scratch begin` returns the sole writable run path below the active worktree's `.tmp/kosmic/`; `scratch succeed|fail` closes it with Git evidence. Keep durable source/docs in the project tree and pending tests under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`. See `references/managed_run_lifecycle.md` for retention, promotion, status, cleanup, and the destination-sibling staging exception.
+
+## Incremental Curation
+
+The `curation-prepare` → semantic review → `curation-finalize` routine reviews only notes semantically changed since the last successful full-scope check (`L < updated <= U`, Story 002 metadata contract), records dispositions in the existing governing work record, and advances one per-scope checkpoint exactly to the frozen cutoff — no scheduler, queue, model call inside the CLI, or automatic promotion; nomination and publication keep the existing human gates. See `references/curation_routine.md`.
+
 ## Spec Status Lifecycle
 
 ```

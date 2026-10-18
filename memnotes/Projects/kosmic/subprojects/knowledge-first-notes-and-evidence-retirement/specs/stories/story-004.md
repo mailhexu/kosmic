@@ -11,6 +11,8 @@ linked_epic: "../epics/epic-001.md"
 linked_architecture: "../architecture.md"
 depends_on:
   - ../stories/story-002.md
+related_notes:
+  - ../../../../notes/note-writing-style.md
 consumer_interface_change: true
 ---
 
@@ -164,17 +166,17 @@ metadata artifact beyond the managed scratch metadata and the existing work reco
 
 ### Phase 1: Research
 
-- [ ] Verify the Story 002 metadata contract as drafted (field names, bump rules, legacy
+- [x] Verify the Story 002 metadata contract as drafted (field names, bump rules, legacy
   defaults) and record any interface assumptions in Technical Notes.
-- [ ] Verify the existing subcommand/flag conventions and typed-error style in
+- [x] Verify the existing subcommand/flag conventions and typed-error style in
   `skills/scripts/kosmic_project_skills.py` (subcommand registry around :4226) and the
   managed-run lease/snapshot support in `skills/scripts/kosmic_runs.py` to be reused.
-- [ ] Verify how an existing work record in `approved` or `in_progress` status authorizes
+- [x] Verify how an existing work record in `approved` or `in_progress` status authorizes
   mutations today (`kosmic_work.py` finish/scope handling and managed-run scratch authority)
   so prepare's and finalize's authority checks reuse the existing mechanisms.
-- [ ] Verify the Dream proposal/review record concepts reusable for nominations, and confirm
+- [x] Verify the Dream proposal/review record concepts reusable for nominations, and confirm
   no existing checkpoint artifact exists to collide with.
-- [ ] Confirm scope authority: which paths constitute the memnotes `notes/` scope and where a
+- [x] Confirm scope authority: which paths constitute the memnotes `notes/` scope and where a
   per-scope checkpoint file may live.
 
 ### Phase 2: Tests (TDD — write first, red then green)
@@ -234,7 +236,7 @@ review handoff; promotion remains human-gated and review authority stays with th
 - Window contract and metadata names come from ADR-F (approved design, unimplemented); the
   PRD requirement is FR-011 and the ACs mirror its curation success-criteria bullet.
 - Reused seams (verified present today): the single CLI entry with subparsers in
-  `kosmic_project_skills.py` (offline, stdlib-only, typed failures); managed-run
+  `skills/scripts/kosmic_project_skills.py` (offline, stdlib-only, typed failures); managed-run
   lease/snapshot support in `kosmic_runs.py`; work-record authority from the existing
   `kosmic_work.py` governance. `curation-prepare`, `curation-finalize`, and the checkpoint
   store do not exist yet.
@@ -253,6 +255,74 @@ review handoff; promotion remains human-gated and review authority stays with th
 - Nominations reuse Dream's proposal/review record concepts without forcing Dream's day-based
   reports (ADR-F boundary); "update existing topic first" (AC14) follows the FR-004 refine/
   merge preference applied to skill material.
+
+### Implemented research decisions (2026-10-18, implementation)
+
+- **Module seam**: deterministic stages live in a new `skills/scripts/kosmic_curation.py`
+  (`prepare_curation` / `finalize_curation` / `run_cli`), wired as two CLI subcommands in the
+  existing `build_parser`/`run()` dispatch. The module imports `kosmic_runs` and `kosmic_work`
+  with the established dual relative/absolute import pattern and pulls the Story 002 readers
+  (`note_skill_candidate`, `note_skill_resources`, `validated_note_updated`), `parse_markdown`,
+  and `load_project` from `kosmic_project_skills`, which imports the curation module lazily in
+  its dispatch — no import cycle.
+- **Serialization (mandatory chosen strategy)**: per-scope control JSON
+  `<project>/.kosmic/curation/<scope>.json` holds `last_successful` plus the `active_run`
+  reservation (run id, handle file, snapshot file, governing record, mode, window). A
+  scope-specific NOFOLLOW flock guards each in-process transaction only; cross-CLI
+  serialization is the reservation, never a pretend-persistent flock. Prepare: busy on a live
+  reservation (`CURATION_BUSY`, exit 2); a terminal/out-of-grace predecessor is retired via
+  the existing `finish_run(handle, "failed")` mechanism without touching
+  `last_successful`. Unresolved orphans stay busy (fail closed); recovery is the existing
+  managed-run gc/extend tooling, no new recovery command.
+- **Authority**: every stage re-resolves the `--work-record` through
+  `kosmic_work.resolve_work_record` (implementation kinds, `approved`/`in_progress`); prepare's
+  managed run carries `record_run_provenance` provenance like `scratch begin` does; scratch
+  authority follows the existing `gate_scratch_mutation` root semantics (Git-toplevel rooted
+  managed-run root, no workdir-registration prerequisite). Finalize requires the SAME
+  qualified record the reservation carries; a foreign record fails
+  (`CURATION_RECORD_MISMATCH`) without touching the other run's lease — `finish_run` is only
+  ever called on OUR reserved handle.
+- **Window semantics**: `--from` accepts exact UTC instants only (`--from >= U` rejected);
+  `--baseline` is the explicit zero-width first-run lower bound (empty window by design; prior
+  notes neither swept nor rejected). Exactly one lower bound is required, else typed
+  `CURATION_LOWER_BOUND_REQUIRED` (AC7). Legacy date-only `updated`/`created` certify the
+  whole UTC day: wholly inside `(L, U]` → snapshot with `uncertain: true` (review allowed);
+  wholly outside → skipped; boundary overlap → recorded `ambiguous`, excluded from review,
+  blocks full-scope advancement until a bounded disposition (AC8, no invented times). Missing
+  timestamp (no `updated`, no `created`) fails closed `CURATION_TIMESTAMP_UNKNOWN` — no
+  history sweep, no per-note database.
+- **Identities**: one consistent read per note — path (relative, reserved `index.md` excluded
+  via the existing enumeration pattern), raw `updated`, sha256 revision identity, candidate
+  flag, resources. Symlinked notes or parent components are rejected (bounded regular files,
+  no follow). Sorted candidate/live-resource first (review priority). No note bytes copied.
+- **Run metadata**: snapshot JSON lives under the reserved run's managed workspace
+  (`<run>/output/curation-snapshot.json`), written atomically after the reservation is
+  recorded; a lost snapshot fails finalize closed and releases the scope.
+- **Review schema** (documented in `skills/references/curation_routine.md`): a
+  `curation_review` frontmatter mapping in the EXISTING work record — `run_id` (must equal
+  the reserved run), `reviewer`, `notes: [{path, revision, disposition, reason?}]` with
+  disposition `reviewed | no-action | skipped` (`skipped` requires a reason). Finalize parses
+  it structurally: wrong `run_id`, missing/stale revision, extra non-prepared disposition, or
+  absent disposition each fail closed and release the reservation without advancing. An
+  explicit no-action across full scope is a successful advance to exactly `U`.
+- **Post-U drift**: revalidation flags only revisions whose current semantic instant is
+  `<= U`; a revision after `U` defers to the next window and does not block (AC2/AC3).
+- **Subset runs**: `--note` entries are normalized to bounded `notes/<relative>` paths; an
+  entry outside the window is rejected; subset runs validate identically but never advance
+  the checkpoint (AC4).
+- **Focused regression suites**: parent ran `tests.test_kosmic_curation_prepare` and
+  `tests.test_kosmic_curation_stages` after correcting the duplicate `work_record` test helper
+  argument and the CLI exception-namespace catch; 22 tests passed. The full project suite and
+  Standards/Spec reviews remain pending.
+- **Synthetic end-to-end smoke (2026-10-18)**: under the governed Story004 scratch run, the
+  actual CLI prepared only `notes/candidate.md` (`skill_candidate: true`) and
+  `notes/noncandidate.md` (`skill_candidate: false`) from a throwaway Project; both identities
+  had exact independent semantic no-action dispositions recorded by `Curate004Semantic` in
+  the synthetic Quick Task. Actual `curation-finalize` returned `advanced: true`,
+  `reviewed: 2`, `run_state: succeeded`, and checkpoint exactly
+  `2026-10-18T17:18:38.625567Z`. No real Project notes or Shared Skill Library material were
+  accessed; no nomination, proposal, publication, or installation was warranted.
+  The synthetic outer managed run also terminalized as `succeeded`.
 
 ## Assumptions & Verification
 
@@ -281,3 +351,5 @@ review handoff; promotion remains human-gated and review authority stays with th
 | 2026-10-18 | Created | Initial draft; depends on Story 002; no implementation |
 | 2026-10-18 | Approved | User approved this story as part of the full five-story set; awaiting implementation |
 | 2026-10-18 | Revised | Review corrections: prepare/finalize handoff with work-record authority; python3 script invocation; in-window-only resource review; no cutoff/dry-run flags |
+| 2026-10-18 | Started | Work start accepted at setup commit 22559de; implementation delegated |
+| 2026-10-18 | Implemented | Phase 1 research verified; deterministic stages + CLI wiring + consumer docs; parent reports 22 focused regressions pass; independent two-note synthetic no-action prepare/review/finalize smoke advanced exactly to frozen U; full suite and Standards/Spec reviews pending |
