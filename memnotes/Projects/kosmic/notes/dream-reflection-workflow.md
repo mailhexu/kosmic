@@ -3,7 +3,8 @@ type: Project Knowledge
 title: Dream Reflection workflow
 status: stable
 created: 2026-09-23
-updated: 2026-09-23
+updated: '2026-10-18T17:20:40.811131Z'
+skill_candidate: false
 audience: usage
 artifact_role: knowledge
 evidence: [evidence/2026-09-23-dream-reflection-release/MANIFEST.md]
@@ -35,7 +36,8 @@ kosmic_project_skills.py dream-abort     --vault {VAULT} --handle HANDLE --reaso
 - Records carry `generated_content_sha256`; a manually edited record requires
   `--replace` to overwrite, and whole-tree drift always requires a new harvest.
 - Dream never mutates anything outside `memnotes/dreams/`; skill candidates
-  stay in-record and enter governance only via Task 9 -> Task P.
+  stay in-record and enter governance only via Task 2 -> Task P — a nomination,
+  never automatic publication.
 
 ## Linked Concepts
 

@@ -291,7 +291,7 @@ Kosmic-owned scratch starts with the mandatory **Managed Run Before Scratch** st
 
 ## Incremental Curation
 
-The `curation-prepare` → semantic review → `curation-finalize` routine reviews only notes semantically changed since the last successful full-scope check (`L < updated <= U`, Story 002 metadata contract), records dispositions in the existing governing work record, and advances one per-scope checkpoint exactly to the frozen cutoff — no scheduler, queue, model call inside the CLI, or automatic promotion; nomination and publication keep the existing human gates. See `references/curation_routine.md`.
+The `curation-prepare` → semantic review → `curation-finalize` routine reviews only notes semantically changed since the scope's checkpoint (`L < updated <= U`, Story 002 metadata contract). Prepare coordinates entirely through the existing managed-run lease — no Project-side pointer or lock — and requires a first `--from`/`--baseline` bound only for a new scope (bounded notes-subtree scopes such as `notes/theory` and `notes/software` keep independent checkpoints). The reviewer records dispositions in the existing governing work record; only candidate-false, resource-empty notes may be deliberately skipped. Finalize alone — after the recorded independent review and full revalidation — publishes the per-scope checkpoint exactly to the frozen cutoff. No scheduler, queue, CLI model call, or automatic promotion; nomination and publication keep the existing human gates. See `references/curation_routine.md`.
 
 ## Spec Status Lifecycle
 

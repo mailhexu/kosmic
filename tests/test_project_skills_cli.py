@@ -740,7 +740,7 @@ class ProjectionCliTest(unittest.TestCase):
         self.assertIn("index.md frontmatter", result.stderr)
 
 class ExperienceCompilationTest(ProjectionCliTest):
-    """Stories 1-7: evidence layer, note linkage, impact ledger, completion gate."""
+    """Post-cutover projection hygiene: packs never surface inside the pair."""
 
     def make_pack(
         self,
@@ -768,265 +768,12 @@ class ExperienceCompilationTest(ProjectionCliTest):
         )
         return pack
 
-    def write_note_with_evidence(
-        self, project: Path, name: str, status: str, evidence: str
-    ) -> Path:
-        note = project / "notes" / f"{name}.md"
-        note.write_text(
-            "---\n"
-            "type: Project Knowledge\n"
-            f"status: {status}\n"
-            "audience: development\n"
-            f"evidence: {evidence}\n"
-            "---\n\n"
-            f"# {name}\n\nBody.\n",
-            encoding="utf-8",
-        )
-        return note
-
-    def write_work_item(
-        self, project: Path, extra_frontmatter: str = ""
-    ) -> Path:
-        item = project / "specs" / "stories" / "story-001-demo.md"
-        item.parent.mkdir(parents=True, exist_ok=True)
-        item.write_text(
-            "---\n"
-            "status: approved\n"
-            "consumer_interface_change: false\n"
-            f"{extra_frontmatter}"
-            "---\n\n# Story\n",
-            encoding="utf-8",
-        )
-        return item
-
-    def append_ledger(self, project: Path, text: str) -> Path:
-        ledger = project / "impact.md"
-        ledger.parent.mkdir(parents=True, exist_ok=True)
-        if not ledger.is_file():
-            ledger.write_text("# Impact Ledger\n\n", encoding="utf-8")
-        with ledger.open("a", encoding="utf-8") as handle:
-            handle.write(text)
-        return ledger
-
-    # Story 1: root-walk tolerance
-
-    def test_validate_and_generate_tolerate_evidence_layer(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, payload=("findings.md", "transcript.jsonl"))
-        self.append_ledger(
-            project,
-            "- date: 2026-09-02 | kind: publication | targets: [notes/using.md] | "
-            'refs: "null->abc" | outcome: published | reason: ""\n',
-        )
-        self.run_cli("generate", "--project", str(project))
-        self.run_cli("validate", "--project", str(project))
-
     def test_generate_output_contains_no_evidence(self) -> None:
         project = self.generate_ready_project()
-        self.make_pack(project)
         self.run_cli("generate", "--project", str(project))
         published = project / "skills"
         for path in published.rglob("*"):
             self.assertNotIn("evidence", path.relative_to(published).parts)
-
-    # Story 2: MANIFEST validation
-
-    def test_valid_packs_of_both_kinds_pass(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, "2026-09-02-run", kind="execution")
-        self.make_pack(project, "2026-09-02-paper", kind="research")
-        self.run_cli("validate", "--project", str(project))
-
-    def test_manifest_invalid_kind_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, manifest_frontmatter=(
-            "kind: experiment\nproduced_by: story-001\ndate: 2026-09-02\n"
-            'summary: "bad kind"'
-        ))
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("kind", result.stderr)
-
-    def test_manifest_missing_field_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, manifest_frontmatter=(
-            "kind: execution\ndate: 2026-09-02\nsummary: \"no producer\""
-        ))
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("produced_by", result.stderr)
-
-    def test_manifest_body_disk_mismatch_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(
-            project,
-            payload=("findings.md", "unlisted.md"),
-            manifest_body="- findings.md: the only listed file",
-        )
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("unlisted.md", result.stderr)
-
-    # Story 4: evidence frontmatter
-
-    def test_stable_note_resolvable_evidence_passes(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project)
-        self.write_note_with_evidence(
-            project, "linked", "stable", "[evidence/2026-09-02-demo/findings.md]"
-        )
-        self.run_cli("generate", "--project", str(project))
-        self.run_cli("validate", "--project", str(project))
-
-    def test_stable_note_dangling_evidence_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.write_note_with_evidence(
-            project, "dangling", "stable", "[evidence/2026-09-02-missing/findings.md]"
-        )
-        result = self.run_cli("generate", "--project", str(project), expected=2)
-        self.assertIn("evidence/2026-09-02-missing/findings.md", result.stderr)
-
-    def test_deprecated_note_does_not_satisfy_linkage(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, "2026-09-02-demo")
-        self.write_note_with_evidence(
-            project, "retired", "deprecated", "[evidence/2026-09-02-demo/findings.md]"
-        )
-        item = self.write_work_item(project, "evidence_packs: [2026-09-02-demo]\n")
-        result = self.run_cli(
-            "check-completion",
-            "--project",
-            str(project),
-            "--work-item",
-            str(item),
-            expected=2,
-        )
-        self.assertIn("2026-09-02-demo", result.stderr)
-
-    def test_draft_note_dangling_evidence_passes(self) -> None:
-        project = self.generate_ready_project()
-        self.write_note_with_evidence(
-            project, "pending", "draft", "[evidence/2026-09-02-missing/findings.md]"
-        )
-        self.run_cli("generate", "--project", str(project))
-
-    # Story 5: ledger validation
-
-    def test_valid_ledger_entries_pass(self) -> None:
-        project = self.generate_ready_project()
-        self.append_ledger(
-            project,
-            "- date: 2026-09-02 | kind: publication | targets: [notes/using.md] | "
-            'refs: "null->abc" | outcome: published | reason: ""\n'
-            "- date: 2026-09-02 | kind: decision | targets: [notes/old.md] | "
-            'refs: story-002 | outcome: rejected | reason: "contradicts finding"\n',
-        )
-        self.run_cli("validate", "--project", str(project))
-
-    def test_malformed_ledger_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.append_ledger(
-            project,
-            "- date: 2026-09-02 | kind: mutation | targets: [notes/using.md] | "
-            'refs: "null" | outcome: published | reason: ""\n',
-        )
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("kind", result.stderr)
-
-    def test_ledger_missing_field_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.append_ledger(
-            project,
-            "- date: 2026-09-02 | kind: decision | targets: [notes/old.md]\n",
-        )
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("impact.md", result.stderr)
-
-    # Story 6: generate appends publication entries
-
-    def test_generate_appends_publication_entry_with_hashes(self) -> None:
-        project = self.generate_ready_project()
-        ledger = project / "impact.md"
-        entries = lambda: [
-            line
-            for line in ledger.read_text(encoding="utf-8").splitlines()
-            if line.startswith("- ")
-        ]
-        first = entries()
-        self.assertEqual(2, len(first))  # notes/using.md + notes/developing.md
-        for line in first:
-            self.assertIn("kind: publication", line)
-            self.assertIn("outcome: published", line)
-            self.assertIn("null->", line)
-        note = project / "notes" / "using.md"
-        note.write_text(
-            "---\ntype: Project Knowledge\nstatus: stable\naudience: usage\n---\n\n"
-            "# Use Demo\n\nRun `demo` differently.\n",
-            encoding="utf-8",
-        )
-        self.run_cli("generate", "--project", str(project))
-        changed = [line for line in entries() if "notes/using.md" in line]
-        self.assertEqual(2, len(changed))
-        self.assertIn("->", changed[-1])
-        self.assertNotIn("null->", changed[-1])
-        self.assertEqual(
-            1, len([line for line in entries() if "notes/developing.md" in line])
-        )
-        self.run_cli("validate", "--project", str(project))
-
-    def test_generate_without_changes_appends_nothing(self) -> None:
-        project = self.generate_ready_project()
-        self.run_cli("generate", "--project", str(project))
-        ledger = project / "impact.md"
-        before = ledger.read_text(encoding="utf-8")
-        self.run_cli("generate", "--project", str(project))
-        self.assertEqual(before, ledger.read_text(encoding="utf-8"))
-
-    # Story 7: completion gate
-
-    def test_completion_gate_linked_draft_passes(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, "2026-09-02-demo")
-        self.write_note_with_evidence(
-            project, "distilled", "draft", "[evidence/2026-09-02-demo/findings.md]"
-        )
-        item = self.write_work_item(project, "evidence_packs: [2026-09-02-demo]\n")
-        self.run_cli(
-            "check-completion", "--project", str(project), "--work-item", str(item)
-        )
-
-    def test_completion_gate_unlinked_pack_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, "2026-09-02-demo")
-        item = self.write_work_item(project, "evidence_packs: [2026-09-02-demo]\n")
-        result = self.run_cli(
-            "check-completion",
-            "--project",
-            str(project),
-            "--work-item",
-            str(item),
-            expected=2,
-        )
-        self.assertIn("2026-09-02-demo", result.stderr)
-
-    def test_completion_gate_nonexistent_slug_fails(self) -> None:
-        project = self.generate_ready_project()
-        item = self.write_work_item(project, "evidence_packs: [2026-09-02-ghost]\n")
-        result = self.run_cli(
-            "check-completion",
-            "--project",
-            str(project),
-            "--work-item",
-            str(item),
-            expected=2,
-        )
-        self.assertIn("2026-09-02-ghost", result.stderr)
-
-    def test_completion_gate_absent_declaration_passes(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, "2026-09-02-orphan")
-        item = self.write_work_item(project)
-        self.run_cli(
-            "check-completion", "--project", str(project), "--work-item", str(item)
-        )
-
 
 class LinkRewriteTest(ProjectionCliTest):
     """Quick task: package-consistent link rewriting in projected references."""
@@ -1098,47 +845,7 @@ class LinkRewriteTest(ProjectionCliTest):
 
 
 class CodeProvenanceTest(ExperienceCompilationTest):
-    """Quick task: optional code provenance keys in evidence pack manifests."""
-
-    PROVENANCE_FM = (
-        "kind: execution\nproduced_by: story-001\ndate: 2026-09-02\n"
-        'summary: "provenance pack"\n'
-        "git_head: {hex_40}\n"
-        "worktree_tree: {tree}"
-    )
-
-    def test_manifest_valid_provenance_passes(self) -> None:
-        project = self.generate_ready_project()
-        hex_40 = "0123456789abcdef0123456789abcdef01234567"
-        self.make_pack(project, manifest_frontmatter=self.PROVENANCE_FM.format(
-            hex_40=hex_40, tree=hex_40
-        ))
-        self.make_pack(
-            project,
-            slug="2026-09-02-clean",
-            manifest_frontmatter=self.PROVENANCE_FM.format(
-                hex_40=hex_40, tree="clean"
-            ),
-        )
-        self.run_cli("validate", "--project", str(project))
-
-    def test_manifest_bad_provenance_hash_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, manifest_frontmatter=self.PROVENANCE_FM.format(
-            hex_40="0123456789abcdef0123456789abcdef01234567", tree="not-a-hash"
-        ))
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("worktree_tree", result.stderr)
-
-    def test_manifest_tree_without_head_fails(self) -> None:
-        project = self.generate_ready_project()
-        self.make_pack(project, manifest_frontmatter=(
-            "kind: execution\nproduced_by: story-001\ndate: 2026-09-02\n"
-            'summary: "partial provenance"\n'
-            "worktree_tree: 0123456789abcdef0123456789abcdef01234567"
-        ))
-        result = self.run_cli("validate", "--project", str(project), expected=2)
-        self.assertIn("git_head", result.stderr)
+    """Quick task: code provenance lines remain a read-only diagnostic."""
 
     def test_provenance_command_reports_clean_then_dirty(self) -> None:
         import subprocess
@@ -1761,35 +1468,6 @@ class MathDocsLayerTest(ExperienceCompilationTest):
 
 
 class SkillProposalTest(ExperienceCompilationTest):
-    def test_task_p_workflow_and_templates_are_shipped(self) -> None:
-        skill_root = REPO_ROOT / "skills"
-        task = (skill_root / "references" / "task_propose_skill.md").read_text(
-            encoding="utf-8"
-        )
-        template = (
-            skill_root / "references" / "templates" / "template-skill-proposal.md"
-        ).read_text(encoding="utf-8")
-        skill = (skill_root / "SKILL.md").read_text(encoding="utf-8")
-        self.assertIn("fresh-context", task)
-        self.assertIn("exactly one atomic result", task)
-        self.assertIn("Task P: Propose Skill Change", task)
-        self.assertIn("[task_propose_skill.md](references/task_propose_skill.md)", skill)
-        self.assertIn("target_sha256:", template)
-        self.assertIn("## Behavioral Validation", template)
-        distill = (skill_root / "references" / "task_distill.md").read_text(
-            encoding="utf-8"
-        )
-        story = (
-            skill_root / "references" / "templates" / "template-story.md"
-        ).read_text(encoding="utf-8")
-        quick = (
-            skill_root / "references" / "templates" / "template-quick-task.md"
-        ).read_text(encoding="utf-8")
-        self.assertIn("proposal_required: false", story)
-        self.assertIn("proposal_required: false", quick)
-        self.assertIn("artifact_role: procedure|guideline|knowledge|evidence", distill)
-        self.assertIn("Task P", distill)
-
     def write_proposal(
         self,
         project: Path,
@@ -1821,7 +1499,7 @@ class SkillProposalTest(ExperienceCompilationTest):
             "proposer_mode: same-agent\nproposer_ref: agent://test\n"
             'proposer_reason: \"Project-local test fixture\"\n'
             "input_manifest: [specs/skill-proposals/inputs/demo.md]\n"
-            "related_notes: [notes/index.md]\nevidence_packs: []\n"
+            "related_notes: [notes/index.md]\n"
             "behavioral_evidence: []\n"
             f"decision: {decision}\nfingerprint: {fingerprint}\nreconsiders: \"\"\n"
             f"{extra}---\n\n# Skill Proposal: Demo\n\n"
@@ -1886,7 +1564,7 @@ class SkillProposalTest(ExperienceCompilationTest):
             "proposer_mode: subagent\nproposer_ref: agent://test\n"
             "proposer_reason: \"Routine action fixture\"\n"
             f"input_manifest: [specs/skill-proposals/inputs/{action}.md]\n"
-            "related_notes: [notes/index.md]\nevidence_packs: []\n"
+            "related_notes: [notes/index.md]\n"
             "behavioral_evidence: []\ndecision: pending\nfingerprint: \"\"\nreconsiders: \"\"\n"
             "---\n\n# Skill Proposal: Routine\n\n"
             "## Problem\n\nRepeated mechanics.\n\n"
@@ -2447,51 +2125,5 @@ class SkillProposalTest(ExperienceCompilationTest):
             expected=2,
         )
         self.assertIn("OWNERSHIP_REQUIRED", result.stderr)
-
-    def test_cross_project_evidence_path_is_contained_and_changes_fingerprint(self) -> None:
-        project = self.make_project()
-        other = project.parent / "other"
-        self.make_pack(other, "2026-09-06-cross-project")
-        proposal = self.write_proposal(project)
-        cross = "Projects/other/evidence/2026-09-06-cross-project"
-        proposal.write_text(
-            proposal.read_text(encoding="utf-8").replace(
-                "evidence_packs: []", f"evidence_packs: [{cross}]"
-            ),
-            encoding="utf-8",
-        )
-        result = self.run_cli(
-            "validate-proposal", "--project", str(project), "--proposal", str(proposal)
-        )
-        self.assertIn("valid Skill Proposal", result.stdout)
-        body = proposal.read_text(encoding="utf-8")
-        without = proposal_fingerprint(
-            "create", "project-procedure", "demo-skill", "procedure",
-            ["notes/index.md"], [], body
-        )
-        with_cross = proposal_fingerprint(
-            "create",
-            "project-procedure",
-            "demo-skill",
-            "procedure",
-            ["notes/index.md"],
-            [cross],
-            body,
-        )
-        self.assertNotEqual(without, with_cross)
-        proposal.write_text(
-            body.replace(f"evidence_packs: [{cross}]", "evidence_packs: [../../escape]"),
-            encoding="utf-8",
-        )
-        invalid = self.run_cli(
-            "validate-proposal",
-            "--project",
-            str(project),
-            "--proposal",
-            str(proposal),
-            expected=2,
-        )
-        self.assertRegex(invalid.stderr, "escape|cross-project")
-
 if __name__ == "__main__":
     unittest.main()

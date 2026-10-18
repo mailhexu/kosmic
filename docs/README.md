@@ -44,15 +44,15 @@ For normal work, use this loop:
 2. **Plan** with a quick task or full spec depending on risk.
 3. **Implement** with tests/checks before code whenever possible.
 4. **Review** before marking work done.
-5. **Capture** durable knowledge as atomic notes.
+5. **Capture** a reusable finding in an existing or new atomic note when one emerged; keep dataset-only context beside its data.
 6. **Project** stable notes through the atomic Skill Pair and run the Consumer Interface completion gate when applicable.
 
 See [../skills/README.md](../skills/README.md) for the full task list.
 
 The [skill routing table](../skills/SKILL.md#tasks) selects the branch reference.
-Before preparing evidence or completing a Story/Quick Task, load
+Before recording observations or completing a Story/Quick Task, load
 [Receipt completion](../skills/references/work_completion.md): exact checklist
-syntax, contained artifact hashes, computed review revision, scope claims and
-successful terminal receipt define completion. Work in an isolated writer and
-integrate only baseline-checked owned deltas; installed skills have a separate
-publication/installation gate.
+coverage, record-embedded observations and independent review, computed review
+revision, scope claims and a successful record-byte-bound receipt define completion.
+Work in an isolated writer and integrate only baseline-checked owned deltas;
+installed skills have a separate publication/installation gate.

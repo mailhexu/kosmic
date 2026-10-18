@@ -6,17 +6,18 @@ Before durable note/log edits, use the current compatible governing record and d
 
 ## When to Use This Task
 
-**AUTO-TRIGGERS - Run Add Note IF:**
+Consider adding a note only when durable, reusable knowledge was found. No
+activity mandates a note. Examples of what *may* qualify, only if the knowledge
+is durable and reusable and not already represented:
 
-| If you... | Then add note for... |
-|-----------|---------------------|
-| Read source code | Algorithm/pattern learned |
-| Make a decision | Decision + rationale |
-| Fix a bug | Cause + solution |
-| Write docs | Core concepts |
-| Finish session | Session summary |
+- Reading source code: an algorithm or pattern reusable beyond this session.
+- Making a decision: the decision plus its rationale, reusable later.
+- Fixing a bug: a cause-and-solution insight reusable beyond this instance.
+- Writing docs: a core concept reusable by other readers.
 
-**Rule**: Capture only durable, reusable knowledge not already represented; session summaries and one-off activity belong in the log, not notes.
+The same activities often produce nothing reusable — then add no note. Capture
+session summaries and one-off activity in the log, not notes. Producing no new
+knowledge is a valid outcome; never manufacture a note to close a session.
 
 ## Step 1: Check Existing
 
@@ -28,7 +29,9 @@ grep -rni "{keywords}" "{VAULT}/Projects/{TARGET}/notes/" && grep -i "{keywords}
 ```
 
 - **Concept already covered** (any slug): update that note and `updated`; record trustworthy verification metadata when available. Choose `{TOPIC}` only when no existing note covers the concept.
-- **Exists & Conflict**: Append `## Conflict` section or create `{TOPIC}_conflict.md`
+- **Exists & Substance Conflict**: Evolve the existing note by substance, never
+  by appending a parallel section or creating a `{TOPIC}_conflict.md`
+  duplicate. See [Evolution](#evolution-of-existing-notes) below.
 - **Not covered**: Create new note
 
 ## Step 2: Check Notation
@@ -52,10 +55,11 @@ Before writing, check notation.md for existing variable definitions:
     type: Project Knowledge
     title: {Topic Title}
     description: {One-sentence description}
-    created: '{UTC_TIMESTAMP_OR_DATE}'
-    updated: '{UTC_TIMESTAMP_OR_DATE}'
-    skill_candidate: {true|false}
+    created: '{REAL_CURRENT_UTC_INSTANT}'
+    updated: '{REAL_CURRENT_UTC_INSTANT}'
+    skill_candidate: false
     skill_resources: []
+    artifact_role: knowledge
     project: {TARGET}
     status: draft
     audience: {development|usage|both}
@@ -106,11 +110,22 @@ bulk-rewrite legacy frontmatter.
 for reassessment, is a semantic change — bump `updated` with a real UTC
 instant so the note enters the next curation window. Syncing
 `skill_resources` after approved publication/removal, and any check- or
-bookkeeping-only write, never bumps `updated`.
+bookkeeping-only write, never bumps `updated`. Nominating a note toward
+skill material is optional: the separate curation routine
+(`references/curation_routine.md`) may nominate it between runs; nothing
+schedules this automatically, and candidacy never forces a proposal.
 
 **Timestamps**: `created`/`updated` take a real UTC instant
-(`YYYY-MM-DDTHH:MM:SS[.ffffff]Z`) or, for legacy values, a date
-(`YYYY-MM-DD`). Never invent or round a past instant.
+(`YYYY-MM-DDTHH:MM:SS[.ffffff]Z`). For a new note, both fields carry the same
+real current UTC instant captured at edit time; never write a date-only value
+in a fresh note and never invent or round a past instant. Date-only values are
+legacy input only: an existing note may keep its historical `YYYY-MM-DD`
+values, which read as valid without any rewrite.
+
+**Artifact role**: `artifact_role: knowledge` is the emitted baseline for a
+Project Knowledge note. Choose a different existing role only when the note
+actually fills that role, and then meet that role's requirements. No new role
+values are introduced.
 
 ### Principles
 
@@ -124,6 +139,60 @@ bookkeeping-only write, never bumps `updated`.
   - URL-encode spaces and preserve explicit heading fragments
   - Do not use Wikilinks, Obsidian embeds, or block references in Project Knowledge
   - Record reproducibility as ungated `sources:` links in the note body; an old `evidence: []` frontmatter value stays valid
+
+## Locality (ADR-A)
+
+Placement is audience-keyed, not path-keyed. Documentation that supports only
+one dataset — metadata, units, run settings, schemas, calibration, and
+single-dataset interpretation — stays embedded in or adjacent to that dataset
+in its native data repository, including a dataset living entirely outside the
+memnotes vault. No central pointer stub, per-dataset note, or registry entry is
+created or required for it, and no machine scanner classifies placement:
+misplacement is caught only by bounded human content review. An independently
+reusable insight demonstrated on a dataset — including a qualified negative or
+provisional result — is extracted into a concept-named note with precise
+source and reproducibility links; the native dataset is never flattened into
+Markdown, moved, or destroyed.
+
+## Evolution of Existing Notes
+
+When a note's substance is wrong, superseded, split, or duplicated, evolve the
+note itself. Never append a parallel `## Conflict` section, never create a
+`{TOPIC}_conflict.md` duplicate, and never introduce a redirect or alias note.
+
+- **Correct / retract**: state the supported current conclusion first; keep the
+  superseded interpretation prominently labeled below, never deleted. Preserve
+  the failure explanation, the differing settings and conditions that led to
+  the wrong reading, and any negative findings — they are content, not noise.
+- **Refine**: update the current takeaway in place and bump `updated` with the
+  real current UTC instant.
+- **Merge** (two notes, one concept): combine the content of both notes into
+  a substantively chosen surviving note so the result is one coherent
+  current-truth-first note in which
+  differing settings, uncertainty, and negative findings all survive. Repair
+  every incoming and `index.md` link to either old slug so it resolves to the
+  surviving note. One note survives; no redirect or alias file remains.
+- **Split** (one note, independently maintainable aspects): create
+  self-contained notes, each with its own frontmatter and links; replace the
+  duplicated content with cross-references; repair incoming and `index.md`
+  links.
+- **Deprecate**: set `status: deprecated` when the knowledge no longer holds.
+  Keep the note readable in place, and link to its successor note when one
+  exists. Never create a new alias or redirect-only note for it.
+- **Choosing a merge survivor**: pick the survivor by substantive concept
+  coherence — which existing note can hold the combined current truth,
+  conditions, and negative findings most coherently — never by older or newer
+  timestamp.
+
+**Timestamps and status are never a scientific verdict**: a newer `updated`,
+`created`, or a higher status never resolves a conflicting claim between two
+notes — only substantive content does. Do not "win" a conflict by stamping a
+newer timestamp or promoting status.
+
+**Gate**: promoting `draft` to `stable` (Step 6) requires substantive human
+review of the content; checks, formatting, and timestamps never substitute
+for it. Merge, split, and retraction edits need bounded substantive content
+review under the existing governing record — not an additional approval gate.
 
 ## Step 4: Update the OKF Index
 
@@ -150,7 +219,10 @@ change id when colocated.
 
 ## Step 6: Validate and Refresh the Skill Pair
 
-After review succeeds, change `status: draft` to `status: stable`. A newly detected stale fact remains `status: stable` with the real effective `stale_after: 'YYYY-MM-DD'`; deprecated knowledge uses `status: deprecated`. Never fabricate a stale date or `verified` actor.
+After a substantive human review of the content — a reviewer reading the note
+and judging its conclusions correct — change `status: draft` to `status:
+stable`. Passing checks, tests, or elapsed time never promote a note; only
+this explicit human substantive review does. A newly detected stale fact remains `status: stable` with the real effective `stale_after: 'YYYY-MM-DD'`; deprecated knowledge uses `status: deprecated`. Never fabricate a stale date or `verified` actor.
 
 Any change to a stable note's content, status, Audience Scope, or staleness can change a Skill Projection. Run `generate` and `validate` from `references/task_project_skills.md`. Both the authoritative `notes/` bundle and generated Skill Pair must pass; publication is atomic.
 
@@ -158,17 +230,20 @@ Reproducibility links are ungated `sources:` links in the note body (see the
 template). A stable note is never rejected for missing `evidence:` metadata;
 existing notes that carry `evidence:` values keep them valid, and the
 `validate` command still resolves those legacy paths. Evidence packs
-themselves are a legacy mechanism: no new pack, sidecar, or distillation is
-required for a note, and criterion-specific observations belong compactly in
-the existing work record.
+themselves are a retired mechanism (knowledge-first notes per
+`docs/adr/0004-knowledge-first-notes.md`): no new pack, sidecar, or
+distillation is required for a note, and criterion-specific observations
+belong compactly in the existing work record. Legacy `evidence:` values
+remain valid historical metadata; current commands neither require nor bless
+them.
 
-When creating an Evidence Pack, record the code state it was produced under:
-run the Projection CLI's `provenance` command in the source repo and paste its
-`git_head:` / `worktree_tree:` lines into the pack's `MANIFEST.md` frontmatter.
-`worktree_tree: clean` marks a clean checkout; a hash pins the exact dirty
-tree (tracked + untracked, ignoring `.gitignore`). In a jj-colocated repo,
-the current working-copy snapshot (`jj log -r @`) gives the same guarantee
-with a stable change id.
+Record the code state a note's conclusion was produced under when the
+conclusion depends on it: run the Projection CLI's `provenance` command in
+the source repo and cite its `git_head:` / `worktree_tree:` values in the
+note's source links. `worktree_tree: clean` marks a clean checkout; a hash
+pins the exact dirty tree (tracked + untracked, ignoring `.gitignore`). In a
+jj-colocated repo, the current working-copy snapshot (`jj log -r @`) gives
+the same guarantee with a stable change id.
 
 ## Step 7: Review
 

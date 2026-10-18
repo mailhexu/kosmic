@@ -15,12 +15,14 @@ from pathlib import Path
 try:
     from tests.scoped_completion_support import (
         ScopedProjectCase,
+        MATH_INDEX,
         commit_baseline,
         write_document,
     )
 except ImportError:  # direct test-directory execution
     from scoped_completion_support import (
         ScopedProjectCase,
+        MATH_INDEX,
         commit_baseline,
         write_document,
     )
@@ -28,7 +30,7 @@ except ImportError:  # direct test-directory execution
 import hashlib
 import json
 
-from skills.scripts import kosmic_completion, kosmic_work
+from skills.scripts import kosmic_completion, kosmic_project_skills, kosmic_work
 from skills.scripts.kosmic_dreams import receipt_name
 
 USAGE_BODY = "# Use Demo\n\nRun `demo`.\n"
@@ -274,36 +276,43 @@ class EmbeddedCompletionFinishTest(ScopedProjectCase):
         review.update(overrides)
         return review
 
-    def write_record(self, *, criteria=None, observations=None, review=None):
+    def write_record(self, *, criteria=None, observations=None, review=None,
+                     extra=None):
         criteria = list(criteria or (self.CRITERION,))
+        fields = {
+            "project_id": "scope-demo",
+            "subproject_id": None,
+            "record_kind": "quick-task",
+            "local_id": "fixture-task",
+            "status": "approved",
+            "consumer_interface_change": False,
+            "review_base": self.REVIEW_BASE,
+            "review_round": 1,
+            "completion_observations":
+                self.default_observations(*criteria) if observations is None else observations,
+            "completion_review": self.review_fields() if review is None else review,
+        }
+        if extra:
+            fields.update(extra)
         write_document(
             self.record_path,
-            {
-                "project_id": "scope-demo",
-                "subproject_id": None,
-                "record_kind": "quick-task",
-                "local_id": "fixture-task",
-                "status": "approved",
-                "consumer_interface_change": False,
-                "review_base": self.REVIEW_BASE,
-                "review_round": 1,
-                "completion_observations":
-                    self.default_observations(*criteria) if observations is None else observations,
-                "completion_review": self.review_fields() if review is None else review,
-            },
+            fields,
             "Fixture",
             "## Acceptance Criteria\n\n"
             + "".join(f"- [ ] {criterion}\n" for criterion in criteria))
 
-    def run_finish(self):
-        return self.run_cli(
+    def run_finish(self, *scope_claims: str):
+        claims = scope_claims or ("project:specs/",)
+        arguments = [
             "work", "finish",
             "--project", self.project,
             "--worktree", self.root,
             "--work-record", WORK_RECORD,
-            "--scope", "project:specs/",
-            "--detail", "embedded completion tracer",
-        )
+        ]
+        for claim in claims:
+            arguments.extend(["--scope", claim])
+        arguments.extend(["--detail", "embedded completion tracer"])
+        return self.run_cli(*arguments)
 
     def finish(self) -> subprocess.CompletedProcess:
         result = self.run_finish()
@@ -421,7 +430,151 @@ class EmbeddedCompletionFinishTest(ScopedProjectCase):
         self.assertEqual(receipt["status"], "successful")
 
     def test_reviewed_scope_must_cover_actual_work(self) -> None:
+        # The empty reviewed scope is legitimate only when there is no actual
+        # changed work; here the record edit itself is real uncovered work,
+        # so coverage must refuse even though finish claims would cover it.
         self.refusal(review=self.review_fields(scope=[]), code="REVIEW_INVALID")
+
+    def test_plain_done_entry_ignores_later_note_deprecation(self) -> None:
+        """Terminal invariance edge (03STD-03/03SPEC-2): a record that
+        DECLARES related_notes and finished with a valid receipt keeps
+        completing through the plain entry after a later note deprecation or
+        merge — no record byte mutation, direct terminal receipt still
+        valid. The pre-finish path still rejects stale/deprecated declared
+        notes (existing coverage)."""
+        self.note("linked.md")
+        commit_baseline(self.root, "declare linked knowledge note")
+        self.write_record(extra={"related_notes": ["notes/linked.md"]},
+                          review=self.review_fields())
+        pre = self.run_cli("check-completion", "--project", self.project,
+                           "--work-item", self.record_path)
+        self.assertEqual(
+            0,
+            pre.returncode,
+            msg=f"stdout:\n{pre.stdout}\nstderr:\n{pre.stderr}",
+        )
+        result = self.run_finish("project:specs/")
+        self.assertEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        record = kosmic_work.resolve_work_record(
+            self.project, WORK_RECORD, allow_terminal=True)
+        validated = kosmic_completion.check_terminal_receipt(
+            self.project, record)
+        self.assertEqual(validated["status"], "successful")
+        note = self.project / "notes/linked.md"
+        note.write_text(
+            "---\ntype: reference\nstatus: deprecated\naudience: both\n"
+            "artifact_role: knowledge\n---\n\n# Linked\n\nMerged elsewhere.\n",
+            encoding="utf-8")
+        record_bytes = self.record_path.read_bytes()
+        after = self.run_cli("check-completion", "--project", self.project,
+                             "--work-item", self.record_path)
+        self.assertEqual(
+            0,
+            after.returncode,
+            msg=f"stdout:\n{after.stdout}\nstderr:\n{after.stderr}",
+        )
+        self.assertEqual(self.record_path.read_bytes(), record_bytes)
+        still_valid = kosmic_completion.check_terminal_receipt(
+            self.project, record)
+        self.assertEqual(still_valid["status"], "successful")
+
+    def test_record_only_empty_reviewed_scope_finishes(self) -> None:
+        """Record-only work (everything committed, only canonical publication
+        outputs derived afterwards) with an empty reviewed scope must finish:
+        coverage is skipped because the computed changed path set is empty,
+        while the finish still requires its own scope claims."""
+        entry = self.project / "ProjectEntry.md"
+        entry.write_text(
+            "---\nproject_id: scope-demo\nworking_state: working-tree\n"
+            f"status_root: {self.root}\n---\n\n# Demo\n",
+            encoding="utf-8")
+        self.write_record(review=self.review_fields(scope=[]))
+        commit_baseline(self.root, "record-only completion state")
+        self.run_cli("generate-status", "--project", self.project,
+                     "--work-record", WORK_RECORD)
+        self.assertTrue((self.root / "STATUS.md").exists())
+        result = self.run_finish("project:specs/")
+        self.assertEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        receipt = json.loads(result.stdout)
+        self.assertEqual(receipt["status"], "successful")
+
+    def test_plain_check_refuses_broken_math_contract_after_receipt(self) -> None:
+        """A finished record with a valid receipt must still be refused by
+        the plain --work-item entry when the CURRENT math contract breaks
+        (source script bytes drift from the recorded derivation checksum):
+        the specific math gate fires on the plain entry while the direct
+        terminal receipt stays valid, and the completed record is never
+        edited."""
+        source = self.root / "src/behavior.txt"
+        source.parent.mkdir(parents=True)
+        source.write_text(
+            "# fixture behavior\n\nMathDoc: scope-demo/triple-output\n",
+            encoding="utf-8")
+        script = self.project / "mathdocs/triple-output.py"
+        script.parent.mkdir(parents=True, exist_ok=True)
+        script.write_text("def triple_output(value):\n    return 3 * value\n",
+                          encoding="utf-8")
+        results = kosmic_project_skills.render_math_results(
+            "scope-demo", "triple-output",
+            [kosmic_project_skills.MathResult(
+                name="verified_triple", latex="6", srepr="6")])
+        note = self.project / "mathdocs/triple-output.md"
+        note.write_text(
+            "---\ntype: Math Derivation\nderivation: triple-output.py\n"
+            "status: stable\nsource_sha256: "
+            + hashlib.sha256(script.read_bytes()).hexdigest()
+            + "\npython_version: 3.11\nsympy_version: 1.13\n"
+            "verified_at: 2026-10-18T00:00:00Z\nverified_host: fixture-host\n"
+            f"verified_directory: {self.project / 'mathdocs'}\n---\n\n"
+            "# Triple output derivation\n\n" + results,
+            encoding="utf-8")
+        index = self.project / "mathdocs/index.md"
+        index.write_text(MATH_INDEX
+                         + "| [triple-output](triple-output.md) | stable | "
+                         "Verified fixture derivation |\n", encoding="utf-8")
+        commit_baseline(self.root, "math contract baseline")
+        # Binding happens after every source file is in its reviewed state
+        # (the drift below happens strictly after the receipt).
+        self.write_record(
+            extra={
+                "derivations": ["triple-output"],
+                "math_implementation_files": ["src/behavior.txt"],
+            },
+            review=self.review_fields(
+                scope=["worktree:src/", "project:mathdocs/", "project:specs/"]))
+        self.run_cli("generate-status", "--project", self.project,
+                     "--work-record", WORK_RECORD)
+        result = self.run_finish(
+            "worktree:src/", "project:mathdocs/", "project:specs/")
+        self.assertEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        record = kosmic_work.resolve_work_record(
+            self.project, WORK_RECORD, allow_terminal=True)
+        validated = kosmic_completion.check_terminal_receipt(
+            self.project, record)
+        self.assertEqual(validated["status"], "successful")
+        record_bytes = self.record_path.read_bytes()
+        script.write_text("def triple_output(value):\n    return 4 * value\n",
+                          encoding="utf-8")
+        self.assertEqual(self.record_path.read_bytes(), record_bytes)
+        broken = self.run_cli(
+            "check-completion", "--project", self.project, "--work-item", self.record_path)
+        self.assertEqual(2, broken.returncode)
+        self.assertIn("source_sha256 does not match", broken.stderr)
+        still_valid = kosmic_completion.check_terminal_receipt(
+            self.project, record)
+        self.assertEqual(still_valid["status"], "successful")
 
     def test_broader_reviewed_scope_allows_narrow_finish_claims(self) -> None:
         review = self.review_fields(
@@ -436,6 +589,47 @@ class EmbeddedCompletionFinishTest(ScopedProjectCase):
             code="REVIEW_INVALID",
         )
         self.assertIn("reviewed revision differs", result.stderr)
+
+    def test_derived_status_before_finish_does_not_self_block(self) -> None:
+        """Plausible flow regression: a fresh ``generate-status`` under the
+        approved record leaves the derived STATUS.md dirty at the worktree
+        root, and finish with real source + record scope claims must not
+        self-block on that canonical publication output. Genuinely outside
+        work still refuses (out-of-scope boundary coverage)."""
+        entry = self.project / "ProjectEntry.md"
+        entry.write_text(
+            "---\nproject_id: scope-demo\nworking_state: working-tree\n"
+            f"status_root: {self.root}\n---\n\n# Demo\n",
+            encoding="utf-8")
+        commit_baseline(self.root, "bind STATUS root for derived reports")
+        source = self.root / "src/behavior.txt"
+        source.parent.mkdir(parents=True)
+        source.write_text("fixture behavior output: verified\n", encoding="utf-8")
+        # Real flow: reviewers see the actual dirty delta, so the review is
+        # embedded AFTER the source edit exists and binds the resulting
+        # revision.
+        self.write_record(review=self.review_fields(
+            scope=["worktree:src/", "project:specs/"]))
+        generated = self.run_cli("generate-status", "--project", self.project,
+                                 "--work-record", WORK_RECORD)
+        self.assertEqual(
+            0,
+            generated.returncode,
+            msg=f"stdout:\n{generated.stdout}\nstderr:\n{generated.stderr}",
+        )
+        self.assertTrue((self.root / "STATUS.md").exists())
+        result = self.run_finish("worktree:src/", "project:specs/")
+        self.assertEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        receipt = json.loads(result.stdout)
+        canonical = self.record_path.relative_to(self.project).as_posix()
+        record_sha256 = hashlib.sha256(self.record_path.read_bytes()).hexdigest()
+        self.assertEqual(receipt["status"], "successful")
+        self.assertEqual(receipt["record_path"], canonical)
+        self.assertEqual(receipt["proof"], {canonical: record_sha256})
 
     def test_receipt_survives_note_evolution_but_not_record_edit(self) -> None:
         json.loads(self.finish().stdout)

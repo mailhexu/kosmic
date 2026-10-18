@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "knowledge-first-notes-and-evidence-retirement"
-status: "approved"
+status: "in_progress"
 record_kind: "story"
 local_id: "004"
 created: 2026-10-18
@@ -12,8 +12,71 @@ linked_architecture: "../architecture.md"
 depends_on:
   - ../stories/story-002.md
 related_notes:
-  - ../../../../notes/note-writing-style.md
+  - notes/note-writing-style.md
 consumer_interface_change: true
+review_base: "22559de"
+review_round: 3
+completion_review:
+  reviewer: "OMP/Main"
+  axes:
+    standards:
+      reviewer: "OpenAI Codex"
+      decision: approved
+    spec:
+      reviewer: "OMP Story 004 independent code reviewer"
+      decision: changes_requested
+  decision: changes_requested
+  review_base: "22559de"
+  reviewed_revision: "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  binding_scope: "Canonical source_revision binds the clean uncommitted delta only; reviewed commits are retained against fixed base 22559de. The final 04SPEC-5 predicate fix still awaits human review closure."
+  scope: ["worktree:skills/scripts/kosmic_curation.py", "worktree:skills/scripts/kosmic_project_skills.py", "worktree:skills/references/curation_routine.md", "worktree:skills/README.md", "worktree:tests/test_kosmic_curation_prepare.py", "worktree:tests/test_kosmic_curation_stages.py", "project:subprojects/knowledge-first-notes-and-evidence-retirement/specs/stories/story-004.md"]
+  findings: [{"id":"04STD-001","disposition":"Blocking","status":"resolved","resolution":"Cursor selection and first-bound checks run inside the scope transaction."},{"id":"04STD-002","disposition":"Blocking","status":"resolved","resolution":"Native manifest identifies active leases independently of snapshot readability."},{"id":"04STD-003","disposition":"Blocking","status":"resolved","resolution":"Finalizing, partial and unresolvable native states fail closed."},{"id":"04STD-004","disposition":"Blocking","status":"resolved","resolution":"Failed snapshot publication closes its new run or keeps its unresolved lease busy."},{"id":"04STD-005","disposition":"Blocking","status":"resolved","resolution":"Note reads and enumeration use verified no-follow directory descriptors."},{"id":"04STD-006","disposition":"Blocking","status":"resolved","resolution":"Checkpoint parents and publication use no-follow descriptor-relative operations."},{"id":"04STD-007","disposition":"Blocking","status":"resolved","resolution":"Foreign and unopenable handles produce typed refusals before mutation."},{"id":"04STD-008","disposition":"Blocking","status":"resolved","resolution":"Synopsis makes first-run bounds optional after initialization."},{"id":"04STD-1","disposition":"Blocking","status":"resolved","resolution":"Prepare uses native scratch authority and writes no Project checkpoint."},{"id":"04SPEC-1","disposition":"Blocking","status":"resolved","resolution":"Checkpoint selection and first-bound validation occur inside the transaction."},{"id":"04SPEC-2","disposition":"Blocking","status":"resolved","resolution":"Candidate and live-resource notes cannot be deliberately skipped."},{"id":"04SPEC-3","disposition":"Blocking","status":"resolved","resolution":"Bounded subtree scopes retain independent selections and checkpoints."},{"id":"04SPEC-4","disposition":"Blocking","status":"resolved","resolution":"A concurrent finalize cannot be bypassed by a stale first-run baseline."},{"id":"04SPEC-5","disposition":"Blocking","status":"resolved","resolution":"Exact native purpose comparison isolates missing snapshots to their own scope; regression passes. Code fixed after Round 3; Spec approval and human closure remain pending."}]
+completion_observations:
+  - criterion: "AC1 — Window selection: given checkpoint `L` and frozen cutoff `U`, prepare records transient revision-identity metadata for **every** interval-eligible note in the memnotes `notes/` scope whose semantic instant satisfies `L < changed_at <= U` — including `skill_candidate: false` notes — with candidate-flagged and live-resource notes listed first for review priority. Values equal to `L` are excluded, values equal to `U` are included; the semantic instant is frontmatter `updated` (creation-date fallback only when never updated, real UTC precision, never filesystem mtime). The review agent may deliberately skip creation-time-false candidates inside the window, but every eligible identity must receive an explicit disposition; no note outside the window is semantically reviewed."
+    observation: "Bounds verified L-exclusive/U-inclusive with created-fallback and mtime independence; candidate-first ordering exercised; the real two-window smoke selected exactly the two eligible first-window notes (candidate flagged first) and only the genuine intervening note in the second window."
+    source: "test_window_bounds_follow_l_exclusive_u_inclusive; test_created_fallback_selects_never_updated_notes; test_filesystem_mtime_is_never_consulted; test_explicit_skip_with_reason_is_a_valid_disposition; test_second_full_prepare_uses_the_persisted_cursor; actual smoke (story004-fresh-backend run, U1 2026-10-18T18:19:22.869602Z)"
+  - criterion: "AC2 — Post-cutoff edits: a note saved after `U` is outside this run's snapshot and is reviewed on the next run; run metadata must not round such timestamps back into `[L, U]`."
+    observation: "A post-cutoff revision on a prepared note defers without blocking; a brand-new post-cutoff note is never selected and the checkpoint still advances to exactly U."
+    source: "test_post_cutoff_revision_defers_to_the_next_window; test_post_cutoff_note_defers_without_blocking_the_cursor"
+  - criterion: "AC3 — Checkpoint advance: finalize advances the shared per-scope checkpoint to exactly `U` only after (a) the referenced work record is the currently governing record in `approved` or `in_progress` status, (b) its recorded review outcomes — from an independent semantic review, never inferred from the collector's exit status — give every prepared eligible identity an explicit disposition (reviewed, deliberately skipped, or no-action), and (c) the prepared revision identities revalidate against current instants. An absent disposition, an unprocessed in-window revision (drift), a failed proposal creation, or a missing/invalid work record leaves the checkpoint unchanged. An explicit no-action outcome is a successful full-scope result and advances the checkpoint."
+    observation: "Missing/stale dispositions, in-window drift, and foreign records each leave the cursor unchanged; real no-action reviews advanced exactly to U1 then U2 in the smoke."
+    source: "test_missing_disposition_leaves_checkpoint_unchanged; test_stale_revision_disposition_is_rejected; test_in_window_revision_after_prepare_blocks_advancement; test_foreign_work_record_finalize_never_touches_the_lease; smoke finalizes (checkpoint 2026-10-18T18:19:22.869602Z then 2026-10-18T19:12:17.352055Z)"
+  - criterion: "AC4 — Targeted subset: a `--note` subset run uses the same window logic over that subset but never advances the full-scope checkpoint, whatever its outcome."
+    observation: "Subset runs validate identically and never advance; out-of-window subset entries are rejected typed."
+    source: "test_subset_run_never_advances_the_checkpoint; test_subset_entry_outside_window_is_rejected"
+  - criterion: "AC5 — Serialization: two runs over the same scope serialize (single writer via the run handle); the second observes the first's checkpoint outcome rather than racing it."
+    observation: "Active same-scope runs refuse busy; unresolved status/report states fail closed as busy without retiring the lease; terminal predecessors never block."
+    source: "test_second_prepare_observes_active_run_as_busy; test_unresolved_run_status_is_never_retired_by_guessing; test_unresolvable_abandon_keeps_the_scope_busy; test_terminal_predecessor_never_blocks_a_fresh_run; smoke busy rejection (rc 2)"
+  - criterion: "AC6 — Scope isolation: separate scopes keep independent checkpoints; a run over scope A neither reads nor advances scope B's checkpoint, and no note outside the declared scope's `notes/` tree (and never any external data store) is selected."
+    observation: "Bounded subtree scopes keep independent checkpoints (including Round-2 snapshot-loss cross-scope isolation); scope paths are component-verified against escape."
+    source: "test_scoped_subtrees_keep_independent_checkpoints; test_snapshot_loss_is_scoped_to_its_own_scope; test_scope_paths_are_bounded"
+  - criterion: "AC7 — First run: prepare without `--from`/`--baseline` fails with a typed diagnostic instead of inventing a prior checkpoint or sweeping all history."
+    observation: "Typed first-bound refusal before any selection; simultaneous --from and --baseline also refused (exactly one first bound)."
+    source: "test_unbounded_prepare_requires_the_typed_first_bound; test_simultaneous_bounds_are_rejected; smoke bound-less prepare only ran after a persisted cursor existed"
+  - criterion: "AC8 — Legacy date-only values: a date-only `updated`/`created` overlapping the boundary cannot establish an exact instant; the run records the ambiguity, excludes the note from semantic review this run, and blocks checkpoint advancement until a bounded disposition resolves it. No historical times are invented; no ambiguous note is silently dropped."
+    observation: "Wholly-inside legacy days are reviewed with recorded uncertainty; boundary-overlapping days block advancement typed."
+    source: "test_date_only_day_wholly_inside_is_reviewed_with_uncertainty; test_date_only_day_overlapping_boundary_blocks_advancement"
+  - criterion: "AC9 — Bookkeeping does not self-requeue: syncing `skill_resources` linkage or recording a check does not bump the note's semantic `updated`, so it does not re-enter the next window; setting `skill_candidate` false→true (or intentional reassessment) is a semantic change and does bump `updated` (Story 002 metadata contract)."
+    observation: "Story 002 validated readers are reused verbatim (never reimplemented); selection keys only on the `updated` frontmatter value, exercised by the drift/deferral pair."
+    source: "test_in_window_revision_after_prepare_blocks_advancement; test_post_cutoff_revision_defers_to_the_next_window"
+  - criterion: "AC10 — Selection vs review boundary: prepare may inspect scope-wide frontmatter to build the window, but semantic review covers only interval-eligible notes; a `skill_candidate: false` note outside the window is never promoted into review, and no out-of-window note is reviewed for any reason."
+    observation: "Dispositions covering non-prepared notes are rejected typed before any mutation."
+    source: "test_disposition_for_out_of_snapshot_note_is_rejected"
+  - criterion: "AC11 — Live-resource staleness: non-empty `skill_resources` notes are checked for stale guidance only when they themselves fall in `(L, U]`; source context links may be consulted to understand a selected note, but linked context is never fresh-reviewed as a candidate."
+    observation: "Live-resource notes participate only via their own window membership; enumeration never follows linked context."
+    source: "test_skipping_a_live_resource_note_is_structurally_invalid; scope enumeration is per-note window logic (_classify) with no link traversal"
+  - criterion: "AC12 — Nomination only: the review agent may nominate a candidate (existing proposal/review record concepts, as Dream's proposal flow does) but never auto-approves, publishes, installs, or triggers any model call from the CLI; no daily report artifact, durable candidate queue, evidence pack, or scheduler is introduced. An explicit no-action outcome requires neither a proposal nor extra paperwork."
+    observation: "No model/queue/scheduler/report code paths exist in the module; nominations are recorded dispositions only. A real bounded nomination exercise on copied published kosmic material (existing-topic update nomination over parallel create, no auto-publish) was executed under managed scratch — see Progress Log."
+    source: "static module read; AC14 nomination exercise (story004-ac14-nomination-demo run)"
+  - criterion: "AC13 — Source links retained: run metadata and the work record reference notes by existing paths plus snapshot revision identities; neither copies note or dataset bytes into sidecar artifacts."
+    observation: "Snapshot schema stores path/updated/revision (sha256 hexdigest)/skill_candidate/skill_resources only — identity field is the snapshot's `revision`; dispositions must quote it exactly."
+    source: "test_disposition_for_out_of_snapshot_note_is_rejected; test_stale_revision_disposition_is_rejected"
+  - criterion: "AC14 — Topic update preference: when review finds changed guidance affecting an existing skill topic, the nominated action is \"update the existing topic\" over creating a parallel one, and publication remains behind the existing human approval gate."
+    observation: "Real bounded exercise: copied published kosmic note (usage topic cli-projection-commands pair) semantically changed under managed scratch; fresh independent review read the selected note plus the copied topic context and nominated updating the existing topic over parallel creation; no auto-approve/publish/install occurred."
+    source: "story004-ac14-nomination-demo run; Curate004Semantic review recorded in the synthetic QC work record"
+  - criterion: "AC15 — Work-record authority: the work record referenced by `--work-record` — an existing Story/QuickTask record in `approved` or `in_progress` status under existing completion governance — authorizes the review stage's writes to itself, any note-frontmatter writes this routine performs, and the checkpoint advance; prepare mutates only managed scratch under the existing managed-run/scratch authority and carries the same `--work-record`. The deterministic CLI stages alone never mutate the checkpoint or the vault, and no metadata artifact is created beyond the managed-run scratch metadata and the existing work record."
+    observation: "Prepare creates no Project state (no .kosmic); foreign records are refused without touching another lease; the checkpoint appeared only at finalize and published exactly U1 then U2 through the verified component chain."
+    source: "test_prepare_writes_no_project_checkpoint; test_foreign_work_record_finalize_never_touches_the_lease; test_symlinked_checkpoint_dir_is_refused_without_external_touch; actual smoke checkpoints (U1 2026-10-18T18:19:22.869602Z, U2 2026-10-18T19:12:17.352055Z)"
 ---
 
 # Story 004: Incremental manual and scheduled curation routine
@@ -27,7 +90,7 @@ semantic review second, checkpoint finalization gated on an approved work record
 So that stale skill-material candidacy and in-use resource guidance are caught incrementally
 without rescanning all history, without any promotion automaton, and without new queues or reports.
 
-## Design shape (proposed, nothing implemented)
+## Approved design (implemented)
 
 One job invocation = three explicit stages; the Project CLI stages are deterministic and never
 invoke a model:
@@ -78,69 +141,36 @@ metadata artifact beyond the managed scratch metadata and the existing work reco
 
 ## Acceptance Criteria
 
-- [ ] AC1 — Window selection: given checkpoint `L` and frozen cutoff `U`, prepare records
-  transient revision-identity metadata for **every** interval-eligible note in the memnotes
-  `notes/` scope whose semantic instant satisfies `L < changed_at <= U` — including
-  `skill_candidate: false` notes — with candidate-flagged and live-resource notes listed first
-  for review priority. Values equal to `L` are excluded, values equal to `U` are included; the
-  semantic instant is frontmatter `updated` (creation-date fallback only when never updated,
-  real UTC precision, never filesystem mtime). The review agent may deliberately skip
-  creation-time-false candidates inside the window, but every eligible identity must receive an
-  explicit disposition; no note outside the window is semantically reviewed.
-- [ ] AC2 — Post-cutoff edits: a note saved after `U` is outside this run's snapshot and is
-  reviewed on the next run; run metadata must not round such timestamps back into `[L, U]`.
-- [ ] AC3 — Checkpoint advance: finalize advances the shared per-scope checkpoint to exactly
-  `U` only after (a) the referenced work record is the currently governing record in
-  `approved` or `in_progress` status, (b) its recorded review outcomes — from an independent
-  semantic review, never inferred from the collector's exit status — give every prepared
-  eligible identity an explicit disposition (reviewed, deliberately skipped, or no-action),
-  and (c) the prepared revision identities revalidate against current instants. An absent
-  disposition, an unprocessed in-window revision (drift), a failed proposal creation, or a
-  missing/invalid work record leaves the checkpoint unchanged. An explicit no-action outcome
-  is a successful full-scope result and advances the checkpoint.
-- [ ] AC4 — Targeted subset: a `--note` subset run uses the same window logic over that subset
-  but never advances the full-scope checkpoint, whatever its outcome.
-- [ ] AC5 — Serialization: two runs over the same scope serialize (single writer via the run
-  handle); the second observes the first's checkpoint outcome rather than racing it.
-- [ ] AC6 — Scope isolation: separate scopes keep independent checkpoints; a run over scope A
-  neither reads nor advances scope B's checkpoint, and no note outside the declared scope's
-  `notes/` tree (and never any external data store) is selected.
-- [ ] AC7 — First run: prepare without `--from`/`--baseline` fails with a typed diagnostic
-  instead of inventing a prior checkpoint or sweeping all history.
-- [ ] AC8 — Legacy date-only values: a date-only `updated`/`created` overlapping the boundary
-  cannot establish an exact instant; the run records the ambiguity, excludes the note from
-  semantic review this run, and blocks checkpoint advancement until a bounded disposition
-  resolves it. No historical times are invented; no ambiguous note is silently dropped.
-- [ ] AC9 — Bookkeeping does not self-requeue: syncing `skill_resources` linkage or recording a
-  check does not bump the note's semantic `updated`, so it does not re-enter the next window;
-  setting `skill_candidate` false→true (or intentional reassessment) is a semantic change and
-  does bump `updated` (Story 002 metadata contract).
-- [ ] AC10 — Selection vs review boundary: prepare may inspect scope-wide frontmatter to build
-  the window, but semantic review covers only interval-eligible notes; a
-  `skill_candidate: false` note outside the window is never promoted into review, and no
-  out-of-window note is reviewed for any reason.
-- [ ] AC11 — Live-resource staleness: non-empty `skill_resources` notes are checked for stale
-  guidance only when they themselves fall in `(L, U]`; source context links may be consulted to
-  understand a selected note, but linked context is never fresh-reviewed as a candidate.
-- [ ] AC12 — Nomination only: the review agent may nominate a candidate (existing
-  proposal/review record concepts, as Dream's proposal flow does) but never auto-approves,
-  publishes, installs, or triggers any model call from the CLI; no daily report artifact,
-  durable candidate queue, evidence pack, or scheduler is introduced. An explicit no-action
-  outcome requires neither a proposal nor extra paperwork.
-- [ ] AC13 — Source links retained: run metadata and the work record reference notes by existing
-  paths plus snapshot revision identities; neither copies note or dataset bytes into sidecar
-  artifacts.
-- [ ] AC14 — Topic update preference: when review finds changed guidance affecting an existing
-  skill topic, the nominated action is "update the existing topic" over creating a parallel one,
-  and publication remains behind the existing human approval gate.
-- [ ] AC15 — Work-record authority: the work record referenced by `--work-record` — an
-  existing Story/QuickTask record in `approved` or `in_progress` status under existing
-  completion governance — authorizes the review stage's writes to itself, any note-frontmatter
-  writes this routine performs, and the checkpoint advance; prepare mutates only managed
-  scratch under the existing managed-run/scratch authority and carries the same
-  `--work-record`. The deterministic CLI stages alone never mutate the checkpoint or the vault,
-  and no metadata artifact is created beyond the managed-run scratch metadata and the existing
-  work record.
+- [ ] AC1 — Window selection: given checkpoint `L` and frozen cutoff `U`, prepare records transient revision-identity metadata for **every** interval-eligible note in the memnotes `notes/` scope whose semantic instant satisfies `L < changed_at <= U` — including `skill_candidate: false` notes — with candidate-flagged and live-resource notes listed first for review priority. Values equal to `L` are excluded, values equal to `U` are included; the semantic instant is frontmatter `updated` (creation-date fallback only when never updated, real UTC precision, never filesystem mtime). The review agent may deliberately skip creation-time-false candidates inside the window, but every eligible identity must receive an explicit disposition; no note outside the window is semantically reviewed.
+- [ ] AC2 — Post-cutoff edits: a note saved after `U` is outside this run's snapshot and is reviewed on the next run; run metadata must not round such timestamps back into `[L, U]`.
+- [ ] AC3 — Checkpoint advance: finalize advances the shared per-scope checkpoint to exactly `U` only after (a) the referenced work record is the currently governing record in `approved` or `in_progress` status, (b) its recorded review outcomes — from an independent semantic review, never inferred from the collector's exit status — give every prepared eligible identity an explicit disposition (reviewed, deliberately skipped, or no-action), and (c) the prepared revision identities revalidate against current instants. An absent disposition, an unprocessed in-window revision (drift), a failed proposal creation, or a missing/invalid work record leaves the checkpoint unchanged. An explicit no-action outcome is a successful full-scope result and advances the checkpoint.
+- [ ] AC4 — Targeted subset: a `--note` subset run uses the same window logic over that subset but never advances the full-scope checkpoint, whatever its outcome.
+- [ ] AC5 — Serialization: two runs over the same scope serialize (single writer via the run handle); the second observes the first's checkpoint outcome rather than racing it.
+- [ ] AC6 — Scope isolation: separate scopes keep independent checkpoints; a run over scope A neither reads nor advances scope B's checkpoint, and no note outside the declared scope's `notes/` tree (and never any external data store) is selected.
+- [ ] AC7 — First run: prepare without `--from`/`--baseline` fails with a typed diagnostic instead of inventing a prior checkpoint or sweeping all history.
+- [ ] AC8 — Legacy date-only values: a date-only `updated`/`created` overlapping the boundary cannot establish an exact instant; the run records the ambiguity, excludes the note from semantic review this run, and blocks checkpoint advancement until a bounded disposition resolves it. No historical times are invented; no ambiguous note is silently dropped.
+- [ ] AC9 — Bookkeeping does not self-requeue: syncing `skill_resources` linkage or recording a check does not bump the note's semantic `updated`, so it does not re-enter the next window; setting `skill_candidate` false→true (or intentional reassessment) is a semantic change and does bump `updated` (Story 002 metadata contract).
+- [ ] AC10 — Selection vs review boundary: prepare may inspect scope-wide frontmatter to build the window, but semantic review covers only interval-eligible notes; a `skill_candidate: false` note outside the window is never promoted into review, and no out-of-window note is reviewed for any reason.
+- [ ] AC11 — Live-resource staleness: non-empty `skill_resources` notes are checked for stale guidance only when they themselves fall in `(L, U]`; source context links may be consulted to understand a selected note, but linked context is never fresh-reviewed as a candidate.
+- [ ] AC12 — Nomination only: the review agent may nominate a candidate (existing proposal/review record concepts, as Dream's proposal flow does) but never auto-approves, publishes, installs, or triggers any model call from the CLI; no daily report artifact, durable candidate queue, evidence pack, or scheduler is introduced. An explicit no-action outcome requires neither a proposal nor extra paperwork.
+- [ ] AC13 — Source links retained: run metadata and the work record reference notes by existing paths plus snapshot revision identities; neither copies note or dataset bytes into sidecar artifacts.
+- [ ] AC14 — Topic update preference: when review finds changed guidance affecting an existing skill topic, the nominated action is "update the existing topic" over creating a parallel one, and publication remains behind the existing human approval gate.
+- [ ] AC15 — Work-record authority: the work record referenced by `--work-record` — an existing Story/QuickTask record in `approved` or `in_progress` status under existing completion governance — authorizes the review stage's writes to itself, any note-frontmatter writes this routine performs, and the checkpoint advance; prepare mutates only managed scratch under the existing managed-run/scratch authority and carries the same `--work-record`. The deterministic CLI stages alone never mutate the checkpoint or the vault, and no metadata artifact is created beyond the managed-run scratch metadata and the existing work record.
+
+## Completion Observations
+
+Per-criterion observations live in the frontmatter `completion_observations` list; each
+`criterion` value quotes the normalized single-line Acceptance Criterion verbatim and carries
+only evidence actually exercised. Story status remains `in_progress` — these observations are
+not a completion claim; final Round-3 re-review and global integration are pending.
+
+Provenance of smoke timestamps: every frontmatter `updated` stamp in the synthetic smoke
+fixture (17:20/17:40 first window, 18:41 intervening) is a CONTROLLED SYNTHETIC STAMP chosen
+to place notes inside specific windows — none is a captured creation instant (note bytes were
+written at real run time, 19:12 for the intervening note). The smoke proves the window
+CONTRACT under controlled stamps; no real-capture claim is made. Review identity integrity:
+both finalize rounds validated the reviewer's transcribed revisions byte-exactly against the
+prepared snapshots before advancing.
 
 ## Dependencies
 
@@ -353,3 +383,5 @@ review handoff; promotion remains human-gated and review authority stays with th
 | 2026-10-18 | Revised | Review corrections: prepare/finalize handoff with work-record authority; python3 script invocation; in-window-only resource review; no cutoff/dry-run flags |
 | 2026-10-18 | Started | Work start accepted at setup commit 22559de; implementation delegated |
 | 2026-10-18 | Implemented | Phase 1 research verified; deterministic stages + CLI wiring + consumer docs; parent reports 22 focused regressions pass; independent two-note synthetic no-action prepare/review/finalize smoke advanced exactly to frozen U; full suite and Standards/Spec reviews pending |
+| 2026-10-18 | Verified | Parent 40/40 GREEN (story004-final-40-green.log) after Round-2 authority/race/concurrency fixes; Standards Round-3 approved code scope; Spec Round-3 changes_requested with sole 04SPEC-5 code-fixed awaiting human closure |
+| 2026-10-18 | Observed | Record metadata migrated (frontmatter completion_observations ×15 exact criteria, review_round 3, completion_review changes_requested, source_revision sha256 of kosmic_curation.py); real bounded AC14 nomination exercise under managed scratch: copied published kosmic pair cli-projection-commands byte-exact, baseline U0 2026-10-18T19:37:44.476493Z, genuine note change updated 2026-10-18T19:38:35Z, Curate004Semantic reviewed the selected revision and NOMINATED UPDATE EXISTING TOPIC kosmic/usage/cli-projection-commands (no parallel create, no auto-publish); finalize advanced exactly to U2 2026-10-18T19:38:35.561864Z with the nomination verbatim in the synthetic QC record — proposal production remains a separate follow-up gate |

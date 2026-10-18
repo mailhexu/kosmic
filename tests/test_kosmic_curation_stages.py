@@ -1,11 +1,11 @@
-"""Story 004 curation stage regressions: fixed-clock windows, serialization,
-review-record authority, coverage, and drift (API level with injected clocks).
+"""Story 004 curation stage regressions: persisted cursor, scoped subtrees,
+managed-run coordination, review coverage, and drift (fixed clock via the
+public ``now`` injection; the CLI passes real time and there is no production
+clock backdoor).
 
-These regressions exercise the public curation functions directly so the
-frozen cutoff can be pinned deterministically (``now`` injection is a test
-seam on the public function only — the CLI passes real time and there is no
-production clock backdoor). The consumer CLI behavior is covered separately
-in ``test_kosmic_curation_prepare.py``.
+Assertions are behavioral: coordination state lives in the EXISTING managed
+run lifecycle (never a project-side pointer), and the Project checkpoint
+appears only after a successful full-scope finalize.
 """
 
 from __future__ import annotations
@@ -19,9 +19,10 @@ from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 from skills.scripts.kosmic_curation import (
-    CURATION_SCOPES,
+    CURATION_ROOT_SCOPE,
     CurationError,
     finalize_curation,
+    normalize_scope,
     prepare_curation,
 )
 from skills.scripts.kosmic_project_skills import (
@@ -45,8 +46,6 @@ class CurationStageCase(unittest.TestCase):
         self.handles: list[str] = []
 
     def tearDown(self) -> None:
-        # Close any run this test left leased, through the public lifecycle,
-        # so the in-process holder releases before the fixture tree vanishes.
         from skills.scripts.kosmic_runs import finish_run
 
         for handle in self.handles:
@@ -101,13 +100,16 @@ class CurationStageCase(unittest.TestCase):
     def write_note(
         self,
         name: str,
-        updated: str,
+        updated: str | None,
         *,
         created: str | None = None,
         candidate: bool | None = None,
         resources: list[str] | None = None,
         body: str = "body",
     ) -> Path:
+        parts = [part for part in name.split("/") if part]
+        path = self.project.joinpath("notes", *parts)
+        path.parent.mkdir(parents=True, exist_ok=True)
         lines = ["---", "type: Project Knowledge", "status: stable"]
         if updated is not None:
             lines.append(f"updated: {updated}")
@@ -118,19 +120,19 @@ class CurationStageCase(unittest.TestCase):
         if resources:
             lines.append("skill_resources:")
             lines.extend(f"  - {item}" for item in resources)
-        lines.extend(["---", "", f"# {name[:-3]}", "", body, ""])
-        path = self.project / "notes" / name
+        title = parts[-1][:-3].replace("-", " ").title()
+        lines.extend(["---", "", f"# {title}", "", body, ""])
         path.write_text("\n".join(lines), encoding="utf-8")
         return path
 
     # -- helpers ---------------------------------------------------------
 
     @property
-    def from_text(self) -> str:
+    def first_bound(self) -> str:
         return _utc(self.now - timedelta(days=30))
 
     def prepare(self, **kwargs) -> dict:
-        arguments = {"scope": "notes", "from_instant": self.from_text, "now": self.now}
+        arguments = {"scope": CURATION_ROOT_SCOPE, "from_instant": self.first_bound, "now": self.now}
         arguments.update(kwargs)
         if "note" in arguments:
             arguments["subset"] = arguments.pop("note")
@@ -139,7 +141,11 @@ class CurationStageCase(unittest.TestCase):
         return payload
 
     def finalize(self, payload: dict, **kwargs) -> dict:
-        arguments = {"scope": "notes", "now": self.now, "work_record": RECORD_REF}
+        arguments = {
+            "scope": payload["scope"],
+            "now": self.now,
+            "work_record": RECORD_REF,
+        }
         arguments.update(kwargs)
         return finalize_curation(self.project, run=payload["handle_file"], **arguments)
 
@@ -166,10 +172,21 @@ class CurationStageCase(unittest.TestCase):
     def record_path(self) -> Path:
         return self.project / "specs" / "quick-tasks" / "2026-10-18-fixture-task.md"
 
-    def checkpoint(self) -> dict:
-        return json.loads(
-            (self.project / ".kosmic" / "curation" / "notes.json").read_text(encoding="utf-8")
-        )
+    def run_state(self, payload: dict) -> str:
+        from skills.scripts.kosmic_runs import run_live_status
+
+        return str(run_live_status(self.project, payload["run_id"])["state"])
+
+    def cursor(self, scope: str = CURATION_ROOT_SCOPE) -> str | None:
+        digest = None if scope == "notes" else __import__("hashlib").sha256(
+            scope.encode("utf-8")
+        ).hexdigest()[:16]
+        name = "notes.json" if digest is None else f"scope-{digest}.json"
+        path = self.project / ".kosmic" / "curation" / name
+        try:
+            return json.loads(path.read_text(encoding="utf-8"))["last_successful"]
+        except FileNotFoundError:
+            return None
 
     def assert_fails(self, callable_, code: str) -> None:
         try:
@@ -178,6 +195,40 @@ class CurationStageCase(unittest.TestCase):
             self.assertIn(code, str(caught))
         else:
             self.fail(f"expected CurationError {code}")
+
+    # -- cursor lifecycle (STD-004-1) --------------------------------------
+
+    def test_unbounded_prepare_requires_the_typed_first_bound(self) -> None:
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        self.assert_fails(
+            lambda: self.prepare(from_instant=None), "CURATION_LOWER_BOUND_REQUIRED"
+        )
+
+    def test_second_full_prepare_uses_the_persisted_cursor(self) -> None:
+        first = self.prepare(from_instant=self.first_bound)
+        self.record_review(first, self.review_entries(first))
+        self.finalize(first)
+        cursor = self.cursor()
+        self.assertEqual(cursor, first["window"]["until"])
+        self.now += timedelta(days=2)
+        self.write_note("intervening.md", _utc(self.now - timedelta(days=1)))
+        second = self.prepare(from_instant=None)
+        self.assertEqual(second["window"]["from"], cursor)
+        self.assertEqual(
+            ["notes/intervening.md"], [note["path"] for note in second["notes"]]
+        )
+        self.record_review(second, self.review_entries(second))
+        self.finalize(second)
+        self.assertEqual(self.cursor(), second["window"]["until"])
+        # A provided bound after initialization can never rewind or skip.
+        self.assert_fails(
+            lambda: self.prepare(from_instant=_utc(self.now - timedelta(days=40))),
+            "CURATION_CURSOR_INITIALIZED",
+        )
+        self.assert_fails(
+            lambda: self.prepare(baseline=True, from_instant=None),
+            "CURATION_CURSOR_INITIALIZED",
+        )
 
     # -- window semantics (fixed clock) -----------------------------------
 
@@ -189,8 +240,10 @@ class CurationStageCase(unittest.TestCase):
         self.write_note("inside.md", _utc(self.now - timedelta(days=1)))
         self.write_note("after-upper.md", _utc(upper + timedelta(microseconds=1)))
         payload = self.prepare()
-        selected = sorted(note["path"] for note in payload["notes"])
-        self.assertEqual(sorted(["notes/inside.md", "notes/at-upper.md"]), selected)
+        self.assertEqual(
+            sorted(["notes/at-upper.md", "notes/inside.md"]),
+            sorted(note["path"] for note in payload["notes"]),
+        )
         self.assertEqual(payload["window"]["until"], _utc(upper))
 
     def test_created_fallback_selects_never_updated_notes(self) -> None:
@@ -205,7 +258,7 @@ class CurationStageCase(unittest.TestCase):
             "never-updated-old.md", None, created=_utc(self.now - timedelta(days=60))
         )
         stamp = (self.now + timedelta(days=5)).timestamp()
-        os.utime(note, (stamp, stamp))  # fresh mtime outside the semantic instant
+        os.utime(note, (stamp, stamp))
         payload = self.prepare()
         self.assertEqual([], payload["notes"])
 
@@ -216,7 +269,7 @@ class CurationStageCase(unittest.TestCase):
     def test_date_only_day_wholly_inside_is_reviewed_with_uncertainty(self) -> None:
         self.write_note("legacy-inside.md", "2026-10-05")
         payload = self.prepare()
-        self.assertEqual(["notes/legacy-inside.md"], [n["path"] for n in payload["notes"]])
+        self.assertEqual(["notes/legacy-inside.md"], [note["path"] for note in payload["notes"]])
         self.assertIs(True, payload["notes"][0]["uncertain"])
 
     def test_date_only_day_overlapping_boundary_blocks_advancement(self) -> None:
@@ -227,6 +280,7 @@ class CurationStageCase(unittest.TestCase):
         self.assertEqual(1, len(payload["ambiguous"]))
         self.record_review(payload, [])
         self.assert_fails(lambda: self.finalize(payload), "CURATION_AMBIGUOUS_BOUNDARY")
+        self.assertIsNone(self.cursor())
 
     def test_baseline_window_is_empty_and_advances_on_explicit_review(self) -> None:
         self.write_note("older.md", _utc(self.now - timedelta(days=400)))
@@ -236,33 +290,79 @@ class CurationStageCase(unittest.TestCase):
         self.record_review(payload, [])
         result = self.finalize(payload)
         self.assertTrue(result["advanced"])
-        self.assertEqual(self.checkpoint()["last_successful"], payload["window"]["until"])
+        self.assertEqual(self.cursor(), payload["window"]["until"])
 
-    # -- serialization and stale reservations ------------------------------
+    # -- managed-run coordination (no project-side pointer) ------------------
+
+    def test_prepare_writes_no_project_checkpoint(self) -> None:
+        # AC15: prepare coordinates only through the managed run; the Project
+        # checkpoint appears only after a successful full-scope finalize.
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        self.assertIsNone(self.cursor())
+        self.assertFalse((self.project / ".kosmic" / "curation").exists())
+        self.record_review(payload, self.review_entries(payload))
+        self.finalize(payload)
+        self.assertIsNotNone(self.cursor())
 
     def test_second_prepare_observes_active_run_as_busy(self) -> None:
         self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
         first = self.prepare()
         self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
-        self.assertEqual(
-            first["run_id"], self.checkpoint()["active_run"]["run_id"]
-        )
+        self.assertEqual("active", self.run_state(first))
+        self.assertIsNone(self.cursor())
 
-    def test_terminal_predecessor_is_cleared_without_touching_checkpoint(self) -> None:
+    def test_unresolved_reservation_is_never_retired_by_guessing(self) -> None:
+        # STD-004-3: an unreadable live status must classify busy, never stale;
+        # the lease survives and the scope stays busy afterwards.
         from skills.scripts import kosmic_runs
 
         self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        real_status = kosmic_runs.run_live_status
+
+        def unresolved(worktree, run_id):
+            raise kosmic_runs.RunError("RUN_OPEN_FAILED", "fault injected")
+
+        try:
+            kosmic_runs.run_live_status = unresolved
+            self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+        finally:
+            kosmic_runs.run_live_status = real_status
+        self.assertEqual("active", self.run_state(payload))
+        self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+
+    def test_unresolvable_abandon_keeps_the_scope_busy(self) -> None:
+        # STD-004-2: a refused closure must not free the scope; checkpoint
+        # unchanged, native lease still serializing.
+        from skills.scripts import kosmic_runs
+
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        self.record_review(payload, [])
+        real_finish = kosmic_runs.finish_run
+
+        def refusing(handle_file, outcome, detail=""):
+            raise kosmic_runs.RunError("HOLDER_REFUSED", "fault injected")
+
+        try:
+            kosmic_runs.finish_run = refusing
+            self.assert_fails(lambda: self.finalize(payload), "CURATION_ABANDON_REFUSED")
+        finally:
+            kosmic_runs.finish_run = real_finish
+        self.assertIsNone(self.cursor())
+        self.assertEqual("active", self.run_state(payload))
+        self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+
+    def test_terminal_predecessor_never_blocks_a_fresh_run(self) -> None:
+        from skills.scripts.kosmic_runs import finish_run
+
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
         first = self.prepare()
-        kosmic_runs.finish_run(first["handle_file"], "failed", detail="abandoned review")
+        finish_run(first["handle_file"], "failed", detail="abandoned review")
         second = self.prepare()
         self.assertNotEqual(first["run_id"], second["run_id"])
-        self.assertIsNone(self.checkpoint()["last_successful"])
-
-    def test_unbounded_prepare_requires_the_typed_lower_bound(self) -> None:
-        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
-        self.assert_fails(
-            lambda: self.prepare(from_instant=None), "CURATION_LOWER_BOUND_REQUIRED"
-        )
+        self.assertIsNone(self.cursor())
 
     # -- work-record authority and review coverage --------------------------
 
@@ -274,8 +374,7 @@ class CurationStageCase(unittest.TestCase):
         with self.assertRaises(WorkdirError) as caught:
             self.finalize(payload, work_record=f"{PROJECT_ID}/quick-task/other")
         self.assertIn("RECORD_INVALID", str(caught.exception))
-        # The legitimate lease survived the foreign attempt untouched.
-        self.assertEqual(payload["run_id"], self.checkpoint()["active_run"]["run_id"])
+        self.assertEqual("active", self.run_state(payload))
         self.record_review(payload, self.review_entries(payload))
         result = self.finalize(payload)
         self.assertTrue(result["advanced"])
@@ -285,8 +384,8 @@ class CurationStageCase(unittest.TestCase):
         payload = self.prepare()
         self.record_review(payload, [])
         self.assert_fails(lambda: self.finalize(payload), "CURATION_REVIEW_INCOMPLETE")
-        self.assertIsNone(self.checkpoint()["last_successful"])
-        self.assertIsNone(self.checkpoint()["active_run"])
+        self.assertIsNone(self.cursor())
+        self.assertIn(self.run_state(payload), ("failed", "succeeded"))
 
     def test_stale_revision_disposition_is_rejected(self) -> None:
         self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
@@ -296,7 +395,7 @@ class CurationStageCase(unittest.TestCase):
         )
         self.record_review(payload, entries)
         self.assert_fails(lambda: self.finalize(payload), "CURATION_REVIEW_STALE")
-        self.assertIsNone(self.checkpoint()["last_successful"])
+        self.assertIsNone(self.cursor())
 
     def test_disposition_for_out_of_snapshot_note_is_rejected(self) -> None:
         self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
@@ -305,9 +404,44 @@ class CurationStageCase(unittest.TestCase):
             {"path": "notes/outside.md", "revision": "1", "disposition": "reviewed"}
         ]
         self.record_review(payload, entries)
-        self.assert_fails(
-            lambda: self.finalize(payload), "CURATION_REVIEW_OUTSIDE_SNAPSHOT"
+        self.assert_fails(lambda: self.finalize(payload), "CURATION_REVIEW_OUTSIDE_SNAPSHOT")
+
+    def test_skipping_a_candidate_note_is_structurally_invalid(self) -> None:
+        # SPEC-004-2: only candidate-false, resource-empty notes may skip.
+        self.write_note(
+            "flagged.md", _utc(self.now - timedelta(days=3)), candidate=True
         )
+        payload = self.prepare()
+        entries = [
+            {
+                "path": "notes/flagged.md",
+                "revision": payload["notes"][0]["revision"],
+                "disposition": "skipped",
+                "reason": "arbitrary",
+            }
+        ]
+        self.record_review(payload, entries)
+        self.assert_fails(lambda: self.finalize(payload), "CURATION_REVIEW_INVALID")
+        self.assertIsNone(self.cursor())
+
+    def test_skipping_a_live_resource_note_is_structurally_invalid(self) -> None:
+        self.write_note(
+            "wired.md",
+            _utc(self.now - timedelta(days=3)),
+            candidate=False,
+            resources=["kosmic-usage"],
+        )
+        payload = self.prepare()
+        entries = [
+            {
+                "path": "notes/wired.md",
+                "revision": payload["notes"][0]["revision"],
+                "disposition": "skipped",
+                "reason": "arbitrary",
+            }
+        ]
+        self.record_review(payload, entries)
+        self.assert_fails(lambda: self.finalize(payload), "CURATION_REVIEW_INVALID")
 
     def test_skipped_without_reason_is_structurally_invalid(self) -> None:
         self.write_note(
@@ -344,7 +478,7 @@ class CurationStageCase(unittest.TestCase):
         result = self.finalize(payload)
         self.assertTrue(result["advanced"])
 
-    # -- drift and post-cutoff revisions -------------------------------------
+    # -- drift, evolution, and post-cutoff revisions -------------------------
 
     def test_in_window_revision_after_prepare_blocks_advancement(self) -> None:
         note = self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
@@ -355,7 +489,7 @@ class CurationStageCase(unittest.TestCase):
         )
         self.record_review(payload, self.review_entries(payload))
         self.assert_fails(lambda: self.finalize(payload), "CURATION_DRIFT")
-        self.assertIsNone(self.checkpoint()["last_successful"])
+        self.assertIsNone(self.cursor())
 
     def test_post_cutoff_revision_defers_to_the_next_window(self) -> None:
         note = self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
@@ -368,7 +502,29 @@ class CurationStageCase(unittest.TestCase):
         self.record_review(payload, self.review_entries(payload))
         result = self.finalize(payload)
         self.assertTrue(result["advanced"])
-        self.assertEqual(self.checkpoint()["last_successful"], payload["window"]["until"])
+        self.assertEqual(self.cursor(), payload["window"]["until"])
+
+    def test_note_newly_eligible_after_prepare_blocks_the_cursor(self) -> None:
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        self.write_note("late.md", _utc(self.now - timedelta(days=1)))
+        self.record_review(payload, self.review_entries(payload))
+        self.assert_fails(lambda: self.finalize(payload), "CURATION_WINDOW_EVOLVED")
+        self.assertIsNone(self.cursor())
+        second = self.prepare()
+        self.assertEqual(
+            sorted(["notes/inside.md", "notes/late.md"]),
+            sorted(note["path"] for note in second["notes"]),
+        )
+
+    def test_post_cutoff_note_defers_without_blocking_the_cursor(self) -> None:
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        self.write_note("later.md", _utc(self.now + timedelta(days=1)))
+        self.record_review(payload, self.review_entries(payload))
+        result = self.finalize(payload)
+        self.assertTrue(result["advanced"])
+        self.assertEqual(self.cursor(), payload["window"]["until"])
 
     # -- subset and scope isolation -------------------------------------------
 
@@ -381,8 +537,7 @@ class CurationStageCase(unittest.TestCase):
         self.record_review(payload, self.review_entries(payload))
         result = self.finalize(payload)
         self.assertFalse(result["advanced"])
-        self.assertIsNone(self.checkpoint()["last_successful"])
-        self.assertIsNone(self.checkpoint()["active_run"])
+        self.assertIsNone(self.cursor())
 
     def test_subset_entry_outside_window_is_rejected(self) -> None:
         self.write_note("first.md", _utc(self.now - timedelta(days=3)))
@@ -392,14 +547,211 @@ class CurationStageCase(unittest.TestCase):
             "CURATION_NOTE_OUT_OF_WINDOW",
         )
 
-    def test_scopes_keep_independent_checkpoints(self) -> None:
-        self.assertEqual(("notes",), CURATION_SCOPES)
+    def test_scoped_subtrees_keep_independent_checkpoints(self) -> None:
+        # SPEC-004-3 / AC6: real second-scope consumer example. The root
+        # scope stays recursive; the subtree scope never leaks into it.
+        self.assertEqual("notes", normalize_scope("notes"))
+        self.assertEqual("notes/theory", normalize_scope("theory"))
+        self.write_note("theory/topic.md", _utc(self.now - timedelta(days=3)))
+        self.write_note("root-note.md", _utc(self.now - timedelta(days=3)))
+        theory = self.prepare(scope="notes/theory")
+        self.assertEqual(["notes/theory/topic.md"], [note["path"] for note in theory["notes"]])
+        self.record_review(theory, self.review_entries(theory))
+        self.finalize(theory)
+        self.assertIsNotNone(self.cursor("notes/theory"))
+        self.assertIsNone(self.cursor("notes"))
+        root = self.prepare()  # root cursor still uninitialized: bound applies
+        self.assertEqual(
+            ["notes/root-note.md", "notes/theory/topic.md"],
+            sorted(note["path"] for note in root["notes"]),
+        )
+        self.record_review(root, self.review_entries(root))
+        self.finalize(root)
+        self.assertIsNotNone(self.cursor("notes"))
+        self.assert_fails(
+            lambda: self.prepare(scope="notes/theory", from_instant=self.first_bound),
+            "CURATION_CURSOR_INITIALIZED",
+        )
+
+    def test_scope_paths_are_bounded(self) -> None:
+        for bad in ("/etc", "../escape", "notes/../secrets", "notes/", "notes/.."):
+            with self.subTest(scope=bad):
+                self.assert_fails(
+                    lambda bound=bad: self.prepare(scope=bound), "CURATION_SCOPE_INVALID"
+                )
+
+    # -- Round 2: transaction-entry cursor, honest busy, bounded walks ------
+
+    def test_concurrent_finalize_at_transaction_entry_rejects_baseline(self) -> None:
+        # 04STD-001/04SPEC-4: the checkpoint read and window derivation must
+        # happen INSIDE the run-root transaction. The concurrent finalize is
+        # injected AT TRANSACTION ENTRY (before this prepare's original
+        # acquisition): it runs the REAL finalize to completion, then this
+        # prepare reads the cursor INSIDE the transaction — baseline must be
+        # refused as cursor-initialized, never treated as a stale first run.
+        import skills.scripts.kosmic_curation as curation_module
+
+        self.write_note("first.md", _utc(self.now - timedelta(days=3)))
+        first = self.prepare()
+        # Legitimate consumer state: run1's recorded review must exist before
+        # the injected concurrent finalize can legitimately publish.
+        self.record_review(first, self.review_entries(first))
+        # The clock moves on after U1; the genuine intervening note then lies
+        # inside (U1, U2], never in the first window.
+        self.now += timedelta(days=2)
+        self.write_note("intervening.md", _utc(self.now - timedelta(days=1)))
+        original_transaction = curation_module._scope_transaction
+        state = {"raced": False}
+
+        def racing_transaction(worktree):
+            if not state["raced"]:
+                state["raced"] = True
+                # The concurrent finalize enters the ORIGINAL transaction
+                # (guard set) and completes before this prepare proceeds.
+                result = self.finalize(first)
+                self.assertTrue(result["advanced"])
+            return original_transaction(worktree)
+
+        try:
+            curation_module._scope_transaction = racing_transaction
+            self.assert_fails(
+                lambda: self.prepare(baseline=True, from_instant=None),
+                "CURATION_CURSOR_INITIALIZED",
+            )
+        finally:
+            curation_module._scope_transaction = original_transaction
+        # The concurrent cursor won: a bound-less prepare starts exactly at
+        # U1 and selects the intervening note; history is never skipped.
+        second = self.prepare(from_instant=None)
+        self.assertEqual(first["window"]["until"], second["window"]["from"])
+        self.assertEqual(
+            ["notes/intervening.md"], [note["path"] for note in second["notes"]]
+        )
+
+    def test_simultaneous_bounds_are_rejected(self) -> None:
+        # Exactly one FIRST bound: --from AND --baseline together is refused
+        # instead of silently preferring baseline.
+        self.assert_fails(
+            lambda: self.prepare(from_instant=self.first_bound, baseline=True),
+            "CURATION_LOWER_BOUND_REQUIRED",
+        )
+
+    def test_active_run_with_unreadable_snapshot_is_busy(self) -> None:
+        # 04STD-002/04SPEC-5: a relevant active run whose snapshot is missing
+        # (crash between begin and publish) must block as busy — identified
+        # via the native RUN manifest, never skipped, never killed.
         self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
         payload = self.prepare()
-        self.record_review(payload, self.review_entries(payload))
-        self.finalize(payload)
-        self.assertIsNotNone(self.checkpoint()["last_successful"])
-        self.assertTrue((self.project / ".kosmic" / "curation" / "notes.lock").exists())
+        Path(payload["snapshot_file"]).unlink()
+        self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+        self.assertEqual("active", self.run_state(payload))
+
+    def test_snapshot_loss_is_scoped_to_its_own_scope(self) -> None:
+        # 04SPEC-5: a lost snapshot holds ONLY its own scope; the native
+        # purpose names the exact scope, so sibling scopes proceed and the
+        # damaged scope itself stays busy.
+        self.write_note("theory/topic.md", _utc(self.now - timedelta(days=3)))
+        self.write_note("software/lib.md", _utc(self.now - timedelta(days=3)))
+        theory = self.prepare(scope="notes/theory")
+        Path(theory["snapshot_file"]).unlink()
+        software = self.prepare(scope="notes/software")
+        self.assertEqual(
+            ["notes/software/lib.md"], [note["path"] for note in software["notes"]]
+        )
+        self.record_review(software, self.review_entries(software))
+        result = self.finalize(software)
+        self.assertTrue(result["advanced"])
+        self.assert_fails(lambda: self.prepare(scope="notes/theory"), "CURATION_BUSY")
+
+    def test_finalizing_manifest_state_is_busy(self) -> None:
+        # Native "finalizing" is non-terminal (the holder still owns it).
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        manifest = Path(payload["snapshot_file"]).parent.parent / "RUN.json"
+        data = json.loads(manifest.read_text(encoding="utf-8"))
+        data["state"] = "finalizing"
+        manifest.write_text(json.dumps(data), encoding="utf-8")
+        self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+
+    def test_partial_run_report_cannot_prove_absence(self) -> None:
+        # A report that errors (or carries unresolved run entries) cannot
+        # prove no relevant run is active: fail closed as busy.
+        from skills.scripts import kosmic_runs
+
+        self.write_note("inside.md", _utc(self.now - timedelta(days=3)))
+        payload = self.prepare()
+        real_report = kosmic_runs.report_runs
+
+        def truncated(worktree, action="status", run_id=None):
+            raise kosmic_runs.RunError("STATUS_TRUNCATED", "fault injected")
+
+        try:
+            kosmic_runs.report_runs = truncated
+            self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+        finally:
+            kosmic_runs.report_runs = real_report
+        # A malformed runs/ entry likewise cannot prove absence.
+        from skills.scripts.kosmic_runs import RunEntry, RunReport
+
+        def malformed(worktree, action="status", run_id=None):
+            return RunReport(
+                entries=(
+                    RunEntry(None, "malformed", None, Path("runs") / "broken", 0, None, "fault"),
+                ),
+                counts={},
+                total_bytes=0,
+                selected_bytes=0,
+                action="status",
+                code="PARTIAL",
+            )
+
+        try:
+            kosmic_runs.report_runs = malformed
+            self.assert_fails(lambda: self.prepare(), "CURATION_BUSY")
+        finally:
+            kosmic_runs.report_runs = real_report
+        self.assertEqual("active", self.run_state(payload))
+
+    def test_symlinked_scope_component_is_refused(self) -> None:
+        # 04STD-005: intermediate scope components are walked with O_NOFOLLOW
+        # BEFORE enumeration; a symlinked component never resolves outside.
+        external = self.root / "outside" / "deep"
+        external.mkdir(parents=True, exist_ok=True)
+        (external / "planted.md").write_text("external", encoding="utf-8")
+        notes = self.project / "notes"
+        (notes / "mid").symlink_to(external.parent, target_is_directory=True)
+        self.assert_fails(
+            lambda: self.prepare(scope="notes/mid/deep"), "CURATION_SCOPE_INVALID"
+        )
+
+    def test_symlinked_checkpoint_dir_is_refused_without_external_touch(self) -> None:
+        # 04STD-006: the whole .kosmic/curation path is verified component by
+        # component; a symlinked directory is refused, never followed.
+        real_dir = self.root / "outside-checkpoint"
+        real_dir.mkdir(parents=True, exist_ok=True)
+        link = self.project / ".kosmic" / "curation"
+        link.parent.mkdir(parents=True, exist_ok=True)
+        link.symlink_to(real_dir, target_is_directory=True)
+        self.assert_fails(
+            lambda: self.prepare(from_instant=self.first_bound),
+            "CURATION_CHECKPOINT_INVALID",
+        )
+        self.assertEqual([], list(real_dir.iterdir()))
+
+    def test_foreign_or_unopenable_run_is_typed_not_a_traceback(self) -> None:
+        # 04STD-007: a handle naming an unopenable/foreign run surfaces as a
+        # typed CurationError before any mutation; native errors are caught
+        # at that boundary only.
+        fake = self.project / ".kosmic" / "foreign-handle.json"
+        fake.parent.mkdir(parents=True, exist_ok=True)
+        fake.write_text(
+            json.dumps({"kind": "handle", "run_id": "20261018T999999Z-foreign-" + "0" * 32}),
+            encoding="utf-8",
+        )
+        payload = {"handle_file": str(fake), "scope": "notes"}
+        self.assert_fails(
+            lambda: self.finalize(payload), "CURATION_RUN_MISMATCH"
+        )
 
 
 if __name__ == "__main__":  # pragma: no cover

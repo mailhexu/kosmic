@@ -5,6 +5,7 @@ audience: development
 confidence: high
 derivations: [mathdocs/atomic-publication-state.py]
 evidence: [evidence/2026-09-05-math-derivation-layer-impl/session-record.md]
+skill_resources: [kosmic/development/atomic-skill-publication]
 ---
 
 # Atomic Skill Publication

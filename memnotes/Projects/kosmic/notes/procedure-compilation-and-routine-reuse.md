@@ -4,7 +4,8 @@ title: Procedure Compilation and Routine Reuse
 description: Classify procedure mechanics, reuse canonical deterministic Python routines, and keep judgment in reviewed skill prose.
 confidence: 0.9
 created: '2026-09-07'
-updated: '2026-09-07'
+updated: '2026-10-18T17:20:40.811131Z'
+skill_candidate: true
 validation_procedure: "python3 -m unittest tests.test_kosmic_routines tests.test_shared_library tests.test_project_skills_cli"
 project: kosmic
 status: stable
@@ -20,7 +21,7 @@ evidence: [evidence/2026-09-07-procedure-compilation/session-record.md, evidence
 
 ## When to use
 
-A Story, Quick Task, or Task 9 distillation introduces or materially changes repeatable procedure mechanics.
+A Story or Quick Task introduces or materially changes repeatable procedure mechanics.
 
 ## Preconditions
 
@@ -51,6 +52,5 @@ Fail closed on dynamic declarations, duplicate IDs, missing modules or symbols, 
 ## References
 
 - `skills/scripts/kosmic_routines.py`
-- `skills/references/task_distill.md`
 - `skills/references/task_propose_skill.md`
 - [Shared Domain Skill Library](./shared-domain-skill-library.md)

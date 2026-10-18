@@ -20,8 +20,8 @@ routine_proposals: []
 # math_implementation_files: [relative/source/path.py]
 review_base: ""
 review_round: 0
-acceptance_evidence: []
-review_record: ""
+completion_observations: []
+completion_review: {}
 ---
 
 # Quick Task: {Title}

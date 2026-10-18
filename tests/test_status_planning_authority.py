@@ -113,9 +113,8 @@ def _write_story(
     completion = ""
     if receipted:
         completion = (
-            f"acceptance_evidence: [evidence/story-{local_id}.json]\n"
-            f"review_record: evidence/story-{local_id}-review.json\n"
             "review_base: 0b29a99\n"
+            "review_round: 1\n"
         )
     if chained:
         completion += (
@@ -135,36 +134,41 @@ def _write_story(
 
 
 def _write_successful_receipt(project_root: Path, qualified: str, relative: str) -> None:
-    """Fixture a real successful receipt for one done record (ADR-E data)."""
+    """Fixture a real successful receipt for one done record (ADR-E data).
+
+    Story 003 record-embedded schema: the observations and the two-axis
+    review live in the completed record itself and the receipt binds exactly
+    ``{record_path: record_sha256}``. The ``fixture-*`` identities are
+    synthetic test fixtures, not claims about real reviewers — the same
+    convention as tests/test_record_scoped_completion.py.
+    """
     record = kosmic_work.SpecCatalog(project_root).resolve(qualified)
-    # acceptance/review artifacts the proof validator hashes; schemas
-    # are the validator's own constants so the receipt stays truthful
-    stem = Path(relative).stem
-    _write(
-        project_root / "evidence" / (stem + ".json"),
-        json.dumps({
-            "schema": 'kosmic.acceptance-evidence/1',
-            "identity": qualified,
-            "record_path": relative,
-            "results": [
-                {"criterion": "recorded behavior holds", "outcome": "passed"},
-            ],
-        }, indent=2),
+    # source_revision excludes the record's own bytes, so embedding it does
+    # not change the revision it binds
+    revision = kosmic_completion.source_revision(
+        project_root.parents[2], project_root, record)
+    document = record.path.read_text(encoding="utf-8")
+    head, separator, rest = document.partition("\n---\n")
+    embedded = (
+        "completion_observations:\n"
+        "- criterion: recorded behavior holds\n"
+        "  observation: Fixture receipt traces the record's own acceptance checkbox through the real render.\n"
+        "  source: tests/test_status_planning_authority.py fixture receipt.\n"
+        "completion_review:\n"
+        "  reviewer: fixture-reviewer\n"
+        "  axes:\n"
+        "    standards: {reviewer: fixture-standards-reviewer, decision: approved}\n"
+        "    spec: {reviewer: fixture-spec-reviewer, decision: approved}\n"
+        "  decision: approved\n"
+        "  review_base: 0b29a99\n"
+        "  review_round: 1\n"
+        f"  reviewed_revision: \"{revision}\"\n"
+        "  findings: []\n"
+        "  scope: []\n"
     )
-    _write(
-        project_root / "evidence" / (stem + "-review.json"),
-        json.dumps({
-            "schema": 'kosmic.work-review/1',
-            "identity": qualified,
-            "record_path": relative,
-            "review_base": "0b29a99",
-            "round": 1,
-            "standards": {"decision": "approved", "reviewer": "fixture-reviewer"},
-            "spec": {"decision": "approved", "reviewer": "fixture-reviewer"},
-            "decision": "approved",
-            "findings": [],
-        }, indent=2),
-    )
+    record.path.write_text(head + "\n" + embedded + separator + rest,
+                           encoding="utf-8")
+    record = kosmic_work.SpecCatalog(project_root).resolve(qualified)
     proof = kosmic_completion.validate_completion_proof(project_root, record)
     receipt = {
         "schema": "kosmic.work-receipt/1",
@@ -247,6 +251,9 @@ class StatusPlanningAuthorityTest(unittest.TestCase):
         project_root.mkdir(parents=True)
         _write_notes(project_root)
         status_root = worktree / "status"
+        self._worktree = worktree
+        self._status_root = status_root
+        self._before_tree: dict[str, str] = {}
         if root_exists:
             status_root.mkdir()
         if bound:
@@ -259,6 +266,8 @@ class StatusPlanningAuthorityTest(unittest.TestCase):
 
     def refresh(self, project_root: Path, work_record: str,
                 expected: int = 0) -> subprocess.CompletedProcess[str]:
+        self._before_tree = tree_digest(
+            self._worktree, self._status_root / "STATUS.md")
         return self.run_cli(
             "generate-status",
             "--project", str(project_root),
@@ -269,11 +278,10 @@ class StatusPlanningAuthorityTest(unittest.TestCase):
     def assert_refreshed(self, worktree: Path, project_root: Path,
                          status_root: Path) -> str:
         target = status_root / "STATUS.md"
-        before = tree_digest(worktree, target)
         text = target.read_text(encoding="utf-8")
         self.assertNotIn("stale hand edit", text)
         self.assertFalse(status_drift(load_project(project_root)))
-        self.assertEqual(before, tree_digest(worktree, target))
+        self.assertEqual(self._before_tree, tree_digest(worktree, target))
         return text
 
     def row(self, text: str, needle: str) -> str:
@@ -347,6 +355,39 @@ class StatusPlanningAuthorityTest(unittest.TestCase):
                 self.assertIn("bound to subproject sub", result.stderr)
             self.assertEqual(before, tree_digest(worktree, target))
             self.assertIn("stale hand edit", target.read_text(encoding="utf-8"))
+
+    def test_malformed_planning_parent_chain_denied_at_seam(self) -> None:
+        """A planning record whose declared parent chain does not resolve to
+        an owner-local ancestor (foreign linked_prd) is refused by the
+        generate-status authorization itself with WORK_PHASE_DENIED, rather
+        than passing the seam and failing only inside the Project-wide render
+        validation — and nothing is written."""
+        with self.sandbox() as (worktree, project_root, status_root):
+            _write_subproject(project_root, "sub", prd_status="draft")
+            _write_subproject(project_root, "other", prd_status="approved")
+            _write(
+                project_root / "subprojects" / "sub" / "specs" / "architecture.md",
+                "---\nproject_id: foo\nsubproject_id: sub\nrecord_kind: architecture\n"
+                "local_id: architecture\nlinked_prd: foo/other/prd/prd\nstatus: draft\n"
+                "updated: " + TODAY + "\n---\n\n# sub Architecture\n\nBody.\n",
+            )
+            target = status_root / "STATUS.md"
+            result = self.refresh(project_root, "foo/sub/architecture/architecture",
+                                  expected=2)
+            self.assertIn("WORK_PHASE_DENIED", result.stderr)
+            self.assertIn("ANCESTRY_INVALID", result.stderr)
+            self.assertEqual(self._before_tree, tree_digest(worktree, target))
+            self.assertIn("stale hand edit", target.read_text(encoding="utf-8"))
+
+    def test_draft_planning_ancestry_needs_no_approved_parents(self) -> None:
+        """Planning authority imposes no approved status on planning parents:
+        a draft Architecture over a resolving draft owner-local PRD still
+        refreshes the bound derived output."""
+        with self.sandbox() as (worktree, project_root, status_root):
+            _write_subproject(project_root, "sub", prd_status="draft",
+                              architecture_status="draft")
+            self.refresh(project_root, "foo/sub/architecture/architecture")
+            self.assert_refreshed(worktree, project_root, status_root)
 
     def test_planning_refresh_requires_bound_status_root(self) -> None:
         """AC5: without a bound status root the refresh refuses and planning

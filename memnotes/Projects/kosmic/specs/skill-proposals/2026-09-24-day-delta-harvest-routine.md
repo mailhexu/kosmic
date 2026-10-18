@@ -17,7 +17,6 @@ proposer_ref: "agent://DayDeltaProposer"
 proposer_reason: "Fresh-context Task P assessment from the hash-pinned curated manifest only: three dream records establish repetition; collect_harvest's helpers form a typed, deterministic union with byte-pinned outputs, so shared-routine create is justified"
 input_manifest: ["specs/skill-proposals/inputs/day-delta-harvest.md"]
 related_notes: ["notes/dream-reflection-workflow.md"]
-evidence_packs: ["2026-09-23-dream-reflection-release"]
 behavioral_evidence: ["evidence/2026-09-23-dream-reflection-release/dogfood-results.json"]
 decision: "pending"
 fingerprint: ""
@@ -84,9 +83,11 @@ are shared. No overlap: routine inventory holds only
 Candidate paths: [pending_tests/kosmic/2026-09-24-day-delta-harvest/candidate]
 Scenario: harvest the same vault/date before and after extraction; invariant:
 canonical JSON bytes byte-identical, 42 dream tests pass; baseline =
-pre-extraction `kosmic_dreams.py`, candidate = routine-backed collector;
-evidence pack recorded at acceptance under
-`evidence/2026-09-24-day-delta-harvest/`.
+pre-extraction `kosmic_dreams.py`, candidate = routine-backed collector.
+Recorded behavioral results live in the pinned
+`evidence/2026-09-23-dream-reflection-release/dogfood-results.json`
+(historical, byte-pinned); completion records observations inside the work
+record itself (Story 005 — no acceptance evidence pack is created).
 
 ## Scope
 
@@ -97,3 +98,9 @@ evidence pack recorded at acceptance under
 
 - Routine edge adds inventory governance; extraction must not alter canonical
   JSON bytes (pinned by tests).
+
+## Historical Source Context
+
+Authored under the retired evidence-pack input mechanism (Story 005): the
+draft originally declared `evidence_packs: ["2026-09-23-dream-reflection-release"]`;
+that pack reference is retained here as historical source context only.

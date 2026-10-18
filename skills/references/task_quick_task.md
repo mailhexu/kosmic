@@ -65,7 +65,7 @@ Use `references/templates/template-quick-task.md`.
    - For `true`, list the current stable Consumer knowledge in `related_notes`.
    - Pin `review_base` before implementation and set `review_round: 0`; do not move the baseline during re-review.
    - Declare `routine_edge_change: true` whenever the task adds or changes a procedure's `uses_routines` edge; this requires `routine_decision_required: true`. Declare `routine_decision_required: true` when the task introduces or materially changes reusable deterministic mechanics; list one governed Task P artifact per unique proposal path in `routine_proposals`. Otherwise keep both fields false and the list empty.
-   - When the work produces raw experience worth keeping (review findings, test runs, debug transcripts), capture it as an Evidence Pack (`evidence/{YYYY-MM-DD}-{slug}/` with `MANIFEST.md`), declare the slug in `evidence_packs:`, and distill it with Task 9 before completion — `check-completion` enforces the linkage.
+   - When the work yields durable reusable knowledge (root cause, convention, decision, correction), capture it atomically with Task 2: Add Note; dataset-specific observations stay embedded or adjacent to their data, and task-specific review stays in this record. No pack, sidecar, or forced note is produced — a session with no reusable finding manufactures no note.
 
 3. **Approval gate**
    - If the user already explicitly asked to implement the change, set `Status: approved` and proceed.
@@ -84,8 +84,8 @@ Use `references/templates/template-quick-task.md`.
    - Preserve unrelated work: never commit, stash, discard, or rebase changes you did not make. If the target worktree is dirty with unrelated changes, commit/stash only with the user's work preserved, or select another worktree via `work start`. Raw editors/shell are agent compliance, not OS enforcement.
 
 6. **Verify and review**
-   - Exercise the actual path and focused checks. Record criterion-specific observations/artifact hashes in declared `acceptance_evidence`; exit success alone is not proof.
-   - Run Task 7's independent Standards/Spec review against the pinned base. Preserve its stable finding ledger, actual decision and reviewed revision in `review_record` as described in `task_project_skills.md`. Never manufacture approvals.
+   - Exercise the actual path and focused checks. Record each criterion's observation and source as an entry in the record's `completion_observations` list; exit success alone is not proof.
+   - Run Task 7's independent Standards/Spec review against the pinned base. Preserve its stable finding ledger, actual decision and reviewed revision in the record's `completion_review` mapping as described in `work_completion.md`. Never manufacture approvals.
    - Re-review preserves finding IDs; accept only resolved blockers or explicit recorded human acceptance. Consumer knowledge/projection gates still apply.
 
 7. **Complete**

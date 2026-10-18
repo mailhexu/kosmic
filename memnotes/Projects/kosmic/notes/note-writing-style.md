@@ -3,9 +3,11 @@ type: Project Knowledge
 title: Note writing style
 status: stable
 created: 2026-09-24
-updated: 2026-10-18
+updated: '2026-10-18T17:42:47.416663Z'
 audience: both
 artifact_role: guideline
+skill_candidate: false
+skill_resources: []
 ---
 
 # Note writing style
@@ -42,7 +44,7 @@ can understand without session context.
 
 ## Not STE-compatible
 
-Version-control history, log entries, and Evidence Packs stay in their own
+Version-control history, log entries, and work records stay in their own
 registers; these rules bind `notes/*.md` and `mathdocs/*.md` prose.
 
 ## Note format
@@ -53,6 +55,51 @@ uncertainty, supporting links, and reproducibility links. Connect the note to
 related concepts and to `notes/index.md`. A note has no length cap. A note
 has no confidence score. Use the ungated `sources:` links for
 reproducibility; an old `evidence: []` frontmatter value stays valid.
+
+## Lifecycle
+
+Evolve an existing note by substance. Do not append a parallel conflict
+section. Do not create a duplicate conflict note. Do not create redirect or
+alias notes.
+
+- Correct or retract: state the supported current conclusion first. Keep the
+  superseded interpretation below, clearly labeled. Keep the failure
+  explanation, the settings and conditions that produced it, and any negative
+  findings.
+- Merge two notes about one concept into one current-truth-first note.
+  Choose the surviving note substantively. Differing settings, uncertainty,
+  and negative findings all survive. Repair
+  every incoming and `index.md` link to the surviving note. One file remains.
+- Split a note with independently maintainable aspects into self-contained
+  notes. Each result has its own frontmatter and links. Replace duplicated
+  content with cross-references. Repair incoming and `index.md` links.
+- Deprecate knowledge that no longer holds: set `status: deprecated`, keep the
+  note readable in place, and link to its successor note when one exists. Do
+  not create an alias or redirect-only note.
+- Choose a merge survivor by substantive concept coherence — which note can
+  hold the combined current truth, conditions, and negative findings most
+  coherently — never by older or newer timestamp.
+
+A newer `updated` or a higher status never resolves a conflicting claim.
+Only substantive content resolves a claim. Promoting `draft` to `stable`
+requires a substantive human review of the content; checks, formatting, and
+timestamps never substitute for that review. Merge, split, and retraction
+edits need bounded substantive content review under the existing governing
+record — not an additional approval gate.
+
+## Locality
+
+Placement is audience-keyed, not path-keyed. Documentation that supports only
+one dataset — metadata, units, run settings, schemas, calibration, and
+single-dataset interpretation — stays embedded in or adjacent to that dataset
+in its native data repository, including a dataset living entirely outside the
+memnotes vault. No central pointer stub, per-dataset note, or registry entry
+is created or required for it. No machine scanner classifies placement;
+misplacement is caught only by bounded human content review. An independently
+reusable insight demonstrated on a dataset — including a qualified negative or
+provisional result — becomes a concept-named note with precise source and
+reproducibility links. The native dataset is never flattened into Markdown,
+moved, or destroyed.
 
 ## Curation metadata
 

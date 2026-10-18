@@ -9,13 +9,13 @@
       "audience": "usage",
       "path": "notes/cli-projection-commands.md",
       "reference": "references/cli-projection-commands.md",
-      "sha256": "64b09116ae8984418ca43b8ccf8bf77f5c2f902d4a502212be4e784de2d63344"
+      "sha256": "457c086686948f175a7cf2ab385325a76cb7719944cc1c747ae7534e879a0823"
     },
     {
       "audience": "usage",
       "path": "notes/dream-reflection-workflow.md",
       "reference": "references/dream-reflection-workflow.md",
-      "sha256": "4b43a51352fc158879e264305e79135667956723819b6dac1636b53a276ab37d"
+      "sha256": "2a302540d94fc9f89c810b408e13417f50520ea24a6a578f2acd327bce9c6f6a"
     },
     {
       "audience": "usage",
@@ -27,13 +27,13 @@
       "audience": "both",
       "path": "notes/notation.md",
       "reference": "references/notation.md",
-      "sha256": "5a78bf94b39c0712b9c1e8a853d1835485018782f4c28204f22f624ebeb2eae3"
+      "sha256": "4fb34b0f4e677b63bcccd46a2f3d0eb0990c84338d2ac244fdbc2a5b471a724e"
     },
     {
       "audience": "both",
       "path": "notes/note-writing-style.md",
       "reference": "references/note-writing-style.md",
-      "sha256": "dbe7345fc895aa1081e2f34863a9f70b8ffa7be1f91f6471196246bbbc12ec88"
+      "sha256": "6a96a03461d6e6a9f196b85b46a3ea7ee22730260413f58daa8e117ca1a1b444"
     },
     {
       "audience": "usage",
@@ -45,7 +45,7 @@
       "audience": "usage",
       "path": "notes/shared-domain-skill-library.md",
       "reference": "references/shared-domain-skill-library.md",
-      "sha256": "f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940"
+      "sha256": "9ce1f5d0d7334d945b57561e8d8e9266e55aa893ae30496e100abfdd6e98dbdc"
     }
   ],
   "working_state": "working-tree"

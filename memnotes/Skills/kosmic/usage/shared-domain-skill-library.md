@@ -9,13 +9,14 @@ triggers: [shared skill library, resolve library, install shared router, cross-p
 aliases: [memnotes skills, domain skill]
 evidence: [evidence/2026-09-06-shared-domain-skill-library/session-record.md, evidence/2026-09-06-shared-domain-skill-library/review-findings.md]
 source_project: kosmic
-source_sha256: f510ad15f2eac794baf95c3a96448834d35c11e29e2972e8445b84159e4bc940
+source_sha256: 9ce1f5d0d7334d945b57561e8d8e9266e55aa893ae30496e100abfdd6e98dbdc
 artifact_role: knowledge
 requires_procedures: []
 governed_by: []
 uses_knowledge: []
 supported_by: []
 supersedes: []
+source: notes/shared-domain-skill-library.md
 ---
 
 # Shared Domain Skill Library
@@ -36,3 +37,9 @@ Kosmic keeps reusable software procedures in one authoritative vault-level `Skil
 - Migration requires one explicit assignment for every old projected reference, preserves source hash, source Project, audience, and Evidence, stages generated artifacts, then swaps the complete library atomically.
 - `install-library` installs and verifies one router before removing managed per-Project pairs. Unmanaged collisions and failures preserve the prior complete inventory.
 - On-disk adapter verification is not runtime activation. Start a fresh session and inspect native skill inventory before claiming discovery.
+
+## Source-linked topics (FR-010)
+
+The existing `generate-library` flow, run under the Project's own approved work record, syncs each note's `skill_resources` to stable topic IDs that actually use it; that sync is bookkeeping and never bumps the note's semantic `updated`. From the note's final bytes it rederives the current topic body, the full raw source-byte hash for every linked topic, and the affected current Project pair and library manifests; current topics persist `source: notes/…` stable identities so a pair-first regeneration never loses the mapping. Failures restore the prior metadata and publications. Direct source-backed topic IDs are the current existing model — a source link, not a hash wish list — and nothing scans all vault data. Historical curated snapshots and old work-record pins stay untouched, there is no per-note queue and no new report, and the flow never auto-approves or installs anything.
+
+Reconciliation changes only IDs owned by the current or prior publication; unrelated actual-use IDs survive. A source note must permit its topic's audience (`both` permits Usage and Development); incompatible remapping fails closed. Retain the prior library backup through validation of the published tree, and roll back the library, note metadata and pair together to their call-entry state without discarding pre-existing caller edits.

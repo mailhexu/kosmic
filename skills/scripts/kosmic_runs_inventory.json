@@ -94,6 +94,15 @@
       "rationale": "Destination-sibling staged copy of the library tree for the governed migration transaction."
     },
     {
+      "id": "library/reconcile-refresh-staging",
+      "module": "skills/scripts/kosmic_shared_library.py",
+      "function": "_fr010_reconcile",
+      "call": "tempfile.mkdtemp",
+      "anchor": "tempfile\\.mkdtemp\\(prefix=\"kosmic-topic-refresh-\", dir=root\\.parent\\)",
+      "classification": "atomic-publication",
+      "rationale": "Destination-sibling staged copy of the library tree for the approved FR010 note/pair/library refresh transaction; same-parent placement is required by backup-swap os.replace atomicity and rollback."
+    },
+    {
       "id": "library/role-recovery-staging",
       "module": "skills/scripts/kosmic_shared_library.py",
       "function": "_migrate_classified_topics",

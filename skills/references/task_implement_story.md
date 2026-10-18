@@ -17,8 +17,7 @@ STOP CHECK before starting:
      → If approved: transition it to in_progress and begin at Phase 1.
      → If in_progress: a resumed session — skip phases already recorded as done in
        the story's checklist, re-verify the last completed step still holds, and
-       address any review findings recorded in the story or its evidence packs
-       before writing new code.
+       address any review findings recorded in the story before writing new code.
      → If draft: "Story must be approved first. Run Task 7 (Review Spec)."
   3. Linked epic, architecture, and PRD exist
      → Check linked_epic, linked_architecture, linked_prd in frontmatter
@@ -371,8 +370,8 @@ If you learned something during implementation:
 4. Assign each changed note an explicit Audience Scope and regenerate the atomic Skill Pair.
 5. If the story changes a Consumer Interface, set `consumer_interface_change: true` and list its current stable `usage` or `both` notes in `related_notes`.
 6. Classify changed procedure mechanics. Declare `routine_edge_change: true` whenever the story adds or changes a procedure's `uses_routines` edge; this requires `routine_decision_required: true`. When reusable deterministic mechanics are introduced or materially changed, set `routine_decision_required: true`, query the generated inventory, and list one governed Task P artifact per unique proposal path in `routine_proposals`; otherwise keep the gate false and the list empty.
-7. If the work captured raw experience (review findings, test-run summaries, debug transcripts), write an Evidence Pack under `{VAULT}/Projects/{TARGET}/evidence/{YYYY-MM-DD}-{slug}/` with a `MANIFEST.md`, declare its slug in the story's `evidence_packs:` frontmatter, and run Task 9: Distill (`references/task_distill.md`) over it.
-8. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done — it fails when any declared evidence pack lacks a draft-or-stable note linking it via `evidence:`.
+7. Record what was actually observed per acceptance criterion compactly in the story record (observation + source per criterion); task-specific review stays in the record, dataset-specific metadata stays with its dataset. Run Task 2 only for genuinely reusable knowledge — a story yielding no reusable finding writes no note.
+8. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done — it validates record-embedded completion observations, the two-axis independent review (`completion_review` with Standards and Spec axes), and the source-revision binding.
 
 ### 4.4 Update Story
 

@@ -104,7 +104,7 @@ The skill identity is `kosmic`. In agents with named skills, load or invoke `kos
 
 The knowledge vault directory is `memnotes` by default. Kosmic organizes each Project under `{VAULT}/Projects/{TARGET}/`, assigns an immutable Project Identifier, and keeps one authoritative Obsidian-compatible OKF v0.2 knowledge bundle under `notes/`. Reusable cross-project material is published into the vault-level `Skills/` Shared Domain Skill Library and reached through one installed `memnotes-skills` router. The resolver infers or accepts `do | check | understand | investigate`, computes typed dependency closure, and returns a hash-pinned, byte-bounded plan. Procedure packets may also carry canonical tested routine records discovered statically from source; contributors query this inventory before implementing repeated mechanics.
 
-For the full task catalogue (Task 0: Quick Task through Task 9: Distill plus Task P: Propose Skill Change), Project Skill Pair and Shared Library CLI lifecycles, templates, approval gates, and directory layout, see the [docs](docs/README.md), [skills/README.md](skills/README.md), and [skills/SKILL.md](skills/SKILL.md).
+For the full task catalogue (Task 0: Quick Task through Task 7 plus Task P: Propose Skill Change), Project Skill Pair and Shared Library CLI lifecycles, templates, approval gates, and directory layout, see the [docs](docs/README.md), [skills/README.md](skills/README.md), and [skills/SKILL.md](skills/SKILL.md).
 
 ### Contributor specification catalog
 
@@ -164,10 +164,10 @@ that rejects pre-existing worktree changes; one record uses one clean worktree.
         --project PROJECT --work-item CANONICAL_PATH --work-record QUALIFIED_ID
     python3 skills/scripts/kosmic_project_skills.py work finish \
         --project PROJECT --worktree DIR --work-record QUALIFIED_ID \
-        --scope worktree:src/ --scope project:evidence/PACK/
+        --scope worktree:src/ --scope project:notes/
 
-Finish checks the worktree diff against declared scopes and verifies acceptance
-evidence and the pinned review first. It then updates status/index/log outputs,
+Finish checks the worktree diff against declared scopes and verifies the
+record-embedded acceptance observations and pinned review first. It then updates status/index/log outputs,
 publishes the successful receipt as the authoritative completion marker, and
 derives the STATUS projections from that receipt — stepwise, not cross-file
 atomic. Until the receipt matches, `done` remains pending to readers; rerun

@@ -11,7 +11,7 @@ Use this contract to validate Project knowledge, migrate legacy Project Skill Pa
 - Usage projects stable `audience: usage` and `audience: both` notes.
 - Development projects stable `audience: development` notes and requires Usage for consumer and shared behavior.
 - A stable note without `audience` is Unscoped Knowledge and remains Development-only until reviewed.
-- Specs and logs never project directly. Distill durable behavior into stable notes first.
+- Specs and logs never project directly. Capture durable behavior in stable notes first.
 - Both skills describe the same `working_state` from `ProjectEntry.md`.
 - The generated `skills/` tree is also OKF v0.2 conformant. Publication and installation are atomic; never edit canonical or installed projections.
 - Every Project has a vault-only `mathdocs/` directory with the reserved `index.md`; paired derivations never project into Usage or Development skills.
@@ -156,16 +156,15 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-completion \
   --source-root "{SOURCE_ROOT}" --work-record "{QUALIFIED_RECORD}"
 ```
 
-Work items must declare `consumer_interface_change: true | false`, `proposal_required: true | false`, `routine_edge_change: true | false`, and `routine_decision_required: true | false`. Any work item that adds or changes a procedure's `uses_routines` edge declares `routine_edge_change: true`; completion then requires `routine_decision_required: true`. A required skill proposal uses exactly one `skill_proposal` path. A required routine decision uses non-empty `routine_proposals`, one validated, non-pending Task P artifact per unique proposal path; a false decision gate requires the list to be empty. Consumer Interface changes require current stable `usage` or `both` notes and a drift-free canonical pair. Declared `evidence_packs` must exist and be linked from a draft-or-stable note.
+Work items must declare `consumer_interface_change: true | false`, `proposal_required: true | false`, `routine_edge_change: true | false`, and `routine_decision_required: true | false`. Any work item that adds or changes a procedure's `uses_routines` edge declares `routine_edge_change: true`; completion then requires `routine_decision_required: true`. A required skill proposal uses exactly one `skill_proposal` path. A required routine decision uses non-empty `routine_proposals`, one validated, non-pending Task P artifact per unique proposal path; a false decision gate requires the list to be empty. Consumer Interface changes require current stable `usage` or `both` notes and a drift-free canonical pair. rom a draft-or-stable note.
 
 Math-derived work items declare both `derivations: [{slug}, ...]` and `math_implementation_files: [relative/path, ...]`. Each listed file must remain under `--source-root` and contain a matching `MathDoc: {project_id}/{slug}[#result-name]` identifier.
 
-`validate` additionally checks the Experience layer: every Evidence Pack's `MANIFEST.md` (kind `execution|research`, `produced_by`, ISO `date`, non-empty `summary`, and a body file-role list matching the pack contents exactly) and the `impact.md` ledger's fixed six-field entries. Evidence packs and the ledger live outside `notes/` and never project into the Skill Pair; `generate` appends publication entries to the ledger after each atomic publication.
+`validate` no longer checks an Experience layer: evidence packs and the `impact.md` ledger are retired (knowledge-first notes per `docs/adr/0004-knowledge-first-notes.md`). Completion observations and independent review live inside the work record; legacy packs and ledger entries remain historical bytes that current commands neither require nor bless.
 
-MANIFEST frontmatter may optionally carry code provenance: `git_head` (commit
-hash) and `worktree_tree` (tree hash or `clean`). Present ⇒ both required and
-shape-checked (40/64 lowercase hex). Use the `provenance` command
-(`--repo PATH`, default cwd) to print paste-ready lines computed via a
+Note source provenance may be recorded with the `provenance` command
+(`--repo PATH`, default cwd), which prints paste-ready `git_head` / `worktree_tree`
+lines (40/64 lowercase hex; `clean` for a clean checkout) computed via a
 temporary index — no working-tree or index side effects.
 
 Projected reference bodies are package-consistent: a Markdown link whose target is not projected into the same Skill Pair package (draft target, other-audience target) is demoted to bold plain text, and `generate` warns on stderr naming each demoted link. Links inside code fences, external URLs, and non-Markdown targets are untouched.

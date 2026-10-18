@@ -22,7 +22,6 @@ proposer_ref: "agent://MigrationRoutineDecision"
 proposer_reason: "Fresh-context independent governance decision for shared-routine scope; verified all four manifest SHA pins; Task P procedure found no eligible separately governed procedural target, so the no-action result is recorded without implementation authority."
 input_manifest: ["specs/skill-proposals/inputs/2026-10-11-migration-routine-decision.md"]
 related_notes: []
-evidence_packs: []
 behavioral_evidence: []
 decision: "pending"
 approved_by: ""

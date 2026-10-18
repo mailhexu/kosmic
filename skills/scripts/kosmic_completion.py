@@ -30,7 +30,7 @@ import os
 import re
 import stat
 from pathlib import Path
-from typing import Any
+from typing import Any, Mapping
 
 try:
     from . import kosmic_work as work
@@ -111,6 +111,30 @@ def _json(root: Path, relative: str, code: str) -> dict[str, Any]:
     return parsed
 
 
+def reject_retired_completion_inputs(metadata: Mapping[str, Any], name: str) -> None:
+    """Reject retired completion inputs on pre-terminal records (Story 005).
+
+    Evidence packs and actual sidecar-file declarations are retired: new
+    completion binds observations and review inside the record itself. Empty
+    historical placeholders (``[]``/``""``) stay tolerated; terminal records
+    never reach this helper, so done records with legacy sidecars keep
+    validating against their unchanged original bytes.
+    """
+    if "evidence_packs" in metadata:
+        raise work.WorkdirError(
+            "RETIRED_INPUT",
+            f"{name}: unsupported input declaration 'evidence_packs': "
+            "evidence packs are retired (Story 005)")
+    for field in ("acceptance_evidence", "review_record"):
+        value = metadata.get(field)
+        if value in (None, "", []):
+            continue
+        raise work.WorkdirError(
+            "RETIRED_INPUT",
+            f"{name}: unsupported input declaration '{field}': completion "
+            "binds observations and review inside the record (Story 005)")
+
+
 def validate_completion_proof(root: Path, record) -> dict[str, str]:
     """Check exact structural criterion coverage of embedded observations.
 
@@ -124,6 +148,7 @@ def validate_completion_proof(root: Path, record) -> dict[str, str]:
     ``{record_path: sha256(record bytes)}``.
     """
     root = Path(root)
+    reject_retired_completion_inputs(record.metadata, record.path.name)
     canonical = record.path.relative_to(root).as_posix()
     observations = record.metadata.get("completion_observations")
     _deny(not isinstance(observations, (list, tuple)) or not observations,
@@ -333,7 +358,10 @@ def _checked_review(root: Path, worktree: Path, record, *,
     except work.WorkdirError as error:
         raise work.WorkdirError(
             "REVIEW_INVALID", f"{canonical}: reviewed scope claim invalid: {error}") from error
-    if changed_paths is not None:
+    if changed_paths:
+        # Record-only work computes an empty changed set: nothing actual to
+        # cover, and the empty reviewed scope is legitimate there. Any real
+        # changed path must sit inside the reviewed claims.
         try:
             work.check_record_changes(worktree, tuple(str(claim) for claim in reviewed_scope),
                                       root, excluded_paths=tuple(excluded_paths))

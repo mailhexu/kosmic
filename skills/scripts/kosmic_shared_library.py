@@ -431,10 +431,393 @@ def _generated_payloads(
 
 
 
+def _fr010_work_record_project(vault: Path, work_record: str) -> Path:
+    project_id = work_record.strip().split("/", 1)[0]
+    return Path(vault).expanduser().resolve() / "Projects" / project_id
+
+
+def _fr010_snapshot(directory: Path) -> dict[str, bytes]:
+    if not directory.is_dir():
+        return {}
+    return {
+        path.relative_to(directory).as_posix(): path.read_bytes()
+        for path in sorted(directory.rglob("*")) if path.is_file()
+    }
+
+
+def _fr010_restore(directory: Path, snapshot: dict[str, bytes]) -> None:
+    current = {
+        path.relative_to(directory).as_posix()
+        for path in directory.rglob("*") if path.is_file()
+    }
+    for relative in sorted(current - set(snapshot)):
+        (directory / relative).unlink()
+    for relative, content in snapshot.items():
+        path = directory / relative
+        if not path.is_file() or path.read_bytes() != content:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_bytes(content)
+
+
+def _fr010_current_topics(root: Path, project_id: str) -> dict[str, dict[str, Any]]:
+    """Live topic identities of one project, read from the authoritative files.
+
+    The prior catalog is history only; current topic files decide which IDs
+    exist and their statuses, so approved new topics and approved deletions
+    are honored without recreating or inventing topics.
+    """
+    topics: dict[str, dict[str, Any]] = {}
+    for path in sorted(root.glob("*/*/*.md")):
+        if path.parent.name not in {"usage", "development"}:
+            continue
+        document = parse_document_text(path.read_text(encoding="utf-8"), path)
+        metadata = document.metadata
+        if str(metadata.get("type") or "") != "Domain Topic":
+            continue
+        source_project = str(metadata.get("source_project") or "")
+        if source_project != project_id or source_project == "native":
+            continue
+        topic_id = str(metadata.get("id") or "")
+        topics[topic_id] = {
+            "id": topic_id,
+            "relpath": path.relative_to(root).as_posix(),
+            "metadata": metadata,
+            "document": document,
+            "pin": str(metadata.get("source_sha256") or ""),
+        }
+    return topics
+
+
+def _fr010_prior_manifest_paths(canonical_root: Path) -> dict[str, set[str]]:
+    """Historical pins from prior pair manifests: source_sha256 -> note paths."""
+    pins: dict[str, set[str]] = {}
+    for manifest_path in sorted(canonical_root.glob("*/.kosmic-projection.json")):
+        try:
+            manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        for source in manifest.get("sources", []):
+            if not isinstance(source, dict):
+                continue
+            digest = str(source.get("sha256") or "")
+            note_path = str(source.get("path") or "")
+            if SHA256_RE.fullmatch(digest) and note_path:
+                pins.setdefault(digest, set()).add(note_path)
+    return pins
+
+
+def _fr010_map_topic(
+    topic: dict[str, Any],
+    current_notes: dict[str, Any],
+    prior_pins: dict[str, set[str]],
+    prior_own_ids: set[str],
+    backlinks: dict[str, list[str]],
+) -> Any:
+    """Resolve one live topic to its governing note; ambiguity fails closed."""
+    audience = str(topic["metadata"].get("audience") or "")
+
+    def audience_compatible(note: Any) -> Any:
+        note_audience = str(getattr(note, "audience", ""))
+        if note_audience != audience and note_audience != "both":
+            raise LibraryError(
+                f"FR010_AUDIENCE_INCOMPATIBLE: {topic['id']}: topic audience "
+                f"{audience!r} does not match source note audience "
+                f"{note_audience!r}; remapping the existing "
+                "topic is not an approved automatic action"
+            )
+        return note
+
+    explicit = str(topic["metadata"].get("source") or "")
+    if explicit:
+        note = current_notes.get(explicit)
+        if note is None:
+            raise LibraryError(
+                f"FR010_SOURCE_GONE: {topic['id']}: explicit source {explicit} "
+                "is not a currently published stable note while the topic is live"
+            )
+        return audience_compatible(note)
+    candidates = [
+        note for note in current_notes.values() if note.source_hash == topic["pin"]
+    ]
+    compatible = [
+        note
+        for note in candidates
+        if str(note.audience) == audience or str(note.audience) == "both"
+    ]
+    if len(compatible) == 1:
+        return compatible[0]
+    if len(compatible) > 1:
+        raise LibraryError(
+            f"FR010_AMBIGUOUS_PIN: {topic['id']}: source_sha256 {topic['pin']} matches "
+            "multiple current notes; explicit source metadata is required"
+        )
+    if candidates:
+        raise LibraryError(
+            f"FR010_AUDIENCE_INCOMPATIBLE: {topic['id']}: every current note matching "
+            f"source_sha256 {topic['pin']} has audience "
+            f"{sorted({str(note.audience) for note in candidates})!r}, not {audience!r}"
+        )
+    paths = sorted(prior_pins.get(topic["pin"], ()))
+    if len(paths) == 1:
+        note = current_notes.get(paths[0])
+        if note is None:
+            raise LibraryError(
+                f"FR010_UNRESOLVED_REMOVAL: {topic['id']}: pinned note {paths[0]} is no "
+                "longer a published stable note while the topic is still live; removal "
+                "requires an explicit approved deletion, not silent output drift"
+            )
+        return audience_compatible(note)
+    if len(paths) > 1:
+        raise LibraryError(
+            f"FR010_AMBIGUOUS_PIN: {topic['id']}: prior pair manifests map "
+            f"source_sha256 {topic['pin']} to several notes {paths}; identity required"
+        )
+    # Bounded fallback: unique actual-use backlink from a current stable note
+    # to THIS already-published own topic ID (present in the prior catalog
+    # with the owning source_project). Never invents, never slug-guesses.
+    if topic["id"] in prior_own_ids:
+        claimants = sorted(backlinks.get(topic["id"], ()))
+        if len(claimants) > 1:
+            raise LibraryError(
+                f"FR010_AMBIGUOUS_BACKLINK: {topic['id']} is actual-use claimed by "
+                f"several notes {claimants}; explicit source metadata is required"
+            )
+        if claimants:
+            note = current_notes.get(claimants[0])
+            if note is not None:
+                return audience_compatible(note)
+    raise LibraryError(
+        f"FR010_UNMAPPED_PIN: {topic['id']}: source_sha256 {topic['pin']} matches no "
+        "current note and no prior pair manifest; explicit source metadata required"
+    )
+
+
+def _fr010_topic_links(body: str, note: Any, project: Any, by_note: dict[str, tuple[str, str]]) -> str:
+    """Adapt body links to stable in-library topic routes where a mapping exists.
+
+    Relative links to existing authoritative Project notes are rewritten to
+    absolute vault source references so meaning survives the topic's new
+    library location; targets that resolve to nothing are kept verbatim.
+    """
+    import posixpath
+
+    try:
+        from .kosmic_project_skills import MARKDOWN_LINK_RE
+    except ImportError:
+        from kosmic_project_skills import MARKDOWN_LINK_RE  # type: ignore[no-redef]
+
+    def adapt(match: re.Match[str]) -> str:
+        text, target = match.group(1), match.group(2)
+        if "://" in target or target.startswith(("#", "mailto:")):
+            return match.group(0)
+        path_part = target.split("#", 1)[0]
+        if not path_part.endswith(".md"):
+            return match.group(0)
+        candidate = posixpath.normpath(posixpath.join(posixpath.dirname(note.relative_path), path_part))
+        anchor = target[len(path_part):]
+        hit = by_note.get(candidate)
+        if hit is not None:
+            new_target = os.path.relpath(hit[1], posixpath.dirname(topic_relpath(by_note, note)))
+            return f"[{text}]({new_target}{anchor})"
+        resolved = (project.root / candidate).resolve()
+        try:
+            resolved.relative_to(project.root.resolve())
+        except ValueError:
+            return match.group(0)
+        if resolved.is_file():
+            return f"[{text}]({resolved}{anchor})"
+        return match.group(0)
+
+    return MARKDOWN_LINK_RE.sub(adapt, body)
+
+
+def topic_relpath(by_note: dict[str, tuple[str, str]], note: Any) -> str:
+    hit = by_note.get(note.relative_path)
+    return hit[1] if hit else f"{note.relative_path}"
+
+
+def _fr010_reconcile(
+    vault: Path,
+    root: Path,
+    work_record: str,
+    source_root: Path | None = None,
+) -> tuple[Path, ...] | None:
+    """FR010: reconcile note actual-use, pair, and library for the owning project.
+
+    Runs inside the existing generate-library gate. Projects without live
+    topics return ``None`` and the ordinary generate-library path proceeds
+    unchanged. On any failure the synced notes and the pair are restored to
+    their exact prior bytes; the library is only swapped after staged byte
+    verification, with backup rollback.
+    """
+    try:
+        from . import kosmic_project_skills as project_skills
+    except ImportError:
+        import kosmic_project_skills as project_skills  # type: ignore[no-redef]
+    project_root = _fr010_work_record_project(vault, work_record)
+    if not (project_root / "ProjectEntry.md").is_file():
+        return None
+    project = project_skills.load_project(project_root)
+    topics = _fr010_current_topics(root, project.project_id)
+    prior_own_ids: set[str] = set()
+    catalog_path = root / ".kosmic" / "catalog.json"
+    if catalog_path.is_file():
+        try:
+            prior_catalog = json.loads(catalog_path.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            prior_catalog = {"topics": []}
+        prior_own_ids = {
+            str(row.get("id") or "")
+            for row in prior_catalog.get("topics", [])
+            if str(row.get("source_project") or "") == project.project_id
+        }
+    if not topics and not prior_own_ids:
+        return None
+    prior_pins = _fr010_prior_manifest_paths(project.canonical_root)
+
+    def collect_notes() -> dict[str, Any]:
+        plan = project_skills.collect_projection_plan(project)
+        return {
+            note.relative_path: note
+            for note in (*plan.usage_notes, *plan.development_notes)
+        }
+
+    current_notes = collect_notes()
+    backlinks: dict[str, list[str]] = {}
+    for relative in sorted(current_notes):
+        for value in _frontmatter_list(
+            current_notes[relative].path.read_text(encoding="utf-8"), "skill_resources"
+        ):
+            backlinks.setdefault(value, []).append(relative)
+    mapped: dict[str, tuple[dict[str, Any], Any]] = {}
+    for topic_id in sorted(topics):
+        mapped[topic_id] = (
+            topics[topic_id],
+            _fr010_map_topic(
+                topics[topic_id], current_notes, prior_pins, prior_own_ids, backlinks
+            ),
+        )
+    live_ids: dict[str, set[str]] = {}
+    for topic_id, (_topic, note) in mapped.items():
+        if str(_topic["metadata"].get("status") or "") == "stable":
+            live_ids.setdefault(note.relative_path, set()).add(topic_id)
+    own_ids = set(topics) | prior_own_ids
+    related: set[str] = set(live_ids)
+    for relative in sorted(current_notes):
+        for value in _frontmatter_list(
+            current_notes[relative].path.read_text(encoding="utf-8"), "skill_resources"
+        ):
+            if value in own_ids:
+                related.add(relative)
+    note_snapshots: dict[Path, bytes] = {}
+    pair_snapshot: dict[str, bytes] = {}
+
+    def snap_note(path: Path, text: str) -> None:
+        if path not in note_snapshots:
+            note_snapshots[path] = path.read_bytes()
+        path.write_text(text, encoding="utf-8")
+
+    try:
+        # 1. Bookkeeping sync of skill_resources; `updated` is never touched.
+        # Only OUR topic IDs are reconciled: stable external actual-use IDs
+        # already declared by the note are preserved verbatim.
+        for relative in sorted(related):
+            note = current_notes[relative]
+            text = note.path.read_text(encoding="utf-8")
+            foreign = sorted(
+                value
+                for value in _frontmatter_list(text, "skill_resources")
+                if value not in own_ids
+            )
+            desired = sorted(set(foreign) | live_ids.get(relative, set()))
+            updated = project_skills.update_markdown_metadata(
+                text, {"skill_resources": desired}
+            )
+            if updated != text:
+                snap_note(note.path, updated)
+        # 2. Rederive the pair from the final note bytes (existing publisher).
+        pair_snapshot = _fr010_snapshot(project.canonical_root)
+        project_skills.generate(project, work_record=work_record)
+        final_notes = collect_notes()
+        by_note = {
+            note.relative_path: (topic_id, mapped[topic_id][0]["relpath"])
+            for topic_id, (_topic, note) in mapped.items()
+            if note.relative_path in final_notes
+        }
+        # 3. Stage the library; refresh live topics from final note bytes.
+        staging = Path(tempfile.mkdtemp(prefix="kosmic-topic-refresh-", dir=root.parent))
+        try:
+            staged_root = staging / "Skills"
+            shutil.copytree(root, staged_root, symlinks=True)
+            for topic_id in sorted(mapped):
+                topic, note = mapped[topic_id]
+                final_note = final_notes.get(note.relative_path)
+                if final_note is None:
+                    raise LibraryError(
+                        f"FR010_UNRESOLVED_REMOVAL: {topic_id}: governing note "
+                        f"{note.relative_path} left the published plan during refresh"
+                    )
+                metadata = dict(topic["metadata"])
+                metadata["source"] = final_note.relative_path
+                metadata["source_sha256"] = final_note.source_hash
+                header = ["---\n"]
+                for key, value in metadata.items():
+                    header.extend(render_entry(key, value))
+                header.extend(["---\n", "\n"])
+                body = _fr010_topic_links(final_note.body, final_note, project, by_note)
+                content = "".join(header) + body
+                staged_path = staged_root / topic["relpath"]
+                if staged_path.read_text(encoding="utf-8") != content:
+                    staged_path.write_text(content, encoding="utf-8")
+            payloads = _generated_payloads(staging, evidence_vault=vault, source_root=source_root)
+            for relative, content in payloads.items():
+                path = staged_root / relative
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(content)
+            if any(
+                (staged_root / relative).read_bytes() != content
+                for relative, content in payloads.items()
+            ):
+                raise LibraryError("FR010: staged generated-byte verification failed")
+            backup = root.parent / f".Skills-backup-refresh-{os.getpid()}"
+            os.replace(root, backup)
+            try:
+                os.replace(staged_root, root)
+                validate_library(vault, source_root=source_root)
+            except Exception:
+                shutil.rmtree(root, ignore_errors=True)
+                os.replace(backup, root)
+                raise
+            shutil.rmtree(backup, ignore_errors=True)
+        finally:
+            shutil.rmtree(staging, ignore_errors=True)
+        return tuple(root / relative for relative in sorted(payloads))
+    except Exception:
+        for path, content in note_snapshots.items():
+            path.write_bytes(content)
+        if pair_snapshot:
+            _fr010_restore(project.canonical_root, pair_snapshot)
+        raise
+
+
+def _frontmatter_list(text: str, key: str) -> list[str]:
+    document = parse_document_text(text, Path(key))
+    value = document.metadata.get(key)
+    if value in (None, ""):
+        return []
+    if isinstance(value, list):
+        return [str(item).strip() for item in value if str(item).strip()]
+    return [str(value).strip()]
+
+
 def generate_library(vault: Path, source_root: Path | None = None, *,
                      work_record: str | None = None) -> tuple[Path, ...]:
     _authorize_library_mutation(vault, work_record, "generate-library")
     root = _library_root(vault)
+    if work_record:
+        reconciled = _fr010_reconcile(vault, root, work_record.strip(), source_root=source_root)
+        if reconciled is not None:
+            return reconciled
     payloads = _generated_payloads(vault, source_root=source_root)
     staging = Path(tempfile.mkdtemp(prefix="kosmic-library-stage-", dir=root.parent))
     try:
@@ -989,7 +1372,28 @@ def migrate_assignments(vault: Path, project: Path, assignments: dict[str, Any],
         except Exception:
             os.replace(backup, root)
             raise
+        # FR010: the migration itself is an approved publication flow, so the
+        # migrated project must land on coherent note actual-use pins, pair,
+        # and library through the ordinary reconcile. The pre-migration
+        # library backup is retained until that succeeds; on failure the
+        # original library, notes, and pair are restored exactly.
+        try:
+            _fr010_reconcile(vault, root, work_record=work_record)
+        except Exception:
+            shutil.rmtree(root, ignore_errors=True)
+            os.replace(backup, root)
+            raise
         shutil.rmtree(backup, ignore_errors=True)
+        for migration in migrations:
+            topic_path = root / f"{migration['target']}.md"
+            if not topic_path.is_file():
+                continue
+            live = parse_document_text(
+                topic_path.read_text(encoding="utf-8"), topic_path
+            )
+            live_hash = str(live.metadata.get("source_sha256") or "")
+            if SHA256_RE.fullmatch(live_hash):
+                migration["source_sha256"] = live_hash
     finally:
         shutil.rmtree(staging, ignore_errors=True)
     return {"schema": SCHEMA_VERSION, "project": project.name, "migrations": migrations}

@@ -13,7 +13,6 @@ proposer_ref: agent://{agent-id}
 proposer_reason: "Project-local constrained fallback"
 input_manifest: [specs/skill-proposals/inputs/{slug}.md]
 related_notes: []
-evidence_packs: []
 behavioral_evidence: []
 decision: pending
 approved_by: ""
@@ -29,7 +28,7 @@ reconsiders: ""
 
 ## Evidence
 
-{Relevant Patterns, Evidence Packs, skill history, and task outcomes.}
+{Verified observations with their source work records, stable notes and their provenance, skill history, and task outcomes. Named sources must be meaningful verified experience or curated provenance — not unvetted keyword matches.}
 
 ## Proposed Change
 

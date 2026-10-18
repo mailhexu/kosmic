@@ -392,15 +392,6 @@ def _link_scan(vault: Path) -> list[dict[str, str]]:
     return sorted(rows, key=lambda row: (row["source"], row["target"]))
 
 
-def _parse_list_value(value: str) -> list[str]:
-    value = value.strip()
-    if not value:
-        return []
-    if value.startswith("[") and value.endswith("]"):
-        return [item.strip().strip("'\"") for item in value[1:-1].split(",") if item.strip()]
-    return [value.strip().strip("'\"")]
-
-
 SPEC_TERMINAL = {"done", "rejected", "deprecated"}
 
 # --- Story070: one-catalog navigation and the pending-transaction seam --------
@@ -715,17 +706,6 @@ def _log_items(vault: Path, owner: str, date_text: str) -> list[dict[str, str]]:
     return items
 
 
-def _impact_entries(vault: Path, owner: str, date_text: str) -> list[str]:
-    relative = f"{PROJECTS_PREFIX}{owner}/impact.md"
-    path = vault / relative
-    if not path.is_file():
-        return []
-    refs = []
-    for lineno, line in enumerate(path.read_text(encoding="utf-8", errors="replace").splitlines(), 1):
-        if line.startswith("- ") and f"date: {date_text}" in line:
-            refs.append(f"{relative}#L{lineno}")
-    return refs
-
 def collect_harvest(
     vault: Path,
     *,
@@ -868,28 +848,6 @@ def collect_harvest(
                     }
                 )
                 flag_evidence.add(path_text)
-        for evidence_ref in _parse_list_value(metadata.get("evidence", "")):
-            manifest = f"{PROJECTS_PREFIX}{owner}/{evidence_ref.strip('/')}"
-            manifest_path = vault / manifest
-            if not manifest_path.is_file():
-                continue
-            manifest_meta = parse_frontmatter(manifest_path.read_text(encoding="utf-8", errors="replace"))
-            pack_date = manifest_meta.get("date") or ""
-            note_updated = metadata.get("updated") or ""
-            if (
-                RECORD_DATE_RE.fullmatch(pack_date)
-                and RECORD_DATE_RE.fullmatch(note_updated)
-                and pack_date > note_updated
-            ):
-                checks.append(
-                    {
-                        "kind": "evidence-order",
-                        "subject": {"path": path_text},
-                        "evidence": [{"path": manifest, "sha256": _note_hash(manifest)}],
-                    }
-                )
-                flag_evidence.add(manifest)
-
     for relative in _vault_markdown(vault):
         if "/notes/" not in relative or not relative.startswith(PROJECTS_PREFIX):
             continue
@@ -922,7 +880,6 @@ def collect_harvest(
             )
             flag_evidence.add(log_path)
         status_changes: list[dict[str, Any]] = []
-        evidence_packs: list[str] = []
         if name:
             for entry in entries:
                 path_text = entry["new_path"]
@@ -957,12 +914,7 @@ def collect_harvest(
                             "new_blob": entry["new_blob"],
                         }
                     )
-                if "/evidence/" in path_text:
-                    slug = path_text.split("/evidence/", 1)[1].split("/", 1)[0]
-                    evidence_packs.append(f"{PROJECTS_PREFIX}{name}/evidence/{slug}")
         status_changes.sort(key=lambda change: change["path"])
-        evidence_packs = sorted(set(evidence_packs))
-        impact_entries = _impact_entries(vault, name, date_text) if name else []
         projects_payload.append(
             {
                 "project": name,
@@ -970,8 +922,6 @@ def collect_harvest(
                 "log_items": log_items,
                 "status_changes": status_changes,
                 "open_work": open_work.get(name, []) if name else [],
-                "evidence_packs": evidence_packs,
-                "impact_entries": impact_entries,
             }
         )
 

@@ -120,25 +120,21 @@ _Avoid_: Procedure, evidence
 A dated historical observation that substantiates or challenges claims but never silently becomes current guidance.
 _Avoid_: Procedure, current truth
 
-**Evidence Pack**:
-The immutable, append-only record of one work item or investigation that motivates knowledge; it never projects into a Skill Pair. Research discovery and execution outcome are two kinds of the same concept.
-_Avoid_: Research memo, raw trace, wiki page
+**Work Record**:
+The single governing record of one work item or investigation: embedded per-criterion observations, the independent two-axis review, and its completion receipt. There is no separate evidence layer.
+_Avoid_: Evidence pack, sidecar, manifest dossier
 
-**Distillation**:
-The gated post-work procedure in which a Maintainer analyzes Evidence Packs into root-cause knowledge expressed as draft atomic notes, updates, or deprecations.
-_Avoid_: Wiki maintenance, note extraction, summarization
+**Completion Receipt**:
+The machine receipt a successful `work finish` publishes, bound to the completed record's exact bytes; it is the completion marker, so unreceipted `done` is pending.
+_Avoid_: Approval checkbox, acceptance sidecar
 
 **Maintainer**:
-The agent executing Distillation over Evidence Packs; a role within contribution, not a separate audience.
+A contributing agent role within a Project audience, not a separate audience.
 _Avoid_: Contributor (the audience), Wiki Maintainer agent
 
-**Pattern**:
-The role of an atomic note distilled from evidence: what happens, why (root cause), and the fix, stated so relevance is judgeable from its index entry alone.
-_Avoid_: Wiki pattern page, separate artifact from an atomic note
-
-**Impact Ledger**:
-The machine-appended, append-only record of knowledge-state transitions — publications and accept/reject decisions — kept separate from session narrative.
-_Avoid_: Session log, review ledger, skill-impact tracker
+**Pattern (note)**:
+An atomic note capturing what happens, why (root cause), and the fix, stated so relevance is judgeable from its index entry alone. A note gains nothing by being a separate artifact from its concept.
+_Avoid_: Wiki pattern page, evidence-derived duplicate
 
 **Deterministic Routine**:
 A tested Python function that implements stable, reusable procedure mechanics and is discovered from a static declaration without importing its source module.
@@ -153,7 +149,7 @@ A normalized entry in `.kosmic/routines.json` containing a routine’s identity,
 _Avoid_: runtime plugin object, handwritten registry row
 
 **Procedure Compilation**:
-The governed Task 9 and Task P transition that moves repeated deterministic mechanics into a canonical routine while retaining judgment, risk, and approval in reviewed skill prose.
+The governed Task P transition that moves repeated deterministic mechanics from verified procedure notes into a canonical routine while retaining judgment, risk, and approval in reviewed skill prose.
 _Avoid_: Automatic code generation, compiling Markdown
 
 **Subproject**:

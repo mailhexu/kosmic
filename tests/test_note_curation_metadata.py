@@ -110,6 +110,26 @@ class CurationMetadataCase(unittest.TestCase):
             with self.assertRaises(KosmicError):
                 self.validated(invalid)
 
+    def test_skill_resources_rejects_whitespace_in_original_id(self) -> None:
+        for malformed in (
+            'skill_resources: [" kosmic-usage"]',   # leading whitespace
+            'skill_resources: ["kosmic-usage "]',   # trailing whitespace
+            'skill_resources: ["kosmic\\tusage"]',  # internal whitespace
+        ):
+            with self.assertRaises(KosmicError) as caught:
+                self.validated(malformed + "\n")
+            self.assertIn("skill_resources", str(caught.exception))
+
+    def test_note_updated_rejects_impossible_utc_instants(self) -> None:
+        for invalid in (
+            'updated: "2026-13-45T99:99:99Z"',   # impossible calendar and clock
+            'updated: "2026-02-30T00:00:00Z"',   # impossible calendar day
+            'updated: "2026-10-18T25:00:00Z"',   # impossible hour
+            'updated: "2026-10-18T09:61:00Z"',   # impossible minute
+        ):
+            with self.assertRaises(KosmicError):
+                self.validated(invalid + "\n")
+
 
 if __name__ == "__main__":  # pragma: no cover
     unittest.main()

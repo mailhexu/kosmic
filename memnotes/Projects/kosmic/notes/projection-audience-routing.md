@@ -8,6 +8,7 @@ created: '2026-09-02'
 updated: '2026-09-02' # promoted
 validation_procedure: "Read collect_projection_plan and router_text in skills/scripts/kosmic_project_skills.py; cross-check references/task_project_skills.md invariants"
 project: kosmic
+skill_resources: [kosmic/development/projection-audience-routing]
 ---
 
 # Projection audience routing

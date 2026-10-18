@@ -343,9 +343,6 @@ class KnowledgeContractTest(unittest.TestCase):
         write(self.vault / "Projects/foo/notes/cited-draft.md", note("2026-09-16", "2026-09-16").replace("status: stable", "status: draft"))
         write(self.vault / "Projects/foo/notes/linker.md", note("2026-09-16", "2026-09-16", body="see [cited](cited-draft.md#section) and [log](../log/foo-2026-09-16.md)"))
         write(self.vault / "Projects/foo/notes/stale-note.md", note("2026-09-01", "2026-09-01").replace("created: 2026-09-01", "created: 2026-09-01\nstale_after: 2026-09-10"))
-        evidence_manifest = self.vault / "Projects/foo/evidence/2026-09-17-pack/MANIFEST.md"
-        write(evidence_manifest, "---\nkind: execution\ndate: 2026-09-17\nsummary: pack\nproduced_by: test\n---\n\n- file: role\n")
-        write(self.vault / "Projects/foo/notes/evidenced.md", "---\ntype: Project Knowledge\nstatus: stable\ncreated: 2026-09-16\nupdated: 2026-09-16\nevidence: [evidence/2026-09-17-pack/MANIFEST.md]\n---\n\n# Note\n\nbody\n")
         commit_all(self.worktree, "2026-09-16", "day work")
         write(self.vault / "Projects/foo/specs/stories/story-001-x.md", spec_file("in_progress", "2026-09-10"))
         write(self.vault / "dreams/2026-09-10.md", "---\nschema: kosmic.dream.record/1\ntype: dream\ndate: 2026-09-10\n---\n\n# Dream\n\n## Skill Candidates\n\n- candidate one from prior dream\n\n## Done\n\n- old\n")
@@ -382,15 +379,6 @@ class KnowledgeContractTest(unittest.TestCase):
         stale = [check for check in harvest["knowledge_checks"] if check["kind"] == "declared-stale"]
         self.assertEqual([check["subject"]["path"] for check in stale], ["Projects/foo/notes/stale-note.md"])
 
-    def test_evidence_order(self) -> None:
-        harvest = self.harvest()
-        ordered = [check for check in harvest["knowledge_checks"] if check["kind"] == "evidence-order"]
-        self.assertEqual(len(ordered), 1)
-        self.assertEqual(ordered[0]["subject"]["path"], "Projects/foo/notes/evidenced.md")
-        self.assertEqual(
-            ordered[0]["evidence"][0]["path"], "Projects/foo/evidence/2026-09-17-pack/MANIFEST.md"
-        )
-
     def test_candidate_evidence_and_read_set(self) -> None:
         harvest = self.harvest()
         kinds = {entry["kind"] for entry in harvest["candidate_evidence"]}
@@ -401,7 +389,6 @@ class KnowledgeContractTest(unittest.TestCase):
         read_refs = {entry["ref"] for entry in harvest["read_set"]}
         self.assertIn("Projects/foo/notes/draft-x.md", read_refs)
         self.assertIn("Projects/foo/log/foo-2026-09-16.md", read_refs)
-        self.assertIn("Projects/foo/evidence/2026-09-17-pack/MANIFEST.md", read_refs)
         self.assertIn("dreams/2026-09-10.md", read_refs)
         self.assertIn("Projects/foo/specs/stories/story-001-x.md", read_refs)
         for entry in harvest["read_set"]:

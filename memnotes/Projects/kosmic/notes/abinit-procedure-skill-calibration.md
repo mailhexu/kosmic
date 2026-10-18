@@ -4,7 +4,8 @@ title: ABINIT Procedure-Skill Calibration
 description: Evidence-based criteria for promoting ABINIT development guidance into bounded shared procedures and routing their recipe packets.
 confidence: 0.9
 created: '2026-09-08'
-updated: '2026-09-08'
+updated: '2026-10-18T17:20:40.811131Z'
+skill_candidate: false
 validation_procedure: "Re-read the named ABINIT source guidance and run representative resolve-library queries after an approved migration."
 project: kosmic
 status: draft
@@ -25,7 +26,7 @@ The existing ABINIT development projection exposes more than sixty references in
 
 Promote material only when it has a repeatable trigger, one bounded outcome, ordered actions, meaningful branches, verification, failure handling, and evidence of at least one successful execution. The resulting topic must be smaller and more decisive than the source note; otherwise retain the material as knowledge, a guideline, or evidence.
 
-A candidate needs an explicit target and trigger vocabulary. It is not sufficient that the title contains an imperative verb. Legacy notes without `artifact_role: procedure` and the behavioral section contract must first be distilled; they cannot directly seed a shared-procedure proposal.
+A candidate needs an explicit target and trigger vocabulary. It is not sufficient that the title contains an imperative verb. Legacy notes without `artifact_role: procedure` and the behavioral section contract must first be brought to that shape at their source; they cannot directly seed a shared-procedure proposal.
 
 ## Extracted Rules
 
@@ -45,7 +46,7 @@ A candidate needs an explicit target and trigger vocabulary. It is not sufficien
 | --- | --- | --- | --- |
 | Build ABINIT from a git checkout with CMake | Existing `abinit-git-cmake-build` has prerequisites, two known failures and fixes, build/install steps, and a smoke-plus-regression verification. | First migration candidate. Do not duplicate the current named skill: move one reviewed authority to `abinit/development/build-from-git-cmake` after behavioral comparison. | Pin source ownership and the target-maintainer decision; compare the current named skill with the proposed recipe packet. |
 | Register a new Fortran source in an existing ABINIT CMake directory | `adding-source-files-abinit.md` identifies the required `CMakeLists.txt` and `abinit.src` updates and their alphabetical-order invariant. | Incubate, not yet a procedure candidate. | The note records `successful_usage_count: 0`, lacks failure handling, and conflates CMake registration with legacy build-system behavior. Execute it successfully, narrow it to CMake directories, and document a failure/repair path. |
-| Add a normal ABINIT regression test | `abinit-add-test-case.md` records one successful usage and a generic ten-step workflow with a single-test verification. | Candidate after distillation. | Split generic ABINIT regression-test creation from Multibinit model-specific fixture guidance, then add explicit failure handling for unstable references and test-registration errors. |
+| Add a normal ABINIT regression test | `abinit-add-test-case.md` records one successful usage and a generic ten-step workflow with a single-test verification. | Candidate; needs atomic-note consolidation at its source first. | Split generic ABINIT regression-test creation from Multibinit model-specific fixture guidance, then add explicit failure handling for unstable references and test-registration errors. |
 | Add a Multibinit input variable | `adding-input-variables-multibinit.md` records one successful use and the declaration/default/parser/output sequence. | Candidate after revalidation. | Revalidate against the current input-variable/documentation wiring and exercise a focused input test; retain it as a separate procedure from source registration. |
 | Add a libPAW file | `libpaw-coding-rules.txt` is a libPAW-only coding rule, while developer scripts scaffold F90 routines/modules. | Guideline/reference, not a general “add an ABINIT file” procedure. | Gather an executed libPAW addition with registration, tests, and portability-check evidence before proposing a scoped procedure. |
 
@@ -89,13 +90,13 @@ Repeated failure is high-value discovery evidence because it identifies the miss
 
 ## MPI Proposal Intake Prerequisite
 
-The current Kosmic vault contains the `abinit` Domain Skill but no `Projects/abinit/` source Project. The candidate evidence is in a separate vault and its legacy note has neither `artifact_role: procedure` nor a current Project-relative Evidence Pack. Task P therefore cannot lawfully create a shared-procedure proposal from that material yet.
+The current Kosmic vault contains the `abinit` Domain Skill but no `Projects/abinit/` source Project. The candidate evidence is in a separate vault and its legacy note has neither `artifact_role: procedure` nor verified procedure evidence at its source. Task P therefore cannot lawfully create a shared-procedure proposal from that material yet.
 
-The user selected a **scoped MPI source Project** rather than full external-Project adoption. `Projects/abinit/` will own only the historical provenance and future fresh evidence for the MPI CG-reduction packet. It must declare that boundary, retain historical validation as evidence rather than current execution proof, and not compete with the external full ABINIT Project for unrelated knowledge. Then Task 9 may distill typed drafts, followed by a fresh-context Task P proposal. Do not copy the external note directly into the shared library.
+The user selected a **scoped MPI source Project** rather than full external-Project adoption. `Projects/abinit/` will own only the historical provenance and future fresh evidence for the MPI CG-reduction packet. It must declare that boundary, retain historical validation as evidence rather than current execution proof, and not compete with the external full ABINIT Project for unrelated knowledge. Typed draft notes may then be captured at their source, followed by a fresh-context Task P proposal. Do not copy the external note directly into the shared library.
 
 ## Additional Potential Topics
 
-These are prospective topics, not Task P artifacts. Each would require its own evidence pack, fresh-context proposal, approval, behavioral comparison, and review.
+These are prospective topics, not Task P artifacts. Each would require its own verified procedure evidence, fresh-context proposal, approval, behavioral comparison, and review.
 
 | Priority | Potential topic | Trigger | Admission status | Scope decision |
 | --- | --- | --- | --- | --- |
@@ -115,7 +116,7 @@ These are prospective topics, not Task P artifacts. Each would require its own e
 ## Proposal Sequence
 
 1. Use the already mature CMake build procedure as the first shared-procedure migration and compare old named-skill behavior with the recipe packet.
-2. Distill and execute the three development candidates independently. Each produces its own Evidence Pack and Task P artifact; do not batch unrelated procedures.
+2. Capture and execute the three development candidates independently. Each produces its own verified procedure evidence and Task P artifact; do not batch unrelated procedures.
 3. Promote only candidates that pass Task P’s fresh-context proposal, target-Maintainer approval, behavioral comparison, and Task 7 review.
 4. Use resolver traces from representative ABINIT requests to refine triggers and aliases. Change routing metadata only when a trace demonstrates a false match, ambiguity, or unnecessary dependency.
 

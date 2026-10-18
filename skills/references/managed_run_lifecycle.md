@@ -22,4 +22,4 @@ Diagnostic failures remain for 72 hours and can be extended only to seven days a
 
 Every managed run started by a supported mutating command carries its governing record identity. The command resolves ownership/status before creating run state. A record-less bare begin is denied while enforcement is active. Registration remains a bounded bootstrap action; manifests carry record identity, never work-session reservations or session IDs.
 
-Runs never own durable source, pending tests, Evidence Packs, specs, logs, or user-created files. Destination-sibling staging for atomic publication is governed by the atomic publication routine, not run cleanup.
+Runs never own durable source, pending tests, specs, mathdocs, logs, or user-created files. Destination-sibling staging for atomic publication is governed by the atomic publication routine, not run cleanup.

@@ -1,7 +1,8 @@
 """Story 004 Phase-A consumer regression: curation-prepare window selection.
 
-One failing consumer test against the real Project CLI. The subcommand does
-not exist yet, so this test is intentionally RED until Story 004 Phase 3.
+Consumer regression against the real Project CLI: curation-prepare window
+selection through the shipped subcommand (first-bound exclusivity, scope
+boundaries, serialization) — all cases green on the integrated release.
 
 Consumer contract exercised (AC1, AC2, AC7, AC15, serialization):
 - prepare with an explicit --from selects every interval-eligible note

@@ -4,6 +4,7 @@ title: Project Notation
 status: stable
 audience: both
 tags: [notation]
+skill_resources: [kosmic/usage/notation]
 ---
 
 # Notation
