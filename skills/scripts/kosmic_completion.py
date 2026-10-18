@@ -481,7 +481,7 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
         candidates.append(project_config.status_root / "STATUS.md")
     publication_candidates = [path.relative_to(tree).as_posix() for path in candidates
                               if path.is_relative_to(tree)]
-    publication_paths = publication_candidates if record.status == "done" else []
+    publication_paths = publication_candidates
     scope_result = work.check_record_changes(tree, scope, root, publication_paths)
     # Primary finish-claim coverage ran first (SCOPE_DENIED precedence); the
     # reviewed claims must then cover the same actual changed work, with the
