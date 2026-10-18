@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import re
 import tempfile
 import subprocess
 import sys
@@ -20,6 +21,17 @@ from tests.test_kosmic_navigation import (
 )
 
 
+def set_reviewed_revision(record_path: Path, value: str) -> None:
+    """Rewrite the embedded ``completion_review.reviewed_revision`` digest."""
+    text = record_path.read_text(encoding="utf-8")
+    updated, count = re.subn(
+        r'^(completion_review: .*"reviewed_revision": ")[0-9a-f]{64}(")',
+        lambda match: f"{match.group(1)}{value}{match.group(2)}",
+        text, count=1, flags=re.M)
+    assert count == 1, "completion_review.reviewed_revision digest not found"
+    record_path.write_text(updated, encoding="utf-8")
+
+
 class WorkRecordTest(unittest.TestCase):
     def setUp(self):
         self.tmp = tempfile.TemporaryDirectory(prefix="kosmic-record-")
@@ -34,44 +46,35 @@ class WorkRecordTest(unittest.TestCase):
         self.identity = "nav/alpha/story/001"
         self.record = SpecCatalog(self.root).resolve(self.identity)
         self.path = self.record.path
-        self.acceptance = "evidence/story-acceptance.json"
-        self.review_ref = "evidence/story-review.json"
+        reviewed_revision = kosmic_completion.source_revision(
+            self.tree, self.root, SpecCatalog(self.root).resolve(self.identity))
         metadata = dict(self.record.metadata)
-        metadata.update(acceptance_evidence=[self.acceptance],
-                        review_record=self.review_ref, review_base="fixture-base")
+        metadata.update(
+            review_base="fixture-base", review_round=1,
+            completion_observations=[{
+                "criterion": "Result file contains verified output",
+                "observation": "The fixture story behavior was exercised and observed.",
+                "source": "tests/test_kosmic_work_records.py"}],
+            completion_review={
+                "reviewer": "fixture-reviewer",
+                "axes": {
+                    "standards": {"reviewer": "fixture-standards-reviewer",
+                                  "decision": "approved"},
+                    "spec": {"reviewer": "fixture-spec-reviewer",
+                             "decision": "approved"}},
+                "decision": "approved", "review_base": "fixture-base",
+                "reviewed_revision": reviewed_revision, "findings": [],
+                "scope": ["worktree:src/",
+                          "project:subprojects/alpha/specs/stories/"]})
         write(self.path, metadata, "Alpha Story One",
               "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
-        artifact = self.root / "evidence/result.txt"
-        artifact.parent.mkdir(exist_ok=True)
-        artifact.write_text("verified output\n")
-        canonical = self.path.relative_to(self.root).as_posix()
-        evidence = {
-            "schema": "kosmic.acceptance-evidence/1", "identity": self.identity,
-            "record_path": canonical,
-            "results": [{"criterion": "Result file contains verified output",
-                         "outcome": "passed",
-                         "observation": "The test read the output bytes from the declared file.",
-                         "artifacts": [{"path": "evidence/result.txt",
-                                        "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest()}]}],
-        }
-        (self.root / self.acceptance).write_text(json.dumps(evidence))
-        review = {
-            "schema": "kosmic.work-review/1", "identity": self.identity,
-            "record_path": canonical, "review_base": "fixture-base", "round": 1,
-            "standards": {"decision": "approved", "reviewer": "fixture-standards"},
-            "spec": {"decision": "approved", "reviewer": "fixture-spec"},
-            "findings": [], "decision": "approved",
-        }
-        review["reviewed_revision"] = kosmic_completion.source_revision(
-            self.tree, self.root, SpecCatalog(self.root).resolve(self.identity))
-        (self.root / self.review_ref).write_text(json.dumps(review))
-        commit_all(self.tree, "2026-10-04", "fixture evidence baseline")
+        commit_all(self.tree, "2026-10-04", "fixture completion baseline")
 
     def refresh_review_revision(self):
         record = SpecCatalog(self.root).resolve(self.identity)
-        review = json.loads((self.root / self.review_ref).read_text())
-        review["reviewed_revision"] = kosmic_completion.source_revision(self.tree, self.root, record)
-        (self.root / self.review_ref).write_text(json.dumps(review))
+        set_reviewed_revision(
+            self.path,
+            kosmic_completion.source_revision(self.tree, self.root, record))
 
     def test_clean_worktree_is_a_start_precondition(self):
         record = kosmic_work.check_work_start(self.root, self.tree, self.identity)
@@ -108,8 +111,7 @@ class WorkRecordTest(unittest.TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
-        scope = ["worktree:src/", "project:evidence/",
-                 "project:subprojects/alpha/specs/stories/"]
+        scope = ["worktree:src/", "project:subprojects/alpha/specs/stories/"]
         receipt = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
         self.assertEqual(receipt["status"], "successful")
         done_record = SpecCatalog(self.root).resolve(self.identity)
@@ -134,8 +136,7 @@ class WorkRecordTest(unittest.TestCase):
         project_index.write_text("# Shared specs\n\n- [Keep](quick-tasks/keep.md)\n")
         project_before = project_index.read_bytes()
         self.refresh_review_revision()
-        scope = ["worktree:src/", "project:evidence/", "project:specs/",
-                 "project:subprojects/alpha/specs/"]
+        scope = ["worktree:src/", "project:specs/", "project:subprojects/alpha/specs/"]
 
         receipt = kosmic_completion.finish_work(
             self.root, self.tree, self.identity, scope)
@@ -154,8 +155,7 @@ class WorkRecordTest(unittest.TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
-        scope = ["worktree:src/", "project:evidence/",
-                 "project:subprojects/alpha/specs/stories/"]
+        scope = ["worktree:src/", "project:subprojects/alpha/specs/stories/"]
         original_write = kosmic_work._atomic_write
 
         def fail_receipt(base, relative, payload):
@@ -189,7 +189,6 @@ class WorkRecordTest(unittest.TestCase):
         self.refresh_review_revision()
         finish = subprocess.run(base + ["work", "finish", *common,
                                         "--scope", "worktree:src/",
-                                        "--scope", "project:evidence/",
                                         "--scope", "project:subprojects/alpha/specs/stories/"],
                                capture_output=True, text=True)
         self.assertEqual(finish.returncode, 0, finish.stderr)
@@ -230,8 +229,7 @@ class WorkRecordTest(unittest.TestCase):
         bound_status.write_text("stale bound projection\n")
         commit_all(self.tree, "2026-10-05", "stale status projections")
         self.refresh_review_revision()
-        scope = ["worktree:src/", "project:evidence/",
-                 "project:subprojects/alpha/specs/stories/"]
+        scope = ["worktree:src/", "project:subprojects/alpha/specs/stories/"]
         original_write = kosmic_work._atomic_write
 
         def fail_status(base, relative, payload):
@@ -266,19 +264,18 @@ class WorkRecordTest(unittest.TestCase):
                 self.assertIn("| done |", row)
                 self.assertNotIn("(receipt pending)", row)
 
-    def test_valid_receipt_retry_still_denies_corrupted_proof(self):
+    def test_stale_embedded_reviewed_revision_denies_completion(self):
         source = self.tree / "src/result.txt"
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
-        scope = ["worktree:src/", "project:evidence/",
-                 "project:subprojects/alpha/specs/stories/"]
-        receipt = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
-        self.assertEqual(receipt["status"], "successful")
-        (self.root / "evidence/result.txt").write_text("tampered output\n")
+        set_reviewed_revision(self.path, "0" * 64)
         with self.assertRaises(WorkdirError) as caught:
-            kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
-        self.assertEqual(caught.exception.code, "ACCEPTANCE_INVALID")
+            kosmic_completion.finish_work(
+                self.root, self.tree, self.identity,
+                ["worktree:src/", "project:subprojects/alpha/specs/stories/"])
+        self.assertEqual(caught.exception.code, "REVIEW_INVALID")
+        self.assertNotIn("status: done", self.path.read_text())
 
     def test_out_of_scope_diff_is_not_completed(self):
         (self.tree / "outside.txt").write_text("outside\n")
@@ -287,23 +284,136 @@ class WorkRecordTest(unittest.TestCase):
             kosmic_completion.finish_work(self.root, self.tree, self.identity, ["worktree:src/"])
         self.assertEqual(caught.exception.code, "SCOPE_DENIED")
         self.assertNotIn("status: done", self.path.read_text())
-    def test_completion_rejects_absolute_evidence_reference(self):
-        metadata = dict(self.record.metadata)
-        metadata["acceptance_evidence"] = [str((self.root / self.acceptance).resolve())]
-        write(self.path, metadata, "Alpha Story One",
-              "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
+
+    def test_legacy_sidecar_receipts_stay_terminal_without_repin(self):
+        # Explicitly synthetic pre-cutover fixture: a sidecar-era record whose
+        # receipt predates the embedded-completion contract.
+        identity = "nav/quick-task/legacy-task"
+        record_path = self.root / "specs/quick-tasks/legacy-task.md"
+        metadata = {"project_id": "nav", "subproject_id": None, "status": "done",
+                    "record_kind": "quick-task", "local_id": "legacy-task",
+                    "acceptance_evidence": ["evidence/legacy-acceptance.json"],
+                    "review_record": "evidence/legacy-review.json",
+                    "review_base": "fixture-base", "review_round": 1}
+        write(record_path, metadata, "Legacy Task",
+              "## Acceptance Criteria\n\n- [ ] Legacy output is observed\n")
+        canonical = record_path.relative_to(self.root).as_posix()
+        artifact = self.root / "evidence/legacy-result.txt"
+        artifact.parent.mkdir(parents=True, exist_ok=True)
+        artifact.write_text("legacy output\n")
+        observed = self.root / "notes/legacy-observed.md"
+        observed.parent.mkdir(parents=True, exist_ok=True)
+        observed.write_text("Legacy observation recorded at receipt time.\n")
+        acceptance = {
+            "schema": "kosmic.acceptance-evidence/1", "identity": identity,
+            "record_path": canonical,
+            "results": [{"criterion": "Legacy output is observed", "outcome": "passed",
+                         "observation": "Read the legacy output bytes.",
+                         "artifacts": [{"path": "evidence/legacy-result.txt",
+                                        "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest()},
+                                       {"path": "notes/legacy-observed.md",
+                                        "sha256": hashlib.sha256(observed.read_bytes()).hexdigest()}]}],
+        }
+        (self.root / "evidence/legacy-acceptance.json").write_text(json.dumps(acceptance))
+        review = {
+            "schema": "kosmic.work-review/1", "identity": identity,
+            "record_path": canonical, "review_base": "fixture-base", "round": 1,
+            "standards": {"decision": "approved", "reviewer": "fixture-standards-reviewer"},
+            "spec": {"decision": "approved", "reviewer": "fixture-spec-reviewer"},
+            "findings": [], "decision": "approved", "reviewed_revision": "0" * 64,
+        }
+        review_bytes = (self.root / "evidence/legacy-review.json")
+        review_bytes.write_text(json.dumps(review))
+        record_sha256 = hashlib.sha256(record_path.read_bytes()).hexdigest()
+        receipt = {
+            "schema": "kosmic.work-receipt/1", "identity": identity,
+            "status": "successful", "record_path": canonical,
+            "record_sha256": record_sha256,
+            "proof": {
+                "evidence/legacy-acceptance.json":
+                    hashlib.sha256((self.root / "evidence/legacy-acceptance.json")
+                                   .read_bytes()).hexdigest(),
+                "evidence/legacy-review.json":
+                    hashlib.sha256(review_bytes.read_bytes()).hexdigest(),
+                "evidence/legacy-result.txt":
+                    hashlib.sha256(artifact.read_bytes()).hexdigest(),
+                "notes/legacy-observed.md":
+                    hashlib.sha256(observed.read_bytes()).hexdigest()},
+            "completed_at": "2026-10-18T00:00:00Z", "detail": "legacy fixture",
+        }
+        receipt_path = (self.root / ".kosmic/work-receipts" / receipt_for(identity))
+        receipt_path.parent.mkdir(parents=True, exist_ok=True)
+        receipt_payload = (json.dumps(receipt, sort_keys=True, indent=2) + "\n").encode()
+        receipt_path.write_bytes(receipt_payload)
+
+        # (a) intact legacy originals: the receipt still validates terminally.
+        record = SpecCatalog(self.root).resolve(identity)
+        validated = kosmic_completion.check_terminal_receipt(self.root, record)
+        self.assertEqual(validated["identity"], identity)
+
+        # (b) a missing historical original surfaces as explicit pending.
+        review_backup = review_bytes.read_bytes()
+        review_bytes.unlink()
         with self.assertRaises(WorkdirError) as caught:
-            kosmic_completion.finish_work(self.root, self.tree, self.identity,
-                                          ["project:subprojects/alpha/specs/stories/"])
-        self.assertEqual(caught.exception.code, "SCOPE_DENIED")
-        (self.root / "evidence/linked.json").symlink_to(self.root / self.acceptance)
-        metadata["acceptance_evidence"] = ["evidence/linked.json"]
-        write(self.path, metadata, "Alpha Story One",
-              "## Acceptance Criteria\n\n- [ ] Result file contains verified output\n")
+            kosmic_completion.check_terminal_receipt(self.root, record)
+        self.assertEqual(caught.exception.code, "COMPLETION_PENDING")
+        self.assertIn("historical receipt original missing: evidence/legacy-review.json",
+                      caught.exception.detail)
         with self.assertRaises(WorkdirError) as caught:
-            kosmic_completion.finish_work(self.root, self.tree, self.identity,
-                                          ["project:subprojects/alpha/specs/stories/"])
-        self.assertEqual(caught.exception.code, "SCOPE_DENIED")
+            kosmic_completion.check_completion_gates(self.root, identity, self.tree)
+        self.assertEqual(caught.exception.code, "COMPLETION_PENDING")
+        review_bytes.write_bytes(review_backup)
+
+        # (c) a changed historical original surfaces as drift.
+        acceptance_path = self.root / "evidence/legacy-acceptance.json"
+        acceptance_backup = acceptance_path.read_bytes()
+        acceptance_path.write_bytes(acceptance_backup.replace(b"passed", b"Passed"))
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.check_terminal_receipt(self.root, record)
+        self.assertEqual(caught.exception.code, "COMPLETION_DRIFT")
+        self.assertIn("historical receipt original changed: evidence/legacy-acceptance.json",
+                      caught.exception.detail)
+        acceptance_path.write_bytes(acceptance_backup)
+
+        # (f) recorded artifact digests are historical facts: raw notes and
+        # data files are never opened or re-hashed after the receipt.
+        observed.write_text("The observation was later merged and rewritten.\n")
+        artifact.write_text("evolved output bytes\n")
+        validated = kosmic_completion.check_terminal_receipt(self.root, record)
+        self.assertEqual(validated["identity"], identity)
+        observed.unlink()
+        artifact.unlink()
+        validated = kosmic_completion.check_terminal_receipt(self.root, record)
+        self.assertEqual(validated["identity"], identity)
+
+        # (g) an empty proof map cannot complete a legacy record.
+        empty_payload = (json.dumps({**receipt, "proof": {}},
+                                    sort_keys=True, indent=2) + "\n").encode()
+        receipt_path.write_bytes(empty_payload)
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.check_terminal_receipt(self.root, record)
+        self.assertEqual(caught.exception.code, "COMPLETION_PENDING")
+        self.assertIn("legacy receipt proof missing recorded original",
+                      caught.exception.detail)
+        receipt_path.write_bytes(receipt_payload)
+
+        # (d) rerunning finish on the drifted legacy receipt never repins it.
+        acceptance_path.write_bytes(acceptance_backup.replace(b"passed", b"Passed"))
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.finish_work(
+                self.root, self.tree, identity,
+                ["worktree:src/", "project:evidence/", "project:specs/"])
+        self.assertEqual(caught.exception.code, "COMPLETION_DRIFT")
+        self.assertEqual(receipt_path.read_bytes(), receipt_payload)
+        acceptance_path.write_bytes(acceptance_backup)
+
+        # (e) editing the legacy record after its receipt breaks the binding.
+        record_path.write_text(record_path.read_text() + "\nPost-receipt refinement.\n")
+        with self.assertRaises(WorkdirError) as caught:
+            kosmic_completion.check_terminal_receipt(
+                self.root, SpecCatalog(self.root).resolve(identity))
+        self.assertEqual(caught.exception.code, "COMPLETION_PENDING")
+        self.assertIn("no matching successful receipt", caught.exception.detail)
 
     def test_finish_retry_converges_when_project_is_worktree_root(self):
         root = Path(self.tmp.name) / "equal-root"
@@ -317,37 +427,32 @@ class WorkRecordTest(unittest.TestCase):
         record_path = root / "specs/quick-tasks/task.md"
         metadata = {"project_id": "equal", "subproject_id": None, "status": "approved",
                     "record_kind": "quick-task", "local_id": "task",
-                    "acceptance_evidence": ["evidence/acceptance.json"],
-                    "review_record": "evidence/review.json", "review_base": "base"}
+                    "review_base": "base", "review_round": 1,
+                    "completion_observations": [{
+                        "criterion": "Source output is observed",
+                        "observation": "The source output bytes were read and observed.",
+                        "source": "tests/test_kosmic_work_records.py"}],
+                    "completion_review": {
+                        "reviewer": "fixture-reviewer",
+                        "axes": {
+                            "standards": {"reviewer": "fixture-standards-reviewer",
+                                          "decision": "approved"},
+                            "spec": {"reviewer": "fixture-spec-reviewer",
+                                     "decision": "approved"}},
+                        "decision": "approved", "review_base": "base",
+                        "reviewed_revision": "0" * 64, "findings": [],
+                        "scope": ["worktree:src/", "project:specs/"]}}
         write(record_path, metadata, "Task",
               "## Acceptance Criteria\n\n- [ ] Source output is observed\n")
-        artifact = root / "evidence/result.txt"
-        artifact.parent.mkdir(parents=True)
-        artifact.write_text("accepted\n")
-        evidence = {"schema": "kosmic.acceptance-evidence/1", "identity": identity,
-                    "record_path": record_path.relative_to(root).as_posix(),
-                    "results": [{"criterion": "Source output is observed", "outcome": "passed",
-                                 "observation": "Read source output bytes.",
-                                 "artifacts": [{"path": "evidence/result.txt",
-                                                "sha256": hashlib.sha256(artifact.read_bytes()).hexdigest()}]}]}
-        (root / "evidence/acceptance.json").write_text(json.dumps(evidence))
-        review = {"schema": "kosmic.work-review/1", "identity": identity,
-                  "record_path": record_path.relative_to(root).as_posix(), "review_base": "base",
-                  "round": 1, "standards": {"decision": "approved", "reviewer": "standards"},
-                  "spec": {"decision": "approved", "reviewer": "spec"},
-                  "findings": [], "decision": "approved"}
-        (root / "evidence/review.json").write_text(json.dumps(review))
         write(root / "specs/stories/story-legacy.md", {"status": "approved"}, "Legacy feature")
         commit_all(root, "2026-10-04", "equal-root fixture")
         record = kosmic_work.resolve_work_record(root, identity)
         kosmic_work.check_work_start(root, root, identity)
-        review["reviewed_revision"] = kosmic_completion.source_revision(root, root, record)
-        (root / "evidence/review.json").write_text(json.dumps(review))
         (root / "src/result.txt").parent.mkdir(parents=True)
         (root / "src/result.txt").write_text("source output\n")
-        review["reviewed_revision"] = kosmic_completion.source_revision(root, root, record)
-        (root / "evidence/review.json").write_text(json.dumps(review))
-        scope = ["worktree:src/", "project:specs/", "project:evidence/"]
+        set_reviewed_revision(
+            record_path, kosmic_completion.source_revision(root, root, record))
+        scope = ["worktree:src/", "project:specs/"]
         original_write = kosmic_work._atomic_write
 
         def fail_receipt(base, relative, payload):
@@ -363,8 +468,7 @@ class WorkRecordTest(unittest.TestCase):
         result = subprocess.run(
             [sys.executable, str(cli), "work", "finish", "--project", str(root),
              "--worktree", str(root), "--work-record", identity,
-             "--scope", "worktree:src/", "--scope", "project:specs/",
-             "--scope", "project:evidence/"],
+             "--scope", "worktree:src/", "--scope", "project:specs/"],
             capture_output=True, text=True)
         self.assertEqual(result.returncode, 0, result.stderr)
         record = kosmic_work.resolve_work_record(root, identity, allow_terminal=True)
@@ -384,7 +488,6 @@ class WorkRecordTest(unittest.TestCase):
         self.refresh_review_revision()
         finish = subprocess.run(base + ["work", "finish", *common,
                                         "--scope", "worktree:src/",
-                                        "--scope", "project:evidence/",
                                         "--scope", "project:subprojects/alpha/specs/stories/"],
                                capture_output=True, text=True)
         self.assertEqual(finish.returncode, 0, finish.stderr)

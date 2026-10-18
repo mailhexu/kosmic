@@ -2698,35 +2698,6 @@ def resolve_related_note(project: Project, reference: str) -> Path:
     return resolved
 
 
-def note_links_evidence_pack(notes_dir: Path, slug: str) -> bool:
-    pack_prefix = f"{EVIDENCE_DIR_NAME}/{slug}"
-    for path in sorted(notes_dir.rglob("*.md")):
-        if path.name in {"index.md", "log.md"}:
-            continue
-        try:
-            document = parse_markdown(path.read_text(encoding="utf-8"))
-        except KosmicError:
-            # Discovery is existential, not a whole-vault audit: an invalid
-            # candidate cannot establish the link. Declared related notes are
-            # validated separately; full validate still rejects this file.
-            continue
-        status = str(document.metadata.get("status") or "").strip().lower()
-        if status not in {"draft", "stable"}:
-            continue
-        relative = path.relative_to(notes_dir).as_posix()
-        try:
-            # A candidate that names this pack must itself be valid Project
-            # Knowledge; a malformed note cannot establish the evidence link.
-            _validate_note_document(document, relative, notes_dir.parent)
-        except KosmicError:
-            continue
-        for raw in as_path_list(document.metadata.get("evidence")):
-            cleaned = raw.strip()
-            if cleaned == pack_prefix or cleaned.startswith(pack_prefix + "/"):
-                return True
-    return False
-
-
 def parse_math_protocol(stdout: str, slug: str) -> tuple[str, str, tuple[MathResult, ...]]:
     try:
         payload = json.loads(stdout)
@@ -3716,14 +3687,6 @@ def _check_existing_completion(
     if not isinstance(affects_interface, bool):
         raise KosmicError("consumer_interface_change must be true or false")
     validate_math_implementation(project, registry, document, source_root)
-    for slug in as_string_list(document.metadata.get("evidence_packs")):
-        pack_dir = project.evidence_dir / slug
-        if not pack_dir.is_dir():
-            raise KosmicError(f"declared evidence pack is missing: evidence/{slug}")
-        if not note_links_evidence_pack(project.notes_dir, slug):
-            raise KosmicError(
-                f"evidence pack has no draft-or-stable note linking it: evidence/{slug}"
-            )
     if "proposal_required" in document.metadata:
         proposal_required = document.metadata["proposal_required"]
         if not isinstance(proposal_required, bool):
@@ -3815,31 +3778,64 @@ def check_completion(
     project: Project, work_item: Path, source_root: Path = Path.cwd(), *,
     work_record: str | None = None,
 ) -> None:
-    """Run record/receipt gates before all existing completion early returns."""
+    """Run record/receipt gates before all existing completion early returns.
+
+    Canonical records resolve identically in both modes: a ``done``
+    implementation record always requires approved ancestry and a valid
+    receipt over its unchanged bytes, so a drifted, unreceipted, or
+    hand-edited ``done`` never reports complete through the plain
+    ``--work-item`` entry, while ``--work-record`` keeps the full gates.
+    Genuinely non-canonical work-item files keep the read-only diagnostic
+    path, but resolution never falls back past scope or malformed-identity
+    failures.
+    """
     record_scoped = False
     record_owner: str | None = None
-    if work_record is not None:
-        if __package__:
-            from . import kosmic_completion
-        else:
-            import kosmic_completion
+    if __package__:
+        from . import kosmic_completion
+    else:
+        import kosmic_completion
+    record = None
+    catalog = None
+    try:
+        catalog = SpecCatalog(project.root)
+        record = catalog.resolve(work_item)
+    except SpecError as error:
+        if error.code == "SCOPE_DENIED":
+            raise
         try:
-            catalog = SpecCatalog(project.root)
-            record = catalog.resolve(work_item)
-        except SpecError:
             # Record-bound view: an unrelated subproject's defect must not
             # hide this record's own authorization and completion gates.
-            catalog = SpecCatalog.bounded_for_reference(project.root, str(work_item))
+            catalog = SpecCatalog.bounded_for_reference(
+                project.root, str(work_item))
             record = catalog.resolve(work_item)
-        record_scoped = True
-        record_owner = record.subproject_id
-        resolved = kosmic_work.resolve_work_record(project.root, work_record)
-        if resolved.qualified_id != record.qualified_id:
-            raise kosmic_work.WorkdirError(
-                "RECORD_NOT_AUTHORIZED",
-                f"{record.path}: --work-record names {resolved.qualified_id}")
-        kosmic_completion.check_completion_gates(project.root, work_item, source_root)
-        if record.status == "done":
+        except SpecError as bounded_error:
+            if work_record is not None or bounded_error.code == "SCOPE_DENIED":
+                raise bounded_error
+            record = None  # non-canonical file: diagnostic-only completion checks
+            catalog = None
+    if record is not None:
+        if work_record is not None:
+            # check-completion verifies, it never mutates: a done record must
+            # reach the terminal gates instead of being denied as a phase
+            # violation by implementation-only resolution.
+            resolved = kosmic_work.resolve_work_record(
+                project.root, work_record,
+                allow_terminal=record.status == "done")
+            if resolved.qualified_id != record.qualified_id:
+                raise kosmic_work.WorkdirError(
+                    "RECORD_NOT_AUTHORIZED",
+                    f"{record.path}: --work-record names {resolved.qualified_id}")
+            kosmic_completion.check_completion_gates(project.root, work_item, source_root)
+            record_scoped = True
+            record_owner = record.subproject_id
+            if record.status == "done":
+                return
+        elif (record.status == "done"
+              and record.kind in kosmic_work.IMPLEMENTATION_KINDS):
+            # Terminal invariance: the plain --work-item entry must apply the
+            # same done gates as --work-record.
+            kosmic_completion.check_done_record_gates(catalog, project.root, record)
             return
     # Diagnostic-only completion checks remain read-only and record-free.
     _check_existing_completion(project, work_item, source_root,

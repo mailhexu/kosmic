@@ -1,6 +1,8 @@
 """Small real-CLI fixture shared by the record-scope regression scenarios."""
 
 from pathlib import Path
+import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -8,6 +10,45 @@ import unittest
 
 CLI = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
 MATH_INDEX = "# Math Derivations\n\n| Derivation | Status | Result summary |\n|------------|--------|----------------|\n"
+
+FIXTURE_COMMIT_ENV = {
+    "GIT_AUTHOR_DATE": "2026-10-18T12:00:00",
+    "GIT_COMMITTER_DATE": "2026-10-18T12:00:00",
+    "GIT_AUTHOR_NAME": "fixture",
+    "GIT_AUTHOR_EMAIL": "fixture@example.invalid",
+    "GIT_COMMITTER_NAME": "fixture",
+    "GIT_COMMITTER_EMAIL": "fixture@example.invalid",
+}
+
+
+def commit_baseline(worktree: Path, message: str = "fixture baseline") -> str:
+    """Commit every current path so later diffs isolate the declared scope."""
+    environment = {**os.environ, **FIXTURE_COMMIT_ENV}
+    subprocess.run(["git", "add", "-A"], cwd=str(worktree), check=True,
+                   capture_output=True, env=environment)
+    subprocess.run(["git", "commit", "-q", "-m", message], cwd=str(worktree), check=True,
+                   capture_output=True, env=environment)
+    return subprocess.run(["git", "rev-parse", "HEAD"], cwd=str(worktree), check=True,
+                          capture_output=True, text=True, env=environment).stdout.strip()
+
+
+def frontmatter(fields: dict[str, object]) -> str:
+    """Render record frontmatter as single-line JSON-compatible flow YAML."""
+    lines = ["---"]
+    for key, value in fields.items():
+        lines.append(f"{key}: {json.dumps(value)}")
+    lines.append("---")
+    return "\n".join(lines) + "\n"
+
+
+def write_document(path: Path, fields: dict[str, object], title: str,
+                   body: str = "") -> Path:
+    """Rewrite a spec record document with the given frontmatter fields."""
+    text = frontmatter(fields) + f"\n# {title}\n"
+    if body:
+        text += f"\n{body}\n"
+    path.write_text(text, encoding="utf-8")
+    return path
 
 
 class ScopedProjectCase(unittest.TestCase):

@@ -7,6 +7,19 @@ transition, the durable work receipt, and finally the STATUS reports derived
 from that committed receipt. An interruption leaves the record not-done (or
 fully done); the command is simply rerun — there is no recovery journal.
 Unreceipted ``done`` remains pending for catalog/STATUS readers.
+
+Revision 3: completion evidence moves into the governing record.
+``validate_completion_proof`` checks embedded ``completion_observations``
+(structural exact-checkbox criterion coverage only — never text parsing) and
+``_checked_review`` validates the embedded structured ``completion_review``
+(both review axes, fixed base, round, findings ledger) plus the
+``reviewed_revision`` binding. The published receipt binds exactly the
+completed record bytes (``proof == {record_path: record_sha256}``), so later
+note or data-doc evolution never revokes completion while a post-receipt edit
+of the work record itself breaks the receipt by design. Historical receipts
+recorded against acceptance/review sidecars keep validating those recorded
+originals' bytes; missing originals surface as explicit pending and changed
+originals as drift — never repinned or re-blessed against current bytes.
 """
 
 from __future__ import annotations
@@ -99,73 +112,39 @@ def _json(root: Path, relative: str, code: str) -> dict[str, Any]:
 
 
 def validate_completion_proof(root: Path, record) -> dict[str, str]:
-    """Check identity and observed artifacts; independent review judges sufficiency."""
+    """Check exact structural criterion coverage of embedded observations.
+
+    A structural gate only: every acceptance criterion checkbox in the
+    record body must be covered by exactly one ``completion_observations``
+    entry carrying non-empty ``criterion``/``observation``/``source`` text.
+    The sufficiency of any observation — including adverse findings — is
+    judged by the recorded independent review (``_checked_review``), never
+    by parsing observation or source wording here, and no outcome field is
+    required. Returns the observed record binding
+    ``{record_path: sha256(record bytes)}``.
+    """
     root = Path(root)
     canonical = record.path.relative_to(root).as_posix()
-    declaration = record.metadata.get("acceptance_evidence")
-    _deny(not isinstance(declaration, (list, tuple)) or not declaration,
-          "ACCEPTANCE_INVALID", f"{canonical}: declare acceptance_evidence")
+    observations = record.metadata.get("completion_observations")
+    _deny(not isinstance(observations, (list, tuple)) or not observations,
+          "ACCEPTANCE_INVALID", f"{canonical}: declare completion_observations")
     document = read_document(root, record.path)
     section = re.search(r"^## Acceptance Criteria\s*$([\s\S]*?)(?=^## |\Z)", document.body, re.M)
     criteria = re.findall(r"^- \[[ xX]\]\s+(.+)$", section.group(1), re.M) if section else []
     _deny(not criteria, "ACCEPTANCE_INVALID", f"{canonical}: no acceptance criteria")
-    hashes: dict[str, str] = {}
-    outcomes: dict[str, dict[str, Any]] = {}
-    for reference in declaration:
-        _deny(not isinstance(reference, str), "ACCEPTANCE_INVALID", canonical)
-        evidence = _json(root, reference, "ACCEPTANCE_INVALID")
-        _deny(evidence.get("schema") != "kosmic.acceptance-evidence/1"
-              or evidence.get("identity") != record.qualified_id
-              or evidence.get("record_path") != canonical,
-              "ACCEPTANCE_INVALID", f"{canonical}: foreign evidence {reference}")
-        hashes[reference] = _sha(_bytes(root, reference))
-        results = evidence.get("results")
-        _deny(not isinstance(results, list) or not results, "ACCEPTANCE_INVALID", reference)
-        for result in results:
-            _deny(not isinstance(result, dict), "ACCEPTANCE_INVALID", reference)
-            criterion = result.get("criterion")
-            _deny(criterion not in criteria or criterion in outcomes,
-                  "ACCEPTANCE_INVALID", f"{reference}: unknown or repeated criterion")
-            _deny(result.get("outcome") != "passed", "ACCEPTANCE_INVALID",
-                  f"{reference}: criterion not passed: {criterion!r}")
-            for artifact in result.get("artifacts") or ():
-                _deny(not isinstance(artifact, dict), "ACCEPTANCE_INVALID", reference)
-                path = artifact.get("path")
-                observed = _sha(_bytes(root, str(path))) if path else None
-                _deny(observed is None or artifact.get("sha256") != observed,
-                      "ACCEPTANCE_INVALID",
-                      f"{canonical}: missing or stale artifact {path}")
-                hashes[str(path)] = observed
-            outcomes[criterion] = result
-    _deny(set(outcomes) != set(criteria), "ACCEPTANCE_INVALID", f"{canonical}: uncovered criteria")
-    reference = record.metadata.get("review_record")
-    _deny(not isinstance(reference, str) or not reference, "REVIEW_INVALID",
-          f"{canonical}: missing review_record")
-    review = _json(root, reference, "REVIEW_INVALID")
-    base = record.metadata.get("review_base")
-    _deny(not isinstance(base, str) or not base.strip()
-          or review.get("schema") != "kosmic.work-review/1"
-          or review.get("identity") != record.qualified_id
-          or review.get("record_path") != canonical
-          or review.get("review_base") != base
-          or type(review.get("round")) is not int or not 1 <= review["round"] <= 3,
-          "REVIEW_INVALID", f"{canonical}: review identity/base/round mismatch")
-    for axis in ("standards", "spec"):
-        decision = review.get(axis)
-        _deny(not isinstance(decision, dict) or decision.get("decision") != "approved"
-              or not isinstance(decision.get("reviewer"), str) or not decision["reviewer"].strip(),
-              "REVIEW_INVALID", f"{canonical}: {axis} approval missing")
-    findings = review.get("findings")
-    _deny(not isinstance(findings, list) or review.get("decision") not in ("approved", "user-accepted"),
-          "REVIEW_INVALID", canonical)
-    for finding in findings:
-        _deny(not isinstance(finding, dict) or not finding.get("id"), "REVIEW_INVALID", canonical)
-        if finding.get("disposition") == "Blocking":
-            accepted = review["decision"] == "user-accepted" and review.get("approved_by")
-            _deny(finding.get("status") != "resolved" and not accepted,
-                  "REVIEW_INVALID", f"{canonical}: unresolved {finding['id']}")
-    hashes[reference] = _sha(_bytes(root, reference))
-    return hashes
+    covered: set[str] = set()
+    for observation in observations:
+        _deny(not isinstance(observation, dict)
+              or not all(isinstance(observation.get(field), str) and observation[field].strip()
+                         for field in ("criterion", "observation", "source")),
+              "ACCEPTANCE_INVALID", f"{canonical}: incomplete completion_observations entry")
+        criterion = observation["criterion"]
+        _deny(criterion not in criteria or criterion in covered,
+              "ACCEPTANCE_INVALID",
+              f"{canonical}: unknown or repeated criterion: {criterion!r}")
+        covered.add(criterion)
+    _deny(covered != set(criteria), "ACCEPTANCE_INVALID", f"{canonical}: uncovered criteria")
+    return {canonical: _sha(_bytes(root, canonical))}
 
 
 def source_revision(worktree: Path, root: Path, record) -> str:
@@ -197,13 +176,82 @@ def source_revision(worktree: Path, root: Path, record) -> str:
 
 
 def validate_receipt_payload(root: Path, record, receipt: dict[str, Any]) -> dict[str, Any]:
+    """Validate a terminal receipt against its completed record binding.
+
+    A current receipt binds exactly ``{record_path: record_sha256}``; only
+    the unchanged completed record bytes are hashed, so later refinement of
+    linked notes or data documents never revokes completion while any
+    post-receipt edit of the work record itself breaks the receipt by
+    design. A historical receipt recorded against acceptance/review sidecars
+    classifies its originals from the completed record's own recorded
+    ``acceptance_evidence``/``review_record`` references and byte-verifies
+    only those originals (missing → pending, changed → drift) together with
+    their schema/identity/record binding and the artifact digest maps
+    recorded inside them; the recorded artifact/notes/data digests remain
+    historical facts and are never opened or re-hashed against current
+    bytes. Empty, incomplete, or foreign proof maps cannot complete, and
+    historical receipts are never repinned or re-blessed.
+    """
+    root = Path(root)
     canonical = record.path.relative_to(Path(root)).as_posix()
+    record_sha256 = _sha(_bytes(Path(root), canonical))
     _deny(receipt.get("schema") != RECEIPT_SCHEMA or receipt.get("identity") != record.qualified_id
           or receipt.get("status") != "successful" or receipt.get("record_path") != canonical
-          or receipt.get("record_sha256") != _sha(_bytes(Path(root), canonical)),
+          or receipt.get("record_sha256") != record_sha256,
           "COMPLETION_PENDING", f"{canonical}: no matching successful receipt")
-    proof = validate_completion_proof(Path(root), record)
-    _deny(proof != receipt.get("proof"), "COMPLETION_DRIFT", f"{canonical}: evidence/review drift")
+    proof = receipt.get("proof")
+    _deny(not isinstance(proof, dict), "COMPLETION_PENDING",
+          f"{canonical}: receipt proof missing")
+    if set(proof) == {canonical}:
+        _deny(proof[canonical] != record_sha256, "COMPLETION_DRIFT",
+              f"{canonical}: completed record changed after receipt")
+        return receipt
+    # Historical (pre-cutover) receipt: the completed record itself names the
+    # acceptance and review sidecars it was finished against. Only those
+    # recorded originals are byte-verified — their schema/identity/record
+    # binding and the artifact digest maps recorded inside them must agree
+    # with the receipt's recorded proof, but the recorded artifact/notes/data
+    # digests stay historical facts: current raw files are never opened or
+    # re-hashed, so later note or dataset evolution cannot revoke completion.
+    # Empty or incomplete proof maps cannot complete: a legacy receipt must
+    # still name every recorded original, or it stays explicitly pending.
+    declaration = record.metadata.get("acceptance_evidence")
+    _deny(not isinstance(declaration, (list, tuple)) or not declaration,
+          "COMPLETION_PENDING",
+          f"{canonical}: legacy receipt without recorded acceptance evidence")
+    review_reference = record.metadata.get("review_record")
+    _deny(not isinstance(review_reference, str) or not review_reference,
+          "COMPLETION_PENDING",
+          f"{canonical}: legacy receipt without recorded review record")
+    recorded_originals = [(str(item), "kosmic.acceptance-evidence/1")
+                          for item in declaration]
+    recorded_originals.append((review_reference, "kosmic.work-review/1"))
+    for reference, expected_schema in recorded_originals:
+        digest = proof.get(reference)
+        _deny(not isinstance(digest, str), "COMPLETION_PENDING",
+              f"{canonical}: legacy receipt proof missing recorded original: {reference}")
+        original = _bytes(root, reference)
+        _deny(original is None, "COMPLETION_PENDING",
+              f"{canonical}: historical receipt original missing: {reference}")
+        _deny(_sha(original) != digest, "COMPLETION_DRIFT",
+              f"{canonical}: historical receipt original changed: {reference}")
+        document = _json(root, reference, "COMPLETION_PENDING")
+        _deny(document.get("schema") != expected_schema
+              or document.get("identity") != record.qualified_id
+              or document.get("record_path") != canonical,
+              "COMPLETION_DRIFT",
+              f"{canonical}: historical receipt original foreign: {reference}")
+    for reference, _ in recorded_originals[:-1]:
+        document = _json(root, reference, "COMPLETION_PENDING")
+        for result in document.get("results") or ():
+            artifacts = result.get("artifacts") if isinstance(result, dict) else None
+            for artifact in artifacts or ():
+                path = str(artifact.get("path")) if isinstance(artifact, dict) else None
+                recorded = proof.get(path) if path is not None else None
+                _deny(path is None or not isinstance(recorded, str)
+                      or artifact.get("sha256") != recorded,
+                      "COMPLETION_DRIFT",
+                      f"{canonical}: historical receipt artifact digest inconsistent: {path}")
     return receipt
 
 
@@ -214,12 +262,89 @@ def check_terminal_receipt(root: Path, record) -> dict[str, Any]:
     return validate_receipt_payload(Path(root), record, receipt)
 
 
-def _checked_review(root: Path, worktree: Path, record) -> dict[str, str]:
-    review = _json(root, str(record.metadata["review_record"]), "REVIEW_INVALID")
+def _checked_review(root: Path, worktree: Path, record, *,
+                    changed_paths=None, excluded_paths=()) -> None:
+    """Validate the embedded structured ``completion_review`` (ADR-B shape).
+
+    Layout follows the accepted Architecture YAML: ``reviewer`` identity,
+    nested ``axes.standards``/``axes.spec`` each with a named reviewer and
+    approved decision, overall ``decision`` (``approved`` or
+    ``user-accepted`` with ``approved_by``), ``review_base`` bound to the
+    record metadata and ``review_round`` in 1..3, a stable findings ledger
+    with ``disposition``/``status`` and explicit human risk acceptance
+    fields, ``reviewed_revision`` bound to the unchanged ``source_revision``,
+    and a typed ``scope`` claim list (possibly empty for record-only work).
+    The root-level axes shape is not accepted on new records. When
+    ``changed_paths`` is given, the actual changed work must also be covered
+    by the reviewed claims, reusing the unchanged ``check_record_changes``
+    algorithm with the same exemptions; uncovered reviewed scope fails as
+    ``REVIEW_INVALID`` after the primary finish-claim check.
+    """
+    review = record.metadata.get("completion_review")
+    canonical = record.path.relative_to(Path(root)).as_posix()
+    _deny(not isinstance(review, dict), "REVIEW_INVALID",
+          f"{canonical}: declare completion_review")
+    base = record.metadata.get("review_base")
+    round_number = record.metadata.get("review_round")
+    _deny(not isinstance(base, str) or not base.strip()
+          or type(round_number) is not int or not 1 <= round_number <= 3
+          or review.get("review_base") != base,
+          "REVIEW_INVALID", f"{canonical}: review base/round binding mismatch")
+    _deny(not isinstance(review.get("reviewer"), str) or not review["reviewer"].strip(),
+          "REVIEW_INVALID", f"{canonical}: reviewer identity missing")
+    axes = review.get("axes")
+    _deny(not isinstance(axes, dict), "REVIEW_INVALID",
+          f"{canonical}: completion_review axes missing")
+    for axis in ("standards", "spec"):
+        decision = axes.get(axis)
+        _deny(not isinstance(decision, dict) or decision.get("decision") != "approved"
+              or not isinstance(decision.get("reviewer"), str)
+              or not decision["reviewer"].strip(),
+              "REVIEW_INVALID", f"{canonical}: {axis} approval missing")
+    overall = review.get("decision")
+    _deny(overall not in ("approved", "user-accepted"), "REVIEW_INVALID",
+          f"{canonical}: review decision blocks completion: {overall!r}")
+    _deny(overall == "user-accepted"
+          and (not isinstance(review.get("approved_by"), str)
+               or not review["approved_by"].strip()),
+          "REVIEW_INVALID", f"{canonical}: user-accepted requires approved_by")
+    findings = review.get("findings")
+    _deny(not isinstance(findings, list), "REVIEW_INVALID",
+          f"{canonical}: findings ledger missing")
+    for finding in findings:
+        _deny(not isinstance(finding, dict) or not isinstance(finding.get("id"), str)
+              or not finding["id"].strip(), "REVIEW_INVALID",
+              f"{canonical}: finding without stable id")
+        if finding.get("disposition") == "Blocking":
+            resolved = finding.get("status") == "resolved"
+            accepted = (finding.get("status") == "risk-accepted"
+                        and isinstance(finding.get("risk_accepted_by"), str)
+                        and bool(finding["risk_accepted_by"].strip())
+                        and isinstance(finding.get("risk_acceptance_note"), str)
+                        and bool(finding["risk_acceptance_note"].strip()))
+            _deny(not resolved and not accepted, "REVIEW_INVALID",
+                  f"{canonical}: unresolved blocking finding {finding['id']}")
+    reviewed_scope = review.get("scope")
+    _deny(not isinstance(reviewed_scope, list), "REVIEW_INVALID",
+          f"{canonical}: completion_review scope must be a list of finish claims")
+    try:
+        for claim in reviewed_scope:
+            work._normalize_claim(str(claim))
+    except work.WorkdirError as error:
+        raise work.WorkdirError(
+            "REVIEW_INVALID", f"{canonical}: reviewed scope claim invalid: {error}") from error
+    if changed_paths is not None:
+        try:
+            work.check_record_changes(worktree, tuple(str(claim) for claim in reviewed_scope),
+                                      root, excluded_paths=tuple(excluded_paths))
+        except work.WorkdirError as error:
+            raise work.WorkdirError(
+                "REVIEW_INVALID",
+                f"{record.path}: reviewed scope does not cover the actual work: {error}"
+            ) from error
     _deny(review.get("reviewed_revision") != source_revision(worktree, root, record),
           "REVIEW_INVALID",
           f"{record.path}: reviewed revision differs from current work")
-    return review
 
 def _update_indexes(root: Path, record) -> None:
     indexes = {record.path.parent.parent / "INDEX.md", Path(root) / "specs" / "INDEX.md"}
@@ -338,28 +463,32 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
             # rewriting the receipt or duplicating the completion log.
             _write_status_reports(root, record.subproject_id)
             return receipt
-    proof = validate_completion_proof(root, record)
-    _checked_review(root, tree, record)
-    publication_paths = []
-    if record.status == "done":
-        import datetime
-        candidates = [record.path.parent.parent / "INDEX.md", root / "specs" / "INDEX.md",
-                      root / "log" / f"{datetime.date.today().isoformat()}-work-completion.md"]
-        candidates.extend(Path(item["path"]) / "STATUS.md"
-                          for item in work.load_registry(root)["directories"])
-        try:
-            if __package__:
-                from . import kosmic_project_skills as cli
-            else:
-                import kosmic_project_skills as cli
-            project_config = cli.load_project(root)
-        except (OSError, RuntimeError, ValueError):
-            project_config = None
-        if project_config is not None and project_config.status_root:
-            candidates.append(project_config.status_root / "STATUS.md")
-        publication_paths = [path.relative_to(tree).as_posix() for path in candidates
-                             if path.is_relative_to(tree)]
-    work.check_record_changes(tree, scope, root, publication_paths)
+    validate_completion_proof(root, record)
+    import datetime
+    candidates = [record.path.parent.parent / "INDEX.md", root / "specs" / "INDEX.md",
+                  root / "log" / f"{datetime.date.today().isoformat()}-work-completion.md"]
+    candidates.extend(Path(item["path"]) / "STATUS.md"
+                      for item in work.load_registry(root)["directories"])
+    try:
+        if __package__:
+            from . import kosmic_project_skills as cli
+        else:
+            import kosmic_project_skills as cli
+        project_config = cli.load_project(root)
+    except (OSError, RuntimeError, ValueError):
+        project_config = None
+    if project_config is not None and project_config.status_root:
+        candidates.append(project_config.status_root / "STATUS.md")
+    publication_candidates = [path.relative_to(tree).as_posix() for path in candidates
+                              if path.is_relative_to(tree)]
+    publication_paths = publication_candidates if record.status == "done" else []
+    scope_result = work.check_record_changes(tree, scope, root, publication_paths)
+    # Primary finish-claim coverage ran first (SCOPE_DENIED precedence); the
+    # reviewed claims must then cover the same actual changed work, with the
+    # canonical publication outputs exempted identically.
+    _checked_review(root, tree, record,
+                    changed_paths=tuple(scope_result["changed"]),
+                    excluded_paths=tuple(publication_candidates))
     # Publish: record status -> done, then indexes and the completion log,
     # then the authoritative receipt; STATUS reports are derived last so they
     # are generated from the committed receipt, never describing finished
@@ -371,13 +500,14 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
     work._atomic_write(root, canonical, updated.encode())
     _update_indexes(root, record)
     _append_completion_log(root, record, detail)
+    record_sha256 = _sha(record.path.read_bytes())
     receipt = {
         "schema": RECEIPT_SCHEMA,
         "identity": record.qualified_id,
         "status": "successful",
         "record_path": canonical,
-        "record_sha256": _sha(record.path.read_bytes()),
-        "proof": proof,
+        "record_sha256": record_sha256,
+        "proof": {canonical: record_sha256},
         "completed_at": _utcnow(),
         "detail": detail,
     }
@@ -385,6 +515,18 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
     work._atomic_write(root, receipt_path, receipt_payload)
     _write_status_reports(root, record.subproject_id)
     return receipt
+
+
+def check_done_record_gates(catalog, project_root: Path, record) -> None:
+    """Ancestry and terminal receipt gates for a canonical done record.
+
+    Shared by ``check_completion_gates`` and the plain ``--work-item``
+    completion entry: a done record always requires approved ancestry and a
+    valid receipt over its unchanged bytes, so a drifted or unreceipted
+    ``done`` never reports complete through either mode.
+    """
+    work._ancestry_approved(catalog, record)
+    check_terminal_receipt(Path(project_root).expanduser().resolve(), record)
 
 
 def check_completion_gates(project_root: Path, work_item: Path,
@@ -403,8 +545,7 @@ def check_completion_gates(project_root: Path, work_item: Path,
         catalog = SpecCatalog.bounded_for_reference(root, str(work_item))
         record = catalog.resolve(work_item)
     if record.status == "done":
-        work._ancestry_approved(catalog, record)
-        check_terminal_receipt(root, record)
+        check_done_record_gates(catalog, root, record)
         return
     if record.kind in work.IMPLEMENTATION_KINDS:
         validate_completion_proof(root, record)

@@ -176,7 +176,7 @@ def receipt_for(identity: str) -> str:
 
 
 def open_receipt_store(root: Path, satisfied: tuple[str, ...] = ()) -> Path:
-    """Publish fixture receipts bound to the current canonical record/proof.
+    """Publish fixture receipts bound to the current embedded record contract.
 
     Flat bootstrap identities retain their explicitly supported minimal format.
     """
@@ -187,31 +187,42 @@ def open_receipt_store(root: Path, satisfied: tuple[str, ...] = ()) -> Path:
         if not identity.startswith("specs/"):
             import hashlib
             from skills.scripts.kosmic_specs import SpecCatalog
-            from skills.scripts.kosmic_completion import validate_completion_proof
+            from skills.scripts.kosmic_completion import (
+                source_revision,
+                validate_completion_proof,
+            )
             ref = SpecCatalog(root).resolve(identity)
             canonical = ref.path.relative_to(root).as_posix()
-            stem = hashlib.sha256(identity.encode()).hexdigest()[:16]
-            artifact = "evidence/" + stem + ".txt"
-            evidence = "evidence/" + stem + "-acceptance.json"
-            review = "evidence/" + stem + "-review.json"
-            (root / "evidence").mkdir(exist_ok=True)
-            (root / artifact).write_text("Fixture observed result: 42\n")
             metadata = dict(ref.metadata)
-            metadata.update(acceptance_evidence=[evidence], review_record=review, review_base="fixture-base")
+            metadata.update(
+                review_base="fixture-base", review_round=1,
+                completion_observations=[{
+                    "criterion": "Result equals 42",
+                    "observation": "Observed 42",
+                    "source": "tests/test_kosmic_navigation.py",
+                }],
+                completion_review={
+                    "reviewer": "fixture-reviewer",
+                    "axes": {
+                        "standards": {"decision": "approved",
+                                      "reviewer": "fixture-standards"},
+                        "spec": {"decision": "approved", "reviewer": "fixture-spec"}},
+                    "decision": "approved",
+                    "review_base": "fixture-base",
+                    "reviewed_revision": source_revision(
+                        root.parents[2], root, SpecCatalog(root).resolve(identity)),
+                    "findings": [],
+                    "scope": ["project:specs/"],
+                },
+            )
             title = next(line[2:] for line in ref.path.read_text().splitlines() if line.startswith("# "))
             write(ref.path, metadata, title, "## Acceptance Criteria\n\n- [x] Result equals 42\n")
-            (root / evidence).write_text(json.dumps({
-                "schema": "kosmic.acceptance-evidence/1", "identity": identity, "record_path": canonical,
-                "results": [{"criterion": "Result equals 42", "outcome": "passed", "observation": "Observed 42",
-                             "artifacts": [{"path": artifact, "sha256": hashlib.sha256((root / artifact).read_bytes()).hexdigest()}]}]}))
-            (root / review).write_text(json.dumps({
-                "schema": "kosmic.work-review/1", "identity": identity, "record_path": canonical,
-                "review_base": "fixture-base", "round": 1, "decision": "approved", "findings": [],
-                "standards": {"decision": "approved", "reviewer": "fixture-standards"},
-                "spec": {"decision": "approved", "reviewer": "fixture-spec"}}))
             ref = SpecCatalog(root).resolve(identity)
-            receipt.update(record_path=canonical, record_sha256=hashlib.sha256(ref.path.read_bytes()).hexdigest(),
-                           proof=validate_completion_proof(root, ref))
+            receipt.update(
+                record_path=canonical,
+                record_sha256=hashlib.sha256(ref.path.read_bytes()).hexdigest(),
+                proof=validate_completion_proof(root, ref),
+            )
         (store / receipt_for(identity)).write_text(json.dumps(receipt) + "\n", encoding="utf-8")
     return store
 

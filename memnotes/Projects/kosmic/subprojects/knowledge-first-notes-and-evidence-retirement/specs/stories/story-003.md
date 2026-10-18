@@ -15,7 +15,6 @@ proposal_required: false
 routine_edge_change: false
 routine_decision_required: false
 routine_proposals: []
-review_base: ""
 review_round: 0
 acceptance_evidence: []
 review_record: ""
@@ -106,7 +105,70 @@ by this Story.
 
 ## Technical Notes
 
-Current runtime (verified seams):
+Real compact-completion smoke (2026-10-18, managed run
+`20261018T164901Z-story003-completion-smok-c01e35f16be01edf9841ba77c19d6eb9`,
+handle `.tmp/kosmic/handles/61541b0151e3f421d2662db918279aa6`, toy repo
+`.tmp/kosmic/runs/<run>/scratch/toy-vault`, project `Projects/toy`,
+project_id `synthetic-sandbox`):
+
+- Canonical record `synthetic-sandbox/quick-task/fix-double-behavior`
+  (`specs/quick-tasks/fix-double-behavior.md`, project-level per the
+  supported model; toy registry rebuilt via official `workdir-register`,
+  entry `wd-3344ce8f92bbdf52`, bootstrap QC
+  `synthetic-sandbox/quick-task/bootstrap-working-directory-registration-synthetic-sandbox`).
+- `review_base` `f72528153245da9696f1b16b9e3a66ba23409f0d`; two real
+  independent approvals (Toy003Standards, Toy003Spec) recorded in the nested
+  ADR-B `completion_review` with `reviewed_revision`
+  `4d7ad892a582f48923d25c7f6cda58571eedd9f42415a4f77f1b7b24b4880bb5`, scope
+  `["worktree:src/", "project:specs/"]`.
+- Real program behavior: baseline printed `3` for input 3 (defect), `0`;
+  after the one-line fix `6` and `0`; exactly one dirty path `src/double.py`.
+- Real CLI `work finish --scope worktree:src/ --scope project:specs/` →
+  successful receipt, proof exactly `{"specs/quick-tasks/fix-double-behavior.md":
+  "<record sha256>"}`; no `evidence/`, no packs, no manufactured notes;
+  STATUS derived from the receipt.
+- Post-finish: both `check-completion` entry modes pass; a later
+  dataset-doc edit did not revoke; a post-receipt record edit was rejected
+  by both entry modes with `COMPLETION_PENDING`; after byte-exact restore
+  the finish retry returned the byte-identical receipt (receipt-first
+  repair); the src fix stayed uncommitted throughout.
+
+Research verification (2026-10-18, writer d6030fcb, baseline 09ca28c tree):
+
+- Runtime seams confirmed by direct read: `validate_completion_proof` (:101),
+  `source_revision` (:171, exclusion set `specs/`, `evidence/`, `log/`, the record
+  itself, `.tmp`, `STATUS.md`, `.git/`, nested-project prefix), `validate_receipt_payload`
+  (:199), `check_terminal_receipt` (:211), `_checked_review` (:217), `finish_work`
+  (:312, publish order record → indexes → completion log → receipt → STATUS,
+  receipt-first repair), `check_completion_gates` (:390).
+- Receipts live at `Project/.kosmic/work-receipts/<receipt_name(qualified_id)>`;
+  `receipt_name` = `sha256(qualified_id)[:16].json` (`kosmic_dreams.py:443`).
+  `kosmic_dreams._successful_receipt` delegates catalog identities to
+  `validate_receipt_payload` (so pending semantics ride the rewritten validator);
+  flat `specs/`-prefixed bootstrap identities keep the minimal identity/status
+  format by design.
+- Staged-catalog root receipt validation (`kosmic_project_skills.py` STATUS rows)
+  also flows through `pending_terminal_receipts` → `_successful_receipt`, so the
+  rewritten record-bound/legacy validator covers the STATUS pending surface with
+  no extra consumers to change.
+- `evidence_packs` completion gate sat at `kosmic_project_skills.py:3661-3668`
+  with `note_links_evidence_pack` (:2643) as its only runtime caller — both
+  retired in the cutover; Skill Proposal metadata handling and the full
+  `validate` command's `validate_evidence_packs` audit are separate concerns and
+  stay untouched (Story 005 owns whole-release doc cutover).
+- Test conventions: CLI-driven consumer tests via `tests/scoped_completion_support.py`
+  (`ScopedProjectCase` fixture: flat approved quick-task `fixture-task`, one
+  criterion, git repo at fixture root, `.tmp/` ignored); direct-API completion
+  tests via `tests/test_kosmic_work_records.py` (subproject story fixture from
+  `test_kosmic_navigation.build_two_feature_project`). `kosmic_yaml` renders and
+  parses JSON-compatible flow collections, so nested embedded completion fields
+  live in record frontmatter directly (round-trip verified).
+- The empty-changed-set `source_revision` payload hashes to
+  `sha256("{}") = 44136fa3…aff8a`; fixture project prefixes exclude every
+  project-relative path, so embedded `reviewed_revision` is stable across record
+  rewrites in tests.
+
+Current runtime (pre-cutover seams, verified during research):
 
 - `skills/scripts/kosmic_completion.py` — `RECEIPT_SCHEMA = "kosmic.work-receipt/1"`,
   receipts under `.kosmic/work-receipts` (:31-32). `validate_completion_proof` (:101)
