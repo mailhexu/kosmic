@@ -104,9 +104,8 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 | Review or approval requested | Task 7: Review Spec | Spec decision, research completeness check, or code review | Required for spec approval and story completion |
 | Durable knowledge learned | Task 2: Add Note | Atomic note, TOC update, log entry | Required after learning durable knowledge |
 | End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
-| Work item declared `evidence_packs`, or captured experience awaits consolidation | Task 9: Distill | Draft notes/updates/deprecations with `evidence:` links | `check-completion` enforces evidence linkage |
 | Reusable symbolic result or equation defect | Task M: Math Note | Executable derivation, paired note, registry row, source links | Derivation-first; check, review, and completion gates |
-| Distillation finds a proven executable procedure or reusable deterministic mechanics | Task P: Propose Skill Change | One role-declared skill result plus one routine action per canonical routine ID | Shared targets require fresh context, human authority, behavioral evidence, and review; reuse precedes extension and creation |
+| Implemented work yields a proven executable procedure or reusable deterministic mechanics | Task P: Propose Skill Change | One role-declared skill result plus one routine action per canonical routine ID | Shared targets require fresh context, human authority, behavioral evidence, and review; reuse precedes extension and creation |
 
 ### Task 0: Quick Task
 Plan and execute a small, low-risk implementation task.
@@ -218,13 +217,6 @@ Assign or validate immutable Project identity, transactionally normalize Project
 Previous-day whole-vault reflection via `dream-harvest` / `dream-publish` / `dream-abort`; writes only `memnotes/dreams/`.
 
 **Reference**: `references/task_dream.md`
-
-### Task 9: Distill
-Consolidate captured Evidence Packs (`evidence/{YYYY-MM-DD}-{slug}/`, append-only, never projected) into root-cause draft notes linked back to their evidence. Adapted from WikiSkill's Wiki Maintainer (arXiv 2608.27454) with attribution and a pinned upstream revision.
-
-**Reference**: `references/task_distill.md`
-
-**Gate**: Draft-only output; `check-completion` fails until every declared pack has a linking draft-or-stable note; promotion to stable is human-gated. `generate` records publications in the `impact.md` ledger automatically.
 
 ### Task P: Propose Skill Change
 Classify a reusable Pattern as one skill result (`create`, `update`, `no_action`) and, when applicable, one routine action (`reuse`, `extend`, `create`, `keep_as_prose`, `none`) per canonical routine ID. Search the generated inventory first. Proposal artifacts remain reviewable under `specs/skill-proposals/`; they never mutate canonical or installed artifacts before approval and behavioral comparison.
@@ -379,7 +371,6 @@ kosmic/
 │   ├── task_create_spec.md
 │   ├── task_implement_story.md
 │   ├── task_review_spec.md
-│   ├── task_distill.md
 │   ├── agents_template.md
 │   └── templates/
 │       ├── template-prd.md
