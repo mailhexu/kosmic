@@ -14,7 +14,7 @@ depends_on:
   - ../stories/story-002.md
   - ../stories/story-003.md
   - ../stories/story-004.md
-review_base: ""
+review_base: "139f91b"
 review_round: 0
 consumer_interface_change: true
 proposal_required: false
