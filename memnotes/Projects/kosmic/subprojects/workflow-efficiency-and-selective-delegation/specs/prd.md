@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "workflow-efficiency-and-selective-delegation"
-status: "draft"
+status: "approved"
 record_kind: "prd"
 local_id: "prd"
 ---
@@ -18,8 +18,8 @@ phase-based delegation can add avoidable foreground coordination when the
 instructions are applied mechanically. Coding, scientific analysis and
 necessary verification must remain the primary work.
 
-The user approved this direction, not this PRD or implementation. Initial
-retrieval found partial case logs and receipts, not a comparable elapsed-time
+The user approved this PRD; Architecture and implementation remain separately
+gated. Initial retrieval found partial case logs and receipts, not a comparable elapsed-time
 baseline. Successful scratch logs are ephemeral; receipt timestamps are not
 durations. Missing measurements must remain UNKNOWN, with observable
 coordination-operation counts reported separately.
@@ -116,3 +116,4 @@ Observable whole-workflow checks (each includes the stated negative boundary):
 - [Knowledge-first Architecture](../../knowledge-first-notes-and-evidence-retirement/specs/architecture.md) — ADR-B's independent-review and record-embedded proof boundaries.
 - [Terminal-receipt coherence Quick Task](../../../specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md) — existing retry semantics.
 - [Note writing style](../../../notes/note-writing-style.md) and [Shared Skill Library](../../../notes/shared-domain-skill-library.md) — conditional capture and coherent publication.
+- [Draft Architecture](architecture.md) — proposed interfaces and workflow decisions; awaiting approval.
