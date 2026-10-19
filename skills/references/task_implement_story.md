@@ -46,12 +46,12 @@ If the story implements mathematical functionality, load Task M before Phase 1. 
                           ▼
 ┌─────────────────────────────────────────────────────────┐
 │  PHASE 2: WRITE TESTS (TDD)                             │
-│  ├── Write failing tests for each acceptance criterion  │
+│  ├── Write red-capable tests for new/changed behavior   │
 │  └── Tests define expected behavior                     │
 └─────────────────────────────────────────────────────────┘
                           │
-                    STOP: Do tests fail as expected?
-                    If tests pass without implementation → tests are wrong.
+                    STOP: Do the NEW-behavior tests fail first?
+                    Existing passing guards are never forced to fail.
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
@@ -69,7 +69,7 @@ If the story implements mathematical functionality, load Task M before Phase 1. 
 │  PHASE 4: REVIEW (Mandatory - NO EXCEPTIONS)            │
 │  ├── All tests pass                                     │
 │  ├── Code review completed (Task 7)                     │
-│  └── Knowledge notes updated                            │
+│  └── Notes updated only if reusable knowledge emerged   │
 └─────────────────────────────────────────────────────────┘
                           │
                     STOP: Code review passed?
@@ -89,7 +89,7 @@ This is story-level implementation research. It is mandatory for approved storie
 
 If the Story corrects a defect, invoke `diagnosing-bugs` before Phase 2. Establish and minimize a reproducible failure, discriminate cause hypotheses with evidence, and add the regression test at the agreed seam before implementation can complete.
 
-Before the first implementation write, run `work start --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD`. It re-resolves the approved Story and requires a clean worktree. Use one record, one worktree, one writer; scope expansion requires an updated reviewed Story/Quick Task. Follow SKILL.md Record-first authority; code review is evidence, not permission to expand the slice.
+Before the first implementation write, run `work start --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD`. It re-resolves the approved Story and requires a clean worktree. Use one record, one worktree, one writer; scope expansion requires an updated reviewed Story/Quick Task. Follow SKILL.md Record-first authority; code review is evidence, not permission to expand the slice. The story starts work once: a resumed session continues inside its recorded scope and the existing worktree — no restart, no extra record, no fresh worktree per step, and no silent recorded-scope widening. Questions, code search, and unchanged-input checks are record-free; a mid-episode scope or approval change makes the next mutating command re-derive authority live and reject the stale attempt.
 ```yaml
 status: in_progress
 updated: {DATE}
@@ -206,11 +206,14 @@ updated: {DATE}
 
 **Goal**: Define expected behavior before implementation.
 
-Invoke `tdd` for the red-green implementation method. Before the first test, agree the highest external test seam; invoke `codebase-design` when a seam, module boundary, or module interface changes, and `domain-modeling` when terminology changes. Keep one vertical slice at a time and do not replace Kosmic research, review, or completion gates.
+Invoke `tdd` for the red-green implementation method. Before the first test, agree the highest external test seam; invoke `codebase-design` when a seam, module boundary, or module interface changes, and `domain-modeling` when terminology changes. Keep one vertical slice at a time and do not replace Kosmic research, review, or completion gates. Red-first applies to NEW or changed behavior only: a failing-before test is required for the new changed behavior, while existing passing guards are preserved and never forced to fail.
 
-### 2.1 Map Acceptance Criteria to Tests
+### 2.1 Map Acceptance Criteria to Observable Verification
 
-For each acceptance criterion, create at least one test:
+Map every criterion to an observable check. Add a permanent test for a
+consumer-visible runtime boundary; reuse existing proofs while their inputs
+and contracts remain unchanged. Policy and human-handoff criteria use real
+workflow/producer exercises, never source-text or incidental-wording tests.
 
 ```markdown
 AC: Given user is logged in, when they click logout, then session is cleared
@@ -223,15 +226,18 @@ Test: test_logout_clears_session()
 
 ### 2.2 Write Failing Tests
 
+Write tests for NEW or changed runtime behavior at the agreed external seam.
+
 ```bash
-# Run tests to confirm they fail
+# Run tests to confirm the new-behavior tests fail
 pytest tests/test_feature.py -v  # or project's test command
 ```
 
 ```
-STOP CHECK: Do tests FAIL as expected?
-  → If tests pass without implementation code → tests are wrong, fix them
-  → If tests fail with expected errors → proceed to Phase 3
+STOP CHECK: Do the NEW-behavior tests FAIL before implementation?
+  → Only NEW changed behavior needs red first; existing passing guards stay green — never force them to fail
+  → A new test that already passes against current code tests nothing new — sharpen or replace it
+  → If new tests fail with expected errors → proceed to Phase 3
 ```
 
 **Principles**:
@@ -239,6 +245,7 @@ STOP CHECK: Do tests FAIL as expected?
 - Include edge cases discovered in research
 - Follow existing test patterns in project
 - Tests should be clear and self-documenting
+- Never delete or weaken an existing passing safety test to make a new test red
 
 ### 2.3 Update Story
 
@@ -263,6 +270,8 @@ updated: {DATE}
 
 **Goal**: Write minimal code to pass tests.
 
+Delegation to subagents is discretionary and must be justified per checkpoint: genuine independence, useful parallelism, or context isolation, each with a concrete bounded question or slice, explicit input/output, and a named integration owner in the existing launch trace. No phase-default fanout, tiny clerical delegation, nested exploration without benefit, or authority expansion; coupled work keeps one owner. Mandatory fresh-context proposer/reviewer independence and host-mandated delegation are unchanged, and no new delegation artifact is created.
+
 ### 3.1 Implement Following Patterns
 
 Use patterns discovered in research phase:
@@ -280,11 +289,15 @@ successful receipt in the isolated writer before final reporting. Load
 Preserve unrelated changes in destination checkouts; integrate only owned,
 baseline-checked deltas.
 
-### 3.2 Run Tests Continuously
+### 3.2 Verification Cadence
+
+Focused checks run during implementation; the integrated suite runs once after the affected changes stabilize. Rerun only checks whose inputs or contracts changed or that previously failed — never reuse a pass over changed inputs and never skip scientific validation to save time.
 
 ```bash
-# Run tests frequently during implementation
+# focused checks while implementing
 pytest tests/test_feature.py -v  # or project's test command
+# one integrated run once the affected changes stabilize
+pytest  # full suite, or the project's integrated command
 ```
 
 ### 3.3 Keep It Simple
@@ -293,14 +306,13 @@ pytest tests/test_feature.py -v  # or project's test command
 - KISS: Simplest solution that passes tests
 - DRY: Extract common code, but not prematurely
 
-### 3.4 STOP: Verify Tests Pass
+### 3.4 STOP: Verify the Stabilized Change
 
-```
-STOP CHECK: Do ALL tests pass?
-  → Run full test suite: pytest (or project's test command)
-  → If any test fails → fix before proceeding to Phase 4
-  → If all pass → proceed to Phase 4
-```
+Run focused checks during implementation and integrated verification once the
+affected changes stabilize. Fix failures before review. Re-run affected checks
+when their inputs/contracts change or a prior run failed; do not repeat an
+unchanged passing full suite at every phase boundary. Scientific validation
+remains mandatory.
 
 ### 3.5 Update Story
 
@@ -315,7 +327,7 @@ Open the story file and do **all three** of the following:
 - [x] IMPL-002: {task description}   ← change [ ] to [x]
 ```
 
-**b) Mark each Acceptance Criterion `[x]`** that is now satisfied by passing tests:
+**b) Mark each Acceptance Criterion `[x]`** only after its observed behavior and required checks establish it; a passing test alone is not smoke proof:
 
 ```markdown
 ## Acceptance Criteria
@@ -338,15 +350,13 @@ updated: {DATE}
 
 Capture the actual pinned two-axis review decision while the governed implementation record remains live. The receipt transaction—not a hand-edited status—publishes `done`. A separate administrative `review` state grants no new implementation authority.
 
-### 4.1 Verify All Tests Pass
+### 4.1 Confirm Verification Is Current
 
-```bash
-# Run full test suite
-pytest  # or project's test command
-
-# Check coverage if configured
-pytest --cov
-```
+Use the stabilized integrated result from Step 3.4 if its inputs and contracts
+are unchanged. Otherwise run the affected checks and required integrated
+verification. Exercise the changed CLI/API/UI path and record its actual
+output/state; do not replace this smoke with tests or add redundant coverage
+runs when no applicable coverage requirement exists.
 
 ### 4.2 Convergent Code Review (MANDATORY - NO EXCEPTIONS)
 
@@ -362,16 +372,18 @@ Use Task 7 (`references/task_review_spec.md`) rather than starting an ad hoc fre
 
 ### 4.3 Update Knowledge
 
-If you learned something during implementation:
+If the story produced durable, reusable knowledge:
 
-1. Create/update atomic notes (Task 2: Add Note)
-2. Update notation if new terms introduced
-3. Link notes from story file
+1. Create/update atomic notes (Task 2: Add Note) — only for genuinely reusable knowledge (root cause, convention, decision, correction); a story yielding no reusable finding writes no note, and that is a valid outcome.
+2. Update notation if new terms were introduced (same conditionality).
+3. Link any created or updated notes from the story file.
 4. Assign each changed note an explicit Audience Scope and regenerate the atomic Skill Pair.
 5. If the story changes a Consumer Interface, set `consumer_interface_change: true` and list its current stable `usage` or `both` notes in `related_notes`.
 6. Classify changed procedure mechanics. Declare `routine_edge_change: true` whenever the story adds or changes a procedure's `uses_routines` edge; this requires `routine_decision_required: true`. When reusable deterministic mechanics are introduced or materially changed, set `routine_decision_required: true`, query the generated inventory, and list one governed Task P artifact per unique proposal path in `routine_proposals`; otherwise keep the gate false and the list empty.
 7. Record what was actually observed per acceptance criterion compactly in the story record (observation + source per criterion); task-specific review stays in the record, dataset-specific metadata stays with its dataset. Run Task 2 only for genuinely reusable knowledge — a story yielding no reusable finding writes no note.
-8. Run the `check-completion` command from `references/task_project_skills.md` before marking the story done — it validates record-embedded completion observations, the two-axis independent review (`completion_review` with Standards and Spec axes), and the source-revision binding.
+8. Before marking the story done, ensure the completion gates are satisfied: one ordinary `work finish` validates the record-embedded completion observations, the two-axis independent review (`completion_review` with Standards and Spec axes), the source-revision binding, and the shared domain precheck. Standalone `check-completion` (see `references/task_project_skills.md`) remains an optional fail-fast diagnostic — never a required second command.
+
+If nothing reusable emerged, record the observations per criterion, skip note creation, and state that outcome in the progress log.
 
 ### 4.4 Update Story
 
@@ -384,7 +396,7 @@ Open the story file and apply **all four** of the following:
 
 - [x] All tests pass
 - [x] Code review completed
-- [x] Knowledge notes updated
+- [x] Knowledge notes updated (or: none needed — no reusable knowledge emerged)
 ```
 
 **b) Mark the Definition of Done `[x]`:**
@@ -395,7 +407,7 @@ Open the story file and apply **all four** of the following:
 - [x] All acceptance criteria met
 - [x] All tests pass
 - [x] Code reviewed and approved
-- [x] Knowledge notes updated
+- [x] Knowledge notes updated when reusable knowledge emerged (none otherwise)
 - [x] No regressions introduced
 ```
 
@@ -410,7 +422,7 @@ Open the story file and apply **all four** of the following:
 | {DATE} | Reviewed | Code review passed |
 ```
 
-**d) Capture acceptance evidence and the real converged review artifact**, including qualified record identity, canonical path, pinned base, current reviewed revision, stable finding IDs and actual decisions. See `task_project_skills.md`; never synthesize approval.
+**d) Capture the record-embedded completion observations and the real converged review artifact**, including qualified record identity, canonical path, pinned base, current reviewed revision, stable finding IDs and actual decisions. See `task_project_skills.md`; never synthesize approval.
 
 ---
 
@@ -420,7 +432,9 @@ Execute **all of the following in one pass** — do not skip any item:
 
 ### 5.1 Publish receipt-backed completion
 
-Run read-only `check-completion --project PROJECT_ROOT --work-item CANONICAL_PATH`, then `work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM` (repeat for every declared scope). Do not set `done` directly. Finish checks proof/review/scope, publishes record status/indexes/log and the authoritative receipt, then derives STATUS from that receipt. Publication is stepwise, not cross-file atomic. Inspect the successful identity-matched receipt and current STATUS. If interrupted, rerun finish; an existing valid receipt is preserved while derived reports are repaired. Unreceipted `done` stays pending.
+Run `work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM` (repeat for every declared scope). Do not set `done` directly. One ordinary invocation runs embedded proof, primary scope, pinned two-axis review, the shared domain precheck, and the pre-write freshness recheck before publishing. Domain failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`. Keep STATUS current with `generate-status` after record edits; stale inputs are not auto-repaired by the precheck. Standalone `check-completion` is an optional fail-fast diagnostic, never required second choreography.
+
+Finish publishes record status/indexes/log, then the authoritative receipt, then derived STATUS. Publication is stepwise, not cross-file atomic. Inspect the identity-matched receipt and current STATUS. If interrupted, rerun finish; a valid terminal receipt and completion log remain unchanged while only derived reports regenerate. Unreceipted `done` stays pending.
 
 ### 5.2 Add Final Row to Story Progress Log
 
@@ -444,6 +458,10 @@ The completion transaction updates only the current Story's owner-local Epic row
 - Completed: [Story {N}](../subprojects/{SUBPROJECT_ID}/specs/stories/story-{N}.md) - {brief description}
 - Added notes: [{note}](../notes/{note}.md)   ← only if knowledge notes were created
 ```
+
+### 5.5 Hand off with individual full-absolute-path links
+
+In the human-facing completion report, every receipted finished Story carries its own Markdown link whose visible label is the record file's full absolute path and whose target opens that actual file; when several Stories finish in one episode, list each file individually. After integration moves a record, report its final canonical link too. A directory, index, relative, shortened, or future path is never a substitute; CLI JSON output stays unchanged, and review approval is never presented as completion.
 
 ---
 
@@ -503,7 +521,7 @@ The completion transaction updates only the current Story's owner-local Epic row
 
 ### After Test Phase
 - [ ] Tests for all acceptance criteria
-- [ ] Tests are failing (will pass after implementation)
+- [ ] New/changed-behavior tests were red before implementation; existing passing guards untouched
 - [ ] Edge cases covered
 
 ### After Implementation
@@ -515,8 +533,9 @@ The completion transaction updates only the current Story's owner-local Epic row
 - [ ] Code review completed (MANDATORY)
 - [ ] Review fixed point recorded before implementation
 - [ ] Complete Round 1 finding ledger recorded
-- [ ] All Blocking findings resolved or escalated at the convergence limit
-- [ ] Knowledge notes updated
+- [ ] All Blocking findings resolved or explicitly risk-accepted by the human; reaching the review-round limit only escalates and never grants completion
+- [ ] Knowledge notes updated when reusable knowledge emerged (none otherwise)
+- [ ] Human handoff links every receipted Story by its full absolute path
 - [ ] Consumer Interface impact declared
 - [ ] Completion gate passed
 - [ ] Canonical Skill Pair regenerated after eligible knowledge changes

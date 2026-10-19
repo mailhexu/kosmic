@@ -4,6 +4,8 @@ Periodically review log entries and update atomic notes.
 
 Read-only inspection is record-free and performs no durable cleanup. Before editing notes, status decisions or extracted-marker logs, select compatible review/maintenance authority and exact declared outputs. Use the triggering record when its scope covers maintenance, otherwise obtain an approved narrow Quick Task or reviewed expansion; do not claim other agents' pre-existing work. Follow SKILL.md record-first and receipt completion rules.
 
+Batch a maintenance session's outcomes in one pass: extract and update notes, append log entries, and complete any needed Skill Pair regeneration together, with one appropriate canonical refresh for the batch. An actual content change to an already-published note source still counts and refreshes. Extraction stays conditional — a session with nothing durable to extract legitimately produces no note — and the batch never forces a proposal or publication.
+
 ## 1. Review Log Entries
 
 Extract knowledge from log entries to create/update atomic notes.

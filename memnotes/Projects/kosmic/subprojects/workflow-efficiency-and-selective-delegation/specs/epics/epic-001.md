@@ -70,24 +70,24 @@ authority handling is not redesigned here.
 
 ## Stories
 
-- [Story 001: Unified Safe Completion and Immutable Retry](../stories/story-001.md) — draft.
-- [Story 002: Read-Only Criterion Prefill](../stories/story-002.md) — draft.
+- [Story 001: Unified Safe Completion and Immutable Retry](../stories/story-001.md) — done; successful receipt.
+- [Story 002: Read-Only Criterion Prefill](../stories/story-002.md) — done; successful receipt.
 
 These Stories have no semantic dependency; overlapping runtime/docs edits need
 one integration owner rather than concurrent blind writes.
 
 ## Success Criteria
 
-- [ ] A feature Story finishes through one `work finish` invocation exercising every applicable completion gate before done/receipt publication.
-- [ ] Injected invalid dependency, authority, scientific-math, proposal or projection state blocks finish with no receipt. Domain precheck failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`; existing authority/scope/proof/review codes remain unchanged, and missing/unreadable Project config is reported, not swallowed.
-- [ ] Mis-scoped finish claims fail with `SCOPE_DENIED` before review validation is consulted.
-- [ ] Changed record bytes, a changed `source_revision` binding, or stale mid-episode authority reject the invocation.
-- [ ] Ordinary linked-note/data evolution and review-base aging leave a valid receipt valid, while tampered record bytes, missing/changed immutable originals, or failing declared formal math/proposal/routine checks reject the retry.
-- [ ] A valid retry returns the receipt and completion log unchanged and repairs only derived STATUS; an unreadable/inconsistent receipt is rejected without re-blessing or repinning; an absent-receipt interrupted finish recovers by rerunning every gate.
-- [ ] `prepare-completion` preserves authored/adverse entries verbatim in canonical order, leaves unauthored criteria blank while such drafts still fail finish, rejects missing/ambiguous criteria and unknown/duplicate/malformed authored mappings, refuses completed records, and provably writes nothing.
-- [ ] Implementing Stories verify behavior at the CLI level (no source-text, import, or call-count assertions) and complete only after mandatory pinned two-axis review on the fixed base; docs/examples/consumer contracts match shipped behavior at cutover.
+- [x] A feature Story finishes through one `work finish` invocation exercising every applicable completion gate before done/receipt publication.
+- [x] Injected invalid dependency, authority, scientific-math, proposal or projection state blocks finish with no receipt. Domain precheck failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`; existing authority/scope/proof/review codes remain unchanged, and missing/unreadable Project config is reported, not swallowed.
+- [x] Mis-scoped finish claims fail with `SCOPE_DENIED` before review validation is consulted.
+- [x] Changed record bytes, a changed `source_revision` binding, or stale mid-episode authority reject the invocation.
+- [x] Ordinary linked-note/data evolution and review-base aging leave a valid receipt valid, while tampered record bytes, missing/changed immutable originals, or failing declared formal math/proposal/routine checks reject the retry.
+- [x] A valid retry returns the receipt and completion log unchanged and repairs only derived STATUS; an unreadable/inconsistent receipt is rejected without re-blessing or repinning; an absent-receipt interrupted finish recovers by rerunning every gate.
+- [x] `prepare-completion` preserves authored/adverse entries verbatim in canonical order, leaves unauthored criteria blank while such drafts still fail finish, rejects missing/ambiguous criteria and unknown/duplicate/malformed authored mappings, refuses completed records, and provably writes nothing.
+- [x] Implementing Stories verify behavior at the CLI level (no source-text, import, or call-count assertions) and complete only after mandatory pinned two-axis review on the fixed base; docs/examples/consumer contracts match shipped behavior at cutover.
 
 ## Progress
 
-- Status: approved by the user; two draft Stories, neither implemented nor receipted.
-- Next gate: each draft Story needs its own approval before implementation.
+- Stories: 2/2 receipted done; the approved planning record is retained without inventing a separate Epic completion receipt.
+- Evidence: child observations, actual CLI exercises and independent Round 2 review. Final integrated assessment belongs to Story 004.

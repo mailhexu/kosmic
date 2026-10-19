@@ -62,33 +62,33 @@ assessment and cutover require Epic 001's mechanics and both Epics' results.
 
 ## Stories
 
-- [Story 003: Lean Workflow and Accessible Artifact Handoffs](../stories/story-003.md) — draft; can progress independently of runtime mechanics.
-- [Story 004: Three-Case Efficiency Assessment and Integrated Cutover](../stories/story-004.md) — draft; depends on Stories 001–003.
+- [Story 003: Lean Workflow and Accessible Artifact Handoffs](../stories/story-003.md) — done; successful receipt.
+- [Story 004: Three-Case Efficiency Assessment and Integrated Cutover](../stories/story-004.md) — done; successful receipt and verified dependencies.
 
 ## Success Criteria
 
-- [ ] A real small or resumed workflow starts once on the right existing record and continues across steps without
+- [x] A real small or resumed workflow starts once on the right existing record and continues across steps without
       restart, extra record, or fresh worktree; after a mid-episode scope/approval change the next mutating call
       rejects the stale/over-broad attempt instead of proceeding on cached permission.
-- [ ] A two-axis fixed-base re-review on a low-risk packet shows two distinct independent Standards/Spec reviewers with
+- [x] A two-axis fixed-base re-review on a low-risk packet shows two distinct independent Standards/Spec reviewers with
       stable finding identifiers and no fresh audit over unchanged inputs; a simulated full-review failure escalates
       rather than downgrades; an API/schema-class change is not exempted from domain review by line count.
-- [ ] Existing traces show discretionary delegation: each checkpoint justified by independence, parallelism, or context
+- [x] Existing traces show discretionary delegation: each checkpoint justified by independence, parallelism, or context
       isolation, with bounded input/output, a named integration owner in the launch trace, coupled work under one
       owner, and no new delegation artifact.
-- [ ] One episode's notes, log, and publication complete in a single batched pass whose canonical refresh includes a
+- [x] One episode's notes, log, and publication complete in a single batched pass whose canonical refresh includes a
       changed published note source; nothing forced; data-only metadata native-adjacent.
-- [ ] Every created or presented PRD/Architecture/Epic/Story in the exercised flows carries an individual
+- [x] Every created or presented PRD/Architecture/Epic/Story in the exercised flows carries an individual
       full-absolute-path link to the actual file; receipted finished Stories are re-linked including final canonical
       paths after integration; machine CLI JSON unaltered.
-- [ ] The three-case comparison exists as one bounded section in existing feature Research/Story Technical Notes:
+- [x] The three-case comparison exists as one bounded section in existing feature Research/Story Technical Notes:
       observed timings or UNKNOWN with explicit observed-vs-expected operation counts and separated time categories —
       no receipt-timestamp durations or invented percentages.
-- [ ] Current docs, CLI guidance, examples, and contract tests are coherent with the exercised behavior, no consumer
+- [x] Current docs, CLI guidance, examples, and contract tests are coherent with the exercised behavior, no consumer
       left on a removed mandatory flow; historical receipts and pins byte-unchanged.
 
 ## Progress
 
-Approved by the user; two draft Stories, neither implemented nor receipted.
-Each Story needs its own approval. Success evidence comes from observed flow
-exercises, never source-text or wording checks; criteria remain unchecked.
+Stories: 2/2 receipted done. The comparison and integrated cutover are verified;
+both independent axes approved Round 2 with the stable findings resolved.
+The approved planning record is retained without inventing an Epic receipt.

@@ -110,7 +110,13 @@ Before reviewing, record a stable `review_base` in the work item and resolve it.
 
 An invalid base, empty change, or missing originating spec stops the review. Do not let successive rounds silently change the baseline or acceptance criteria.
 
-### 2.2 Round 1: Complete Two-Axis Review
+### 2.2 Bound the Packet to the Actual Risk
+
+The review packet covers the actual delta plus its acceptance context drawn from the governing record and ledger: fixed review base, acceptance criteria, embedded observations, checks, and adverse facts. Proportionality changes packet scope and depth only — every review, including a low-risk one, still shows two distinct independent Standards/Spec reviewers on the fixed base, stable finding IDs, and rounds 1–3 with the existing escalation. A failed review escalates under that limit; it never downgrades to a light pass.
+
+Stronger domain review is triggered by category, never by line count: numerics/scientific claims, methods, security, and API/data/schema/publication/receipt changes always receive the relevant domain review, with risk judged from content and blast radius. Unchanged inputs receive no fresh audit round; a changed input or contract, or a previously failed check, reruns only the affected checks on the fixed base.
+
+### 2.3 Round 1: Complete Two-Axis Review
 
 Round 1 must report the complete known finding inventory in one pass. Review both axes independently, then present them side by side without allowing one axis to mask the other.
 
@@ -133,7 +139,7 @@ Check the entire scoped change against the originating requirements:
 
 Every finding must cite the requirement and concrete implementation evidence.
 
-### 2.3 Stable Finding Ledger
+### 2.4 Stable Finding Ledger
 
 Before requesting changes, publish the complete issue inventory in a persistent ledger. IDs never change between rounds:
 
@@ -149,7 +155,7 @@ Each finding records axis, blocking disposition, evidence, required resolution, 
 
 Only Blocking findings can produce `Changes Requested`. Non-blocking suggestions remain visible but do not prevent approval.
 
-### 2.4 Re-review Contract
+### 2.5 Re-review Contract
 
 Later rounds are verification rounds, not fresh reviews. They may inspect only:
 
@@ -162,7 +168,7 @@ Do not open a new finding against unchanged code. The only exception is a critic
 
 Resolve each prior ledger row as `resolved`, `still-open`, or `regressed`; never replace the ledger with a new list. Suggestions cannot be promoted to Blocking without new contract evidence.
 
-### 2.5 Preparation and Decision
+### 2.6 Preparation and Decision
 
 Run required tests, the Consumer Interface completion gate, diagnostics, and focused smoke checks. Approve when all Blocking findings are resolved and verification passes, even if Non-blocking suggestions remain.
 
@@ -277,7 +283,7 @@ review ──[verified work receipt]──→ done
 
 ### Convergence Limit
 
-Allow at most three automated rounds: one complete initial review and two re-review rounds. If Blocking findings remain after Round 3, stop autonomous review cycling. Keep the story `in_progress` and escalate the existing ledger for a human scope or design decision; do not start another unrestricted review.
+Allow at most three automated rounds: one complete initial review and two re-review rounds. If Blocking findings remain after Round 3, stop autonomous review cycling. Keep the story `in_progress` and escalate the existing ledger for a human scope or design decision; do not start another unrestricted review. A failed or incomplete full review never downgrades to a light pass — the escalation is the only exit from the limit.
 
 ---
 

@@ -4,6 +4,10 @@ Create or update atomic notes, and log daily progress.
 
 Before durable note/log edits, use the current compatible governing record and declared shared-note scope, or establish a standalone low-risk Quick Task and obtain approval. Reading existing knowledge is record-free; finding useful knowledge does not silently authorize publication. Preserve pre-dirty work and follow SKILL.md Record-first authority.
 
+## Batched Episode Completion
+
+When an authorized episode ends, batch its knowledge notes, daily-log entries, and publication completion into one pass, with one appropriate canonical refresh for the batch (for example, one Skill Pair regeneration covering every changed note). An actual change to an already-published note source — content, status, Audience Scope, or staleness — still counts as a change and refreshes. Nothing here forces a note, proposal, or publication: an episode that produced no durable knowledge legitimately closes with none. Optional curation and skill proposals stay off the critical path unless correctness requires immediate action, and dataset-only metadata stays embedded in or adjacent to its dataset per the Locality rule (ADR-A).
+
 ## When to Use This Task
 
 Consider adding a note only when durable, reusable knowledge was found. No

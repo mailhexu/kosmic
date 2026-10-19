@@ -135,6 +135,67 @@ def reject_retired_completion_inputs(metadata: Mapping[str, Any], name: str) -> 
             "binds observations and review inside the record (Story 005)")
 
 
+def acceptance_criteria(root: Path, record) -> list[str]:
+    """Exact acceptance-criteria checkbox text in canonical record order.
+
+    The one shared scan behind the completion validator and the read-only
+    prefill draft: the ``## Acceptance Criteria`` section's checkbox lines,
+    verbatim and in record order; a record without criteria is rejected.
+    """
+    root = Path(root)
+    canonical = record.path.relative_to(root).as_posix()
+    document = read_document(root, record.path)
+    section = re.search(r"^## Acceptance Criteria\s*$([\s\S]*?)(?=^## |\Z)", document.body, re.M)
+    criteria = re.findall(r"^- \[[ xX]\]\s+(.+)$", section.group(1), re.M) if section else []
+    _deny(not criteria, "ACCEPTANCE_INVALID", f"{canonical}: no acceptance criteria")
+    return criteria
+
+
+def prepare_completion(root: Path, record) -> list[dict[str, Any]]:
+    """Draft embedded completion observations for an authorized record.
+
+    Read-only companion to ``validate_completion_proof`` built on the same
+    criterion scan: every criterion's exact text in canonical record order,
+    each exact-matched authored entry preserved field-for-field (including
+    adverse findings and extra authored fields), and a blank
+    ``observation``/``source`` draft wherever no authored entry exists — a
+    draft that finish still rejects. An authored entry must carry text
+    fields: string ``criterion``/``observation``/``source`` with only the
+    criterion required non-empty, blank observation/source text being draft
+    state. Unknown, repeated, or malformed authored mappings are refused,
+    never silently dropped or coerced; no outcome, reviewer, or approval
+    field is generated and nothing is written.
+    """
+    root = Path(root)
+    canonical = record.path.relative_to(root).as_posix()
+    criteria = acceptance_criteria(root, record)
+    seen: set[str] = set()
+    for criterion in criteria:
+        _deny(criterion in seen, "ACCEPTANCE_INVALID",
+              f"{canonical}: duplicated criterion: {criterion!r}")
+        seen.add(criterion)
+    entries: dict[str, Mapping[str, Any]] = {}
+    observations = record.metadata.get("completion_observations")
+    if observations is not None:
+        _deny(not isinstance(observations, (list, tuple)),
+              "ACCEPTANCE_INVALID", f"{canonical}: invalid completion_observations")
+        for observation in observations:
+            _deny(not isinstance(observation, dict)
+                  or not all(isinstance(observation.get(field), str)
+                             for field in ("criterion", "observation", "source"))
+                  or not observation["criterion"].strip(),
+                  "ACCEPTANCE_INVALID",
+                  f"{canonical}: malformed completion_observations entry")
+            criterion = observation["criterion"]
+            _deny(criterion not in criteria or criterion in entries,
+                  "ACCEPTANCE_INVALID",
+                  f"{canonical}: unknown or repeated criterion: {criterion!r}")
+            entries[criterion] = observation
+    return [dict(entries[criterion]) if criterion in entries else
+            {"criterion": criterion, "observation": "", "source": ""}
+            for criterion in criteria]
+
+
 def validate_completion_proof(root: Path, record) -> dict[str, str]:
     """Check exact structural criterion coverage of embedded observations.
 
@@ -153,10 +214,7 @@ def validate_completion_proof(root: Path, record) -> dict[str, str]:
     observations = record.metadata.get("completion_observations")
     _deny(not isinstance(observations, (list, tuple)) or not observations,
           "ACCEPTANCE_INVALID", f"{canonical}: declare completion_observations")
-    document = read_document(root, record.path)
-    section = re.search(r"^## Acceptance Criteria\s*$([\s\S]*?)(?=^## |\Z)", document.body, re.M)
-    criteria = re.findall(r"^- \[[ xX]\]\s+(.+)$", section.group(1), re.M) if section else []
-    _deny(not criteria, "ACCEPTANCE_INVALID", f"{canonical}: no acceptance criteria")
+    criteria = acceptance_criteria(root, record)
     covered: set[str] = set()
     for observation in observations:
         _deny(not isinstance(observation, dict)
@@ -462,16 +520,54 @@ def _write_status_reports(root: Path, record_owner: str | None = None) -> None:
         work._atomic_write(Path(base), "STATUS.md", rendered)
 
 
+def _completion_cli():
+    if __package__:
+        from . import kosmic_project_skills as cli
+    else:
+        import kosmic_project_skills as cli
+    return cli
+
+
+def _completion_precheck(root: Path):
+    """Load the Project config strictly for the finish domain precheck.
+
+    Unlike the tolerant STATUS-candidate enumeration, a missing or unreadable
+    Project config is reported here, never swallowed: the shared read-only
+    domain precheck cannot run without it.
+    """
+    cli = _completion_cli()
+    try:
+        return cli, cli.load_project(root)
+    except (cli.KosmicError, OSError, RuntimeError, ValueError) as error:
+        raise work.WorkdirError(
+            "COMPLETION_PRECHECK_FAILED",
+            f"Project config unavailable for the completion precheck: {error}"
+        ) from error
+
+
 def finish_work(project_root: Path, worktree: Path, record_ref: str,
                 scope: list[str], *, detail: str = "") -> dict[str, Any]:
-    """Verify evidence/review/scope, publish done, receipt, then STATUS.
+    """Run every completion gate, publish done, receipt, then STATUS.
 
-    Idempotent: a valid existing receipt is returned unchanged after
-    regenerating only the derived STATUS reports, repairing interrupted
-    publication without rewriting the receipt or duplicating the completion
-    log. An interruption before the receipt leaves the record's previous
-    lifecycle state (possibly already ``done`` but pending); rerunning
-    completes it.
+    One ordinary nonterminal finish resolves authority, then validates the
+    embedded proof, the primary finish-claim scope (``SCOPE_DENIED``
+    precedence), the reviewed scope/source binding, and finally the complete
+    shared read-only domain precheck — the same helper standalone
+    ``check-completion`` runs — before an immediate-before-write freshness
+    recheck and the unchanged publication order record → indexes →
+    completion log → receipt → derived STATUS.
+
+    Terminal retries are invariant: identity and approved ancestry resolve
+    first; a present receipt is validated over the unchanged record bytes
+    (legacy receipts byte-verify only their recorded immutable originals),
+    the record's declared formal math/proposal/routine contracts are applied
+    exactly as the plain done path applies them, and only the derived STATUS
+    reports are repaired while the receipt is returned unchanged. Evolving
+    notes, data, and the current source delta are never re-hashed, and
+    historical pins are never refreshed. A present but unreadable or
+    inconsistent receipt is refused without re-blessing or repinning; only
+    an absent receipt falls through to the full nonterminal path, so an
+    interrupted episode recovers by rerunning every gate.
     """
     root = Path(project_root).expanduser().resolve()
     tree = Path(worktree).expanduser().resolve()
@@ -480,33 +576,43 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
     existing = _bytes(root, receipt_path)
     canonical = record.path.relative_to(root).as_posix()
     if existing is not None:
-        try:
-            receipt = validate_receipt_payload(root, record, json.loads(existing.decode("utf-8")))
-        except (ValueError, UnicodeError):
-            pass  # unreadable receipt: republish below
-        else:
-            # Receipt-first publication: a valid receipt implies the record,
-            # indexes, and completion log are committed; only the derived
-            # STATUS projections can lag an interruption. Repair them without
-            # rewriting the receipt or duplicating the completion log.
-            _write_status_reports(root, record.subproject_id)
-            return receipt
+        # Terminal route (ADR-C): identity and approved ancestry resolved
+        # above; a present receipt is the authoritative completion marker.
+        # An unreadable or inconsistent receipt is refused
+        # (COMPLETION_PENDING/COMPLETION_DRIFT) — never re-blessed, repinned,
+        # or treated as a fresh completion attempt.
+        receipt = check_terminal_receipt(root, record)
+        cli, project_config = _completion_precheck(root)
+        cli.check_terminal_formal_gates(project_config, record.path, tree)
+        # Receipt-first publication: a valid receipt implies the record,
+        # indexes, and completion log are committed; only the derived
+        # STATUS projections can lag an interruption. Repair them without
+        # rewriting the receipt or duplicating the completion log.
+        _write_status_reports(root, record.subproject_id)
+        return receipt
+    # The gates validate this exact snapshot: record bytes and the review's
+    # own validated source binding are captured before the first gate so any
+    # later mutation — before, between, or after the gates — is observed at
+    # the pre-write recheck.
+    validated_record_bytes = record.path.read_bytes()
+    validated_revision = (record.metadata.get("completion_review") or {}).get(
+        "reviewed_revision")
     validate_completion_proof(root, record)
     import datetime
     candidates = [record.path.parent.parent / "INDEX.md", root / "specs" / "INDEX.md",
                   root / "log" / f"{datetime.date.today().isoformat()}-work-completion.md"]
     candidates.extend(Path(item["path"]) / "STATUS.md"
                       for item in work.load_registry(root)["directories"])
+    cli = _completion_cli()
+    # Tolerant candidate enumeration only: a config failure here must never
+    # mask the primary scope or review diagnostics. The strict load that
+    # feeds the shared domain precheck happens after those gates ran.
     try:
-        if __package__:
-            from . import kosmic_project_skills as cli
-        else:
-            import kosmic_project_skills as cli
-        project_config = cli.load_project(root)
-    except (OSError, RuntimeError, ValueError):
-        project_config = None
-    if project_config is not None and project_config.status_root:
-        candidates.append(project_config.status_root / "STATUS.md")
+        tolerant_config = cli.load_project(root)
+    except (cli.KosmicError, OSError, RuntimeError, ValueError):
+        tolerant_config = None
+    if tolerant_config is not None and tolerant_config.status_root:
+        candidates.append(tolerant_config.status_root / "STATUS.md")
     publication_candidates = [path.relative_to(tree).as_posix() for path in candidates
                               if path.is_relative_to(tree)]
     publication_paths = publication_candidates
@@ -517,6 +623,36 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
     _checked_review(root, tree, record,
                     changed_paths=tuple(scope_result["changed"]),
                     excluded_paths=tuple(publication_candidates))
+    # Complete shared read-only domain precheck (ADR-B): the same helper
+    # standalone check-completion runs, placed after proof/scope/review so
+    # its diagnostics never mask them. It covers depends_on, STATUS drift,
+    # retired inputs/content, consumer_interface_change, math/proposal/
+    # routine gates, related stable usage notes, and projection. A domain
+    # failure translates to COMPLETION_PRECHECK_FAILED with the original
+    # diagnostic retained; no auto STATUS/projection repair or pin refresh
+    # happens here.
+    cli, project_config = _completion_precheck(root)
+    try:
+        cli._check_existing_completion(project_config, record.path,
+                                       source_root=tree, record_scoped=True,
+                                       record_owner=record.subproject_id)
+    except cli.KosmicError as error:
+        raise work.WorkdirError("COMPLETION_PRECHECK_FAILED", str(error)) from error
+    # Freshness recheck immediately before publication: the gates validated
+    # the entry snapshot and the review's own validated source binding, so
+    # any later record, source-binding, or authority change is observed
+    # here. Detect only — a drifted record is never repaired, repinned, or
+    # rebound; the caller reruns finish.
+    _deny(record.path.read_bytes() != validated_record_bytes,
+          "RECORD_NOT_AUTHORIZED",
+          f"{canonical}: record changed after the completion gates ran; rerun finish")
+    _deny(source_revision(tree, root, record) != validated_revision,
+          "REVIEW_INVALID",
+          f"{canonical}: reviewed source changed after the review gate ran; rerun finish")
+    fresh = work.resolve_work_record(root, record_ref, allow_terminal=True)
+    _deny(fresh.qualified_id != record.qualified_id or fresh.path != record.path,
+          "RECORD_NOT_AUTHORIZED",
+          f"{canonical}: work-record identity changed during completion")
     # Publish: record status -> done, then indexes and the completion log,
     # then the authoritative receipt; STATUS reports are derived last so they
     # are generated from the committed receipt, never describing finished

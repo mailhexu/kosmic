@@ -73,7 +73,9 @@ Resolve bootstrap BEFORE loading any audience skill or searching.
 
 ## Authority & Isolation (apply to every task)
 
-**Record-first authority.** Before a substantive source, docs, vault, configuration, or experiment change, select or create its governing record. Feature implementation needs an approved owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk change needs an approved Quick Task; PRD creation/success never approves code. Questions, searches, and unchanged checks need no record and stay read-only — never hide durable cleanup, publication, or installation in them. Planning creates only its draft hierarchy and bounded planning outputs; bootstrap establishes a bounded governing Quick Task whose scope does not authorize unrelated implementation.
+**Record-first authority.** Before a substantive source, docs, vault, configuration, or experiment change, select its governing record — reuse the existing approved record that already authorizes the work, and create a new one only when none covers the scope. Feature implementation needs an approved owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk change needs an approved Quick Task; choose Quick Task versus the full spec hierarchy by actual scope and risk, never by phase or habit. PRD creation/success never approves code. Questions, searches, and unchanged checks need no record and stay read-only — never hide durable cleanup, publication, or installation in them. Planning creates only its draft hierarchy and bounded planning outputs; bootstrap establishes a bounded governing Quick Task whose scope does not authorize unrelated implementation.
+
+**One bounded episode.** A record starts work once: resuming continues inside its recorded scope and the existing worktree — no restart per step, no extra record, no fresh worktree per step, and no silent widening of recorded scope (a real scope change updates and re-approves the record). A mid-episode scope or approval change makes the next mutating command reject the stale or over-broad attempt, because every mutating command re-derives identity, ancestry, scope, and approval live at invocation — context is reused while valid; permission is never cached.
 
 **Owner-aware catalog.** Feature records live under `subprojects/{SUBPROJECT_ID}/specs/` (owner-local); shared Quick Tasks/proposals live under `specs/`. Existing flat feature specs stay bootstrap until separately approved migration. Notes, mathdocs, and canonical skills stay shared at the Project root. Register each exact working directory; a fixed subproject constrains a directory, never selects its task; never persist selection in a shared mutable pointer.
 
@@ -86,11 +88,19 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work show --project 
 
 Each mutating command takes the same explicit `--work-record`, re-resolving authority at invocation time — never cached approval. One clean worktree per record, one writer per worktree. `work start` refuses a dirty worktree and lists conflicting paths; never write in a worktree containing unrelated in-progress work — use a separate clean worktree with a separate writer and leave unrelated work untouched. Raw editor/shell writes remain agent compliance, not an OS sandbox.
 
-**Completion.** Declare intended outputs with `--scope` on `work finish`; it checks the Git diff against those claims. A checkbox or command exit code alone is not acceptance evidence; reports must name qualified identity, canonical path, and observed acceptance/smoke/review results. Never edit `done` by hand; the `work finish` receipt is the completion marker, so unreceipted `done` is pending. If interrupted, rerun finish — there is no recovery journal or `work recover`.
+**Completion.** One ordinary `work finish` runs the full safety gate set — embedded proof, scope, the pinned two-axis review, and the shared domain precheck — before publishing; standalone `check-completion` is an optional diagnostic, never a required second command. Declare intended outputs with `--scope` on `work finish`; it checks the Git diff against those claims. A checkbox or command exit code alone is not acceptance evidence; reports must name qualified identity, canonical path, and observed acceptance/smoke/review results. Never edit `done` by hand; the `work finish` receipt is the completion marker, so unreceipted `done` is pending. If interrupted, rerun finish — there is no recovery journal or `work recover`.
 
 **Record-owned commits.** Capture the destination baseline before edits and commit only record-owned source and vault outputs in the isolated writer. Before integration compare each destination path with that baseline; reconcile source drift rather than overwriting it. `work start` checks authority and cleanliness; it does not capture a baseline or maintain a work session. Preserve unrelated work. Commit verified records, evidence, logs and receipts before ending a session with vault changes.
 
 Before constructing any proof of finish or running `work finish`, load [Work Completion](references/work_completion.md) and follow it.
+
+---
+
+## Lean Delegation & Verification Cadence
+
+**Justified delegation.** Use a subagent checkpoint only for genuine independence, useful parallelism, or context isolation, and only with a concrete bounded question or slice, explicit input/output, and a named integration owner in the existing launch trace. No phase-default fanout, tiny clerical delegation, nested exploration without benefit, or authority expansion; coupled work keeps one owner. Mandatory fresh-context proposer/reviewer independence and host-mandated delegation are unchanged, and no new delegation artifact is created.
+
+**Verification cadence.** Focused checks run during the work; the integrated suite runs once after the affected changes stabilize. Rerun only checks whose inputs or contracts changed or that previously failed — never reuse a pass over changed inputs, and never skip scientific validation to save time.
 
 ---
 
@@ -138,6 +148,8 @@ Optional curation: outside the task table, a manual or externally scheduled cura
 ## Spec-Driven Workflow & Gates
 
 **Feature gate rule**: feature work proceeds strictly in order — PRD → optional Research (post-PRD, no new gate) → Architecture → per-Story approval → implementation (Research → TDD → Code) → convergent code review — and you MUST pause for the user's explicit decision at the PRD, Architecture, and per-Story gates before the next step, NEVER skipping the hierarchy, implementing feature code without an approved story (approved Quick Task allowed for small, low-risk work), or marking `done` without convergent review; if research changes product scope, update and re-approve the PRD, and if it changes technical direction, feed the findings into Architecture review. Human-facing walkthroughs and gate-by-gate session scripts live in the installed `README.md`; load them only when guiding a user through the workflow.
+
+**Handoff links.** Whenever a PRD, Architecture, Epic, or Story is created or presented — alone or in a batch — every artifact carries its own Markdown link whose visible label is the file's full absolute path and whose target opens that actual file; a directory, index, relative, shortened, or future path is never a substitute. Receipted Story completions repeat those links, with final canonical locations after integration. CLI JSON output stays unchanged, and review approval is never presented as completion.
 
 **Status policy** — use only these statuses; never invent others (e.g. `blocked`: keep current status, add a blocker note to the artifact and a log entry).
 

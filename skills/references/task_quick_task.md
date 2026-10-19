@@ -81,18 +81,21 @@ Use `references/templates/template-quick-task.md`.
 5. **Implement**
    - Before substantive writes, use `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. The start check requires a clean worktree.
    - Use one worktree and one writer per record. Every mutating command re-resolves the approved record with `--work-record`; completion checks the Git diff against its `--scope` claims.
+   - The task starts work once: resume continues inside its recorded scope and the existing worktree — no restart per step, no extra record, no fresh worktree per step, and no silent scope widening. Questions, code search, and unchanged-input checks are record-free. A mid-episode scope or approval change makes the next mutating command re-derive authority live and reject the stale attempt.
    - Preserve unrelated work: never commit, stash, discard, or rebase changes you did not make. If the target worktree is dirty with unrelated changes, commit/stash only with the user's work preserved, or select another worktree via `work start`. Raw editors/shell are agent compliance, not OS enforcement.
 
 6. **Verify and review**
-   - Exercise the actual path and focused checks. Record each criterion's observation and source as an entry in the record's `completion_observations` list; exit success alone is not proof.
-   - Run Task 7's independent Standards/Spec review against the pinned base. Preserve its stable finding ledger, actual decision and reviewed revision in the record's `completion_review` mapping as described in `work_completion.md`. Never manufacture approvals.
+   - Exercise the actual path with focused checks during the work; run the integrated verification once after the change stabilizes. Rerun only checks whose inputs or contracts changed or that previously failed — never reuse a pass over changed inputs and never skip scientific validation. Record each criterion's observation and source as an entry in the record's `completion_observations` list; exit success alone is not proof.
+   - Run Task 7's independent Standards/Spec review against the pinned base. The review packet bounds to the actual delta plus its acceptance context (fixed base, criteria, observations, checks, adverse facts); two distinct independent reviewers, stable finding IDs, and rounds 1–3 always remain, and low risk limits packet scope and depth only. Numerics/scientific claims, methods, security, and API/data/schema/publication/receipt changes receive domain review regardless of line count. Preserve the stable finding ledger, actual decision and reviewed revision in the record's `completion_review` mapping as described in `work_completion.md`. Never manufacture approvals.
+   - Unchanged inputs receive no fresh audit round; a changed input, changed contract, or failed check reruns only the affected checks. A failed full review escalates within the three-round limit — it never downgrades to a lighter pass.
    - Re-review preserves finding IDs; accept only resolved blockers or explicit recorded human acceptance. Consumer knowledge/projection gates still apply.
 
 7. **Complete**
-   - Run read-only `check-completion` for existing gates, then `work finish --project PROJECT_ROOT --worktree ROOT --work-record REF --scope CLAIM` (repeat scope). Never hand-edit `done`.
-   - Finish verifies evidence/review/scope first, then updates status/index/log, publishes its authoritative receipt, and derives STATUS from it — stepwise, not cross-file atomic. Interruption before the receipt leaves completion pending; interruption after it can leave stale derived reports only. Rerun finish — an already-valid receipt is kept while the derived reports regenerate.
+   - Run `work finish --project PROJECT_ROOT --worktree ROOT --work-record REF --scope CLAIM` (repeat scope). Never hand-edit `done`.
+   - One ordinary finish invocation runs every required completion gate before publishing: record-embedded proof, scope, the pinned two-axis review, and the shared domain precheck (dependencies, STATUS freshness, retired inputs, Consumer Interface change, math/proposal/routine gates, related notes, projection). A standalone `check-completion` stays available as an optional fail-fast diagnostic — never a required second command or second choreography.
+   - Finish then publishes record status/index/log and the authoritative receipt, and derives STATUS from that receipt — stepwise, not cross-file atomic; only derived reports are written after a valid receipt. Interruption before the receipt leaves completion pending; interruption after it can leave stale derived reports only. Rerun finish — an already-valid terminal receipt is kept unchanged while only the derived reports regenerate.
    - Report qualified identity/canonical path and actual acceptance/smoke/review results; terminal authority cannot start new implementation.
-   - For the exact proof mechanics — evidence schemas, review ledger fields, receipt rules, and `work finish` scope claims — follow `references/work_completion.md`.
+   - For the exact proof mechanics — embedded observations, review ledger fields, receipt rules, and `work finish` scope claims — follow `references/work_completion.md`.
    - Capture durable knowledge; classify changes without bulk-committing others' work. Read-only questions/checks need no new record or durable cleanup.
 
 ---

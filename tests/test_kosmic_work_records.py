@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import re
 import tempfile
 import subprocess
@@ -50,6 +51,7 @@ class WorkRecordTest(unittest.TestCase):
             self.tree, self.root, SpecCatalog(self.root).resolve(self.identity))
         metadata = dict(self.record.metadata)
         metadata.update(
+            consumer_interface_change=False,
             review_base="fixture-base", review_round=1,
             completion_observations=[{
                 "criterion": "Result file contains verified output",
@@ -75,6 +77,15 @@ class WorkRecordTest(unittest.TestCase):
         set_reviewed_revision(
             self.path,
             kosmic_completion.source_revision(self.tree, self.root, record))
+
+    def refresh_status(self):
+        """Regenerate derived STATUS so the finish precheck sees fresh bytes.
+
+        Every nonterminal finish attempt must observe current projections;
+        an attempt that flips the record (or an injected publication failure)
+        leaves the derived reports honestly stale until the next refresh.
+        """
+        kosmic_completion._write_status_reports(self.root, None)
 
     def test_clean_worktree_is_a_start_precondition(self):
         record = kosmic_work.check_work_start(self.root, self.tree, self.identity)
@@ -111,6 +122,7 @@ class WorkRecordTest(unittest.TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
+        self.refresh_status()
         scope = ["worktree:src/", "project:subprojects/alpha/specs/stories/"]
         receipt = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
         self.assertEqual(receipt["status"], "successful")
@@ -136,6 +148,7 @@ class WorkRecordTest(unittest.TestCase):
         project_index.write_text("# Shared specs\n\n- [Keep](quick-tasks/keep.md)\n")
         project_before = project_index.read_bytes()
         self.refresh_review_revision()
+        self.refresh_status()
         scope = ["worktree:src/", "project:specs/", "project:subprojects/alpha/specs/"]
 
         receipt = kosmic_completion.finish_work(
@@ -155,6 +168,7 @@ class WorkRecordTest(unittest.TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
+        self.refresh_status()
         scope = ["worktree:src/", "project:subprojects/alpha/specs/stories/"]
         original_write = kosmic_work._atomic_write
 
@@ -170,6 +184,7 @@ class WorkRecordTest(unittest.TestCase):
         self.assertEqual(pending.status, "done")
         self.assertTrue(pending.receipt_pending)
         self.assertEqual(pending.effective_status, "pending")
+        self.refresh_status()
         completed = kosmic_completion.finish_work(self.root, self.tree, self.identity, scope)
         self.assertEqual(completed["status"], "successful")
         settled = SpecCatalog(self.root).resolve(self.identity)
@@ -187,6 +202,7 @@ class WorkRecordTest(unittest.TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
+        self.refresh_status()
         finish = subprocess.run(base + ["work", "finish", *common,
                                         "--scope", "worktree:src/",
                                         "--scope", "project:subprojects/alpha/specs/stories/"],
@@ -229,6 +245,7 @@ class WorkRecordTest(unittest.TestCase):
         bound_status.write_text("stale bound projection\n")
         commit_all(self.tree, "2026-10-05", "stale status projections")
         self.refresh_review_revision()
+        self.refresh_status()
         scope = ["worktree:src/", "project:subprojects/alpha/specs/stories/"]
         original_write = kosmic_work._atomic_write
 
@@ -427,6 +444,7 @@ class WorkRecordTest(unittest.TestCase):
         record_path = root / "specs/quick-tasks/task.md"
         metadata = {"project_id": "equal", "subproject_id": None, "status": "approved",
                     "record_kind": "quick-task", "local_id": "task",
+                    "consumer_interface_change": False,
                     "review_base": "base", "review_round": 1,
                     "completion_observations": [{
                         "criterion": "Source output is observed",
@@ -452,6 +470,7 @@ class WorkRecordTest(unittest.TestCase):
         (root / "src/result.txt").write_text("source output\n")
         set_reviewed_revision(
             record_path, kosmic_completion.source_revision(root, root, record))
+        kosmic_completion._write_status_reports(root, None)
         scope = ["worktree:src/", "project:specs/"]
         original_write = kosmic_work._atomic_write
 
@@ -464,6 +483,7 @@ class WorkRecordTest(unittest.TestCase):
             with self.assertRaisesRegex(OSError, "receipt publication"):
                 kosmic_completion.finish_work(root, root, identity, scope)
         self.assertEqual(kosmic_work.resolve_work_record(root, identity, allow_terminal=True).status, "done")
+        kosmic_completion._write_status_reports(root, None)
         cli = Path(__file__).resolve().parents[1] / "skills/scripts/kosmic_project_skills.py"
         result = subprocess.run(
             [sys.executable, str(cli), "work", "finish", "--project", str(root),
@@ -486,6 +506,7 @@ class WorkRecordTest(unittest.TestCase):
         source.parent.mkdir(parents=True, exist_ok=True)
         source.write_text("verified output\n")
         self.refresh_review_revision()
+        self.refresh_status()
         finish = subprocess.run(base + ["work", "finish", *common,
                                         "--scope", "worktree:src/",
                                         "--scope", "project:subprojects/alpha/specs/stories/"],
@@ -516,7 +537,9 @@ class WorkRecordTest(unittest.TestCase):
         failed = subprocess.run(base + ["work", "start", "--project", str(self.root),
                                         "--worktree", str(invalid_tree),
                                         "--work-record", self.identity],
-                                capture_output=True, text=True)
+                                capture_output=True, text=True,
+                                env={**os.environ,
+                                     "GIT_CEILING_DIRECTORIES": str(invalid_tree.parent)})
         self.assertEqual(failed.returncode, 2)
         self.assertIn("WORKTREE_INVALID", failed.stderr)
         self.assertNotIn("Traceback", failed.stderr)

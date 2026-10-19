@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-19T17:24:21Z",
+  "detail": "Three real cases accounted honestly; dependency receipts verified; independent Round2 review approved.",
+  "identity": "kosmic/workflow-efficiency-and-selective-delegation/story/004",
+  "proof": {
+    "subprojects/workflow-efficiency-and-selective-delegation/specs/stories/story-004.md": "766816305a3f374b8cf5b73db46c1cf1d60c0eb1f5ca74d08a5b7074125c5f6f"
+  },
+  "record_path": "subprojects/workflow-efficiency-and-selective-delegation/specs/stories/story-004.md",
+  "record_sha256": "766816305a3f374b8cf5b73db46c1cf1d60c0eb1f5ca74d08a5b7074125c5f6f",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

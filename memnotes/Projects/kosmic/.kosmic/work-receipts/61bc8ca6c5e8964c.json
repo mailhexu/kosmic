@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-19T16:55:09Z",
+  "detail": "Integrated CLI behavior verified; independent Standards/Spec Round2 approved; scoped completion.",
+  "identity": "kosmic/workflow-efficiency-and-selective-delegation/story/001",
+  "proof": {
+    "subprojects/workflow-efficiency-and-selective-delegation/specs/stories/story-001.md": "0be5656c789b80f49cc59912a39294f56635ef658dd92a2937617a717109aac1"
+  },
+  "record_path": "subprojects/workflow-efficiency-and-selective-delegation/specs/stories/story-001.md",
+  "record_sha256": "0be5656c789b80f49cc59912a39294f56635ef658dd92a2937617a717109aac1",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

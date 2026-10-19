@@ -3477,6 +3477,26 @@ def _check_math_proposal_routine_gates(
                 seen_targets.add(target_id)
 
 
+def check_terminal_formal_gates(project: Project, work_item: Path,
+                                source_root: Path) -> None:
+    """Declared formal contracts of a receipted done record (shared helper).
+
+    Exactly the plain ``--work-item`` done-record block — the record's
+    declared ``derivations`` validated against the math registry plus its
+    declared proposal/routine contracts — shared verbatim with the
+    ``work finish`` terminal retry so both entry points agree. Declared
+    contracts only: evolving knowledge, projections, and note-currentness
+    are never rerun here, so ordinary linked-note or data evolution never
+    revokes a receipt.
+    """
+    work_item = Path(work_item)
+    document = parse_markdown(work_item.read_text(encoding="utf-8"))
+    registry = load_math_registry(
+        project, only_slugs=as_string_list(document.metadata.get("derivations")))
+    _check_math_proposal_routine_gates(
+        project, work_item, document, registry, source_root)
+
+
 def _check_existing_completion(
     project: Project, work_item: Path, source_root: Path = Path.cwd(), *,
     check_status: bool = True, record_scoped: bool = False,
@@ -3612,6 +3632,10 @@ def check_completion(
             record_scoped = True
             record_owner = record.subproject_id
             if record.status == "done":
+                # Lockstep: a done record through --work-record applies the
+                # same declared formal contracts as the plain --work-item
+                # done path and the finish terminal route (shared helper).
+                check_terminal_formal_gates(project, work_item, source_root)
                 return
         elif (record.status == "done"
               and record.kind in kosmic_work.IMPLEMENTATION_KINDS):
@@ -3622,12 +3646,7 @@ def check_completion(
             # checks, so a valid receipt survives later note or dataset
             # evolution.
             kosmic_completion.check_done_record_gates(catalog, project.root, record)
-            document = parse_markdown(work_item.read_text(encoding="utf-8"))
-            registry = load_math_registry(
-                project,
-                only_slugs=as_string_list(document.metadata.get("derivations")))
-            _check_math_proposal_routine_gates(
-                project, work_item, document, registry, source_root)
+            check_terminal_formal_gates(project, work_item, source_root)
             return
     # Diagnostic-only completion checks remain read-only and record-free.
     _check_existing_completion(project, work_item, source_root,
@@ -4151,6 +4170,11 @@ def build_parser() -> argparse.ArgumentParser:
     show_command = work_commands.add_parser("show", help="resolve a work record reference")
     show_command.add_argument("--project", type=path_argument, required=True)
     show_command.add_argument("--work-record", required=True)
+    prepare_command = work_commands.add_parser(
+        "prepare-completion",
+        help="draft completion observations from an authorized record (read-only)")
+    prepare_command.add_argument("--project", type=path_argument, required=True)
+    prepare_command.add_argument("--work-record", required=True)
 
 
     generate_parser = subparsers.add_parser("generate", help="generate an atomic Skill Pair")
@@ -4468,6 +4492,12 @@ def _run_work(args: argparse.Namespace) -> int:
                    "record_path": record.path.relative_to(project_root).as_posix(),
                    "kind": record.kind, "status": record.status,
                    "subproject_id": record.subproject_id}
+    elif operation == "prepare-completion":
+        record = kosmic_work.resolve_work_record(project_root, args.work_record)
+        payload = {"identity": record.qualified_id,
+                   "record_path": record.path.relative_to(project_root).as_posix(),
+                   "completion_observations": kosmic_completion.prepare_completion(
+                       project_root, record)}
     else:
         raise KosmicError(f"unknown work operation: {operation}", exit_code=2)
     _print_json(payload)

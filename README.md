@@ -161,22 +161,60 @@ that rejects pre-existing worktree changes; one record uses one clean worktree.
     python3 skills/scripts/kosmic_project_skills.py work show \
         --project PROJECT --work-record QUALIFIED_ID
     python3 skills/scripts/kosmic_project_skills.py check-completion \
-        --project PROJECT --work-item CANONICAL_PATH --work-record QUALIFIED_ID
+        --project PROJECT --work-item CANONICAL_PATH --work-record QUALIFIED_ID  # optional diagnostic — never a required second command
     python3 skills/scripts/kosmic_project_skills.py work finish \
         --project PROJECT --worktree DIR --work-record QUALIFIED_ID \
         --scope worktree:src/ --scope project:notes/
 
-Finish checks the worktree diff against declared scopes and verifies the
-record-embedded acceptance observations and pinned review first. It then updates status/index/log outputs,
-publishes the successful receipt as the authoritative completion marker, and
-derives the STATUS projections from that receipt — stepwise, not cross-file
-atomic. Until the receipt matches, `done` remains pending to readers; rerun
-finish after interruption. A retry with an already-valid receipt keeps it
-unchanged and regenerates only the derived reports.
+One ordinary `work finish` invocation runs every required completion gate
+before publishing: it checks the worktree diff against the declared scopes,
+verifies the record-embedded acceptance observations, the pinned two-axis
+review, and the shared domain precheck (dependencies, STATUS freshness, retired
+inputs, Consumer Interface change, math/proposal/routine gates, related notes,
+projection). It then updates status/index/log outputs, publishes the successful
+receipt as the authoritative completion marker, and derives the STATUS
+projections from that receipt — stepwise, not cross-file atomic. Standalone
+`check-completion` remains an optional fail-fast diagnostic over the same
+gates; running it first is never required choreography. Until the receipt
+matches, `done` remains pending to readers; rerun finish after interruption.
+A retry with an already-valid terminal receipt keeps it unchanged and
+regenerates only the derived STATUS reports.
 
 Read-only queries and checks need no work record. Bounded bootstrap operations
 retain only their documented first-write contracts; there is no work-session
 switch or work recovery journal.
+
+An episode stays lean. An existing approved record that already authorizes the
+work is reused: the episode starts once and resumes across steps in the same
+record and worktree — no restart per step, no extra record, no fresh worktree
+per step, and no silent recorded-scope widening — while questions, code search,
+and unchanged-input checks need no record at all. Authority is re-derived live
+at every mutating invocation, so a mid-episode scope or approval change makes
+the next stale or over-broad call fail instead of proceeding on cached
+permission. Review packets stay risk-proportional: bounded to the actual delta
+plus its acceptance context (fixed base, criteria, observations, checks,
+adverse facts), with two distinct independent Standards/Spec reviewers, stable
+finding IDs, and the three-round limit always kept; unchanged inputs receive no
+fresh audit round, a failed review escalates rather than downgrading, and
+numerics/scientific, methods, security, or API/data/schema/publication/receipt
+content is reviewed for domain risk regardless of line count. Subagent
+checkpoints are justified only by genuine independence, useful parallelism, or
+context isolation, each with a bounded question or slice, explicit input/output,
+and a named integration owner. Focused checks run during the work and the
+integrated suite runs once after changes stabilize, rerunning only changed or
+previously failed checks and never skipping scientific validation. An episode
+closes in one batched pass — knowledge notes, log entries, and publication
+completion together with one appropriate canonical refresh; nothing is forced,
+and dataset-only metadata stays native-adjacent.
+
+Every created or presented PRD, Architecture, Epic, or Story — individually or
+batched — is handed to a human through an individual Markdown link whose visible
+label is that file's full absolute path and whose target opens the actual file;
+a directory, index, relative, shortened, or future path never substitutes, and
+each file in a batch is listed separately. Receipted Story completions repeat
+these links, including final canonical locations after integration. CLI JSON
+output is unchanged by presentation, and review approval is never presented as
+completion.
 
 ## Scope of this repository
 

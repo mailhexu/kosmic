@@ -88,6 +88,12 @@ STOP CHECK: Have I searched for existing specs?
 
 ---
 
+## Presenting Records: Individual Full-Absolute-Path Links
+
+Whenever a PRD, Architecture, Epic, or Story is created or presented for approval — one artifact or a batch — the human-facing response carries, for every artifact, an individual Markdown link whose visible label is that file's full absolute path and whose target opens the actual file. List every created file individually in a batch; a directory, index, relative, shortened, or future path is never a substitute. Use the record's actual persistent location, and after integration moves it, report its final canonical location. Presenting a record never implies approval, and a spec's approval never implies implementation completion.
+
+---
+
 ## Step 1: Create PRD (reserves the subproject)
 
 **Command**: `spec-create --project {PROJECT_ROOT} --kind prd --title {TITLE}`
@@ -121,6 +127,8 @@ STOP: Present PRD to user. Do NOT proceed to Architecture until user says:
   - "reject" → major rework needed
 ```
 
+Link the presented PRD by its full absolute path per the presenter rule above.
+
 ### Principles
 
 - **Problem-first**: Start with the problem, not the solution
@@ -146,7 +154,7 @@ After creating or updating a Research memo, update `specs/INDEX.md`.
 
 ## Step 2: Create Architecture
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind architecture --subproject {SUBPROJECT_ID}`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind architecture --subproject {SUBPROJECT_ID} --title "{TITLE}"`
 **File**: `{SPEC_ROOT}/architecture.md`
 **Template**: `references/templates/template-architecture.md`
 **Prerequisites**: PRD must exist and be `approved`
@@ -178,6 +186,8 @@ STOP: Present Architecture to user. Do NOT proceed to Epics until user approves.
   - "change X" → update, present again
 ```
 
+Link the presented Architecture by its full absolute path per the presenter rule above.
+
 ### Principles
 
 - **Decision-driven**: Every significant choice is an ADR
@@ -189,7 +199,7 @@ STOP: Present Architecture to user. Do NOT proceed to Epics until user approves.
 
 ## Step 3: Create Epic
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind epic --subproject {SUBPROJECT_ID} --parent architecture`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind epic --subproject {SUBPROJECT_ID} --parent architecture --title "{TITLE}"`
 **File**: `{SPEC_ROOT}/epics/epic-{N}.md`
 **Template**: `references/templates/template-epic.md`
 **Prerequisites**: PRD and Architecture must exist and be `approved`
@@ -216,6 +226,8 @@ STOP CHECK: Are PRD and Architecture approved?
 STOP: Present epic list to user. Wait for approval before creating stories.
 ```
 
+Link every presented Epic individually by its full absolute path per the presenter rule above.
+
 ### Principles
 
 - **Value-focused**: Each epic delivers standalone value
@@ -226,7 +238,7 @@ STOP: Present epic list to user. Wait for approval before creating stories.
 
 ## Step 4: Create Story
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind story --subproject {SUBPROJECT_ID} --parent epic-{N}`
+**Command**: `spec-create --project {PROJECT_ROOT} --kind story --subproject {SUBPROJECT_ID} --parent epic-{N} --title "{TITLE}"`
 **File**: `{SPEC_ROOT}/stories/story-{N}.md`
 **Template**: `references/templates/template-story.md`
 **Prerequisites**: Parent epic must exist
@@ -253,6 +265,8 @@ STOP: Present story to user. Story MUST be approved before implementation.
   - "approved" → set status: approved, story is ready for Task 6 (Implement)
   - "change X" → update, present again
 ```
+
+Link the presented Story by its full absolute path per the presenter rule above.
 
 ### Principles
 
