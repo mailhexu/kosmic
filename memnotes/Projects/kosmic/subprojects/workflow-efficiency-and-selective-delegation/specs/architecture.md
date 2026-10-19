@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "workflow-efficiency-and-selective-delegation"
-status: "draft"
+status: "approved"
 record_kind: "architecture"
 local_id: "architecture"
 linked_prd: "prd.md"
@@ -11,11 +11,9 @@ linked_prd: "prd.md"
 
 ## Status
 
-**Draft — pending user approval.** This document answers the [PRD](prd.md)'s
-open Architecture decisions. Every ADR below is **Proposed**; nothing here is
-implemented, and no behavior below is claimed as verified. Design approval is
-a separate human gate; implementation proceeds only through the gated record
-hierarchy afterwards.
+**Approved by the user.** The Architecture and ADRs below are accepted design
+decisions, not implementation claims. Epic approval, Story approval and
+implementation/review remain separately gated.
 
 ## System Overview
 
@@ -44,9 +42,9 @@ The chosen shape **extends the existing completion module** and
 shares the domain precheck through the established deferred import between
 `kosmic_completion` and `kosmic_project_skills`; no new preflight module.
 
-## Technical Decisions (ADRs — all Proposed)
+## Technical Decisions (ADRs — all Accepted)
 
-### ADR-A: Reuse before creation; permission is never cached — Proposed (FR-001, FR-002)
+### ADR-A: Reuse before creation; permission is never cached — Accepted (FR-001, FR-002)
 
 If an existing record already authorizes the work, it is reused — no new
 record; a record starts work once, and resuming continues inside its recorded
@@ -60,7 +58,7 @@ proceeding on cached authority, and a resumed episode can never silently
 widen its recorded scope. Rejected: episode/session persistence; any new
 authority artifact.
 
-### ADR-B: Unified nonterminal finish; shared domain precheck — Proposed (FR-003)
+### ADR-B: Unified nonterminal finish; shared domain precheck — Accepted (FR-003)
 
 The public surface is unchanged: `finish_work(project_root, worktree,
 record_ref, scope, *, detail="") -> dict` and the `work finish` CLI JSON
@@ -89,7 +87,7 @@ bytes, source revision, authority) run immediately before writes; then the
 publication order record → indexes → completion log → receipt → STATUS is
 unchanged.
 
-### ADR-C: Terminal-receipt route precedes mutable re-verification — Proposed (FR-004)
+### ADR-C: Terminal-receipt route precedes mutable re-verification — Accepted (FR-004)
 
 Before any full precheck, proof validation, or source binding, finish
 resolves identity/approved ancestry and attempts receipt validation
@@ -109,7 +107,7 @@ with terminal success. No linked note/data rehash, no current dirty-source
 review binding recomputation, no historical pin refresh ever occurs on this
 route.
 
-### ADR-D: Criterion prefill via read-only `work prepare-completion` — Proposed (FR-005)
+### ADR-D: Criterion prefill via read-only `work prepare-completion` — Accepted (FR-005)
 
 New read-only CLI:
 `python3 skills/scripts/kosmic_project_skills.py work prepare-completion --project P --work-record R`.
@@ -129,7 +127,7 @@ and no sidecar (NFR-003); applying the output is ordinary scoped record
 editing, and any subsequent record/source change invalidates the review
 binding exactly as today.
 
-### ADR-E: Risk-proportional packets on the existing review machinery — Proposed (FR-006, FR-007)
+### ADR-E: Risk-proportional packets on the existing review machinery — Accepted (FR-006, FR-007)
 
 A review packet is bounded to the actual delta plus acceptance context drawn
 from the existing record and review ledger: fixed review base, criteria,
@@ -145,7 +143,7 @@ receive no fresh audit round; a changed input or contract, or a failed check,
 reruns the affected checks on the fixed base rather than resetting into a
 fresh audit.
 
-### ADR-F: Discretionary delegation and check cadence — Proposed (FR-008, FR-009)
+### ADR-F: Discretionary delegation and check cadence — Accepted (FR-008, FR-009)
 
 A subagent checkpoint is justified only by genuine independence, useful
 parallelism, or context isolation, and must carry a concrete bounded question
@@ -158,7 +156,7 @@ checks run during work; the integrated suite runs once after affected
 changes stabilize; only checks whose inputs or contracts changed or that
 previously failed are rerun; scientific validation is never skipped.
 
-### ADR-G: Batched episode completion, no new artifact classes — Proposed (FR-010)
+### ADR-G: Batched episode completion, no new artifact classes — Accepted (FR-010)
 
 Knowledge notes, log entries, and publication completion for one authorized
 episode are batched into a single pass, with one appropriate canonical
@@ -168,7 +166,7 @@ curation stays off the critical path unless correctness requires immediate
 action. Dataset-only metadata remains native-adjacent per the knowledge-first
 placement rule. No new scheduler, queue, dashboard, or artifact class.
 
-### ADR-H: Honest three-case measurement in existing notes — Proposed (FR-011)
+### ADR-H: Honest three-case measurement in existing notes — Accepted (FR-011)
 
 The three representative scenarios are identified now: (1) small coding fix,
 (2) exploratory scientific research/campaign, (3) substantial feature. The
@@ -183,7 +181,7 @@ delay, primary coding/analysis, necessary scientific validation, and
 background compute are reported separately; overlapping workers never sum.
 No fabricated case timings and no invented speedup targets.
 
-### ADR-I: Coherent cutover and human-facing full-path links — Proposed (FR-012, FR-013)
+### ADR-I: Coherent cutover and human-facing full-path links — Accepted (FR-012, FR-013)
 
 At implementation, current docs, CLI guidance, examples, and consumer
 contracts are updated coherently; historical receipt/pin bytes stay
@@ -327,3 +325,11 @@ suite once the changes stabilize, scientific checks never skipped.
 - [Note writing style](../../../notes/note-writing-style.md) and
   [Shared Skill Library](../../../notes/shared-domain-skill-library.md) —
   conditional capture and coherent publication constraints on ADR-G.
+
+## Delivery Epics
+
+- [Epic 001: Safe Single-Invocation Completion](epics/epic-001.md) — runtime completion and read-only criterion preparation.
+- [Epic 002: Lean Workflow, Accessible Handoffs and Measured Overhead](epics/epic-002.md) — workflow guidance, full-path handoffs and the three-case assessment.
+
+Both Epics are drafts pending approval. Their acceptance does not authorize
+implementation until their Stories are created and approved.

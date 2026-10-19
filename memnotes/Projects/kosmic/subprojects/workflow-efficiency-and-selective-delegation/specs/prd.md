@@ -116,4 +116,4 @@ Observable whole-workflow checks (each includes the stated negative boundary):
 - [Knowledge-first Architecture](../../knowledge-first-notes-and-evidence-retirement/specs/architecture.md) — ADR-B's independent-review and record-embedded proof boundaries.
 - [Terminal-receipt coherence Quick Task](../../../specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md) — existing retry semantics.
 - [Note writing style](../../../notes/note-writing-style.md) and [Shared Skill Library](../../../notes/shared-domain-skill-library.md) — conditional capture and coherent publication.
-- [Draft Architecture](architecture.md) — proposed interfaces and workflow decisions; awaiting approval.
+- [Architecture](architecture.md) — approved interfaces and workflow decisions.
