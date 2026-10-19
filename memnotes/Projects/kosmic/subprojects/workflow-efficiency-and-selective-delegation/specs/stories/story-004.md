@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "workflow-efficiency-and-selective-delegation"
-status: "draft"
+status: "approved"
 record_kind: "story"
 local_id: "004"
 created: "2026-10-19"
