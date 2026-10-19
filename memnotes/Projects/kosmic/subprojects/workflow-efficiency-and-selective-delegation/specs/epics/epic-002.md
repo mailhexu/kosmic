@@ -1,12 +1,14 @@
 ---
 project_id: "kosmic"
 subproject_id: "workflow-efficiency-and-selective-delegation"
-status: "draft"
+status: "approved"
 record_kind: "epic"
 local_id: "002"
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
-linked_stories: []
+linked_stories:
+  - "../stories/story-003.md"
+  - "../stories/story-004.md"
 ---
 
 # Lean Workflow, Accessible Handoffs and Measured Overhead
@@ -60,9 +62,8 @@ assessment and cutover require Epic 001's mechanics and both Epics' results.
 
 ## Stories
 
-Not created; themes only, pending Epic approval and breakdown: work-start reuse/fresh authority; two-axis
-risk-proportional re-review and failure escalation; delegation/cadence from traces; batched completion and three-case
-measurement; cutover docs/examples/contracts and human-facing links.
+- [Story 003: Lean Workflow and Accessible Artifact Handoffs](../stories/story-003.md) — draft; can progress independently of runtime mechanics.
+- [Story 004: Three-Case Efficiency Assessment and Integrated Cutover](../stories/story-004.md) — draft; depends on Stories 001–003.
 
 ## Success Criteria
 
@@ -88,5 +89,6 @@ measurement; cutover docs/examples/contracts and human-facing links.
 
 ## Progress
 
-Draft, awaiting Epic approval; Stories only after it; Story approval gates implementation; nothing implemented. Success
-evidence comes from observed flow exercises, never source-text or wording checks; all criteria unchecked until observed.
+Approved by the user; two draft Stories, neither implemented nor receipted.
+Each Story needs its own approval. Success evidence comes from observed flow
+exercises, never source-text or wording checks; criteria remain unchecked.

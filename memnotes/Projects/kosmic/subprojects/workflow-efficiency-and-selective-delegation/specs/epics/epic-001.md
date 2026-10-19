@@ -1,12 +1,14 @@
 ---
 project_id: "kosmic"
 subproject_id: "workflow-efficiency-and-selective-delegation"
-status: "draft"
+status: "approved"
 record_kind: "epic"
 local_id: "001"
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
-linked_stories: []
+linked_stories:
+  - "../stories/story-001.md"
+  - "../stories/story-002.md"
 ---
 
 # Safe Single-Invocation Completion
@@ -68,10 +70,11 @@ authority handling is not redesigned here.
 
 ## Stories
 
-Not created. Candidate unnamed themes, allocated into Stories only after this
-Epic is approved: unified completion and retry; criterion prefill (with the
-runtime docs/examples/consumer cutover landing alongside the mechanics it
-documents).
+- [Story 001: Unified Safe Completion and Immutable Retry](../stories/story-001.md) — draft.
+- [Story 002: Read-Only Criterion Prefill](../stories/story-002.md) — draft.
+
+These Stories have no semantic dependency; overlapping runtime/docs edits need
+one integration owner rather than concurrent blind writes.
 
 ## Success Criteria
 
@@ -86,5 +89,5 @@ documents).
 
 ## Progress
 
-- Status: draft — awaiting Epic approval; no Stories, no implementation.
-- Next gate: Epic approval authorizes Story drafting only; each Story needs its own approval before implementation.
+- Status: approved by the user; two draft Stories, neither implemented nor receipted.
+- Next gate: each draft Story needs its own approval before implementation.

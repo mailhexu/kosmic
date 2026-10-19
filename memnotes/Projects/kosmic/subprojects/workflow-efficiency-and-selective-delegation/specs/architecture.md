@@ -331,5 +331,5 @@ suite once the changes stabilize, scientific checks never skipped.
 - [Epic 001: Safe Single-Invocation Completion](epics/epic-001.md) — runtime completion and read-only criterion preparation.
 - [Epic 002: Lean Workflow, Accessible Handoffs and Measured Overhead](epics/epic-002.md) — workflow guidance, full-path handoffs and the three-case assessment.
 
-Both Epics are drafts pending approval. Their acceptance does not authorize
-implementation until their Stories are created and approved.
+Both Epics are approved. Their draft Stories require explicit approval before
+implementation; Epic/Architecture approval is not implementation authority.
