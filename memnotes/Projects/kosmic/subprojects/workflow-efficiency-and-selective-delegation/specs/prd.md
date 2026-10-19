@@ -39,6 +39,8 @@ coordination-operation counts reported separately.
   generating any result/reviewer/approval claims.
 - Discretionary, justified subagent use; batched knowledge/log/publication
   completion; honest three-case measurement.
+- Direct artifact access: creation and Story-completion reports expose each
+  actual record file through a Markdown link displaying its full absolute path.
 - Preserve all existing safety invariants: two independent review axes,
   fixed review base, source-revision pins, record/worktree isolation, human
   gates, and terminal-receipt retry invariance.
@@ -77,6 +79,7 @@ coordination-operation counts reported separately.
 | FR-010 | Batched completion: knowledge notes, log entries, and publication completion for the same episode are batched into one pass (one appropriate canonical refresh per batch; content changes to published note sources still count and refresh). Optional curation and skill proposals stay off the primary critical path unless correctness requires immediate action. No forced note/proposal/publication, no extra queues or dashboards; single-dataset context remains native-adjacent per the knowledge-first PRD. | must |
 | FR-011 | Honest measurement: assess three representative cases — small coding fix, exploratory research campaign, substantial feature — using existing traces/records/logs first. Where elapsed time is unavailable, record UNKNOWN and count mandatory manual copy/record/start/CLI/handoff operations; never infer elapsed overhead from receipt completion timestamps. Foreground KOSMIC admin/approval/handoff delay is separated from primary coding/analysis and necessary validation/background compute; overlapping workers do not add duration. Findings land in one bounded comparison in existing feature Research/Story Technical Notes (or one reusable note if a general insight emerges) — not new per-task logs. Existing traces are partial; gaps are reported as unknown, not reconstructed. | must |
 | FR-012 | Documentation/contract cutover: at implementation time, current docs, CLI guidance, examples, and contract tests are updated coherently; historical receipts and input pins remain byte-immutable; no live/global vault or install changes outside existing approval boundaries. | must |
+| FR-013 | Accessible artifact handoffs: whenever a PRD, Architecture, Epic or Story is created or presented for approval, the human-facing response must include a Markdown link whose visible label is that file's full absolute path and whose target opens the actual file. List every created file individually in a batch; a directory, index link, shortened filename or relative path is not a substitute. After successful receipted Story completion, repeat the full-path link for every finished Story. Use the actual persistent record location; if integration changes that location, report its final canonical link too. Do not invent future paths, replace machine-readable CLI output, or imply that review approval alone means completion. | must |
 
 ## Non-Functional Requirements
 
@@ -99,6 +102,7 @@ Observable whole-workflow checks (each includes the stated negative boundary):
 - [ ] Two-axis preservation: every review in the packet — including a low-risk one — shows two distinct independent reviewers on the fixed base; a simulated full-review failure escalates rather than downgrading to a light pass; a line-count-only "trivial" label does not bypass domain review for an API/schema change.
 - [ ] Existing execution traces or the bounded assessment show discretionary delegation tied to independence, useful parallelism or context isolation, with bounded inputs/outputs and ownership; no new per-task delegation report is required, and mandatory proposer/reviewer independence remains.
 - [ ] Batched completion: one episode's note + log + publication complete in one batched pass with one canonical refresh; no forced note/proposal; measured three-case assessment reports observed timings where traces exist and UNKNOWN (with operation counts) where they do not — no fabricated baseline or percentage.
+- [ ] Creating or presenting a PRD, Architecture, Epic or Story produces an individually clickable full-absolute-path link to each existing record file. Completing one or several Stories repeats those links for all receipted finished Stories, including final canonical locations after integration; filename-only, directory-only, relative or nonexistent links do not satisfy the requirement.
 
 ## Open Questions
 
