@@ -27,6 +27,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Plan Flat Spec Migration Bootstrap](memnotes/Projects/kosmic/specs/quick-tasks/plan-flat-spec-migration-bootstrap.md) | draft | 2026-10-11 |
 | [Preserve explicit contained Markdown targets during spec migration](memnotes/Projects/kosmic/specs/quick-tasks/preserve-contained-migration-link-targets.md) | done | 2026-10-13 |
 | [Preserve missing MathDoc knowledge as drafts](memnotes/Projects/kosmic/specs/quick-tasks/preserve-missing-mathdoc-knowledge-as-drafts.md) | approved | ? |
+| [Publish reviewed Kosmic release and install OMP orchestrator](memnotes/Projects/kosmic/specs/quick-tasks/publish-reviewed-kosmic-release-and-install-omp-orchestrator.md) | done | ? |
 | [Record scoped completion validation](memnotes/Projects/kosmic/specs/quick-tasks/record-scoped-completion-validation.md) | done (receipt pending) | 2026-10-12 |
 | [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) | approved | ? |
 | [Remove missing writer registration](memnotes/Projects/kosmic/specs/quick-tasks/remove-missing-writer-registration.md) | done | ? |
