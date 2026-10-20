@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-20T06:22:16Z",
+  "detail": "Scoped correction verified; independent Standards/Spec Round2 approved; private projection prerequisite resolved.",
+  "identity": "kosmic/quick-task/repair-malformed-completion-review-gate-precedence",
+  "proof": {
+    "specs/quick-tasks/repair-malformed-completion-review-gate-precedence.md": "fe673ee37d3eb0c0dbd2f40aceef9dc1aad14fc8a543475403ee55f66d81924e"
+  },
+  "record_path": "specs/quick-tasks/repair-malformed-completion-review-gate-precedence.md",
+  "record_sha256": "fe673ee37d3eb0c0dbd2f40aceef9dc1aad14fc8a543475403ee55f66d81924e",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

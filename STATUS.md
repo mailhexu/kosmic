@@ -31,8 +31,10 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) | approved | ? |
 | [Remove missing writer registration](memnotes/Projects/kosmic/specs/quick-tasks/remove-missing-writer-registration.md) | done | ? |
 | [Repair Kosmic skill predictability](memnotes/Projects/kosmic/specs/quick-tasks/repair-kosmic-skill-predictability.md) | done | ? |
+| [Repair malformed completion review gate precedence](memnotes/Projects/kosmic/specs/quick-tasks/repair-malformed-completion-review-gate-precedence.md) | done | 2026-10-20 |
 | [Repair shared-library routine reciprocity without reclassifying knowledge](memnotes/Projects/kosmic/specs/quick-tasks/repair-shared-library-routine-reciprocity-without-reclassifying.md) | done | 2026-10-12 |
 | [Repair shared vault metadata for subproject migration](memnotes/Projects/kosmic/specs/quick-tasks/repair-shared-vault-metadata-for-subproject-migration.md) | done | ? |
+| [Restore CLI executable release and observable verification guidance](memnotes/Projects/kosmic/specs/quick-tasks/restore-cli-executable-release-and-observable-verification-guida.md) | done | 2026-10-20 |
 | [Restore evidence inventories for projection hygiene](memnotes/Projects/kosmic/specs/quick-tasks/restore-evidence-inventories-for-projection-hygiene.md) | draft | ? |
 | [Subprojects and required work records: wave-2 closure](memnotes/Projects/kosmic/specs/quick-tasks/subprojects-and-required-work-records-wave-2-closure.md) | done (receipt pending) | 2026-10-15 |
 

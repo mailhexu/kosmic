@@ -241,7 +241,9 @@ STOP CHECK: Do the NEW-behavior tests FAIL before implementation?
 ```
 
 **Principles**:
-- One test per acceptance criterion minimum
+- One observable check per acceptance criterion
+- Permanent tests for new or changed consumer-visible runtime boundaries
+- Real workflow/producer exercises for policy and human-handoff criteria
 - Include edge cases discovered in research
 - Follow existing test patterns in project
 - Tests should be clear and self-documenting

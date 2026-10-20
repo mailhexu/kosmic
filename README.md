@@ -86,6 +86,8 @@ python3 skills/scripts/kosmic_project_skills.py --help            # full subcomm
 python3 skills/scripts/kosmic_project_skills.py <subcommand> --help
 ```
 
+The script is committed with executable mode 100755, so direct invocation works too: `skills/scripts/kosmic_project_skills.py --help` renders the same help as the `python3`-prefixed form.
+
 Subcommand groups: `work`, `generate`, `validate`, `validate-proposal`, `init`, `migrate`, `review`, `check-completion`, `spec-create`, `workdir-register`, `migrate-subprojects-{plan,apply,recover}`, `check-math`, `provenance`, `install`, `check-installation`, `check-required-skills`, `generate-library`, `validate-library`, `query-routines`, `migrate-routines`, `resolve-library`, `load-library`, `migrate-library`, `install-library`, `check-library-installation`, `scratch`, `validate-dreams`, `dream-*`, `generate-status`.
 
 Optional convenience: create a personal launcher so `kosmic <subcommand>` works from any directory (not tracked by this repository):

@@ -25,6 +25,11 @@ Scenario to acceptance mapping:
   AC4 (``SCOPE_DENIED`` before review validation is consulted).
 - test_review_refused_before_domain_precheck:
   AC4 (precheck diagnostics never mask review validation).
+- test_malformed_completion_review_refused_after_proof_and_scope:
+  repair-malformed-completion-review-gate-precedence (a truthy
+  non-mapping completion_review is refused REVIEW_INVALID after the proof
+  and primary scope gates — ACCEPTANCE_INVALID/SCOPE_DENIED precedence
+  preserved — without crashing the entry snapshot or publishing).
 - test_missing_project_config_is_reported_not_swallowed:
   AC3 (config failure reported on the finish path).
 - test_record_changed_after_gates_rejects_publication /
@@ -391,6 +396,47 @@ class UnifiedFinishCompletionTest(ScopedProjectCase):
         self.assertNotEqual(0, result.returncode)
         self.assertIn("REVIEW_INVALID", result.stderr)
         self.assertNotIn("COMPLETION_PRECHECK_FAILED", result.stderr)
+        self.assertEqual("approved", self.record_status())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+
+    def test_malformed_completion_review_refused_after_proof_and_scope(self) -> None:
+        """A truthy non-mapping completion_review is refused, never crashed.
+
+        The entry snapshot must stay safe for non-mapping review metadata:
+        the malformed value reaches the existing ordered review gate and
+        fails as ``REVIEW_INVALID`` only after the proof and primary scope
+        gates, so earlier invalid states keep their precedence. No refusal
+        publishes anything or mutates the record bytes.
+        """
+        for malformed in (["legacy list review"], "legacy text review", 20260101):
+            with self.subTest(review=malformed):
+                self.write_record(review=malformed)
+                record_bytes = self.record_path.read_bytes()
+                result = self.run_finish()
+                self.assertNotEqual(
+                    0,
+                    result.returncode,
+                    msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+                )
+                self.assertIn("REVIEW_INVALID", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual(record_bytes, self.record_path.read_bytes())
+                self.assertEqual("approved", self.record_status())
+                self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+        # Precedence: an invalid proof refuses as ACCEPTANCE_INVALID before
+        # the malformed review is consulted.
+        self.write_record(observations=[], review=["legacy list review"])
+        proof = self.run_finish()
+        self.assertNotEqual(0, proof.returncode, msg=proof.stderr)
+        self.assertIn("ACCEPTANCE_INVALID", proof.stderr)
+        self.assertNotIn("REVIEW_INVALID", proof.stderr)
+        # Precedence: an uncovered primary finish claim refuses as
+        # SCOPE_DENIED before the malformed review is consulted.
+        self.write_record(review="legacy text review")
+        scope = self.run_finish("worktree:src/")
+        self.assertNotEqual(0, scope.returncode, msg=scope.stderr)
+        self.assertIn("SCOPE_DENIED", scope.stderr)
+        self.assertNotIn("REVIEW_INVALID", scope.stderr)
         self.assertEqual("approved", self.record_status())
         self.assertFalse((self.project / ".kosmic/work-receipts").exists())
 

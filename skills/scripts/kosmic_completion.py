@@ -595,8 +595,9 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
     # later mutation — before, between, or after the gates — is observed at
     # the pre-write recheck.
     validated_record_bytes = record.path.read_bytes()
-    validated_revision = (record.metadata.get("completion_review") or {}).get(
-        "reviewed_revision")
+    original_review = record.metadata.get("completion_review")
+    validated_revision = (original_review.get("reviewed_revision")
+                          if isinstance(original_review, dict) else None)
     validate_completion_proof(root, record)
     import datetime
     candidates = [record.path.parent.parent / "INDEX.md", root / "specs" / "INDEX.md",

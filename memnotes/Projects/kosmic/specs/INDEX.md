@@ -49,6 +49,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Projected link rewriting](quick-tasks/2026-09-02-projected-link-rewriting.md) | done | demote unshipped links in projected references | 95/95 tests; gate passed; pair regenerated |
 | [Manifest code provenance](quick-tasks/2026-09-03-manifest-code-provenance.md) | done | optional git_head/worktree_tree in MANIFEST + provenance command | 142/142 tests; validate exit 0 |
 | [Plan flat-spec migration bootstrap](quick-tasks/plan-flat-spec-migration-bootstrap.md) | draft | Inventory legacy feature records and prepare an owner-aware migration plan without moving or approving them. | Awaiting explicit approval for planning; migration execution needs a separate gate. |
+| [Malformed completion-review refusal](quick-tasks/repair-malformed-completion-review-gate-precedence.md) | done | preserve proof/scope/review refusal order for malformed review metadata | Red-before/green-after CLI regression; 28 focused tests; both independent review axes approved |
+| [Executable CLI and observable verification](quick-tasks/restore-cli-executable-release-and-observable-verification-guida.md) | done | restore committed executable mode and remove the permanent-test-per-criterion mandate | Actual direct/Python help and policy handoff exercised; both independent review axes approved |
 
 ## Epics
 
