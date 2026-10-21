@@ -1,3 +1,4 @@
 # Review convergence and optional historical validation Specs
 
-- [PRD](prd.md) — draft; awaiting user approval. No Architecture record exists yet.
+- [Architecture](architecture.md) — draft; proposed ADRs pending user approval.
+- [PRD](prd.md) — approved. Architecture is the next gate; no Epics or Stories until approval.

@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "review-convergence-and-optional-historical-validation"
-status: "draft"
+status: "approved"
 record_kind: "prd"
 local_id: "prd"
 ---
@@ -17,8 +17,8 @@ a fresh full audit over unchanged inputs — partial repairs can look like
 consumed rounds. (2) Older records predate modern receipt, review and pin
 semantics and surface as uniform gate failures or one stale pin blocking
 whole-Project validate, with no split between claimed history and current
-integrity. Draft awaiting user approval; Architecture and implementation
-stay separately gated.
+integrity. Product scope approved by the user on 2026-10-21.
+Architecture and implementation remain separately gated.
 
 ## Verified Baseline
 
@@ -116,6 +116,7 @@ stay separately gated.
 
 ## Related Knowledge
 
+- [Architecture](architecture.md) — proposed design; draft awaiting separate user approval.
 - [Owner specs index](INDEX.md); current CLI invariants in
   [cli-projection-commands](../../../notes/cli-projection-commands.md) and
   [cli-extension-conventions](../../../notes/cli-extension-conventions.md).

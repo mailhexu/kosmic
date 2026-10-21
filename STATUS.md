@@ -331,7 +331,13 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 | Spec | Status | Updated |
 |------|--------|---------|
-| [Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) | draft | ? |
+| [Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) | approved | ? |
+
+#### Architecture
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Architecture: Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | draft | 2026-10-21 |
 
 ### Subproject: semantic-artifact-roles
 
@@ -558,7 +564,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [project-status-file/Story 064: Status Generation Core](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-001-status-generation-core.md) - done (receipt pending)
 - [project-status-file/Story 065: Status Drift Gates](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-002-status-drift-gates.md) - done (receipt pending)
 - [project-status-file/Story 066: Status Workflow Dogfood Release](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-003-status-workflow-dogfood-release.md) - done (receipt pending)
-- [review-convergence-and-optional-historical-validation/Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) - draft
+- [review-convergence-and-optional-historical-validation/Architecture: Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) - draft
 - [semantic-artifact-roles/Epic 17: Semantic Role Schema](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-001-semantic-role-schema.md) - done (receipt pending)
 - [semantic-artifact-roles/Epic 18: Role-Aware Resolution](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-002-role-aware-resolution.md) - done (receipt pending)
 - [semantic-artifact-roles/Epic 19: Classification Migration and Release](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-003-classification-migration-release.md) - done (receipt pending)

@@ -34,7 +34,8 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Architecture | [Knowledge-first notes and evidence retirement](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/architecture.md) | approved 2026-10-17 | Note lifecycle, compact completion and incremental curation design accepted. |
 | Feature Epic | [Knowledge-first workflow and incremental skill curation](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) | approved 2026-10-18 | Five Story records drafted; individual Story approval required before implementation. |
 | Feature Stories | [Knowledge-first workflow: five Story drafts](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/INDEX.md#draft-stories) | draft | STATUS authorization; notes/metadata; completion/receipts; incremental curation; coherent consumer cutover. |
-| Feature PRD | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) | draft | Awaiting user approval: worker-response barrier, complete re-review handoff, pair-round cap, and optional historical-integrity policy; Architecture deferred. |
+| Feature PRD | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) | approved 2026-10-21 | Worker-response barrier, complete bounded re-review handoff, and optional inspectable historical-integrity policy. |
+| Feature Architecture | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | draft | Proposed exact-path history reporting/audit seam and coordinator-ledger review barrier; awaiting user approval. |
 
 ## Research Memos
 
