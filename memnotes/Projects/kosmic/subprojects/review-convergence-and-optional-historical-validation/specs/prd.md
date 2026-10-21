@@ -116,7 +116,8 @@ Architecture and implementation remain separately gated.
 
 ## Related Knowledge
 
-- [Architecture](architecture.md) — proposed design; draft awaiting separate user approval.
+- [Architecture](architecture.md) — approved design; implementation remains separately gated.
+- Epic drafts awaiting approval: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md).
 - [Owner specs index](INDEX.md); current CLI invariants in
   [cli-projection-commands](../../../notes/cli-projection-commands.md) and
   [cli-extension-conventions](../../../notes/cli-extension-conventions.md).

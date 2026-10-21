@@ -3,7 +3,7 @@ project_id: "kosmic"
 subproject_id: "review-convergence-and-optional-historical-validation"
 record_kind: architecture
 local_id: architecture
-status: draft
+status: approved
 created: 2026-10-21
 updated: 2026-10-21
 linked_prd: prd.md
@@ -14,16 +14,17 @@ linked_stories: []
 
 ## System Overview
 
-This draft proposes two independent seams: read-only, configuration-scoped historical integrity reporting; and a coordinator-owned barrier for bounded re-review on the existing completion ledger. Historical display never grants authority or changes lifecycle; review annotations never authenticate the full review process. The PRD is approved; this Architecture and all ADRs remain draft/proposed pending the user gate.
+The PRD and this Architecture are approved by the user's continuation to Epic planning. The accepted design separates read-only, configuration-scoped historical reporting from a coordinator-owned re-review barrier on the existing ledger. Historical display grants no authority; review annotations do not authenticate the agent process. Epic and Story approval remain separate, and no implementation is claimed.
 
 Approved input: [PRD](prd.md). Navigation: [owner specs index](INDEX.md).
+Epic drafts awaiting approval: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md).
 
 
 ## Technical Decisions (ADRs)
 
 ### ADR-001: Exact configured history scope
 
-**Status**: Proposed
+**Status**: Accepted
 
 **Context**: Historical warning scope must be explicit, inspectable, stable for canonical STATUS, and unable to weaken active operations.
 
@@ -50,7 +51,7 @@ The only proposed flag is read-only `validate --history-audit`: force retrospect
 
 ### ADR-002: Structural reporting before retrospective readers
 
-**Status**: Proposed
+**Status**: Accepted
 
 **Context**: `SpecRef.effective_status` is receipt-aware. `SpecCatalog.__init__` calls `_settle_receipts`; `_spec_rows` calls `try_project_catalog` (constructing that catalog) and separately calls `pending_terminal_receipts`; bootstrap-flat `_spec_rows` also settles receipts. A post-render label override still incurs historical integrity work.
 
@@ -66,7 +67,7 @@ Only retrospective integrity absence/drift (including missing modern completion 
 
 ### ADR-003: Coordinator barrier and additive finding response
 
-**Status**: Proposed
+**Status**: Accepted
 
 **Context**: Re-review must carry the stable ledger and fixed base to both independent axes, avoid consuming rounds on partial work, and stop at three rounds. This is coordinator/host workflow, not new CLI, engine or state store.
 

@@ -35,7 +35,9 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Epic | [Knowledge-first workflow and incremental skill curation](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) | approved 2026-10-18 | Five Story records drafted; individual Story approval required before implementation. |
 | Feature Stories | [Knowledge-first workflow: five Story drafts](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/INDEX.md#draft-stories) | draft | STATUS authorization; notes/metadata; completion/receipts; incremental curation; coherent consumer cutover. |
 | Feature PRD | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) | approved 2026-10-21 | Worker-response barrier, complete bounded re-review handoff, and optional inspectable historical-integrity policy. |
-| Feature Architecture | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | draft | Proposed exact-path history reporting/audit seam and coordinator-ledger review barrier; awaiting user approval. |
+| Feature Architecture | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | approved 2026-10-21 | Accepted exact-path history inspection/audit seam and coordinator-ledger review barrier; Epic approval is next. |
+| Feature Epic | [Optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) | draft | Two unreserved Story outlines; scoped historical reporting/audit with strict active integrity. |
+| Feature Epic | [Complete review handoffs](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) | draft | Two unreserved Story outlines; compatible finding annotations and bounded coordinator handoffs. |
 
 ## Research Memos
 

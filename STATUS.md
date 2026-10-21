@@ -337,7 +337,14 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 | Spec | Status | Updated |
 |------|--------|---------|
-| [Architecture: Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | draft | 2026-10-21 |
+| [Architecture: Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | approved | 2026-10-21 |
+
+#### Epics
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Epic 1: Optional historical validation with strict active integrity](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) | draft | 2026-10-21 |
+| [Complete worker responses and convergent review handoffs](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) | draft | ? |
 
 ### Subproject: semantic-artifact-roles
 
@@ -472,7 +479,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 123 open item(s)
+- 124 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -564,7 +571,8 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [project-status-file/Story 064: Status Generation Core](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-001-status-generation-core.md) - done (receipt pending)
 - [project-status-file/Story 065: Status Drift Gates](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-002-status-drift-gates.md) - done (receipt pending)
 - [project-status-file/Story 066: Status Workflow Dogfood Release](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-003-status-workflow-dogfood-release.md) - done (receipt pending)
-- [review-convergence-and-optional-historical-validation/Architecture: Review convergence and optional historical validation](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) - draft
+- [review-convergence-and-optional-historical-validation/Epic 1: Optional historical validation with strict active integrity](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) - draft
+- [review-convergence-and-optional-historical-validation/Complete worker responses and convergent review handoffs](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) - draft
 - [semantic-artifact-roles/Epic 17: Semantic Role Schema](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-001-semantic-role-schema.md) - done (receipt pending)
 - [semantic-artifact-roles/Epic 18: Role-Aware Resolution](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-002-role-aware-resolution.md) - done (receipt pending)
 - [semantic-artifact-roles/Epic 19: Classification Migration and Release](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-003-classification-migration-release.md) - done (receipt pending)
