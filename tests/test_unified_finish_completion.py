@@ -43,6 +43,26 @@ Scenario to acceptance mapping:
 - test_terminal_formal_failure_rejects_retry_and_check_completion:
   AC6 (declared formal math contracts hold on the terminal route through
   both check-completion entry modes).
+
+Story 003 (review-convergence-and-optional-historical-validation): optional
+finding annotations are validated for shape and coherence at the same seam.
+- test_fixed_response_with_empty_detail_refuses /
+  test_refuted_response_with_empty_evidence_refuses /
+  test_worker_response_unknown_kind_refuses:
+  Story003 AC2 (incomplete worker_response refused REVIEW_INVALID, finding
+  named).
+- test_blocked_response_requires_prerequisite_and_escalation:
+  Story003 AC3 (blocked needs detail=prerequisite + evidence=escalation;
+  complete form publishes).
+- test_worker_response_fixed_leaves_finding_blocking:
+  Story003 AC4 (a worker claim never closes a finding).
+- test_resolved_row_accepts_resolution_fixed /
+  test_resolved_row_accepts_resolution_refuted /
+  test_resolution_on_open_row_refuses:
+  Story003 AC5 (resolution fixed|refuted only on resolved rows).
+Story003 AC1 (legacy closed rows without annotations stay valid) and AC6
+(existing gate precedence/freshness) remain protected by the pre-existing
+guards above and in tests/test_record_scoped_completion.py; no duplicates.
 """
 
 from __future__ import annotations
@@ -611,6 +631,219 @@ class UnifiedFinishCompletionTest(ScopedProjectCase):
         self.assertNotEqual(0, checked_record.returncode, checked_record.stdout)
         self.assertIn("derivative", checked_record.stderr)
         self.assertEqual(receipt_path.read_bytes(), receipt_bytes)
+
+    # -- Story 003: compatible finding-response and refutation annotations ----
+
+    def test_fixed_response_with_empty_detail_refuses(self) -> None:
+        """Story003 AC2: an incomplete worker claim is structurally refused.
+
+        ``worker_response`` with ``kind: fixed`` but empty ``detail`` fails
+        as ``REVIEW_INVALID`` naming the finding, at the ordinary finish
+        seam, without publishing anything.
+        """
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-1", "disposition": "Blocking", "status": "open",
+             "worker_response": {"kind": "fixed", "detail": "   ",
+                                 "evidence": "Fixture evidence text."}},
+        ]))
+        result = self.run_finish()
+        self.assertNotEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", result.stderr)
+        self.assertIn("KF-1", result.stderr)
+        self.assertEqual("approved", self.record_status())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+
+    def test_refuted_response_with_empty_evidence_refuses(self) -> None:
+        """Story003 AC2: ``refuted`` without evidence is refused, named."""
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-2", "disposition": "Blocking", "status": "open",
+             "worker_response": {"kind": "refuted",
+                                 "detail": "Fixture refutation rationale.",
+                                 "evidence": ""}},
+        ]))
+        result = self.run_finish()
+        self.assertNotEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", result.stderr)
+        self.assertIn("KF-2", result.stderr)
+        self.assertIn("evidence", result.stderr)
+        self.assertEqual("approved", self.record_status())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+
+    def test_worker_response_unknown_kind_refuses(self) -> None:
+        """Story003 AC2: only fixed/refuted/blocked kinds are accepted."""
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-3", "disposition": "Blocking", "status": "open",
+             "worker_response": {"kind": "wontfix", "detail": "x",
+                                 "evidence": "y"}},
+        ]))
+        result = self.run_finish()
+        self.assertNotEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", result.stderr)
+        self.assertIn("KF-3", result.stderr)
+
+    def test_blocked_response_requires_prerequisite_and_escalation(self) -> None:
+        """Story003 AC3: blocked needs detail (prerequisite) + evidence
+        (escalation rationale); a complete claim passes annotation
+        validation yet still never closes the finding."""
+        blocked_missing_prerequisite = self.review_fields(findings=[
+            {"id": "KF-4", "disposition": "Blocking", "status": "open",
+             "worker_response": {"kind": "blocked", "detail": "",
+                                 "evidence": "Escalated to the maintainer."}},
+        ])
+        self.write_record(review=blocked_missing_prerequisite)
+        missing = self.run_finish()
+        self.assertNotEqual(
+            0,
+            missing.returncode,
+            msg=f"stdout:\n{missing.stdout}\nstderr:\n{missing.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", missing.stderr)
+        self.assertIn("KF-4", missing.stderr)
+        self.assertIn("prerequisite", missing.stderr)
+
+        blocked_missing_escalation = self.review_fields(findings=[
+            {"id": "KF-4", "disposition": "Blocking", "status": "open",
+             "worker_response": {"kind": "blocked",
+                                 "detail": "Prerequisite: upstream parser fix.",
+                                 "evidence": "   "}},
+        ])
+        self.write_record(review=blocked_missing_escalation)
+        missing_escalation = self.run_finish()
+        self.assertNotEqual(
+            0,
+            missing_escalation.returncode,
+            msg=f"stdout:\n{missing_escalation.stdout}\n"
+                f"stderr:\n{missing_escalation.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", missing_escalation.stderr)
+        self.assertIn("escalation", missing_escalation.stderr)
+
+        blocked_complete = self.review_fields(findings=[
+            {"id": "KF-4", "disposition": "Blocking", "status": "open",
+             "worker_response": {
+                 "kind": "blocked",
+                 "detail": "Prerequisite: upstream parser fix is pending.",
+                 "evidence": "Escalated to the maintainer with the failing case."}},
+        ])
+        self.write_record(review=blocked_complete)
+        complete = self.run_finish()
+        # The complete blocked claim passes annotation validation (no
+        # prerequisite/escalation diagnostic), but a worker claim never
+        # closes the finding: the open Blocking row still refuses finish.
+        self.assertNotEqual(
+            0,
+            complete.returncode,
+            msg=f"stdout:\n{complete.stdout}\nstderr:\n{complete.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", complete.stderr)
+        self.assertIn("unresolved blocking finding KF-4", complete.stderr)
+        self.assertNotIn("prerequisite", complete.stderr)
+        self.assertNotIn("escalation", complete.stderr)
+        self.assertEqual("approved", self.record_status())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+
+    def test_worker_response_fixed_leaves_finding_blocking(self) -> None:
+        """Story003 AC4: a worker claim alone never closes a finding.
+
+        A complete ``fixed`` response on an open Blocking row keeps the row
+        unresolved, so finish is refused exactly as without the annotation.
+        """
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-5", "disposition": "Blocking", "status": "open",
+             "worker_response": {
+                 "kind": "fixed",
+                 "detail": "Guard applied; awaiting reviewer verification.",
+                 "evidence": "Malformed-review CLI case returned REVIEW_INVALID."}},
+        ]))
+        result = self.run_finish()
+        self.assertNotEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", result.stderr)
+        self.assertIn("unresolved blocking finding KF-5", result.stderr)
+        self.assertEqual("approved", self.record_status())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+
+    def test_resolved_row_accepts_resolution_fixed(self) -> None:
+        """Story003 AC5: reviewer closure with resolution: fixed is valid."""
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-6", "disposition": "Blocking", "status": "resolved",
+             "resolution": "fixed",
+             "resolution_note": "Fixture reviewer judgment retained."},
+        ]))
+        receipt = json.loads(self.finish().stdout)
+        self.assertEqual(receipt["status"], "successful")
+
+    def test_resolved_row_accepts_resolution_refuted(self) -> None:
+        """Story003 AC5: resolution: refuted keeps the rationale inspectable."""
+        note = "Fixture refutation rationale retained on the row."
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-6", "disposition": "Blocking", "status": "resolved",
+             "resolution": "refuted", "resolution_note": note},
+        ]))
+        receipt = json.loads(self.finish().stdout)
+        self.assertEqual(receipt["status"], "successful")
+        self.assertIn(note, self.record_path.read_text(encoding="utf-8"))
+
+    def test_standalone_check_completion_refuses_malformed_annotation(self) -> None:
+        """Story003 AC2/AC3/AC5: standalone ``check-completion`` validates
+        supplied annotations without demanding the full modern review.
+
+        The diagnostic-only work-item entry must refuse a malformed
+        ``worker_response`` by name even though it deliberately does not
+        require review approval, proof, or Blocking closure. Legacy records
+        without annotations keep passing unchanged.
+        """
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "A-1", "disposition": "Blocking", "status": "open",
+             "worker_response": {"kind": "fixed", "detail": "",
+                                 "evidence": "Fixture evidence text."}},
+        ]))
+        checked = self.run_cli("check-completion", "--project", self.project,
+                               "--work-item", self.record_path)
+        self.assertNotEqual(
+            0,
+            checked.returncode,
+            msg=f"stdout:\n{checked.stdout}\nstderr:\n{checked.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", checked.stderr)
+        self.assertIn("A-1", checked.stderr)
+        self.assertIn("non-empty detail", checked.stderr)
+
+    def test_resolution_on_open_row_refuses(self) -> None:
+        """Story003 AC5: resolution is reviewer-only closure vocabulary.
+
+        ``resolution`` on a row that is not ``resolved`` — here an accepted
+        non-blocking follow-up — is incoherent and refused by name.
+        """
+        self.write_record(review=self.review_fields(findings=[
+            {"id": "KF-7", "disposition": "Follow-up", "status": "open",
+             "resolution": "fixed"},
+        ]))
+        result = self.run_finish()
+        self.assertNotEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", result.stderr)
+        self.assertIn("KF-7", result.stderr)
+        self.assertEqual("approved", self.record_status())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
 
 
 if __name__ == "__main__":  # pragma: no cover
