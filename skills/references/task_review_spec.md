@@ -168,7 +168,17 @@ Do not open a new finding against unchanged code. The only exception is a critic
 
 Resolve each prior ledger row as `resolved`, `still-open`, or `regressed`; never replace the ledger with a new list. Suggestions cannot be promoted to Blocking without new contract evidence.
 
-### 2.6 Preparation and Decision
+### 2.6 Coordinator Readiness Barrier, Handoff, and Round Counting
+
+**Readiness barrier.** Before submitting routine re-review, every unresolved Blocking row needs a complete worker response: `fixed` plus observable evidence, or `refuted` plus rationale and evidence. Unaddressed, partially repaired, or changed-unresolved Blocking rows are **held** — holding consumes no round and does not restart counting; the complete payload proceeds without restarting round counting. Worker assertions never close findings. A genuinely blocked prerequisite is recorded (`kind: blocked` with prerequisite and escalation rationale/evidence) and escalated explicitly to the coordinator; that path is distinct from routine review submission and never enters it.
+
+**Frozen handoff.** The coordinator assembles and freezes one identical actual payload and delivers it to both independent axes on one held target: record identity/path, fixed base, prior and current reviewed revisions, the complete ledger with per-finding responses, changed targets, affected checks/results, requested pair/round, unchanged non-blocking exclusions, and any escalation. Convey the held payload through agent messages or managed scratch **outside the reviewed source worktree** (or existing excluded Project metadata, as applicable) — never as new files inside the reviewed delta, which would change `source_revision` and self-invalidate the fingerprint; no new persistent artifact, sidecar, or storage class. `source_revision` excludes nested Project record bytes and cannot stand in for the payload snapshot: if the nested record/context changed while the computed revision is unchanged, recheck the changed context and re-freeze the handoff. No persistent context hash or sidecar.
+
+**Round counting.** Round 1 is the full review; **one completed Standards + Spec pair on the held snapshot is exactly one automated round**, never two. The requested pair/round number rides the frozen handoff as a request; the record's `review_round` count advances only after **both** axes of that pair complete — never pre-incremented at submission, and never a new counter field. Worker repairs and partial callbacks consume no round. Changes-requested at Round 2 continues into Round 3; no fourth round starts. At the cap the coordinator issues an explicit human decision packet — the existing ledger, attempted resolutions, and a concrete decision ask — never a reset, a fourth round, or a manufactured approval.
+
+**Refutation outcomes.** Reviewer acceptance of a fix or refutation closes via the existing `status: resolved`, optionally `resolution: fixed|refuted`, preserving the original finding and refutation rationale. A rejected refutation leaves the row open/Blocking with the rationale retained. No new closure status is introduced; no retroactive reviewer version/hash/resolver fields are added.
+
+### 2.7 Preparation and Decision
 
 Run required tests, the Consumer Interface completion gate, diagnostics, and focused smoke checks. Approve when all Blocking findings are resolved and verification passes, even if Non-blocking suggestions remain.
 
@@ -276,14 +286,16 @@ draft ──[changes]──→ draft (with comments)
 ### After Code Review
 
 ```
-review ──[approve]──→ review (decision recorded; checked finish still required)
+in_progress ──[approve: decision recorded in completion_review]──→ in_progress (active phase kept; checked finish still required)
 review ──[changes]──→ in_progress
-review ──[verified work receipt]──→ done
+approved/in_progress ──[verified work receipt via checked finish]──→ done
 ```
+
+Checked `work finish` refuses a record set to `review` (`WORK_PHASE_DENIED`); it accepts `approved`/`in_progress` and alone writes `done`. Record the review decision in the embedded `completion_review` mapping while keeping the record in its active phase — never strand a record in `review` expecting finish; a record sitting in `review` returns to `in_progress` before finishing.
 
 ### Convergence Limit
 
-Allow at most three automated rounds: one complete initial review and two re-review rounds. If Blocking findings remain after Round 3, stop autonomous review cycling. Keep the story `in_progress` and escalate the existing ledger for a human scope or design decision; do not start another unrestricted review. A failed or incomplete full review never downgrades to a light pass — the escalation is the only exit from the limit.
+Allow at most three automated rounds, counted by completed Standards + Spec pair on the held snapshot: one complete initial review and two re-review rounds. Worker repairs and partial callbacks consume no round. If Blocking findings remain after Round 3, stop autonomous review cycling. Keep the story `in_progress` and escalate the existing ledger — with attempted resolutions and a concrete human decision ask — for a human scope or design decision; do not start another unrestricted review, reset, or begin a fourth round. A failed or incomplete full review never downgrades to a light pass — the escalation is the only exit from the limit.
 
 ---
 

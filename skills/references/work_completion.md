@@ -8,14 +8,18 @@ Start in a registered clean writer with `work start`. Pin `review_base` before i
 
 ```yaml
 review_base: "<pinned review baseline>"
-review_round: 1
+review_round: 0
 completion_observations: []
 completion_review: {}
 ```
 
+Start `review_round` at 0; advance it only after a completed Standards + Spec pair on the held snapshot (1..3). The requested pair/round number belongs to the frozen handoff, not to a pre-incremented completed count.
+
 Use the exact case-sensitive heading `## Acceptance Criteria`. Put each complete criterion on one physical checklist line (`- [ ] ...` or `- [x] ...`). The validator matches that line's text exactly; wrapped continuation lines do not extend the criterion.
 
 **Complete when:** the approved record, baseline and every criterion are unambiguous.
+
+Before any routine re-review submission, apply the Task 7 §2.6 readiness barrier (`task_review_spec.md`): every unresolved Blocking row carries a complete worker response, and genuinely blocked prerequisites are escalated — not submitted.
 
 ## 2. Record embedded completion observations
 
@@ -34,7 +38,7 @@ completion_observations:
 
 ## 3. Pin reviewed source and decisions
 
-`review_base` is the fixed review baseline; `review_round` is an integer 1..3 recorded in the record frontmatter. `reviewed_revision` is **not Git HEAD**: it is the SHA-256 returned by `kosmic_completion.source_revision(worktree, project, record)`. It binds the current uncommitted writer delta, excluding `.tmp`, `.git` and STATUS output. When Project and writer coincide it also excludes Project metadata directories; when the Project is nested inside the writer it excludes **every path under that Project prefix**, including any Project-local source. With a separate external Project it excludes no writer Project prefix. This is the current validator's boundary, not comprehensive review coverage: reviewers must inspect all owned deltas against the pinned baseline, including excluded or already committed files. An empty source delta has its own hash and does not prove those files were reviewed.
+`review_base` is the fixed review baseline; `review_round` is an integer 1..3 recorded in the record frontmatter by the time of finish, after the approved pair — 0 is the pre-review initializer value, never a finish state. `reviewed_revision` is **not Git HEAD**: it is the SHA-256 returned by `kosmic_completion.source_revision(worktree, project, record)`. It binds the current uncommitted writer delta, excluding `.tmp`, `.git` and STATUS output. When Project and writer coincide it also excludes Project metadata directories; when the Project is nested inside the writer it excludes **every path under that Project prefix**, including any Project-local source. With a separate external Project it excludes no writer Project prefix. This is the current validator's boundary, not comprehensive review coverage: reviewers must inspect all owned deltas against the pinned baseline, including excluded or already committed files. An empty source delta has its own hash and does not prove those files were reviewed.
 
 After implementation, compute the value using the same installed/source scripts as the CLI. The following is a read-only Python invocation; replace the three absolute paths and the record reference:
 
@@ -70,6 +74,8 @@ The review binds to the record through the fixed `review_base` and `review_round
 
 **Complete when:** actual review decisions cover the current source and the computed revision matches the work being completed.
 
+The coordinator re-review protocol — pre-submit readiness barrier, blocked escalation, the frozen identical handoff payload delivered to both axes, pair-based round counting with the max-3 human decision packet, and worker-response/resolution semantics — is defined once in Task 7 §2.6 (`task_review_spec.md`); follow it there before assembling any handoff. Note only that `source_revision` **excludes nested Project record bytes** and therefore does not freeze acceptance observations, ledger or context: when the nested record/context changed while the computed revision is unchanged, reviewers recheck the changed context and the coordinator re-freezes the handoff. No persistent context hash or sidecar exists.
+
 ## 4. Finish with precise scope
 
 Run existing read-only completion gates with `check-completion --help` for that CLI's flags. Pass every output scope separately to the checked finish command:
@@ -85,6 +91,8 @@ python3 /absolute/kosmic/scripts/kosmic_project_skills.py work finish \
 For a Project nested in the writer, `project:PATH` claims use Project-relative paths; `worktree:PATH` claims cover paths outside that Project and use writer-relative paths. For a separate external Project, writer changes use `worktree:` claims. If Project and writer roots coincide, declared paths are relative to that common root. Declare actual owned outputs; broad scope does not authorize unrelated edits. Finish checks the current uncommitted delta, not a historical attribution ledger: preserve the pinned baseline and owned-delta review separately.
 
 The reviewed `completion_review.scope` claims are part of that contract: a typed list that may be empty for record-only work, they must be valid `worktree:PATH`/`project:PATH` claims, and at finish the actual changed paths (checked with the same publication exemptions) must be covered by the finish claims first (`SCOPE_DENIED` precedence unchanged) and by the reviewed claims (`REVIEW_INVALID`, "reviewed scope does not cover the actual work"). Reviewed claims may be broader than the finish claims — harmless narrowing of the executed finish is accepted; exact raw-string equality is not required.
+
+**Runtime phase requirement**: checked `work finish` accepts records in an active phase (`approved` or `in_progress`) and refuses a record set to `review` (`WORK_PHASE_DENIED`). The code-review decision lives in the embedded `completion_review` mapping, not in the record status: keep the record in its active phase after review approval, and let only a successful finish write `done`. Never move a record into `review` ahead of finish — the generic `review` lifecycle status remains valid for legacy records, but the checked finish sequence must never strand a record in it; if a record sits in `review`, return it to `in_progress` (decision already recorded) and finish.
 
 One ordinary finish resolves record authority first, then checks the embedded observations, the finish-claim scope diff (`SCOPE_DENIED` precedence), the review decision (nested axes, revision binding, reviewed-scope coverage) and finally the complete shared read-only domain precheck — the same helper standalone `check-completion` runs — covering depends_on, STATUS freshness, retired inputs, `consumer_interface_change`, math/proposal/routine contracts, related stable usage notes, and projection. A truthy non-mapping `completion_review` (list, string, number) is never coerced: the entry snapshot stays safe and the malformed value is refused `REVIEW_INVALID` at that same ordered review gate, after the observation and finish-claim checks. A domain refusal surfaces as `COMPLETION_PRECHECK_FAILED` with the original diagnostic retained; the other codes above are unchanged. Keep the derived STATUS current (`generate-status` after record edits) so the freshness gate observes a clean state, and keep the Project config readable — a missing or unreadable config is reported on this path, not swallowed. A final freshness recheck immediately before publication rejects any record, source-binding, or authority change that happened while the gates ran; nothing is repinned or auto-repaired, so rerun finish. The former `evidence_packs` completion gate and the pack-to-note linkage check are retired with no replacement (knowledge-first notes per `docs/adr/0004-knowledge-first-notes.md`): no pack, sidecar, or ledger entry is required to complete a work record, and no current command audits or blesses legacy packs.
 

@@ -370,7 +370,7 @@ STOP: Story CANNOT be marked "done" without Task 7's convergent review.
   → Non-blocking suggestions do not prevent approval.
 ```
 
-Use Task 7 (`references/task_review_spec.md`) rather than starting an ad hoc fresh review. Preserve finding IDs and update the same ledger each round. After the maximum automated round, escalate the remaining ledger instead of beginning another unrestricted review.
+Use Task 7 (`references/task_review_spec.md`) rather than starting an ad hoc fresh review. Preserve finding IDs and update the same ledger each round. Worker responses to Blocking findings are claims, never closures: supply `fixed` with observable evidence, `refuted` with rationale and evidence, or — for a genuinely blocked prerequisite — `blocked` with escalation rationale, recorded and escalated instead of submitted as routine re-review. Only the independent reviewer closes a row (`resolved`, optionally `resolution: fixed|refuted`); a rejected refutation stays open/Blocking. One completed Standards + Spec pair is one automated round; your repairs and partial callbacks consume none. After the maximum automated round, escalate the remaining ledger instead of beginning another unrestricted review.
 
 ### 4.3 Update Knowledge
 
@@ -434,7 +434,7 @@ Execute **all of the following in one pass** — do not skip any item:
 
 ### 5.1 Publish receipt-backed completion
 
-Run `work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM` (repeat for every declared scope). Do not set `done` directly. One ordinary invocation runs embedded proof, primary scope, pinned two-axis review, the shared domain precheck, and the pre-write freshness recheck before publishing. Domain failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`. Keep STATUS current with `generate-status` after record edits; stale inputs are not auto-repaired by the precheck. Standalone `check-completion` is an optional fail-fast diagnostic, never required second choreography.
+Run `work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM` (repeat for every declared scope). Do not set `done` directly. Keep the record in an active phase (`approved`/`in_progress`) when finishing: finish refuses a record set to `review` (`WORK_PHASE_DENIED`), holds the review decision in `completion_review`, and alone publishes `done` — never strand a record in `review`. One ordinary invocation runs embedded proof, primary scope, pinned two-axis review, the shared domain precheck, and the pre-write freshness recheck before publishing. Domain failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`. Keep STATUS current with `generate-status` after record edits; stale inputs are not auto-repaired by the precheck. Standalone `check-completion` is an optional fail-fast diagnostic, never required second choreography.
 
 Finish publishes record status/indexes/log, then the authoritative receipt, then derived STATUS. Publication is stepwise, not cross-file atomic. Inspect the identity-matched receipt and current STATUS. If interrupted, rerun finish; a valid terminal receipt and completion log remain unchanged while only derived reports regenerate. Unreceipted `done` stays pending.
 
