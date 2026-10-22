@@ -57,6 +57,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Malformed completion-review refusal](quick-tasks/repair-malformed-completion-review-gate-precedence.md) | done | preserve proof/scope/review refusal order for malformed review metadata | Red-before/green-after CLI regression; 28 focused tests; both independent review axes approved |
 | [Executable CLI and observable verification](quick-tasks/restore-cli-executable-release-and-observable-verification-guida.md) | done | restore committed executable mode and remove the permanent-test-per-criterion mandate | Actual direct/Python help and policy handoff exercised; both independent review axes approved |
 | [Publish release and install OMP](quick-tasks/publish-reviewed-kosmic-release-and-install-omp-orchestrator.md) | done | fast-forward origin/main and install the exact reviewed kosmic package into OMP | Remote release SHA observed; 64-file hash/mode match; installed CLI smoke passed |
+| [Publish release and refresh OMP orchestrator](quick-tasks/publish-reviewed-release-and-refresh-omp-orchestrator.md) | done | fast-forward origin/main to the reviewed review/history release and refresh both OMP surfaces | Remote release SHA observed; 66-file hash/mode match; managed pair verified by check-installation; installed CLI smoke passed |
 
 ## Epics
 

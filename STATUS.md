@@ -28,12 +28,14 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Preserve explicit contained Markdown targets during spec migration](memnotes/Projects/kosmic/specs/quick-tasks/preserve-contained-migration-link-targets.md) | done | 2026-10-13 |
 | [Preserve missing MathDoc knowledge as drafts](memnotes/Projects/kosmic/specs/quick-tasks/preserve-missing-mathdoc-knowledge-as-drafts.md) | approved | ? |
 | [Publish reviewed Kosmic release and install OMP orchestrator](memnotes/Projects/kosmic/specs/quick-tasks/publish-reviewed-kosmic-release-and-install-omp-orchestrator.md) | done | ? |
+| [Publish reviewed release and refresh OMP orchestrator](memnotes/Projects/kosmic/specs/quick-tasks/publish-reviewed-release-and-refresh-omp-orchestrator.md) | done | 2026-10-22 |
 | [Record scoped completion validation](memnotes/Projects/kosmic/specs/quick-tasks/record-scoped-completion-validation.md) | done (receipt pending) | 2026-10-12 |
 | [Register the isolated Story 001 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-001-writer.md) | approved | ? |
 | [Register the isolated Story 002 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-002-writer.md) | approved | ? |
 | [Register the isolated Story 003 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-003-writer.md) | approved | ? |
 | [Register the isolated Story 004 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-004-writer.md) | approved | ? |
 | [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) | approved | ? |
+| [Register the deployment writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-deployment-writer-worktree.md) | approved | 2026-10-22 |
 | [Remove missing writer registration](memnotes/Projects/kosmic/specs/quick-tasks/remove-missing-writer-registration.md) | done | ? |
 | [Repair Kosmic skill predictability](memnotes/Projects/kosmic/specs/quick-tasks/repair-kosmic-skill-predictability.md) | done | ? |
 | [Repair malformed completion review gate precedence](memnotes/Projects/kosmic/specs/quick-tasks/repair-malformed-completion-review-gate-precedence.md) | done | 2026-10-20 |
@@ -492,7 +494,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 128 open item(s)
+- 129 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -513,6 +515,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Register the isolated Story 003 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-003-writer.md) - approved
 - [Register the isolated Story 004 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-004-writer.md) - approved
 - [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) - approved
+- [Register the deployment writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-deployment-writer-worktree.md) - approved
 - [Restore evidence inventories for projection hygiene](memnotes/Projects/kosmic/specs/quick-tasks/restore-evidence-inventories-for-projection-hygiene.md) - draft
 - [Subprojects and required work records: wave-2 closure](memnotes/Projects/kosmic/specs/quick-tasks/subprojects-and-required-work-records-wave-2-closure.md) - done (receipt pending)
 - [Skill Proposal: Projection CLI Extension Conventions — Projection Sufficiency](memnotes/Projects/kosmic/specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md) - done (receipt pending)
@@ -624,5 +627,5 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 ## Work Context
 
 - This report is Project-wide; no agent task selection is recorded in this file.
-- Fixed directory constraint: none (registered working directory without a fixed subproject).
+- Fixed directory constraint: none (this output directory is not a registered working directory).
 - Work selection is explicit per command (`--work-record`); no shared active-task pointer is stored.
