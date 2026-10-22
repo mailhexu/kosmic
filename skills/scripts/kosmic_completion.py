@@ -508,15 +508,27 @@ def _write_status_reports(root: Path, record_owner: str | None = None) -> None:
         try:
             rendered = cli.render_status(scoped, snapshot)
         except SpecError:
+            configured_history = (
+                project.history_integrity is not None
+                and bool(project.history_integrity.records)
+            )
             # The full-catalog outcome is identical for every output
             # directory, so the bounded fallback is decided once and reused.
-            if bounded is None:
+            # Configured history never constructs a record-bound catalog
+            # merely for warn reporting: it renders the bounded structural
+            # snapshot per directory instead.
+            if bounded is None and not configured_history:
                 bounded = SpecCatalog.bounded(root, record_owner)
             fixed = entries.get(base, {}).get("fixed_subproject_id")
             if fixed is not None and fixed != record_owner:
                 # This completion never deletes an unrelated directory's report.
                 continue
-            rendered = cli.render_status(scoped, snapshot, catalog=bounded)
+            if configured_history:
+                rendered = cli.render_status(
+                    scoped, snapshot,
+                    structural_bounded=record_owner if record_owner else True)
+            else:
+                rendered = cli.render_status(scoped, snapshot, catalog=bounded)
         work._atomic_write(Path(base), "STATUS.md", rendered)
 
 

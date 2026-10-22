@@ -17,7 +17,15 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 CLI = REPO_ROOT / "skills" / "scripts" / "kosmic_project_skills.py"
 
 
-class ProjectionCliTest(unittest.TestCase):
+class ProjectionCliFixture:
+    """Fixture helpers only; concrete suites supply ``unittest.TestCase``."""
+
+    EMPTY_MATH_INDEX = (
+        "# Math Derivations\n\n"
+        "| Derivation | Status | Result summary |\n"
+        "|------------|--------|----------------|\n"
+    )
+
     def setUp(self) -> None:
         self.temporary = tempfile.TemporaryDirectory()
         self.root = Path(self.temporary.name)
@@ -39,7 +47,6 @@ class ProjectionCliTest(unittest.TestCase):
             if project_argument is not None and "--work-record" not in arguments:
                 project_path = Path(project_argument)
                 entry = project_path / "ProjectEntry.md"
-                import re
                 match = re.search(r"^project_id:\s*([\w.-]+)", entry.read_text(), re.M)
                 if match:
                     arguments = (*arguments, "--work-record",
@@ -80,7 +87,7 @@ class ProjectionCliTest(unittest.TestCase):
         mathdocs = project / "mathdocs"
         mathdocs.mkdir()
         (mathdocs / "index.md").write_text(
-            MathDocsLayerTest.EMPTY_MATH_INDEX, encoding="utf-8"
+            ProjectionCliFixture.EMPTY_MATH_INDEX, encoding="utf-8"
         )
         specs = project / "specs" / "quick-tasks"
         specs.mkdir(parents=True, exist_ok=True)
@@ -127,6 +134,138 @@ class ProjectionCliTest(unittest.TestCase):
         )
         return note
 
+    def generate_ready_project(self, project_id: str = "acme-demo") -> Path:
+        project = self.make_project(project_id)
+        self.write_note(project, "using", "usage", "# Use Demo\n\nRun `demo`.\n")
+        self.write_note(
+            project,
+            "developing",
+            "development",
+            "# Develop Demo\n\nRun contributor checks.\n",
+        )
+        self.run_cli("generate", "--project", str(project))
+        return project
+
+    def snapshot(self, root: Path) -> dict[str, str]:
+        return {
+            path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
+            for path in sorted(item for item in root.rglob("*") if item.is_file())
+        }
+
+    def manifest(self, package: Path) -> dict[str, object]:
+        return json.loads((package / ".kosmic-projection.json").read_text(encoding="utf-8"))
+
+    def write_proposal(
+        self,
+        project: Path,
+        *,
+        result: str = "create",
+        decision: str = "pending",
+        fingerprint: str = "",
+        extra: str = "",
+    ) -> Path:
+        inputs = project / "specs" / "skill-proposals" / "inputs" / "demo.md"
+        inputs.parent.mkdir(parents=True, exist_ok=True)
+        source = project / "notes" / "index.md"
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        inputs.write_text(f"- notes/index.md: {digest}\n", encoding="utf-8")
+        proposal = inputs.parent.parent / "2026-09-06-demo.md"
+        target = "demo-skill" if result != "no_action" else ""
+        target_ref = "skill://demo-skill" if result != "no_action" else ""
+        target_hash = "empty" if result == "create" else digest if result == "update" else ""
+        proposed = (
+            "## No-Action Reason\n\nProject facts only; no reusable procedure.\n"
+            if result == "no_action"
+            else "## Proposed Change\n\nCreate one repeatable diagnostic procedure.\n"
+        )
+        proposal.write_text(
+            "---\n"
+            "status: draft\ncreated: 2026-09-06\nupdated: 2026-09-06\n"
+            f"result: {result}\nscope: project-procedure\nartifact_role: procedure\n"
+            f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
+            "proposer_mode: same-agent\nproposer_ref: agent://test\n"
+            'proposer_reason: "Project-local test fixture"\n'
+            "input_manifest: [specs/skill-proposals/inputs/demo.md]\n"
+            "related_notes: [notes/index.md]\n"
+            "behavioral_evidence: []\n"
+            f"decision: {decision}\nfingerprint: {fingerprint}\nreconsiders: \"\"\n"
+            f"{extra}---\n\n# Skill Proposal: Demo\n\n"
+            "## Problem\n\nRepeated diagnostic work.\n\n"
+            "## Evidence\n\nObserved in maintained knowledge.\n\n"
+            f"{proposed}\n## Applicability\n\nProject-local procedure.\n\n"
+            "## Behavioral Validation\n\nPending approval.\n\nCandidate paths: [.scratch/candidate-skill]\n\n"
+            "## Risks\n\nPossible overfitting.\n\n"
+            "## New Evidence\n\nNone.\n",
+            encoding="utf-8",
+        )
+        return proposal
+
+    def write_routine_proposal(self, project: Path, action: str) -> Path:
+        inputs = project / "specs" / "skill-proposals" / "inputs" / f"{action}.md"
+        inputs.parent.mkdir(parents=True, exist_ok=True)
+        source = project / "notes" / "index.md"
+        digest = hashlib.sha256(source.read_bytes()).hexdigest()
+        library = self.root / "vault" / "Skills"
+        (library / ".kosmic").mkdir(parents=True, exist_ok=True)
+        (library / "kosmic").mkdir(exist_ok=True)
+        routine_pin = f"- routine://kosmic/existing: {digest}\n" if action == "extend" else ""
+        inputs.write_text(f"- notes/index.md: {digest}\n{routine_pin}", encoding="utf-8")
+        (library / "kosmic" / "SKILL.md").write_text(
+            "---\nid: kosmic\nmaintainers: [alice]\n---\n# Kosmic\n", encoding="utf-8"
+        )
+        (library / ".kosmic" / "routines.json").write_text(json.dumps({
+            "routines": [{
+                "id": "kosmic/existing", "routine_sha256": digest, "procedures": [],
+            }],
+        }), encoding="utf-8")
+        result = {"create": "create", "extend": "update"}.get(action, "no_action")
+        routine_id = "kosmic/new" if action == "create" else "kosmic/existing"
+        target = routine_id
+        target_ref = f"routine://{routine_id}"
+        target_hash = "empty" if action == "create" else digest
+        if action == "keep_as_prose":
+            routine_id = ""
+            target = "kosmic/development/procedure"
+            target_ref = f"library-skill://{target}"
+            target_hash = ""
+        elif action == "none":
+            routine_id = target = target_ref = target_hash = ""
+        change_heading = "No-Action Reason" if result == "no_action" else "Proposed Change"
+        candidate = (
+            "\n## Routine Candidate\n\n"
+            "Repetition: Used by multiple callers.\n\n"
+            "Contract: Inputs and outputs are paths; rollback is invariant; filesystem is the side effect.\n\n"
+            "Expected failures: Invalid paths and failed replacements.\n\n"
+            "Leverage: One implementation removes duplicated transactions.\n"
+            if action in {"create", "extend"} else ""
+        )
+        proposal = inputs.parent.parent / f"2026-09-07-{action.replace('_', '-')}.md"
+        rendered_action = '"none"' if action == "none" else action
+        proposal.write_text(
+            "---\nstatus: draft\ncreated: 2026-09-07\nupdated: 2026-09-07\n"
+            f"result: {result}\nscope: shared-routine\nartifact_role: procedure\n"
+            "target_kind: routine\n"
+            f"routine_action: {rendered_action}\nroutine_id: {routine_id}\n"
+            "linked_proposals: []\nconsumer_approvals: []\n"
+            f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
+            "proposer_mode: subagent\nproposer_ref: agent://test\n"
+            "proposer_reason: \"Routine action fixture\"\n"
+            f"input_manifest: [specs/skill-proposals/inputs/{action}.md]\n"
+            "related_notes: [notes/index.md]\n"
+            "behavioral_evidence: []\ndecision: pending\nfingerprint: \"\"\nreconsiders: \"\"\n"
+            "---\n\n# Skill Proposal: Routine\n\n"
+            "## Problem\n\nRepeated mechanics.\n\n"
+            "## Evidence\n\nA deterministic fixture.\n\n"
+            f"## {change_heading}\n\nGovern the selected routine action.\n"
+            f"{candidate}\n## Applicability\n\nProcedure mechanics.\n\n"
+            "## Behavioral Validation\n\nPending.\n\nCandidate paths: [.scratch/routine]\n\n"
+            "## Risks\n\nIncorrect reuse.\n\n## New Evidence\n\nNone.\n",
+            encoding="utf-8",
+        )
+        return proposal
+
+
+class ProjectionCliTest(ProjectionCliFixture, unittest.TestCase):
     def test_migrate_routines_reports_only_explicit_candidates(self) -> None:
         project = self.make_project()
         inventory_path = self.root / "vault" / "Skills" / ".kosmic" / "routines.json"
@@ -155,27 +294,6 @@ class ProjectionCliTest(unittest.TestCase):
         self.assertIn("`old:publish`", body)
         self.assertIn("`local:helper`", body)
         self.assertNotIn("publish_directory", body)
-
-    def generate_ready_project(self, project_id: str = "acme-demo") -> Path:
-        project = self.make_project(project_id)
-        self.write_note(project, "using", "usage", "# Use Demo\n\nRun `demo`.\n")
-        self.write_note(
-            project,
-            "developing",
-            "development",
-            "# Develop Demo\n\nRun contributor checks.\n",
-        )
-        self.run_cli("generate", "--project", str(project))
-        return project
-
-    def snapshot(self, root: Path) -> dict[str, str]:
-        return {
-            path.relative_to(root).as_posix(): hashlib.sha256(path.read_bytes()).hexdigest()
-            for path in sorted(item for item in root.rglob("*") if item.is_file())
-        }
-
-    def manifest(self, package: Path) -> dict[str, object]:
-        return json.loads((package / ".kosmic-projection.json").read_text(encoding="utf-8"))
 
     def test_generates_exactly_one_usage_and_development_skill(self) -> None:
         project = self.generate_ready_project()
@@ -886,13 +1004,6 @@ class CodeProvenanceTest(ExperienceCompilationTest):
 
 
 class MathDocsLayerTest(ExperienceCompilationTest):
-    EMPTY_MATH_INDEX = (
-        "# Math Derivations\n\n"
-        "| Derivation | Status | Result summary |\n"
-        "|------------|--------|----------------|\n"
-    )
-
-
     def write_math_pair(
         self,
         project: Path,
@@ -1468,115 +1579,6 @@ class MathDocsLayerTest(ExperienceCompilationTest):
 
 
 class SkillProposalTest(ExperienceCompilationTest):
-    def write_proposal(
-        self,
-        project: Path,
-        *,
-        result: str = "create",
-        decision: str = "pending",
-        fingerprint: str = "",
-        extra: str = "",
-    ) -> Path:
-        inputs = project / "specs" / "skill-proposals" / "inputs" / "demo.md"
-        inputs.parent.mkdir(parents=True, exist_ok=True)
-        source = project / "notes" / "index.md"
-        digest = hashlib.sha256(source.read_bytes()).hexdigest()
-        inputs.write_text(f"- notes/index.md: {digest}\n", encoding="utf-8")
-        proposal = inputs.parent.parent / "2026-09-06-demo.md"
-        target = "demo-skill" if result != "no_action" else ""
-        target_ref = "skill://demo-skill" if result != "no_action" else ""
-        target_hash = "empty" if result == "create" else digest if result == "update" else ""
-        proposed = (
-            "## No-Action Reason\n\nProject facts only; no reusable procedure.\n"
-            if result == "no_action"
-            else "## Proposed Change\n\nCreate one repeatable diagnostic procedure.\n"
-        )
-        proposal.write_text(
-            "---\n"
-            "status: draft\ncreated: 2026-09-06\nupdated: 2026-09-06\n"
-            f"result: {result}\nscope: project-procedure\nartifact_role: procedure\n"
-            f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
-            "proposer_mode: same-agent\nproposer_ref: agent://test\n"
-            'proposer_reason: \"Project-local test fixture\"\n'
-            "input_manifest: [specs/skill-proposals/inputs/demo.md]\n"
-            "related_notes: [notes/index.md]\n"
-            "behavioral_evidence: []\n"
-            f"decision: {decision}\nfingerprint: {fingerprint}\nreconsiders: \"\"\n"
-            f"{extra}---\n\n# Skill Proposal: Demo\n\n"
-            "## Problem\n\nRepeated diagnostic work.\n\n"
-            "## Evidence\n\nObserved in maintained knowledge.\n\n"
-            f"{proposed}\n## Applicability\n\nProject-local procedure.\n\n"
-            "## Behavioral Validation\n\nPending approval.\n\nCandidate paths: [.scratch/candidate-skill]\n\n"
-            "## Risks\n\nPossible overfitting.\n\n"
-            "## New Evidence\n\nNone.\n",
-            encoding="utf-8",
-        )
-        return proposal
-
-    def write_routine_proposal(self, project: Path, action: str) -> Path:
-        inputs = project / "specs" / "skill-proposals" / "inputs" / f"{action}.md"
-        inputs.parent.mkdir(parents=True, exist_ok=True)
-        source = project / "notes" / "index.md"
-        digest = hashlib.sha256(source.read_bytes()).hexdigest()
-        library = self.root / "vault" / "Skills"
-        (library / ".kosmic").mkdir(parents=True, exist_ok=True)
-        (library / "kosmic").mkdir(exist_ok=True)
-        routine_pin = f"- routine://kosmic/existing: {digest}\n" if action == "extend" else ""
-        inputs.write_text(f"- notes/index.md: {digest}\n{routine_pin}", encoding="utf-8")
-        (library / "kosmic" / "SKILL.md").write_text(
-            "---\nid: kosmic\nmaintainers: [alice]\n---\n# Kosmic\n", encoding="utf-8"
-        )
-        (library / ".kosmic" / "routines.json").write_text(json.dumps({
-            "routines": [{
-                "id": "kosmic/existing", "routine_sha256": digest, "procedures": [],
-            }],
-        }), encoding="utf-8")
-        result = {"create": "create", "extend": "update"}.get(action, "no_action")
-        routine_id = "kosmic/new" if action == "create" else "kosmic/existing"
-        target = routine_id
-        target_ref = f"routine://{routine_id}"
-        target_hash = "empty" if action == "create" else digest
-        if action == "keep_as_prose":
-            routine_id = ""
-            target = "kosmic/development/procedure"
-            target_ref = f"library-skill://{target}"
-            target_hash = ""
-        elif action == "none":
-            routine_id = target = target_ref = target_hash = ""
-        change_heading = "No-Action Reason" if result == "no_action" else "Proposed Change"
-        candidate = (
-            "\n## Routine Candidate\n\n"
-            "Repetition: Used by multiple callers.\n\n"
-            "Contract: Inputs and outputs are paths; rollback is invariant; filesystem is the side effect.\n\n"
-            "Expected failures: Invalid paths and failed replacements.\n\n"
-            "Leverage: One implementation removes duplicated transactions.\n"
-            if action in {"create", "extend"} else ""
-        )
-        proposal = inputs.parent.parent / f"2026-09-07-{action.replace('_', '-')}.md"
-        rendered_action = '"none"' if action == "none" else action
-        proposal.write_text(
-            "---\nstatus: draft\ncreated: 2026-09-07\nupdated: 2026-09-07\n"
-            f"result: {result}\nscope: shared-routine\nartifact_role: procedure\n"
-            "target_kind: routine\n"
-            f"routine_action: {rendered_action}\nroutine_id: {routine_id}\n"
-            "linked_proposals: []\nconsumer_approvals: []\n"
-            f"target: {target}\ntarget_ref: {target_ref}\ntarget_sha256: {target_hash}\n"
-            "proposer_mode: subagent\nproposer_ref: agent://test\n"
-            "proposer_reason: \"Routine action fixture\"\n"
-            f"input_manifest: [specs/skill-proposals/inputs/{action}.md]\n"
-            "related_notes: [notes/index.md]\n"
-            "behavioral_evidence: []\ndecision: pending\nfingerprint: \"\"\nreconsiders: \"\"\n"
-            "---\n\n# Skill Proposal: Routine\n\n"
-            "## Problem\n\nRepeated mechanics.\n\n"
-            "## Evidence\n\nA deterministic fixture.\n\n"
-            f"## {change_heading}\n\nGovern the selected routine action.\n"
-            f"{candidate}\n## Applicability\n\nProcedure mechanics.\n\n"
-            "## Behavioral Validation\n\nPending.\n\nCandidate paths: [.scratch/routine]\n\n"
-            "## Risks\n\nIncorrect reuse.\n\n## New Evidence\n\nNone.\n",
-            encoding="utf-8",
-        )
-        return proposal
-
     def test_all_routine_proposal_actions_validate_and_bad_mapping_fails(self) -> None:
         project = self.make_project("demo-routines")
         for action in ("create", "extend", "reuse", "keep_as_prose", "none"):
@@ -2125,5 +2127,655 @@ class SkillProposalTest(ExperienceCompilationTest):
             expected=2,
         )
         self.assertIn("OWNERSHIP_REQUIRED", result.stderr)
+
+
+def _fixture_project_id(project: Path) -> str:
+    match = re.search(
+        r"^project_id:\s*([\w.-]+)",
+        (project / "ProjectEntry.md").read_text(encoding="utf-8"),
+        re.M,
+    )
+    return match.group(1) if match else ""
+
+
+class HistoryIntegrityTest(ProjectionCliFixture, unittest.TestCase):
+    """Story 001: configured historical inspection and canonical reporting."""
+
+    def configure_history_policy(
+        self, project: Path, policy_yaml: str, status_root: Path | None = None
+    ) -> None:
+        binding = f"status_root: {status_root}\n" if status_root is not None else ""
+        entry = project / "ProjectEntry.md"
+        entry.write_text(
+            entry.read_text(encoding="utf-8").replace(
+                "working_state: working-tree\n",
+                "working_state: working-tree\n" + binding + policy_yaml,
+            ),
+            encoding="utf-8",
+        )
+
+    def write_governor(self, project: Path, project_id: str) -> Path:
+        governor = project / "specs" / "quick-tasks" / "2026-10-05-history-governor.md"
+        governor.write_text(
+            "---\n"
+            f"project_id: {project_id}\n"
+            "record_kind: quick-task\nlocal_id: history-governor\n"
+            "subproject_id: null\nstatus: approved\n---\n\n"
+            "# History Governor\n\n## Acceptance Criteria\n\n- [ ] Governs STATUS output\n",
+            encoding="utf-8",
+        )
+        return governor
+
+    def mark_fixture_done(self, project: Path) -> Path:
+        quick_task = project / "specs" / "quick-tasks" / "2026-10-04-fixture-task.md"
+        quick_task.write_text(
+            quick_task.read_text(encoding="utf-8").replace(
+                "status: approved", 'status: "done"'
+            ),
+            encoding="utf-8",
+        )
+        return quick_task
+
+    def test_warn_mode_reports_selected_receiptless_done_as_unverified(self) -> None:
+        project = self.generate_ready_project("demo-history")
+        quick_task = self.mark_fixture_done(project)
+        self.write_governor(project, "demo-history")
+        status_root = self.root / "vault" / "status-demo"
+        status_root.mkdir(parents=True, exist_ok=True)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+            status_root,
+        )
+        before = quick_task.read_bytes()
+        arguments = (
+            "generate-status", "--project", str(project),
+            "--work-record", "demo-history/quick-task/history-governor",
+        )
+        self.run_cli(*arguments)
+        result = self.run_cli("validate", "--project", str(project))
+        self.assertIn("specs/quick-tasks/2026-10-04-fixture-task.md", result.stderr)
+        self.assertIn("unverified", result.stderr)
+        self.assertIn("not audited", result.stderr)
+        self.assertEqual(quick_task.read_bytes(), before)
+        self.run_cli(*arguments)
+        status = (status_root / "STATUS.md").read_text(encoding="utf-8")
+        self.assertIn("done (unverified — not audited)", status)
+        self.assertNotIn("done (receipt pending)", status)
+        open_work = status.split("## Open Work", 1)[1].split("## Work Context", 1)[0]
+        self.assertNotIn("Fixture Task", open_work)
+        self.assertIn("## Historical Integrity", status)
+        self.run_cli("validate", "--project", str(project))
+        self.assertEqual(quick_task.read_bytes(), before)
+
+    def test_absent_or_empty_policy_keeps_exact_baseline_behavior(self) -> None:
+        project = self.generate_ready_project("demo-parity")
+        status_root = self.root / "vault" / "status-parity"
+        status_root.mkdir(parents=True, exist_ok=True)
+        self.configure_history_policy(project, "", status_root)
+        arguments = (
+            "generate-status", "--project", str(project),
+            "--work-record", "demo-parity/quick-task/fixture-task",
+        )
+        self.run_cli(*arguments)
+        baseline_status = (status_root / "STATUS.md").read_bytes()
+        validate_before = self.run_cli("validate", "--project", str(project))
+
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n  mode: warn\n  records: []\n",
+        )
+        validate_after = self.run_cli("validate", "--project", str(project))
+        self.assertEqual(validate_before.stdout, validate_after.stdout)
+        self.assertEqual(validate_before.stderr, validate_after.stderr)
+        self.run_cli(*arguments)
+        self.assertEqual(baseline_status, (status_root / "STATUS.md").read_bytes())
+
+    def test_strict_mode_fails_on_missing_selected_done_receipt(self) -> None:
+        project = self.generate_ready_project("demo-strict")
+        quick_task = self.mark_fixture_done(project)
+        self.write_governor(project, "demo-strict")
+        status_root = self.root / "vault" / "status-strict"
+        status_root.mkdir(parents=True, exist_ok=True)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: strict\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+            status_root,
+        )
+        before = quick_task.read_bytes()
+        self.run_cli(
+            "generate-status",
+            "--project",
+            str(project),
+            "--work-record",
+            "demo-strict/quick-task/history-governor",
+        )
+        status_before = (status_root / "STATUS.md").read_bytes()
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("HISTORY_INTEGRITY", result.stderr)
+        self.assertIn("specs/quick-tasks/2026-10-04-fixture-task.md", result.stderr)
+        self.assertIn("receipt", result.stderr)
+        self.assertEqual(quick_task.read_bytes(), before)
+        self.assertEqual(status_before, (status_root / "STATUS.md").read_bytes())
+
+    def test_configured_view_is_one_view_across_status_writers(self) -> None:
+        project = self.generate_ready_project("demo-view")
+        quick_tasks = project / "specs" / "quick-tasks"
+        self.mark_fixture_done(project)
+        (quick_tasks / "2026-10-06-other-done.md").write_text(
+            "---\n"
+            "project_id: demo-view\n"
+            "record_kind: quick-task\nlocal_id: other-done\n"
+            "subproject_id: null\nstatus: \"done\"\n---\n\n"
+            "# Other Done\n\n## Acceptance Criteria\n\n- [ ] Unselected history\n",
+            encoding="utf-8",
+        )
+        self.write_governor(project, "demo-view")
+        status_root = self.root / "vault" / "status-view"
+        status_root.mkdir(parents=True, exist_ok=True)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+            status_root,
+        )
+        arguments = (
+            "generate-status", "--project", str(project),
+            "--work-record", "demo-view/quick-task/history-governor",
+        )
+        self.run_cli(*arguments)
+        first = (status_root / "STATUS.md").read_bytes()
+        self.run_cli(*arguments)
+        self.assertEqual(first, (status_root / "STATUS.md").read_bytes())
+        status = first.decode("utf-8")
+        self.assertIn("done (unverified — not audited)", status)
+        self.assertIn("done (receipt pending)", status)
+        self.assertIn("## Historical Integrity", status)
+        self.assertIn(
+            "- Policy: warn mode; 1 configured record(s) reported without retrospective audit.",
+            status,
+        )
+        open_work = status.split("## Open Work", 1)[1].split("## Historical Integrity", 1)[0]
+        self.assertIn("History Governor", open_work)
+        self.assertIn("Other Done", open_work)
+        self.assertNotIn("Fixture Task", open_work)
+        self.run_cli("validate", "--project", str(project))
+
+    def test_selected_stale_proposal_skips_scan_but_direct_loader_stays_strict(self) -> None:
+        project = self.generate_ready_project("demo-skip")
+        governor = self.write_governor(project, "demo-skip")
+        proposal = self.write_proposal(project)
+        self._patch_proposal_catalog_metadata(project, proposal, "demo")
+        stale_digest = hashlib.sha256(governor.read_bytes()).hexdigest()
+        (project / "specs" / "skill-proposals" / "inputs" / "demo.md").write_text(
+            f"- specs/quick-tasks/2026-10-05-history-governor.md: {stale_digest}\n",
+            encoding="utf-8",
+        )
+        governor.write_text(
+            governor.read_text(encoding="utf-8") + "\nLater edit drifts the pin.\n",
+            encoding="utf-8",
+        )
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/skill-proposals/2026-09-06-demo.md\n",
+        )
+        result = self.run_cli("validate", "--project", str(project))
+        self.assertIn("specs/skill-proposals/2026-09-06-demo.md", result.stderr)
+        self.assertIn("unverified", result.stderr)
+        self.assertIn("not audited", result.stderr)
+        self.assertNotIn("input_manifest", result.stderr)
+        direct = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("input_manifest source missing or stale", direct.stderr)
+
+    def test_unselected_proposals_remain_strict_under_configured_warn(self) -> None:
+        project = self.generate_ready_project("demo-unselected")
+        selected = self.write_proposal(project)
+        base_text = selected.read_text(encoding="utf-8")
+        self._patch_proposal_catalog_metadata(project, selected, "demo")
+        broken = project / "specs" / "skill-proposals" / "2026-09-07-beta.md"
+        broken.write_text(
+            base_text
+            .replace("decision: pending", "decision: accepted")
+            .replace("status: draft", "status: done"),
+            encoding="utf-8",
+        )
+        self._patch_proposal_catalog_metadata(project, broken, "beta")
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/skill-proposals/2026-09-06-demo.md\n",
+        )
+        result = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("fingerprint mismatch", result.stderr)
+
+    def test_operational_surfaces_gain_no_history_flags(self) -> None:
+        project = self.generate_ready_project("demo-surface")
+        status_root = self.root / "vault" / "status-surface"
+        status_root.mkdir(parents=True, exist_ok=True)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+            status_root,
+        )
+        check_help = self.run_cli("check-completion", "--help")
+        self.assertNotIn("history", check_help.stdout)
+        finish_help = self.run_cli("work", "finish", "--help")
+        self.assertNotIn("history", finish_help.stdout)
+        # Operational parsers gain no history flags: with otherwise valid
+        # finish syntax the unsupported flag is refused and nothing mutates.
+        refused = self.run_cli(
+            "work", "finish",
+            "--project", str(project),
+            "--worktree", str(self.root / "vault"),
+            "--work-record", "demo-surface/quick-task/fixture-task",
+            "--scope", "project:specs/",
+            "--history-audit",
+            expected=2,
+        )
+        self.assertIn("unrecognized arguments", refused.stderr)
+        self.assertFalse((project / ".kosmic" / "work-receipts").exists())
+
+    def _patch_proposal_catalog_metadata(self, project: Path, proposal: Path, local_id: str) -> None:
+        """Give a fixture proposal the catalog identity the scanner requires."""
+        marker = 'reconsiders: ""\n'
+        proposal.write_text(
+            proposal.read_text(encoding="utf-8").replace(
+                marker,
+                marker
+                + f"project_id: {_fixture_project_id(project)}\n"
+                + "subproject_id: null\n"
+                + "record_kind: proposal\n"
+                + f"local_id: {local_id}\n",
+                1,
+            ),
+            encoding="utf-8",
+        )
+
+    def test_configured_warn_on_bootstrap_flat_project_reports_unverified(self) -> None:
+        project = self.generate_ready_project("demo-flat")
+        # Force the sanctioned bootstrap-flat state: a flat feature
+        # specification keeps the Project out of the owner-aware catalog.
+        (project / "specs" / "prd.md").write_text(
+            "---\nproject_id: demo-flat\nsubproject_id: null\nstatus: draft\n---\n\n"
+            "# Flat Feature\n",
+            encoding="utf-8",
+        )
+        quick_task = self.mark_fixture_done(project)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+        )
+        before = quick_task.read_bytes()
+        result = self.run_cli("validate", "--project", str(project))
+        self.assertIn("specs/quick-tasks/2026-10-04-fixture-task.md", result.stderr)
+        self.assertIn("unverified", result.stderr)
+        self.assertIn("not audited", result.stderr)
+        self.assertNotIn("MIGRATION_REQUIRED", result.stderr)
+        self.assertEqual(quick_task.read_bytes(), before)
+
+    def test_strict_mode_fails_flat_legacy_done_without_or_with_corrupt_receipt(self) -> None:
+        project = self.generate_ready_project("demo-flat-strict")
+        (project / "specs" / "prd.md").write_text(
+            "---\nproject_id: demo-flat-strict\nsubproject_id: null\nstatus: draft\n---\n\n"
+            "# Flat Feature\n",
+            encoding="utf-8",
+        )
+        quick_task = self.mark_fixture_done(project)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: strict\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+        )
+        before = quick_task.read_bytes()
+        from skills.scripts.kosmic_dreams import receipt_name
+        identity = "specs/quick-tasks/2026-10-04-fixture-task.md"
+        receipt_path = (
+            project / ".kosmic" / "work-receipts" / receipt_name(identity)
+        )
+        absent = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("HISTORY_INTEGRITY", absent.stderr)
+        self.assertIn("specs/quick-tasks/2026-10-04-fixture-task.md", absent.stderr)
+        self.assertIn("receipt", absent.stderr)
+        self.assertFalse(receipt_path.parent.exists())
+
+        # A present but corrupt receipt (matching envelope, wrong recorded
+        # hash and proof) is still missing claimed completion proof under the
+        # selected strict inspection; the read-only audit never rewrites it.
+        receipt_path.parent.mkdir(parents=True)
+        receipt_path.write_text(json.dumps({
+            "schema": "kosmic.work-receipt/1",
+            "identity": identity,
+            "status": "successful",
+            "record_path": identity,
+            "record_sha256": "0" * 64,
+            "proof": {identity: "0" * 64},
+        }), encoding="utf-8")
+        corrupt_bytes = receipt_path.read_bytes()
+        corrupt = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("HISTORY_INTEGRITY", corrupt.stderr)
+        self.assertIn("specs/quick-tasks/2026-10-04-fixture-task.md", corrupt.stderr)
+        self.assertEqual(receipt_path.read_bytes(), corrupt_bytes)
+        self.assertEqual(quick_task.read_bytes(), before)
+
+    def test_valid_receipt_keeps_current_done_row_in_degraded_report(self) -> None:
+        from skills.scripts import kosmic_completion
+        from skills.scripts import kosmic_dreams
+        from skills.scripts import kosmic_project_skills as cli
+
+        project = self.generate_ready_project("demo-closed")
+        self.mark_fixture_done(project)
+        self.write_governor(project, "demo-closed")
+        identity = "demo-closed/quick-task/fixture-task"
+        record = project / "specs" / "quick-tasks" / "2026-10-04-fixture-task.md"
+        record_sha256 = hashlib.sha256(record.read_bytes()).hexdigest()
+        receipt = {
+            "schema": "kosmic.work-receipt/1",
+            "identity": identity,
+            "status": "successful",
+            "record_path": "specs/quick-tasks/2026-10-04-fixture-task.md",
+            "record_sha256": record_sha256,
+            "proof": {"specs/quick-tasks/2026-10-04-fixture-task.md": record_sha256},
+        }
+        store = project / ".kosmic" / "work-receipts"
+        store.mkdir(parents=True)
+        (store / kosmic_dreams.receipt_name(identity)).write_text(
+            json.dumps(receipt), encoding="utf-8")
+        # Break whole-catalog enumeration with a malformed sibling
+        # SubprojectEntry, forcing the degraded bounded structural report.
+        broken = project / "subprojects" / "broken"
+        broken.mkdir(parents=True)
+        (broken / "SubprojectEntry.md").write_text("plain prose, no frontmatter\n")
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-05-history-governor.md\n",
+        )
+        configured = cli.load_project(project)
+        with self.assertRaises(cli.SpecError):
+            cli.render_status(configured, "no-head")
+        rendered = cli.render_status(configured, "no-head", structural_bounded=True).decode("utf-8")
+        self.assertIn("| [Fixture Task]", rendered)
+        self.assertIn(" | done | ", rendered)
+        self.assertNotIn("done (receipt pending)", rendered)
+        self.assertEqual(
+            kosmic_completion.check_terminal_receipt(
+                project, cli.SpecCatalog.bounded(project, None).resolve(identity),
+            )["identity"],
+            identity,
+        )
+
+    def test_strict_mode_fails_stale_selected_proposal_pin(self) -> None:
+        project = self.generate_ready_project("demo-strict-pin")
+        governor = self.write_governor(project, "demo-strict-pin")
+        proposal = self.write_proposal(project)
+        self._patch_proposal_catalog_metadata(project, proposal, "demo")
+        pinned_governor = governor.read_bytes()
+        stale_digest = hashlib.sha256(pinned_governor).hexdigest()
+        (project / "specs" / "skill-proposals" / "inputs" / "demo.md").write_text(
+            f"- specs/quick-tasks/2026-10-05-history-governor.md: {stale_digest}\n",
+            encoding="utf-8",
+        )
+        governor.write_text(
+            governor.read_text(encoding="utf-8") + "\nLater edit drifts the pin.\n",
+            encoding="utf-8",
+        )
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/skill-proposals/2026-09-06-demo.md\n",
+        )
+        before_proposal = proposal.read_bytes()
+        before_governor = governor.read_bytes()
+
+        warn = self.run_cli("validate", "--project", str(project))
+        self.assertIn("specs/skill-proposals/2026-09-06-demo.md", warn.stderr)
+        self.assertIn("unverified", warn.stderr)
+        self.assertIn("not audited", warn.stderr)
+
+        entry = project / "ProjectEntry.md"
+        entry.write_text(
+            entry.read_text(encoding="utf-8").replace("mode: warn", "mode: strict"),
+            encoding="utf-8",
+        )
+        strict = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("HISTORY_INTEGRITY", strict.stderr)
+        self.assertIn("specs/skill-proposals/2026-09-06-demo.md", strict.stderr)
+        self.assertIn("input_manifest source missing or stale", strict.stderr)
+        self.assertEqual(proposal.read_bytes(), before_proposal)
+        self.assertEqual(governor.read_bytes(), before_governor)
+
+        direct = self.run_cli(
+            "validate-proposal",
+            "--project",
+            str(project),
+            "--proposal",
+            str(proposal),
+            expected=2,
+        )
+        self.assertIn("input_manifest source missing or stale", direct.stderr)
+
+        # Restoring the pinned bytes makes the selected proposal audited
+        # clean: strict validate passes and claims no un-audited state for it.
+        governor.write_bytes(pinned_governor)
+        clean = self.run_cli("validate", "--project", str(project))
+        self.assertNotIn("specs/skill-proposals/2026-09-06-demo.md", clean.stderr)
+        self.assertNotIn("unverified", clean.stderr)
+        self.assertEqual(proposal.read_bytes(), before_proposal)
+
+    def test_empty_curated_manifest_stays_strict_operationally_and_in_history_audit(self) -> None:
+        project = self.generate_ready_project("demo-empty-manifest")
+        proposal = self.write_proposal(project)
+        self._patch_proposal_catalog_metadata(project, proposal, "demo")
+        manifest = project / "specs" / "skill-proposals" / "inputs" / "demo.md"
+        manifest.write_text("# intentionally empty\n", encoding="utf-8")
+        proposal_before = proposal.read_bytes()
+        manifest_before = manifest.read_bytes()
+
+        direct = self.run_cli(
+            "validate-proposal", "--project", str(project), "--proposal", str(proposal),
+            expected=2,
+        )
+        self.assertIn("input_manifest must list at least one input", direct.stderr)
+
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: strict\n"
+            "  records:\n"
+            "    - specs/skill-proposals/2026-09-06-demo.md\n",
+        )
+        strict = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("HISTORY_INTEGRITY", strict.stderr)
+        self.assertIn("input_manifest must list at least one input", strict.stderr)
+
+        entry = project / "ProjectEntry.md"
+        entry.write_text(
+            entry.read_text(encoding="utf-8").replace("mode: strict", "mode: warn"),
+            encoding="utf-8",
+        )
+        warning = self.run_cli("validate", "--project", str(project))
+        self.assertIn("unverified", warning.stderr)
+        self.assertIn("not audited", warning.stderr)
+        self.assertEqual(proposal.read_bytes(), proposal_before)
+        self.assertEqual(manifest.read_bytes(), manifest_before)
+
+    def test_bounded_report_intersects_foreign_history_scope_before_lookup(self) -> None:
+        from skills.scripts import kosmic_project_skills as cli
+
+        project = self.generate_ready_project("demo-bounded-history")
+        foreign_specs = project / "subprojects" / "foreign" / "specs" / "quick-tasks"
+        foreign_specs.mkdir(parents=True)
+        (project / "subprojects" / "foreign" / "SubprojectEntry.md").write_text(
+            "---\nschema: kosmic.subproject/1\n"
+            "project_id: demo-bounded-history\nsubproject_id: foreign\n"
+            "linked_prd: prd.md\n---\n\n# Foreign\n",
+            encoding="utf-8",
+        )
+        (foreign_specs / "2026-10-06-foreign.md").write_text(
+            "---\nproject_id: demo-bounded-history\nsubproject_id: foreign\n"
+            "record_kind: quick-task\nlocal_id: foreign\nstatus: approved\n"
+            "---\n\n# Foreign Task\n",
+            encoding="utf-8",
+        )
+        broken = project / "subprojects" / "broken"
+        broken.mkdir(parents=True)
+        (broken / "SubprojectEntry.md").write_text(
+            "plain prose, no frontmatter\n", encoding="utf-8")
+        status_root = self.root / "vault" / "status-bounded-history"
+        status_root.mkdir(parents=True)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n"
+            "    - subprojects/foreign/specs/quick-tasks/2026-10-06-foreign.md\n",
+            status_root,
+        )
+        configured = cli.load_project(project)
+        rendered = cli.render_status(
+            configured, "no-head", structural_bounded=True).decode("utf-8")
+        self.assertIn("Scope: bounded active-record view (shared records only)", rendered)
+        self.assertIn("Fixture Task", rendered)
+        self.assertNotIn("Foreign Task", rendered)
+        self.assertIn(
+            "- Policy: warn mode; 1 configured record(s) reported without retrospective audit.",
+            rendered,
+        )
+        (status_root / "STATUS.md").write_text(rendered, encoding="utf-8")
+        self.assertFalse(cli.status_drift(
+            configured, record_scoped=True, record_owner=None))
+
+        # The same bounded scope still refuses a missing configured subject
+        # that is actually inside its shared-record intersection.
+        entry = project / "ProjectEntry.md"
+        entry.write_text(
+            entry.read_text(encoding="utf-8").replace(
+                "    - subprojects/foreign/specs/quick-tasks/2026-10-06-foreign.md\n",
+                "    - subprojects/foreign/specs/quick-tasks/2026-10-06-foreign.md\n"
+                "    - specs/quick-tasks/missing-in-scope.md\n",
+            ),
+            encoding="utf-8",
+        )
+        invalid = cli.load_project(project)
+        with self.assertRaises(cli.KosmicError) as caught:
+            cli.render_status(invalid, "no-head", structural_bounded=True)
+        self.assertIn("unknown or stale", str(caught.exception))
+
+    def test_invalid_policy_scopes_fail_validate_hard(self) -> None:
+        def minimal_project(name: str) -> Path:
+            project = self.root / "vault" / "Projects" / name
+            project.mkdir(parents=True, exist_ok=True)
+            (project / "ProjectEntry.md").write_text(
+                f"---\nproject_id: {name}\nworking_state: working-tree\n---\n\n# {name}\n",
+                encoding="utf-8",
+            )
+            return project
+
+        def policy(records: str, mode: str = "warn") -> str:
+            return (
+                "history_integrity:\n"
+                f"  mode: {mode}\n"
+                "  records:\n"
+                f"{records}"
+            )
+
+        selected = "    - specs/quick-tasks/2026-10-04-fixture-task.md\n"
+        wrong_owner_project = minimal_project("demo-wrong-owner")
+        owner_base = wrong_owner_project / "subprojects" / "left" / "specs" / "stories"
+        owner_base.mkdir(parents=True)
+        (wrong_owner_project / "subprojects" / "left" / "SubprojectEntry.md").write_text(
+            "---\nschema: kosmic.subproject/1\n"
+            "project_id: demo-wrong-owner\n"
+            "subproject_id: left\n---\n\n# Left\n",
+            encoding="utf-8",
+        )
+        (owner_base / "story-001.md").write_text(
+            "---\nproject_id: demo-wrong-owner\nsubproject_id: right\n"
+            "record_kind: story\nlocal_id: \"001\"\n---\n\n# Spoofed\n",
+            encoding="utf-8",
+        )
+        cases = {
+            "non-mapping": ("demo-non-mapping", "history_integrity: warn\n", "must be a mapping"),
+            "unknown-key": (
+                "demo-unknown-key",
+                "history_integrity:\n  record:\n" + selected,
+                "unknown keys",
+            ),
+            "bad-mode": ("demo-bad-mode", policy(selected, mode="audit"), "mode must be one of"),
+            "duplicate": (
+                "demo-duplicate",
+                policy(selected + selected),
+                "duplicates a path",
+            ),
+            "absolute": ("demo-absolute", policy("    - /etc/passwd\n"), "Project-relative"),
+            "traversal": (
+                "demo-traversal",
+                policy("    - specs/../notes/index.md\n"),
+                "not canonical",
+            ),
+            "uncontained": (
+                "demo-uncontained",
+                policy("    - notes/index.md\n"),
+                "must name a spec record",
+            ),
+            "unknown-path": (
+                "demo-unknown-path",
+                policy("    - specs/quick-tasks/missing-record.md\n"),
+                "unknown or stale",
+            ),
+            "wrong-owner": (
+                "demo-wrong-owner",
+                policy("    - subprojects/left/specs/stories/story-001.md\n"),
+                "OWNER_MISMATCH",
+            ),
+        }
+        for name, (dirname, policy_yaml, expected) in cases.items():
+            with self.subTest(case=name):
+                project = minimal_project(dirname)
+                entry = project / "ProjectEntry.md"
+                entry.write_text(
+                    entry.read_text(encoding="utf-8").replace(
+                        "working_state: working-tree\n",
+                        "working_state: working-tree\n" + policy_yaml,
+                    ),
+                    encoding="utf-8",
+                )
+                result = self.run_cli("validate", "--project", str(project), expected=2)
+                self.assertIn(expected, result.stderr)
+
+
 if __name__ == "__main__":
     unittest.main()
