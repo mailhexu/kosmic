@@ -3536,6 +3536,16 @@ def _check_existing_completion(
     else:
         import kosmic_completion
     kosmic_completion.reject_retired_completion_inputs(document.metadata, work_item.name)
+    # Supplied finding annotations are validated wherever review metadata is
+    # consulted (Story 003): the diagnostic-only work-item entry refuses an
+    # incoherent worker_response/resolution by name without demanding the
+    # full modern review, proof, or Blocking closure; absent or legacy
+    # review metadata passes unchanged.
+    try:
+        kosmic_completion.check_finding_annotations(document.metadata,
+                                                    work_item.name)
+    except kosmic_work.WorkdirError as error:
+        raise KosmicError(str(error)) from error
     registry = _validate_record_content(project, document)
     if "consumer_interface_change" not in document.metadata:
         raise KosmicError(
