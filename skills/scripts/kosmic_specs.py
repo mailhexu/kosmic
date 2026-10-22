@@ -151,37 +151,150 @@ def bounded_record_owner(root: Path, project_id: str, reference: str) -> str | N
     return None
 
 
-class SpecCatalog:
-    """One deterministic inventory; local references never infer a foreign owner."""
-    def __init__(self, project_root: Path) -> None:
-        self.root = Path(project_root).expanduser().resolve()
-        #: Whole-Project inventory; record-bound views set ``bounded`` instead.
-        self.bounded = False
-        self.bounded_owner: str | None = None
-        entry = read_document(self.root, self.root / "ProjectEntry.md")
-        self.project_id = str(entry.metadata.get("project_id", ""))
-        if not SLUG.fullmatch(self.project_id):
-            raise SpecError("PROJECT_ID_INVALID", str(self.root))
-        self.subprojects: dict[str, dict[str, Any]] = {}
-        self._records: dict[str, SpecRef] = {}
-        self._paths: dict[Path, SpecRef] = {}
-        self._scan_shared()
-        directory = self.root / "subprojects"
+@dataclass(frozen=True)
+class _SpecStructure:
+    """Claimed-facts structural inventory: identity, owner, claimed lifecycle.
+
+    The shared private discovery behind :class:`SpecCatalog` construction and
+    read-only history reporting. The scan is no-follow and fail-closed and
+    never settles receipts or reads retrospective proof; history reporting
+    resolves its configured subjects against a structure before any
+    retrospective reader runs. Not an operational catalog.
+    """
+
+    root: Path
+    project_id: str
+    subprojects: Mapping[str, Mapping[str, Any]]
+    records: tuple[SpecRef, ...]
+    by_path: Mapping[Path, SpecRef]
+
+
+#: Bounded scope sentinel: collect the shared records only, matching
+#: ``SpecCatalog.bounded(root, None)``. Private to structural discovery.
+_SHARED_ONLY = object()
+
+
+def _scan_spec_records(root: Path, project_id: str, specs: Path, owner: str | None,
+                       records: dict[str, SpecRef], paths: dict[Path, SpecRef]) -> None:
+    """No-follow scan of one specs directory into the identity/path maps."""
+    if specs.is_symlink():
+        raise SpecError("SCOPE_DENIED", str(specs))
+    patterns = [("quick-task", "quick-tasks/*.md"), ("proposal", "skill-proposals/*.md")]
+    if owner is not None:
+        patterns += [("prd", "prd.md"), ("architecture", "architecture.md"),
+                     ("epic", "epics/epic-*.md"), ("story", "stories/story-*.md"),
+                     ("research", "research/*.md")]
+    for kind, pattern in patterns:
+        for path in sorted(specs.glob(pattern)):
+            doc = read_document(root, path)
+            meta = doc.metadata
+            if owner is None and meta.get("subproject_id") == "null":
+                meta["subproject_id"] = None
+            if ("subproject_id" not in meta or meta.get("project_id") != project_id
+                    or meta.get("subproject_id") != owner or meta.get("record_kind") != kind):
+                raise SpecError("OWNER_MISMATCH", str(path))
+            local_id = meta.get("local_id")
+            if not isinstance(local_id, str) or not SLUG.fullmatch(local_id):
+                raise SpecError("LOCAL_ID_INVALID", str(path))
+            if kind in {"epic", "story"}:
+                number = re.match(rf"{kind}-([0-9]+)(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?\.md\Z", path.name)
+                if number is None or number.group(1) != local_id:
+                    raise SpecError("LOCAL_ID_INVALID", f"{path}: filename disagrees with local_id")
+            title = next((line[2:].strip() for line in doc.body.splitlines() if line.startswith("# ")), path.stem)
+            immutable = MappingProxyType({key: tuple(value) if isinstance(value, list) else value
+                                          for key, value in meta.items()})
+            ref = SpecRef(project_id, owner, kind, local_id, path, immutable, title)
+            if ref.qualified_id in records:
+                raise SpecError("DUPLICATE_RECORD", ref.qualified_id)
+            records[ref.qualified_id] = ref
+            paths[path] = ref
+
+
+def _scan_shared_records(root: Path, project_id: str,
+                         records: dict[str, SpecRef], paths: dict[Path, SpecRef]) -> None:
+    """Shared-records scan; flat feature specifications still require migration."""
+    specs = root / "specs"
+    if specs.is_symlink():
+        raise SpecError("SCOPE_DENIED", str(specs))
+    if not specs.exists():
+        return
+    active = list(specs.glob("prd*.md")) + list(specs.glob("architecture*.md"))
+    for name in ("epics", "stories", "research"):
+        active.extend((specs / name).glob("*.md"))
+    if active:
+        raise SpecError("MIGRATION_REQUIRED", "flat feature specifications need an approved migration plan")
+    _scan_spec_records(root, project_id, specs, None, records, paths)
+
+
+def _collect_spec_structure(project_root: Path, owner_scope: Any = None) -> _SpecStructure:
+    """Shared private structural discovery (ADR-002); never settles receipts.
+
+    ``owner_scope=None`` collects the whole Project exactly like
+    ``SpecCatalog`` construction; an owner slug collects the shared records
+    plus that owner's subtree; the private ``_SHARED_ONLY`` sentinel
+    collects the shared records only, matching
+    ``SpecCatalog.bounded(root, None)``. Scan order and errors match the
+    constructors exactly. The result is a claimed-facts inventory for
+    reporting callers, not an operational catalog.
+    """
+    root = Path(project_root).expanduser().resolve()
+    entry = read_document(root, root / "ProjectEntry.md")
+    project_id = str(entry.metadata.get("project_id", ""))
+    if not SLUG.fullmatch(project_id):
+        raise SpecError("PROJECT_ID_INVALID", str(root))
+    subprojects: dict[str, dict[str, Any]] = {}
+    records: dict[str, SpecRef] = {}
+    paths: dict[Path, SpecRef] = {}
+    _scan_shared_records(root, project_id, records, paths)
+    if owner_scope is None:
+        directory = root / "subprojects"
         if directory.is_symlink():
             raise SpecError("SCOPE_DENIED", str(directory))
         if directory.exists():
             for base in sorted(directory.iterdir()):
                 if base.is_symlink() or not base.is_dir() or not SLUG.fullmatch(base.name):
                     raise SpecError("OWNER_MISMATCH", str(base))
-                doc = read_document(self.root, base / "SubprojectEntry.md")
+                doc = read_document(root, base / "SubprojectEntry.md")
                 meta = doc.metadata
                 if (meta.get("schema") != "kosmic.subproject/1"
-                        or meta.get("project_id") != self.project_id
+                        or meta.get("project_id") != project_id
                         or meta.get("subproject_id") != base.name):
                     raise SpecError("OWNER_MISMATCH", str(base / "SubprojectEntry.md"))
-                self.subprojects[base.name] = meta
-                self._scan(base / "specs", base.name)
-        self.records = tuple(sorted(self._records.values(), key=lambda item: item.path.as_posix()))
+                subprojects[base.name] = meta
+                _scan_spec_records(root, project_id, base / "specs", base.name, records, paths)
+    elif owner_scope is not _SHARED_ONLY:
+        if not SLUG.fullmatch(str(owner_scope)):
+            raise SpecError("OWNER_MISMATCH", str(owner_scope))
+        base = root / "subprojects" / str(owner_scope)
+        if base.is_symlink():
+            raise SpecError("SCOPE_DENIED", str(base))
+        if base.is_dir():
+            doc = read_document(root, base / "SubprojectEntry.md")
+            meta = doc.metadata
+            if (meta.get("schema") != "kosmic.subproject/1"
+                    or meta.get("project_id") != project_id
+                    or meta.get("subproject_id") != str(owner_scope)):
+                raise SpecError("OWNER_MISMATCH", str(base / "SubprojectEntry.md"))
+            subprojects[str(owner_scope)] = meta
+            _scan_spec_records(root, project_id, base / "specs", str(owner_scope), records, paths)
+        elif base.exists():
+            raise SpecError("OWNER_MISMATCH", str(base))
+        # A missing owner directory yields an empty owned set; resolution
+        # then reports RECORD_NOT_FOUND exactly like the full catalog.
+    return _SpecStructure(
+        root=root,
+        project_id=project_id,
+        subprojects=MappingProxyType(subprojects),
+        records=tuple(sorted(records.values(), key=lambda item: item.path.as_posix())),
+        by_path=MappingProxyType(paths),
+    )
+
+
+class SpecCatalog:
+    """One deterministic inventory; local references never infer a foreign owner."""
+    def __init__(self, project_root: Path) -> None:
+        self._adopt_structure(
+            _collect_spec_structure(project_root), bounded=False, bounded_owner=None)
         self._settle_receipts()
 
     @classmethod
@@ -198,37 +311,10 @@ class SpecCatalog:
         Full-catalog audits must use the regular constructor.
         """
         catalog = cls.__new__(cls)
-        catalog.root = Path(project_root).expanduser().resolve()
-        catalog.bounded = True
-        catalog.bounded_owner = owner
-        entry = read_document(catalog.root, catalog.root / "ProjectEntry.md")
-        catalog.project_id = str(entry.metadata.get("project_id", ""))
-        if not SLUG.fullmatch(catalog.project_id):
-            raise SpecError("PROJECT_ID_INVALID", str(catalog.root))
-        catalog.subprojects: dict[str, dict[str, Any]] = {}
-        catalog._records: dict[str, SpecRef] = {}
-        catalog._paths: dict[Path, SpecRef] = {}
-        catalog._scan_shared()
-        if owner is not None:
-            if not SLUG.fullmatch(owner):
-                raise SpecError("OWNER_MISMATCH", owner)
-            base = catalog.root / "subprojects" / owner
-            if base.is_symlink():
-                raise SpecError("SCOPE_DENIED", str(base))
-            if base.is_dir():
-                doc = read_document(catalog.root, base / "SubprojectEntry.md")
-                meta = doc.metadata
-                if (meta.get("schema") != "kosmic.subproject/1"
-                        or meta.get("project_id") != catalog.project_id
-                        or meta.get("subproject_id") != owner):
-                    raise SpecError("OWNER_MISMATCH", str(base / "SubprojectEntry.md"))
-                catalog.subprojects[owner] = meta
-                catalog._scan(base / "specs", owner)
-            elif base.exists():
-                raise SpecError("OWNER_MISMATCH", str(base))
-            # A missing owner directory yields an empty owned set; resolution
-            # then reports RECORD_NOT_FOUND exactly like the full catalog.
-        catalog.records = tuple(sorted(catalog._records.values(), key=lambda item: item.path.as_posix()))
+        catalog._adopt_structure(
+            _collect_spec_structure(
+                project_root, _SHARED_ONLY if owner is None else owner),
+            bounded=True, bounded_owner=owner)
         catalog._settle_receipts()
         return catalog
 
@@ -246,6 +332,19 @@ class SpecCatalog:
         entry = read_document(root, root / "ProjectEntry.md")
         project_id = str(entry.metadata.get("project_id", ""))
         return cls.bounded(root, bounded_record_owner(root, project_id, str(reference)))
+
+    def _adopt_structure(self, structure: _SpecStructure, *, bounded: bool,
+                         bounded_owner: str | None) -> None:
+        """Adopt a structural inventory as this catalog's immutable content."""
+        self.root = structure.root
+        #: Whole-Project inventory; record-bound views set ``bounded`` instead.
+        self.bounded = bounded
+        self.bounded_owner: str | None = bounded_owner
+        self.project_id = structure.project_id
+        self.subprojects: dict[str, dict[str, Any]] = dict(structure.subprojects)
+        self._records: dict[str, SpecRef] = {ref.qualified_id: ref for ref in structure.records}
+        self._paths: dict[Path, SpecRef] = dict(structure.by_path)
+        self.records = structure.records
 
     def _settle_receipts(self) -> None:
         """Mark unreceipted done records pending; shared by both constructors."""
@@ -265,52 +364,6 @@ class SpecCatalog:
             }
             self._paths = {record.path: record for record in self._records.values()}
         self.records = tuple(sorted(self._records.values(), key=lambda item: item.path.as_posix()))
-
-    def _scan_shared(self) -> None:
-        specs = self.root / "specs"
-        if specs.is_symlink():
-            raise SpecError("SCOPE_DENIED", str(specs))
-        if not specs.exists():
-            return
-        active = list(specs.glob("prd*.md")) + list(specs.glob("architecture*.md"))
-        for name in ("epics", "stories", "research"):
-            active.extend((specs / name).glob("*.md"))
-        if active:
-            raise SpecError("MIGRATION_REQUIRED", "flat feature specifications need an approved migration plan")
-        self._scan(specs, None)
-
-    def _scan(self, specs: Path, owner: str | None) -> None:
-        if specs.is_symlink():
-            raise SpecError("SCOPE_DENIED", str(specs))
-        patterns = [("quick-task", "quick-tasks/*.md"), ("proposal", "skill-proposals/*.md")]
-        if owner is not None:
-            patterns += [("prd", "prd.md"), ("architecture", "architecture.md"),
-                         ("epic", "epics/epic-*.md"), ("story", "stories/story-*.md"),
-                         ("research", "research/*.md")]
-        for kind, pattern in patterns:
-            for path in sorted(specs.glob(pattern)):
-                doc = read_document(self.root, path)
-                meta = doc.metadata
-                if owner is None and meta.get("subproject_id") == "null":
-                    meta["subproject_id"] = None
-                if ("subproject_id" not in meta or meta.get("project_id") != self.project_id
-                        or meta.get("subproject_id") != owner or meta.get("record_kind") != kind):
-                    raise SpecError("OWNER_MISMATCH", str(path))
-                local_id = meta.get("local_id")
-                if not isinstance(local_id, str) or not SLUG.fullmatch(local_id):
-                    raise SpecError("LOCAL_ID_INVALID", str(path))
-                if kind in {"epic", "story"}:
-                    number = re.match(rf"{kind}-([0-9]+)(?:-[a-z0-9]+(?:-[a-z0-9]+)*)?\.md\Z", path.name)
-                    if number is None or number.group(1) != local_id:
-                        raise SpecError("LOCAL_ID_INVALID", f"{path}: filename disagrees with local_id")
-                title = next((line[2:].strip() for line in doc.body.splitlines() if line.startswith("# ")), path.stem)
-                immutable = MappingProxyType({key: tuple(value) if isinstance(value, list) else value
-                                              for key, value in meta.items()})
-                ref = SpecRef(self.project_id, owner, kind, local_id, path, immutable, title)
-                if ref.qualified_id in self._records:
-                    raise SpecError("DUPLICATE_RECORD", ref.qualified_id)
-                self._records[ref.qualified_id] = ref
-                self._paths[path] = ref
 
     def resolve(self, reference: str | Path, *, owner: str | None = None, kind: str | None = None) -> SpecRef:
         if owner is not None and owner not in self.subprojects:
