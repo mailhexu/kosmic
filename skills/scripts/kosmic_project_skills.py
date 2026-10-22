@@ -4497,7 +4497,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument("--project", type=path_argument, required=True)
     validate_parser.add_argument("--output", type=path_argument)
-
+    validate_parser.add_argument(
+        "--history-audit",
+        action="store_true",
+        help="force a read-only integrity audit of configured historical records",
+    )
     proposal_parser = subparsers.add_parser(
         "validate-proposal", help="validate one Skill Proposal artifact"
     )
@@ -5144,8 +5148,26 @@ def run(arguments: Sequence[str] | None = None) -> int:
             kosmic_history.resolve_history_policy(project)
         except kosmic_history.HistoryConfigError as error:
             raise KosmicError(str(error)) from error
+        if args.history_audit and (
+            project.history_integrity is None or not project.history_integrity.records
+        ):
+            raise KosmicError(
+                "HISTORY_AUDIT_SCOPE_REQUIRED: --history-audit requires a configured "
+                "history_integrity policy with at least one record",
+                exit_code=2,
+            )
         validate_skill_proposals(project)
         validate_current_projection(project, output)
+        history = None
+        if args.history_audit:
+            # A forced historical failure takes precedence over freshness of a
+            # STATUS projection generated before the integrity change.
+            try:
+                history = kosmic_history.audit_history(project, strict_audit=True)
+            except kosmic_history.HistoryConfigError as error:
+                raise KosmicError(str(error)) from error
+            if history is not None and history.failures:
+                raise KosmicError("; ".join(history.failures), exit_code=2)
         if project.status_root is not None:
             if status_drift(project):
                 raise KosmicError(
@@ -5164,15 +5186,21 @@ def run(arguments: Sequence[str] | None = None) -> int:
             raise KosmicError(
                 "STATUS_ROOT_COLLISION: " + "; ".join(collisions), exit_code=2
             )
-        try:
-            history = kosmic_history.audit_history(project)
-        except kosmic_history.HistoryConfigError as error:
-            raise KosmicError(str(error)) from error
+        if not args.history_audit:
+            try:
+                history = kosmic_history.audit_history(project)
+            except kosmic_history.HistoryConfigError as error:
+                raise KosmicError(str(error)) from error
         if history is not None:
             if history.failures:
                 raise KosmicError("; ".join(history.failures), exit_code=2)
             for diagnostic in history.diagnostics:
                 print(f"warning: {diagnostic}", file=sys.stderr)
+        if args.history_audit:
+            print(
+                "history audit passed for configured records only; this is an "
+                "invocation-time integrity check, not completion proof or authority"
+            )
         print(f"valid Skill Pair: {output}")
         print(f"valid Skill Pair: {output}")
     elif args.command == "validate-proposal":

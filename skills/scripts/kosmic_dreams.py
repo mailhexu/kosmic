@@ -480,6 +480,13 @@ def _successful_receipt(store_fd: int, name: str, identity: str, root: Path, cat
     :func:`_receipt_payload_integrity` with the record resolved through the
     operational catalog.
     """
+    if identity.startswith(("specs/", "subprojects/")):
+        return _receipt_payload_integrity(
+            store_fd, name, identity, root,
+            StructuralRecordFacts(identity, root / identity, {"status": "done"}),
+        )
+    if catalog is None:
+        return False
     record = catalog.resolve(identity)
     return _receipt_payload_integrity(
         store_fd, name, identity, root,

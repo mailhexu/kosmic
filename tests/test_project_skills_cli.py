@@ -2534,6 +2534,61 @@ class HistoryIntegrityTest(ProjectionCliFixture, unittest.TestCase):
             identity,
         )
 
+    def test_history_audit_reports_missing_receipt_before_stale_status(self) -> None:
+        from skills.scripts import kosmic_dreams
+
+        project_id = "demo-audit-stale-status"
+        project = self.generate_ready_project(project_id)
+        self.mark_fixture_done(project)
+        self.write_governor(project, project_id)
+        identity = f"{project_id}/quick-task/fixture-task"
+        record = project / "specs" / "quick-tasks" / "2026-10-04-fixture-task.md"
+        record_sha256 = hashlib.sha256(record.read_bytes()).hexdigest()
+        receipt = {
+            "schema": "kosmic.work-receipt/1",
+            "identity": identity,
+            "status": "successful",
+            "record_path": "specs/quick-tasks/2026-10-04-fixture-task.md",
+            "record_sha256": record_sha256,
+            "proof": {"specs/quick-tasks/2026-10-04-fixture-task.md": record_sha256},
+        }
+        store = project / ".kosmic" / "work-receipts"
+        store.mkdir(parents=True)
+        receipt_path = store / kosmic_dreams.receipt_name(identity)
+        receipt_path.write_text(json.dumps(receipt), encoding="utf-8")
+        status_root = self.root / "vault" / "audit-stale-status"
+        status_root.mkdir()
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: strict\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+            status_root,
+        )
+        work_record = f"{project_id}/quick-task/history-governor"
+        self.run_cli(
+            "generate-status", "--project", str(project),
+            "--work-record", work_record,
+        )
+        self.run_cli("validate", "--project", str(project))
+        status_before = (status_root / "STATUS.md").read_bytes()
+
+        # The only intentional mutation is this receipt removal. STATUS now
+        # reflects the prior valid receipt and is stale after the removal.
+        receipt_path.unlink()
+        before_audit = self.snapshot(self.root)
+        audited = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("HISTORY_INTEGRITY", audited.stderr)
+        self.assertNotIn("STATUS_STALE", audited.stderr)
+        self.assertEqual(before_audit, self.snapshot(self.root))
+        self.assertEqual(status_before, (status_root / "STATUS.md").read_bytes())
+
+        ordinary = self.run_cli("validate", "--project", str(project), expected=2)
+        self.assertIn("STATUS_STALE", ordinary.stderr)
+
+
     def test_strict_mode_fails_stale_selected_proposal_pin(self) -> None:
         project = self.generate_ready_project("demo-strict-pin")
         governor = self.write_governor(project, "demo-strict-pin")
@@ -2593,6 +2648,145 @@ class HistoryIntegrityTest(ProjectionCliFixture, unittest.TestCase):
         self.assertNotIn("specs/skill-proposals/2026-09-06-demo.md", clean.stderr)
         self.assertNotIn("unverified", clean.stderr)
         self.assertEqual(proposal.read_bytes(), before_proposal)
+
+    def test_history_audit_requires_configured_nonempty_scope(self) -> None:
+        project = self.generate_ready_project("demo-history-audit-scope")
+        absent = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("HISTORY_AUDIT_SCOPE_REQUIRED", absent.stderr)
+        self.assertNotIn("valid Skill Pair", absent.stdout)
+
+        self.configure_history_policy(
+            project, "history_integrity:\n  mode: warn\n  records: []\n")
+        empty = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("HISTORY_AUDIT_SCOPE_REQUIRED", empty.stderr)
+        self.assertNotIn("valid Skill Pair", empty.stdout)
+
+    def test_history_audit_missing_receipt_fails_in_warn_and_strict_modes(self) -> None:
+        project = self.generate_ready_project("demo-history-audit-receipt")
+        quick_task = self.mark_fixture_done(project)
+        self.write_governor(project, "demo-history-audit-receipt")
+        status_root = self.root / "vault" / "history-audit-status"
+        status_root.mkdir(parents=True)
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/2026-10-04-fixture-task.md\n",
+            status_root,
+        )
+        status = status_root / "STATUS.md"
+        self.run_cli(
+            "generate-status", "--project", str(project),
+            "--work-record", "demo-history-audit-receipt/quick-task/history-governor",
+        )
+        status_before = status.read_bytes()
+        before = self.snapshot(self.root)
+        result = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("HISTORY_INTEGRITY", result.stderr)
+        self.assertIn("receipt", result.stderr.lower())
+        self.assertEqual(before, self.snapshot(self.root))
+        self.assertEqual(status_before, status.read_bytes())
+        self.assertTrue(quick_task.exists())
+        # Regeneration uses the unchanged warn policy and must reproduce the
+        # canonical bytes from before the read-only audit.
+        self.run_cli(
+            "generate-status", "--project", str(project),
+            "--work-record", "demo-history-audit-receipt/quick-task/history-governor",
+        )
+        self.assertEqual(status_before, status.read_bytes())
+        entry = project / "ProjectEntry.md"
+        entry.write_text(
+            entry.read_text(encoding="utf-8").replace("mode: warn", "mode: strict"),
+            encoding="utf-8",
+        )
+        self.run_cli(
+            "generate-status", "--project", str(project),
+            "--work-record", "demo-history-audit-receipt/quick-task/history-governor",
+        )
+        strict_before = self.snapshot(self.root)
+        strict_status_before = status.read_bytes()
+        strict = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("HISTORY_INTEGRITY", strict.stderr)
+        self.assertIn("receipt", strict.stderr.lower())
+        self.assertEqual(strict_before, self.snapshot(self.root))
+        self.assertEqual(strict_status_before, status.read_bytes())
+
+    def test_history_audit_passes_valid_proposal_pins_without_claiming_authority(self) -> None:
+        project = self.generate_ready_project("demo-history-audit-pin")
+        governor = self.write_governor(project, "demo-history-audit-pin")
+        proposal = self.write_proposal(project)
+        self._patch_proposal_catalog_metadata(project, proposal, "demo")
+        digest = hashlib.sha256(governor.read_bytes()).hexdigest()
+        manifest = project / "specs" / "skill-proposals" / "inputs" / "demo.md"
+        manifest.write_text(
+            f"- specs/quick-tasks/2026-10-05-history-governor.md: {digest}\n",
+            encoding="utf-8",
+        )
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/skill-proposals/2026-09-06-demo.md\n",
+        )
+        before = self.snapshot(self.root)
+        result = self.run_cli(
+            "validate", "--project", str(project), "--history-audit")
+        self.assertIn("history audit passed", result.stdout.lower())
+        self.assertIn("configured record", result.stdout.lower())
+        self.assertIn("invocation-time", result.stdout.lower())
+        self.assertIn("not completion proof or authority", result.stdout.lower())
+        self.assertNotIn("not audited", result.stderr)
+        self.assertEqual(before, self.snapshot(self.root))
+
+    def test_history_audit_fails_stale_proposal_pin(self) -> None:
+        project = self.generate_ready_project("demo-history-audit-stale-pin")
+        governor = self.write_governor(project, "demo-history-audit-stale-pin")
+        proposal = self.write_proposal(project)
+        self._patch_proposal_catalog_metadata(project, proposal, "demo")
+        digest = hashlib.sha256(governor.read_bytes()).hexdigest()
+        manifest = project / "specs" / "skill-proposals" / "inputs" / "demo.md"
+        manifest.write_text(
+            f"- specs/quick-tasks/2026-10-05-history-governor.md: {digest}\n",
+            encoding="utf-8",
+        )
+        governor.write_text(
+            governor.read_text(encoding="utf-8") + "\nDrifted after pin.\n",
+            encoding="utf-8",
+        )
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/skill-proposals/2026-09-06-demo.md\n",
+        )
+        before = self.snapshot(self.root)
+        result = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("HISTORY_INTEGRITY", result.stderr)
+        self.assertIn("input_manifest source missing or stale", result.stderr)
+        self.assertEqual(before, self.snapshot(self.root))
+
+    def test_history_audit_rejects_invalid_scope_before_validation(self) -> None:
+        project = self.generate_ready_project("demo-history-audit-invalid")
+        self.configure_history_policy(
+            project,
+            "history_integrity:\n"
+            "  mode: warn\n"
+            "  records:\n"
+            "    - specs/quick-tasks/missing.md\n",
+        )
+        result = self.run_cli(
+            "validate", "--project", str(project), "--history-audit", expected=2)
+        self.assertIn("unknown or stale", result.stderr)
+        self.assertNotIn("valid Skill Pair", result.stdout)
+
 
     def test_empty_curated_manifest_stays_strict_operationally_and_in_history_audit(self) -> None:
         project = self.generate_ready_project("demo-empty-manifest")
