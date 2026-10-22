@@ -17,6 +17,8 @@ import re
 import stat
 import subprocess
 import unicodedata
+from collections.abc import Mapping
+from dataclasses import dataclass
 from datetime import date as date_cls
 from datetime import datetime, time, timedelta, timezone as dt_timezone
 from pathlib import Path
@@ -474,6 +476,56 @@ def _successful_receipt(store_fd: int, name: str, identity: str, root: Path, cat
     hash and current acceptance/review artifacts. Only explicit flat-bootstrap
     path identities retain the minimal identity/status format until migration.
     Unsafe, malformed, foreign, stale or failed receipts deny completion.
+    Delegates the shared no-follow proof verification to
+    :func:`_receipt_payload_integrity` with the record resolved through the
+    operational catalog.
+    """
+    if identity.startswith(("specs/", "subprojects/")):
+        return _receipt_payload_integrity(
+            store_fd, name, identity, root,
+            StructuralRecordFacts(identity, root / identity, {"status": "done"}),
+        )
+    if catalog is None:
+        return False
+    record = catalog.resolve(identity)
+    return _receipt_payload_integrity(
+        store_fd, name, identity, root,
+        StructuralRecordFacts(record.qualified_id, record.path, record.metadata),
+    )
+
+
+@dataclass(frozen=True)
+class StructuralRecordFacts:
+    """Validated structural record facts for narrow integrity reads.
+
+    Plain data carried from the no-follow structural scan (identity, record
+    path, frontmatter metadata): no catalog, resolver, gates, or settlement
+    participates. Consumers are the operational receipt reader and the
+    read-only history seam; reporting DTOs never leak this type.
+    """
+
+    identity: str
+    path: Path
+    metadata: Mapping[str, Any]
+
+    @property
+    def qualified_id(self) -> str:
+        return self.identity
+
+
+def _receipt_payload_integrity(store_fd: int, name: str, identity: str,
+                               root: Path, facts: "StructuralRecordFacts",
+                               *, strict_proof: bool = False) -> bool:
+    """Shared no-follow receipt proof verification for one record.
+
+    Opens the receipt no-follow under the retained store descriptor, enforces
+    the byte/JSON/schema/identity/status envelope, retains the explicit
+    flat-bootstrap minimal format for path identities, and verifies the
+    payload bindings against the validated structural record facts exactly as
+    operational settlement does. Read-only. With ``strict_proof`` (the
+    selected-record strict audit) the flat-bootstrap shortcut is bypassed:
+    the recorded record hash and proof map must actually bind the record's
+    current bytes, so a present but corrupt receipt is missing proof.
     """
     try:
         file_fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=store_fd)
@@ -503,19 +555,71 @@ def _successful_receipt(store_fd: int, name: str, identity: str, root: Path, cat
         return False
     matching = (payload.get("schema") == RECEIPT_SCHEMA and payload.get("identity") == identity
                 and payload.get("status") == RECEIPT_STATUS_SUCCESSFUL)
-    if not matching or identity.startswith(("specs/", "subprojects/")):
-        return matching  # Explicit flat bootstrap identity, not a catalog alias.
-    if catalog is None:
+    if not matching:
         return False
+    if not strict_proof and identity.startswith(("specs/", "subprojects/")):
+        return True  # Explicit flat bootstrap identity, not a catalog alias.
     try:
         if __package__:
             from .kosmic_completion import validate_receipt_payload
         else:
             from kosmic_completion import validate_receipt_payload
-        validate_receipt_payload(root, catalog.resolve(identity), payload)
+        validate_receipt_payload(root, facts, payload)
     except (RuntimeError, ValueError, OSError):
         return False
     return True
+
+
+def structural_receipt_pendencies(project_root: Path, records,
+                                  *, strict_absence: bool = False) -> dict[str, str]:
+    """Read-only receipt pendencies for validated structural record facts.
+
+    ``records`` yields :class:`StructuralRecordFacts` carried from the
+    no-follow structural scan; no catalog or authority resolver participates.
+    Returns ``{identity: expected_receipt_path}`` for done records whose
+    terminal receipt is missing or does not bind them. With
+    ``strict_absence`` (the selected-record strict audit) a missing or unsafe
+    store is itself missing proof for every done record, and a present
+    receipt must fully verify its recorded record hash and proof bindings
+    even for flat-bootstrap identities; without it, the bootstrap-flat
+    store-absence and minimal-format exemptions apply unchanged, exactly as
+    in :func:`pending_terminal_receipts`. Never writes and never creates the
+    store.
+    """
+    root = Path(project_root)
+    facts_by_identity = {
+        facts.identity: facts for facts in records
+        if str(facts.metadata.get("status") or "") == "done"
+    }
+    if not facts_by_identity:
+        return {}
+    expected = {
+        identity: f"{WORK_RECEIPTS_RELATIVE}/{receipt_name(identity)}"
+        for identity in facts_by_identity
+    }
+    try:
+        store_fd = _open_receipt_store(root)
+    except UnsafeReceiptStore:
+        return expected
+    if store_fd < 0:
+        if strict_absence:
+            return expected
+        # Qualified records require receipts even before the first
+        # transaction; only flat-bootstrap path identities retain their
+        # pre-migration completed meaning while the store is absent.
+        return {
+            identity: path for identity, path in expected.items()
+            if not identity.startswith(("specs/", "subprojects/"))
+        }
+    try:
+        return {
+            identity: path for identity, path in expected.items()
+            if not _receipt_payload_integrity(
+                store_fd, receipt_name(identity), identity, root,
+                facts_by_identity[identity], strict_proof=strict_absence)
+        }
+    finally:
+        os.close(store_fd)
 
 
 def pending_terminal_receipts(project_root: Path, records, *, catalog=None) -> dict[str, str]:

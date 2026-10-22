@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-22T04:47:58Z",
+  "detail": "Actual coordinator/independent trial reviewers exercised hold, escalation, same-context handoff and cap; STD-001 fixed and independently resolved in bounded feature Round2; source integrated against captured baselines",
+  "identity": "kosmic/review-convergence-and-optional-historical-validation/story/004",
+  "proof": {
+    "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-004.md": "6246cf92a2766578824e8c40cc7323144fa76d5b5b7fca13f752610644207cdf"
+  },
+  "record_path": "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-004.md",
+  "record_sha256": "6246cf92a2766578824e8c40cc7323144fa76d5b5b7fca13f752610644207cdf",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

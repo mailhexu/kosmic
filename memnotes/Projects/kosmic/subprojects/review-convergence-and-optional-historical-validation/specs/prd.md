@@ -116,8 +116,8 @@ Architecture and implementation remain separately gated.
 
 ## Related Knowledge
 
-- [Architecture](architecture.md) — approved design; implementation remains separately gated.
-- Approved Epics: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md); [four Story drafts](INDEX.md#draft-stories) await separate user approval.
+- [Architecture](architecture.md) — approved design, implemented by separately approved and receipted Stories.
+- Approved Epics: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md); [four completed Stories](INDEX.md#completed-stories) retain acceptance observations and independent reviews.
 - [Owner specs index](INDEX.md); current CLI invariants in
   [cli-projection-commands](../../../notes/cli-projection-commands.md) and
   [cli-extension-conventions](../../../notes/cli-extension-conventions.md).

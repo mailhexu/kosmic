@@ -39,10 +39,10 @@ Make re-review converge on complete worker responses and a coordinator-owned, bo
 
 | Story | Dependency | Status |
 |---|---|---|
-| [003: Compatible finding-response and refutation annotations](../stories/story-003.md) | None | draft |
-| [004: Coordinator readiness and bounded re-review handoff](../stories/story-004.md) | Story 003 | draft |
+| [003: Compatible finding-response and refutation annotations](../stories/story-003.md) | None | done |
+| [004: Coordinator readiness and bounded re-review handoff](../stories/story-004.md) | Story 003 | done |
 
-The Epic is approved. Both Story drafts require separate user approval before implementation.
+Both Stories were approved and completed through native receipts after independent Standards and Spec reviews.
 
 ## Requirement Coverage
 
@@ -70,4 +70,4 @@ The Epic is approved. Both Story drafts require separate user approval before im
 
 ## Progress
 
-- Stories: 0/2 done; two Story files drafted, awaiting Story approval. Epic approval recorded 2026-10-22.
+- Stories: 2/2 done. Story 003 passed its first review pair; Story 004 passed its second pair after correcting completed-pair round counting. Completion records retain verification details and evidence limits.

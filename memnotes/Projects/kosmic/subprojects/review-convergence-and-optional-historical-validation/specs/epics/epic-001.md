@@ -41,10 +41,10 @@ Give Project maintainers a useful, read-only view of explicitly selected legacy-
 
 | Story | Dependency | Status |
 |---|---|---|
-| [001: Configured historical inspection and canonical reporting](../stories/story-001.md) | None | draft |
-| [002: Read-only strict-audit override and compatibility cutover](../stories/story-002.md) | Story 001 | draft |
+| [001: Configured historical inspection and canonical reporting](../stories/story-001.md) | None | done |
+| [002: Read-only strict-audit override and compatibility cutover](../stories/story-002.md) | Story 001 | done |
 
-The Epic is approved. Both Story drafts require separate user approval before implementation.
+Both Stories were approved and completed through native receipts after independent Standards and Spec reviews.
 
 ## Requirement and Decision Coverage
 
@@ -67,4 +67,4 @@ Implementation and verification require approved Stories. Each Story owns its de
 
 ## Progress
 
-- Stories: 0/2 done; two Story files drafted, awaiting Story approval. Epic approval recorded 2026-10-22.
+- Stories: 2/2 done. Story 001 resolved bounded reporting and curated-manifest findings; Story 002 resolved forced-audit error precedence and the integrated flat receipt compatibility regression. The final stable suite passed all 777 tests across 33 isolated modules; canonical history and STATUS immutability were exercised.

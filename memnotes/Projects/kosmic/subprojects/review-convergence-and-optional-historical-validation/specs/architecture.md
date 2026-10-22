@@ -18,10 +18,10 @@ linked_stories:
 
 ## System Overview
 
-The PRD and this Architecture are approved by the user's continuation to Epic planning. The accepted design separates read-only, configuration-scoped historical reporting from a coordinator-owned re-review barrier on the existing ledger. Historical display grants no authority; review annotations do not authenticate the agent process. Epic and Story approval remain separate, and no implementation is claimed.
+The PRD and this Architecture are approved. The design separates read-only, configuration-scoped historical reporting from a coordinator-owned re-review barrier on the existing ledger. Historical display grants no authority; review annotations do not authenticate the agent process. All four separately approved Stories now have native completion receipts; their records retain the actual verification and independent review results.
 
 Approved input: [PRD](prd.md). Navigation: [owner specs index](INDEX.md).
-Approved Epics: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md). Their [four Story drafts](INDEX.md#draft-stories) await separate user approval.
+Approved Epics: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md). Their [four completed Stories](INDEX.md#completed-stories) implement the accepted design.
 
 
 ## Technical Decisions (ADRs)

@@ -4,7 +4,7 @@ title: Projection CLI extension conventions
 description: Where new vault-layer features hook into the Projection CLI and the failure modes observed extending it.
 confidence: 0.8
 created: '2026-09-02'
-updated: '2026-10-18T18:12:48.572353Z'
+updated: '2026-10-22T07:14:50.506Z'
 skill_candidate: true
 validation_procedure: "python3 -m unittest tests.test_project_skills_cli; kosmic_project_skills.py validate --project {VAULT}/Projects/{TARGET}"
 project: kosmic
@@ -31,6 +31,7 @@ Conventions learned while extending `scripts/kosmic_project_skills.py` with gate
 ## Details
 - Projection-affecting note edits pair with regeneration in the same atomic publication; a stable note plus a stale projection fails validation loudly (by design).
 - Line-anchored edits on a file that your own edits keep renumbering misfire: re-read the target region immediately before every anchor. Three misfires this session, all from stale line numbers.
+- Historical inspection uses structural reporting facts, not weakened operational loaders; invocation-only audit state never enters generators or mutation gates. Keep the [consumer history contract](./cli-projection-commands.md) coherent when extending this seam.
 
 ## Linked Concepts
 - [Projection audience routing](./projection-audience-routing.md): what the projection pipeline does with the notes bundle this note's conventions extend around.

@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-22T07:06:40Z",
+  "detail": "14 focused history regressions; actual constructor/narrow-reader skip, baseline parity, stale/empty pins, flat missing/corrupt proof and four real legacy-byte fixtures; bounded Standards+Spec Round2 independently resolved both findings; owned source integrated",
+  "identity": "kosmic/review-convergence-and-optional-historical-validation/story/001",
+  "proof": {
+    "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-001.md": "cc40d09c45d56f5c6424a21f91816c52092d11bd921a3cfbbfab628b10faf04f"
+  },
+  "record_path": "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-001.md",
+  "record_sha256": "cc40d09c45d56f5c6424a21f91816c52092d11bd921a3cfbbfab628b10faf04f",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

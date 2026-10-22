@@ -18,6 +18,7 @@ Use this contract to validate Project knowledge, migrate legacy Project Skill Pa
 - Substantive source/docs/vault/config/experiment changes select an approved Story hierarchy or standalone Quick Task before writing. Draft planning/initialization has only bounded record-first outputs; PRD success never approves code.
 - Read-only questions/checks are record-free, with no durable cleanup/publication. Pass explicit sessions to mutating commands; never store selection in a shared pointer.
 - Native adapters and pointer instructions carry the same limits. Installation needs a separately approved target plan, including isolated homes; never edit installed user-authored skills.
+- Optional ProjectEntry `history_integrity` (`mode: warn|strict`, default warn; exact canonical Project-relative `records`) selects historical records for read-only inspection. Warn skips their retrospective audits and reports each selected record's claimed lifecycle as `unverified — not audited` in `validate` diagnostics and canonical STATUS; strict inspects the selected records against their existing integrity contracts — terminal receipts for claimed `done` records, curated input-manifest pins and recorded fingerprint consistency for proposal records — fails `validate` on actual missing or mismatched proof, and labels audited rows in STATUS with the actual strict assessment (`strict audit clean` / `strict audit failure`) while claimed lifecycle is never rewritten. Selection resolves before any retrospective reader; unconfigured or empty Projects keep byte-identical behavior; operational commands gain no history flags.
 
 ## Projection-Eligible Note Metadata
 
@@ -85,6 +86,8 @@ Validate the authoritative OKF notes bundle, projection provenance, and drift:
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py validate \
   --project "{VAULT}/Projects/{TARGET}"
 ```
+
+With a configured `history_integrity` scope, `validate` additionally reports each selected record's claimed lifecycle as `unverified — not audited` (configured `mode: strict` instead fails on actual missing or mismatched retrospective proof, such as an unreceipted `done` claim), and canonical STATUS carries a `## Historical Integrity` section listing exactly that scope. Invalid configuration — malformed values, unknown keys, unknown or stale paths, duplicates, noncanonical or uncontained paths, wrong-owner references — is a hard error naming the record; the direct proposal loader stays strict for selected proposals.
 
 Validate one Skill Proposal and print its canonical fingerprint:
 

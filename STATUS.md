@@ -29,6 +29,10 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Preserve missing MathDoc knowledge as drafts](memnotes/Projects/kosmic/specs/quick-tasks/preserve-missing-mathdoc-knowledge-as-drafts.md) | approved | ? |
 | [Publish reviewed Kosmic release and install OMP orchestrator](memnotes/Projects/kosmic/specs/quick-tasks/publish-reviewed-kosmic-release-and-install-omp-orchestrator.md) | done | ? |
 | [Record scoped completion validation](memnotes/Projects/kosmic/specs/quick-tasks/record-scoped-completion-validation.md) | done (receipt pending) | 2026-10-12 |
+| [Register the isolated Story 001 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-001-writer.md) | approved | ? |
+| [Register the isolated Story 002 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-002-writer.md) | approved | ? |
+| [Register the isolated Story 003 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-003-writer.md) | approved | ? |
+| [Register the isolated Story 004 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-004-writer.md) | approved | ? |
 | [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) | approved | ? |
 | [Remove missing writer registration](memnotes/Projects/kosmic/specs/quick-tasks/remove-missing-writer-registration.md) | done | ? |
 | [Repair Kosmic skill predictability](memnotes/Projects/kosmic/specs/quick-tasks/repair-kosmic-skill-predictability.md) | done | ? |
@@ -350,10 +354,10 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 | Spec | Status | Updated |
 |------|--------|---------|
-| [Story 1: Configured historical inspection and canonical reporting](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-001.md) | draft | 2026-10-22 |
-| [Story 2: Read-only strict-audit override and compatibility cutover](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-002.md) | draft | 2026-10-22 |
-| [Story 003: Compatible finding-response and refutation annotations](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-003.md) | draft | 2026-10-22 |
-| [Story 004: Coordinator readiness and bounded re-review handoff](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-004.md) | draft | 2026-10-22 |
+| [Story 1: Configured historical inspection and canonical reporting](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-001.md) | done | 2026-10-22 |
+| [Story 2: Read-only strict-audit override and compatibility cutover](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-002.md) | done | 2026-10-22 |
+| [Story 003: Compatible finding-response and refutation annotations](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-003.md) | done | 2026-10-22 |
+| [Story 004: Coordinator readiness and bounded re-review handoff](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-004.md) | done | 2026-10-22 |
 
 ### Subproject: semantic-artifact-roles
 
@@ -504,6 +508,10 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Plan Flat Spec Migration Bootstrap](memnotes/Projects/kosmic/specs/quick-tasks/plan-flat-spec-migration-bootstrap.md) - draft
 - [Preserve missing MathDoc knowledge as drafts](memnotes/Projects/kosmic/specs/quick-tasks/preserve-missing-mathdoc-knowledge-as-drafts.md) - approved
 - [Record scoped completion validation](memnotes/Projects/kosmic/specs/quick-tasks/record-scoped-completion-validation.md) - done (receipt pending)
+- [Register the isolated Story 001 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-001-writer.md) - approved
+- [Register the isolated Story 002 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-002-writer.md) - approved
+- [Register the isolated Story 003 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-003-writer.md) - approved
+- [Register the isolated Story 004 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-004-writer.md) - approved
 - [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) - approved
 - [Restore evidence inventories for projection hygiene](memnotes/Projects/kosmic/specs/quick-tasks/restore-evidence-inventories-for-projection-hygiene.md) - draft
 - [Subprojects and required work records: wave-2 closure](memnotes/Projects/kosmic/specs/quick-tasks/subprojects-and-required-work-records-wave-2-closure.md) - done (receipt pending)
@@ -582,10 +590,6 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [project-status-file/Story 066: Status Workflow Dogfood Release](memnotes/Projects/kosmic/subprojects/project-status-file/specs/stories/story-003-status-workflow-dogfood-release.md) - done (receipt pending)
 - [review-convergence-and-optional-historical-validation/Epic 1: Optional historical validation with strict active integrity](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) - approved
 - [review-convergence-and-optional-historical-validation/Complete worker responses and convergent review handoffs](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) - approved
-- [review-convergence-and-optional-historical-validation/Story 1: Configured historical inspection and canonical reporting](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-001.md) - draft
-- [review-convergence-and-optional-historical-validation/Story 2: Read-only strict-audit override and compatibility cutover](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-002.md) - draft
-- [review-convergence-and-optional-historical-validation/Story 003: Compatible finding-response and refutation annotations](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-003.md) - draft
-- [review-convergence-and-optional-historical-validation/Story 004: Coordinator readiness and bounded re-review handoff](memnotes/Projects/kosmic/subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-004.md) - draft
 - [semantic-artifact-roles/Epic 17: Semantic Role Schema](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-001-semantic-role-schema.md) - done (receipt pending)
 - [semantic-artifact-roles/Epic 18: Role-Aware Resolution](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-002-role-aware-resolution.md) - done (receipt pending)
 - [semantic-artifact-roles/Epic 19: Classification Migration and Release](memnotes/Projects/kosmic/subprojects/semantic-artifact-roles/specs/epics/epic-003-classification-migration-release.md) - done (receipt pending)

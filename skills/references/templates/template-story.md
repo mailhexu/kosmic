@@ -20,6 +20,9 @@ routine_proposals: []
 # derivations: [{slug}]
 # math_implementation_files: [relative/source/path.py]
 review_base: ""
+# Pin review_base to the fixed review baseline before implementation; never move it during re-review.
+# review_round counts completed Standards+Spec review pairs: 0 before the first pair, then 1..3.
+# finish requires an active phase (approved/in_progress); the review decision lives in completion_review.
 review_round: 0
 completion_observations: []
 completion_review: {}

@@ -2,13 +2,13 @@
   "development": {
     "name": "kosmic-development",
     "requires": "kosmic-usage",
-    "sha256": "8e20b742b72362dca7e676fe8bd47653a433f3bee9a91589e81db797def1c2af"
+    "sha256": "3974beaa19fd230e2a2f0569cd88e1904a2153ebedc4c349dda8b990c6ea291e"
   },
   "generator_version": 4,
   "project_id": "kosmic",
   "usage": {
     "name": "kosmic-usage",
-    "sha256": "320dc497ff5db5c055be2bff47be9b2331fcb42098133d2c94f444b1975e80d0"
+    "sha256": "eb67350da60b4c6f0691c10552a9a9ba693eed1e70b25602c40d451432cd4d9f"
   },
   "working_state": "working-tree"
 }
