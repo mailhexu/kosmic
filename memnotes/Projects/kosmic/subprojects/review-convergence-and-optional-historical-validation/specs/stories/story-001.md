@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "review-convergence-and-optional-historical-validation"
-status: "draft"
+status: "approved"
 record_kind: "story"
 local_id: "001"
 created: 2026-10-22
