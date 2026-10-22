@@ -19,11 +19,11 @@ Load `kosmic-usage` before contributor work that invokes, configures, integrates
 
 ## Work record authority
 
-- Project: `kosmic`; canonical records: `/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/specs` and `/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/subprojects`.
-- Shared knowledge stays at `/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/notes`, `/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/mathdocs`, and `/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/skills`; never copy it into a subproject.
+- Project: `kosmic`; canonical records: `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/specs` and `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/subprojects`.
+- Shared knowledge stays at `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/notes`, `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/mathdocs`, and `/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/skills`; never copy it into a subproject.
 - Before substantive source, docs, vault, config or experiment changes, select/create a governing record through Kosmic. Feature implementation requires an approved owner-local Story/Epic/Architecture/PRD hierarchy; standalone low-risk work requires an approved Quick Task.
 - Draft planning/initialization creates only its explicitly bounded record and planning outputs. PRD success is not implementation approval. Migration and installation still require their own approved plans.
-- Register the exact working root; a fixed subproject constrains that directory, never selects an active task. Inspect the current record with `work show --project /home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic --work-record RECORD_REF`. No shared mutable selection pointer is permitted.
+- Register the exact working root; a fixed subproject constrains that directory, never selects an active task. Inspect the current record with `work show --project /home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic --work-record RECORD_REF`. No shared mutable selection pointer is permitted.
 - Start writable work in a clean dedicated worktree. Pass the approved governing record explicitly as --work-record to each checked mutating command. One record, one worktree, one writer; reconcile concurrent changes through Git.
 - Every changed worktree path must fit the declared --scope at work finish. Dirty worktrees are refused at start; out-of-scope paths block completion. Raw editors/shell remain agent compliance, not an OS sandbox.
 - Questions, searches and unchanged checks are record-free and read-only: no implicit cleanup, generated publication or installation. Read-only maintenance reports instead of deleting.

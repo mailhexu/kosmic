@@ -345,6 +345,82 @@ def check_terminal_receipt(root: Path, record) -> dict[str, Any]:
     return validate_receipt_payload(Path(root), record, receipt)
 
 
+def check_finding_annotations(metadata, canonical: str) -> None:
+    """Validate supplied per-finding annotations wherever review metadata
+    is consulted (shared by ``_checked_review`` and the standalone
+    ``check-completion`` diagnostic seam).
+
+    Only supplied annotations are validated: absent or legacy review
+    metadata passes unchanged, and no closure, proof, review-approval, or
+    stable-id requirement is implied here (``_checked_review`` still owns
+    the full ledger shape). Malformed shapes raise ``REVIEW_INVALID``
+    naming the finding by stable id when present, otherwise by row index.
+    """
+    review = metadata.get("completion_review")
+    if not isinstance(review, dict):
+        return
+    findings = review.get("findings")
+    if not isinstance(findings, list):
+        return
+    for index, finding in enumerate(findings):
+        if not isinstance(finding, dict):
+            continue  # non-mapping rows stay _checked_review's business
+        label = (f"finding {finding['id']}"
+                 if isinstance(finding.get("id"), str) and finding["id"].strip()
+                 else f"finding #{index}")
+        _deny_incoherent_annotation(finding, canonical, label)
+
+
+def _deny_incoherent_annotation(finding: dict, canonical: str,
+                                label: str | None = None) -> None:
+    finding_id = label if label is not None else f"finding {finding['id']}"
+    # Optional per-finding annotations (Story 003, ADR-003): validated
+    # for shape and coherence whenever supplied, before the closure
+    # check so the annotation diagnostic names the actual incoherence.
+    # A worker response is a claim only; it never closes a finding.
+    response = finding.get("worker_response")
+    # An explicit null is a SUPPLIED annotation, not an absent one: only a
+    # missing key is a no-op. Null (and any non-mapping) is refused.
+    _deny("worker_response" in finding
+          and not isinstance(response, dict),
+          "REVIEW_INVALID",
+          f"{canonical}: finding {finding_id} worker_response must be a mapping")
+    if isinstance(response, dict):
+        kind = response.get("kind")
+        _deny(kind not in ("fixed", "refuted", "blocked"), "REVIEW_INVALID",
+              f"{canonical}: finding {finding_id} worker_response kind "
+              f"invalid: {kind!r}")
+        detail = response.get("detail")
+        evidence = response.get("evidence")
+        if kind == "blocked":
+            _deny(not isinstance(detail, str) or not detail.strip(),
+                  "REVIEW_INVALID",
+                  f"{canonical}: finding {finding_id} blocked "
+                  f"worker_response requires the prerequisite in detail")
+            _deny(not isinstance(evidence, str) or not evidence.strip(),
+                  "REVIEW_INVALID",
+                  f"{canonical}: finding {finding_id} blocked "
+                  f"worker_response requires the escalation rationale in evidence")
+        else:
+            _deny(not isinstance(detail, str) or not detail.strip(),
+                  "REVIEW_INVALID",
+                  f"{canonical}: finding {finding_id} {kind} "
+                  f"worker_response requires non-empty detail")
+            _deny(not isinstance(evidence, str) or not evidence.strip(),
+                  "REVIEW_INVALID",
+                  f"{canonical}: finding {finding_id} {kind} "
+                  f"worker_response requires non-empty evidence")
+    # Reviewer resolution vocabulary: only a resolved row may carry it.
+    # An explicit null is supplied and refused; a missing key is a no-op.
+    resolution = finding.get("resolution")
+    _deny("resolution" in finding
+          and (resolution not in ("fixed", "refuted")
+               or finding.get("status") != "resolved"),
+          "REVIEW_INVALID",
+          f"{canonical}: finding {finding_id} resolution {resolution!r} "
+          f"is coherent only on a resolved row")
+
+
 def _checked_review(root: Path, worktree: Path, record, *,
                     changed_paths=None, excluded_paths=()) -> None:
     """Validate the embedded structured ``completion_review`` (ADR-B shape).
@@ -357,6 +433,13 @@ def _checked_review(root: Path, worktree: Path, record, *,
     with ``disposition``/``status`` and explicit human risk acceptance
     fields, ``reviewed_revision`` bound to the unchanged ``source_revision``,
     and a typed ``scope`` claim list (possibly empty for record-only work).
+    Optional per-finding annotations are validated for shape and coherence
+    when supplied: ``worker_response`` (``kind: fixed|refuted|blocked`` with
+    non-empty ``detail``/``evidence``; ``blocked`` carries the prerequisite
+    in ``detail`` and the escalation rationale in ``evidence``) is a worker
+    claim that never closes a finding, and ``resolution``
+    (``fixed|refuted``) is reviewer vocabulary valid only on ``resolved``
+    rows. Legacy closed rows without annotations stay valid unchanged.
     The root-level axes shape is not accepted on new records. When
     ``changed_paths`` is given, the actual changed work must also be covered
     by the reviewed claims, reusing the unchanged ``check_record_changes``
@@ -398,6 +481,7 @@ def _checked_review(root: Path, worktree: Path, record, *,
         _deny(not isinstance(finding, dict) or not isinstance(finding.get("id"), str)
               or not finding["id"].strip(), "REVIEW_INVALID",
               f"{canonical}: finding without stable id")
+        _deny_incoherent_annotation(finding, canonical)
         if finding.get("disposition") == "Blocking":
             resolved = finding.get("status") == "resolved"
             accepted = (finding.get("status") == "risk-accepted"
@@ -508,15 +592,27 @@ def _write_status_reports(root: Path, record_owner: str | None = None) -> None:
         try:
             rendered = cli.render_status(scoped, snapshot)
         except SpecError:
+            configured_history = (
+                project.history_integrity is not None
+                and bool(project.history_integrity.records)
+            )
             # The full-catalog outcome is identical for every output
             # directory, so the bounded fallback is decided once and reused.
-            if bounded is None:
+            # Configured history never constructs a record-bound catalog
+            # merely for warn reporting: it renders the bounded structural
+            # snapshot per directory instead.
+            if bounded is None and not configured_history:
                 bounded = SpecCatalog.bounded(root, record_owner)
             fixed = entries.get(base, {}).get("fixed_subproject_id")
             if fixed is not None and fixed != record_owner:
                 # This completion never deletes an unrelated directory's report.
                 continue
-            rendered = cli.render_status(scoped, snapshot, catalog=bounded)
+            if configured_history:
+                rendered = cli.render_status(
+                    scoped, snapshot,
+                    structural_bounded=record_owner if record_owner else True)
+            else:
+                rendered = cli.render_status(scoped, snapshot, catalog=bounded)
         work._atomic_write(Path(base), "STATUS.md", rendered)
 
 

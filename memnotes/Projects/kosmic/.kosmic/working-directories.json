@@ -2,17 +2,83 @@
   "directories": [
     {
       "authority": {
-        "record": "kosmic/quick-task/bootstrap-working-directory-registration-for-kosmic-kf-005",
-        "run_id": "20261018T171136Z-workdir-register-kosmic-36f427f07fd580b9c119d8baa4da09f0"
+        "record": "kosmic/quick-task/register-scoped-completion-snapshot",
+        "run_id": "20261012T105357Z-workdir-register-kosmic-e038da59279843c588155d78957995fb"
       },
-      "directory_id": "wd-91d62a1e12106171",
-      "fixed_subproject_id": "knowledge-first-notes-and-evidence-retirement",
-      "path": "/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb",
-      "registered_at": "2026-10-18T17:11:36Z",
+      "directory_id": "wd-4021d2a30dcc26d6",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261012T105201Z-record-scoped-completion-26cf1b0b3712bdd08ebc87494727f2f4/scratch/dev",
+      "registered_at": "2026-10-12T10:53:57Z",
+      "schema": "kosmic.workdir/1"
+    },
+    {
+      "authority": {
+        "record": "kosmic/quick-task/repair-kosmic-skill-predictability",
+        "run_id": "20261013T112328Z-workdir-register-kosmic-cd73d887c4f3999ad56eefc2c6c11476"
+      },
+      "directory_id": "wd-38580dac6d78ba2d",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261013T112253Z-skill-predictability-rep-eb01a4bd14f57f22468fde26cfd9a44a/scratch/writer",
+      "registered_at": "2026-10-13T11:23:28Z",
+      "schema": "kosmic.workdir/1"
+    },
+    {
+      "authority": {
+        "record": "kosmic/quick-task/bootstrap-working-directory-registration-for-kosmic-original",
+        "run_id": "20261018T210934Z-workdir-register-kosmic-1abf85fa9f8715fc3d39b43dfc7b886e"
+      },
+      "directory_id": "wd-80c2efa3cec23e10",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic",
+      "registered_at": "2026-10-18T21:09:35Z",
+      "schema": "kosmic.workdir/1"
+    },
+    {
+      "authority": {
+        "record": "kosmic/quick-task/register-review-history-story-001-writer",
+        "run_id": "20261022T040447Z-workdir-register-kosmic-eb0229623ca11cd8acedf71c34b10ae5"
+      },
+      "directory_id": "wd-ee7133992ae0413f",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261022T035621Z-review-history-story-001-8322d1cac6f3d03afd42ef473cb373ed/scratch/writer",
+      "registered_at": "2026-10-22T04:04:48Z",
+      "schema": "kosmic.workdir/1"
+    },
+    {
+      "authority": {
+        "record": "kosmic/quick-task/register-review-history-story-002-writer",
+        "run_id": "20261022T040448Z-workdir-register-kosmic-6feb7cf244424444e477891dd66f5b56"
+      },
+      "directory_id": "wd-2941e8e447a8bf9f",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261022T040424Z-review-history-story-002-bd7d8256aa15cf3ecaed4433850975c2/scratch/writer",
+      "registered_at": "2026-10-22T04:04:48Z",
+      "schema": "kosmic.workdir/1"
+    },
+    {
+      "authority": {
+        "record": "kosmic/quick-task/register-review-history-story-003-writer",
+        "run_id": "20261022T040449Z-workdir-register-kosmic-d3174301fc3d98ab8fa4fb582a4fe9a4"
+      },
+      "directory_id": "wd-e4b579ea8c2d8a65",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261022T035621Z-review-history-story-003-bbfef6ebebab2a4b291b45aa3e0f6edf/scratch/writer",
+      "registered_at": "2026-10-22T04:04:49Z",
+      "schema": "kosmic.workdir/1"
+    },
+    {
+      "authority": {
+        "record": "kosmic/quick-task/register-review-history-story-004-writer",
+        "run_id": "20261022T040449Z-workdir-register-kosmic-5fa22df031938c45aa5c5d718729e823"
+      },
+      "directory_id": "wd-095807134fe38a27",
+      "fixed_subproject_id": null,
+      "path": "/home/hexu/projects/myagentskills/kosmic/.tmp/kosmic/runs/20261022T040424Z-review-history-story-004-8d4a16b2aed464d762516ee1c5aa5fa9/scratch/writer",
+      "registered_at": "2026-10-22T04:04:50Z",
       "schema": "kosmic.workdir/1"
     }
   ],
   "project_id": "kosmic",
   "schema": "kosmic.workdirs/1",
-  "sequence": 1
+  "sequence": 7
 }

@@ -205,6 +205,8 @@ Review specifications and code.
 
 **Status**: `draft → approved → in_progress → review → done`
 
+**Re-review protocol**: pre-submit readiness barrier (complete worker responses on all unresolved Blocking rows; blocked prerequisites escalate, not submit), one frozen identical payload to both independent axes on one held target, one completed pair = one automated round (repairs/callbacks consume none, Round-2 changes-requested continues into Round 3, cap = human decision packet, no fourth round). Full protocol: Task 7 §2.6 in `references/task_review_spec.md`.
+
 ### Task 8: Migrate Project Skills
 Assign or validate immutable Project identity, transactionally normalize Project Knowledge to dual-native Obsidian/OKF Markdown, report Unscoped Knowledge, and publish the Skill Pair after reviewed Usage knowledge exists.
 
@@ -306,8 +308,10 @@ draft → approved → in_progress → review → done
 | draft | Being written, not ready |
 | approved | Ready for implementation |
 | in_progress | Currently being worked on |
-| review | Awaiting code review |
-| done | Tests pass + reviewed |
+| review | Awaiting code review (legacy status: checked `work finish` refuses it — `WORK_PHASE_DENIED`) |
+| done | Tests pass + reviewed (written only by a successful `work finish`) |
+
+`work finish` accepts records in `approved`/`in_progress` and refuses `review`: keep the record in an active phase, store the code-review decision in the embedded `completion_review` mapping, and let finish alone publish `done`; a record stranded in `review` returns to `in_progress` before finishing.
 
 ## Status Vocabulary
 

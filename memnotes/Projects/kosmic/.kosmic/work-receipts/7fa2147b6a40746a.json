@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-22T04:23:54Z",
+  "detail": "30 focused completion tests; real annotation/legacy CLI and malformed-type smoke; independent Standards+Spec Round1 approved",
+  "identity": "kosmic/review-convergence-and-optional-historical-validation/story/003",
+  "proof": {
+    "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-003.md": "314e9964048485e430affabf4850ac4b152455ae05d113dbb7a8e5c489e50d48"
+  },
+  "record_path": "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-003.md",
+  "record_sha256": "314e9964048485e430affabf4850ac4b152455ae05d113dbb7a8e5c489e50d48",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

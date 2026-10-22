@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-22T07:43:09Z",
+  "detail": "777 integrated tests across33 isolated modules; actual read-only legacy audit and flat native finish/retry smokes; STD-002-1 and critical LATE-002-1 independently resolved within3 fixed-base review pairs; only owned source integrated",
+  "identity": "kosmic/review-convergence-and-optional-historical-validation/story/002",
+  "proof": {
+    "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-002.md": "619edc7cb02378fe838c4e20c16134b665c4e131d8c20faf51169dc0aaece37d"
+  },
+  "record_path": "subprojects/review-convergence-and-optional-historical-validation/specs/stories/story-002.md",
+  "record_sha256": "619edc7cb02378fe838c4e20c16134b665c4e131d8c20faf51169dc0aaece37d",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

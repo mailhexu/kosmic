@@ -49,3 +49,30 @@ Planning refreshes validate no receipt and write none; validation and
 completion checks still fail with `STATUS_STALE` while the generated file
 drifts. STATUS is generated — hand edits are never preserved or merged; the
 next authorized run regenerates over them.
+
+## validate --history-audit
+
+`validate --history-audit` forces the existing read-only historical integrity
+inspection for the exact records configured by the Project's
+`history_integrity.records` policy, regardless of whether its mode is `warn`
+or `strict`:
+
+```bash
+python3 skills/scripts/kosmic_project_skills.py validate \
+    --project {VAULT}/Projects/{TARGET} \
+    --history-audit
+```
+
+The option is available only on `validate`. It requires a configured,
+non-empty record scope; missing or empty scope is a configuration error
+(exit 2), and malformed, stale, or otherwise invalid configured paths fail
+before other validation. Under `warn`, the flag performs the same strict
+integrity checks as the configured `strict` mode, so detected integrity
+failures make validation fail before STATUS freshness is checked. Without the
+flag, validation order and behavior are unchanged.
+
+This is an invocation-time audit of configured records only. It does not
+change policy, records, receipts, proposal pins, `STATUS.md`, or any other
+file, and it is not completion proof or authority. The override is not passed
+to generation or operational commands; it neither changes the standing
+policy nor establishes persistent audit state.

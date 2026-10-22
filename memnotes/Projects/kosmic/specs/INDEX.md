@@ -1,7 +1,7 @@
 ---
 project: kosmic
 created: 2026-09-02
-updated: 2026-10-18
+updated: 2026-10-22
 ---
 
 # Specs Index: kosmic
@@ -34,6 +34,11 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Architecture | [Knowledge-first notes and evidence retirement](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/architecture.md) | approved 2026-10-17 | Note lifecycle, compact completion and incremental curation design accepted. |
 | Feature Epic | [Knowledge-first workflow and incremental skill curation](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) | approved 2026-10-18 | Five Story records drafted; individual Story approval required before implementation. |
 | Feature Stories | [Knowledge-first workflow: five Story drafts](../subprojects/knowledge-first-notes-and-evidence-retirement/specs/INDEX.md#draft-stories) | draft | STATUS authorization; notes/metadata; completion/receipts; incremental curation; coherent consumer cutover. |
+| Feature PRD | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/prd.md) | approved 2026-10-21 | Worker-response barrier, complete bounded re-review handoff, and optional inspectable historical-integrity policy. |
+| Feature Architecture | [Review convergence and optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/architecture.md) | approved 2026-10-21 | Exact-path historical inspection/audit and coordinator-ledger review barrier implemented by four receipted Stories. |
+| Feature Epic | [Optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) | approved 2026-10-22 | 2/2 Stories done; scoped reporting and read-only audit preserve active integrity. |
+| Feature Epic | [Complete review handoffs](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) | approved 2026-10-22 | 2/2 Stories done; compatible finding annotations and bounded coordinator handoffs. |
+| Feature Stories | [Review convergence and historical validation: four completed Stories](../subprojects/review-convergence-and-optional-historical-validation/specs/INDEX.md#completed-stories) | done | Four native receipts; independent two-axis reviews converged; 777 integrated tests passed. |
 
 ## Research Memos
 

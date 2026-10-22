@@ -76,10 +76,28 @@ except ImportError:
     import kosmic_dreams
 try:
     from . import kosmic_work
-    from .kosmic_specs import SpecCatalog, SpecError, create_spec, migration_plan, read_document
+    from . import kosmic_history
+    from .kosmic_specs import (
+        _SHARED_ONLY,
+        SpecCatalog,
+        SpecError,
+        _collect_spec_structure,
+        create_spec,
+        migration_plan,
+        read_document,
+    )
 except ImportError:
     import kosmic_work
-    from kosmic_specs import SpecCatalog, SpecError, create_spec, migration_plan, read_document
+    import kosmic_history
+    from kosmic_specs import (
+        _SHARED_ONLY,
+        SpecCatalog,
+        SpecError,
+        _collect_spec_structure,
+        create_spec,
+        migration_plan,
+        read_document,
+    )
 
 try:
     from .kosmic_migration import (
@@ -188,6 +206,10 @@ class Project:
     project_id: str
     working_state: str
     status_root: Path | None = None
+    #: Optional configured historical-inspection policy (Story 001). None —
+    #: absent or empty configuration — keeps every reader exactly at its
+    #: pre-policy behavior.
+    history_integrity: kosmic_history.HistoryPolicy | None = None
 
     @property
     def notes_dir(self) -> Path:
@@ -1046,12 +1068,19 @@ def load_project(root: Path, require_id: bool = True) -> Project:
         check_project_id_collision(root, project_id)
     working_state = str(document.metadata.get("working_state") or "working-tree")
     status_root_text = str(document.metadata.get("status_root") or "").strip()
+    try:
+        history_integrity = kosmic_history.parse_history_policy(
+            document.metadata.get("history_integrity")
+        )
+    except kosmic_history.HistoryConfigError as error:
+        raise KosmicError(str(error)) from error
     return Project(
         root=root,
         entry=entry,
         project_id=project_id,
         working_state=working_state,
         status_root=Path(status_root_text) if status_root_text else None,
+        history_integrity=history_integrity,
     )
 
 
@@ -2945,36 +2974,58 @@ def proposal_fingerprint(
     )
 
 
-def validate_input_manifest(project: Project, references: Sequence[str], *,
-                            historical: bool = False) -> dict[str, str]:
-    """Validate a Skill Proposal's curated input-manifest snapshot.
+class CuratedManifestIntegrityError(ValueError):
+    """Typed integrity failure of one curated input-manifest pin set.
 
-    The manifest file and its recorded pins are immutable curated inputs:
-    bytes are never repinned or re-blessed. ``historical`` (done/terminal
-    proposals) reads entries against evolving canonical surfaces — live
-    knowledge notes (``notes/``) and the ``routine://`` registry — as
-    recorded facts (path containment still enforced, no live re-hash), so
-    later legitimate refinement of a canonical source note never revokes a
-    completed proposal. Every other declared source (curated snapshot
-    copies, evidence records, subproject specs, other artifacts) is still
-    re-hashed against live bytes: capture validity stays verifiable.
-    Non-historical proposals keep full live re-hash of all declared
-    sources — current binding, no blanket amnesty (Story 005 preservation).
+    Neutral type so read-only history auditing can catch it without the CLI
+    error identity; the operational loader adapts it to KosmicError with the
+    original diagnostics. Message strings are canonical and shared.
     """
+
+
+def read_curated_manifest_pins(project_root: Path, references: Sequence[str], *,
+                               historical: bool = False) -> dict[str, str]:
+    """Pure curated-input-manifest integrity read for one proposal.
+
+    Neutral integrity-only reader shared by the operational proposal loader
+    (via :func:`validate_input_manifest`) and the read-only history audit:
+    Project containment, manifest-line parsing, and source pin verification
+    per the documented rules — including ``historical`` recorded-fact
+    semantics for evolving canonical surfaces. Raises
+    :class:`CuratedManifestIntegrityError` with the canonical diagnostics;
+    never writes, never re-blesses recorded pins, and performs no proposal
+    admission, target-eligibility, or rejection-equivalence work.
+    """
+    root = Path(project_root)
+
+    def contained(reference: str, field: str) -> Path:
+        relative = Path(reference)
+        if relative.is_absolute():
+            raise CuratedManifestIntegrityError(
+                f"Skill Proposal {field} must be Project-relative: {reference}")
+        resolved = (root / relative).resolve()
+        try:
+            resolved.relative_to(root)
+        except ValueError as error:
+            raise CuratedManifestIntegrityError(
+                f"Skill Proposal {field} escapes Project: {reference}") from error
+        return resolved
+
     if not references:
-        raise KosmicError("Skill Proposal input_manifest must not be empty")
+        raise CuratedManifestIntegrityError("Skill Proposal input_manifest must not be empty")
     entries: dict[str, str] = {}
     for reference in references:
-        path = contained_project_path(project, reference, "input_manifest")
+        path = contained(reference, "input_manifest")
         if not path.is_file():
-            raise KosmicError(f"Skill Proposal input_manifest is missing: {reference}")
+            raise CuratedManifestIntegrityError(
+                f"Skill Proposal input_manifest is missing: {reference}")
         for number, raw in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
             line = raw.strip()
             if not line or line.startswith("#"):
                 continue
             match = re.fullmatch(r"- (.+): ([0-9a-f]{64})", line)
             if not match:
-                raise KosmicError(
+                raise CuratedManifestIntegrityError(
                     f"Skill Proposal input_manifest line {number} must be '- path: sha256'"
                 )
             source_ref, recorded_hash = match.groups()
@@ -2990,32 +3041,60 @@ def validate_input_manifest(project: Project, references: Sequence[str], *,
                     entries[source_ref] = recorded_hash
                     continue
                 if source_ref.startswith("notes/"):
-                    contained_project_path(project, source_ref, "input_manifest path")
+                    contained(source_ref, "input_manifest path")
                     entries[source_ref] = recorded_hash
                     continue
             if source_ref.startswith("routine://"):
                 routine_id = source_ref.removeprefix("routine://")
-                inventory_path = project.root.parent.parent / "Skills" / ".kosmic" / "routines.json"
+                inventory_path = root.parent.parent / "Skills" / ".kosmic" / "routines.json"
                 if not inventory_path.is_file():
-                    raise KosmicError("Skill Proposal routine input requires generated routine inventory")
+                    raise CuratedManifestIntegrityError(
+                        "Skill Proposal routine input requires generated routine inventory")
                 rows = {
                     str(row.get("id")): row
                     for row in read_json(inventory_path).get("routines", [])
                 }
                 if str(rows.get(routine_id, {}).get("routine_sha256") or "") != recorded_hash:
-                    raise KosmicError(
+                    raise CuratedManifestIntegrityError(
                         f"Skill Proposal input_manifest routine missing or stale: {source_ref}"
                     )
             else:
-                source = contained_project_path(project, source_ref, "input_manifest path")
+                source = contained(source_ref, "input_manifest path")
                 if not source.is_file() or sha256_bytes(source.read_bytes()) != recorded_hash:
-                    raise KosmicError(
+                    raise CuratedManifestIntegrityError(
                         f"Skill Proposal input_manifest source missing or stale: {source_ref}"
                     )
             entries[source_ref] = recorded_hash
     if not entries:
-        raise KosmicError("Skill Proposal input_manifest must list at least one input")
+        raise CuratedManifestIntegrityError(
+            "Skill Proposal input_manifest must list at least one input"
+        )
     return entries
+
+
+def validate_input_manifest(project: Project, references: Sequence[str], *,
+                            historical: bool = False) -> dict[str, str]:
+    """Validate a Skill Proposal's curated input-manifest snapshot.
+
+    Adapter over the neutral :func:`read_curated_manifest_pins` integrity
+    read: identical rules, identical canonical diagnostics adapted to this
+    CLI's typed error, unchanged signature and default behavior. The manifest
+    file and its recorded pins are immutable curated inputs: bytes are never
+    repinned or re-blessed. ``historical`` (done/terminal proposals) reads
+    entries against evolving canonical surfaces — live knowledge notes
+    (``notes/``) and the ``routine://`` registry — as recorded facts (path
+    containment still enforced, no live re-hash), so later legitimate
+    refinement of a canonical source note never revokes a completed proposal.
+    Every other declared source (curated snapshot copies, evidence records,
+    subproject specs, other artifacts) is still re-hashed against live bytes:
+    capture validity stays verifiable. Non-historical proposals keep full
+    live re-hash of all declared sources — current binding, no blanket
+    amnesty (Story 005 preservation).
+    """
+    try:
+        return read_curated_manifest_pins(project.root, references, historical=historical)
+    except CuratedManifestIntegrityError as error:
+        raise KosmicError(str(error)) from error
 
 
 def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
@@ -3347,7 +3426,16 @@ def load_skill_proposal(project: Project, path: Path) -> SkillProposal:
 def validate_skill_proposals(project: Project) -> None:
     if not project.proposals_dir.is_dir():
         return
+    try:
+        selected = kosmic_history.selected_proposal_paths(project)
+    except kosmic_history.HistoryConfigError as error:
+        raise KosmicError(str(error)) from error
     for path in sorted(project.proposals_dir.glob("*.md")):
+        if path in selected:
+            # Warn-mode selection: the strict operational proposal loader is
+            # skipped for the selected record, never run and downgraded; the
+            # direct loader keeps its strict semantics.
+            continue
         load_skill_proposal(project, path)
 
 
@@ -3536,6 +3624,16 @@ def _check_existing_completion(
     else:
         import kosmic_completion
     kosmic_completion.reject_retired_completion_inputs(document.metadata, work_item.name)
+    # Supplied finding annotations are validated wherever review metadata is
+    # consulted (Story 003): the diagnostic-only work-item entry refuses an
+    # incoherent worker_response/resolution by name without demanding the
+    # full modern review, proof, or Blocking closure; absent or legacy
+    # review metadata passes unchanged.
+    try:
+        kosmic_completion.check_finding_annotations(document.metadata,
+                                                    work_item.name)
+    except kosmic_work.WorkdirError as error:
+        raise KosmicError(str(error)) from error
     registry = _validate_record_content(project, document)
     if "consumer_interface_change" not in document.metadata:
         raise KosmicError(
@@ -3766,8 +3864,9 @@ def _candidate_bytes_changed(catalog: SpecCatalog, project: Project, ref: SpecRe
 
 
 def _spec_rows(
-    project: Project, catalog: SpecCatalog | None = None
-) -> tuple[dict[str, list[dict[str, Any]]], SpecCatalog | None]:
+    project: Project, catalog: SpecCatalog | None = None,
+    *, structural_bounded: "str | None | bool" = None,
+) -> tuple[dict[str, list[dict[str, Any]]], "_StatusScope | None"]:
     """Collect status/title/updated rows for every spec class.
 
     Owner-aware Projects are enumerated through the one SpecCatalog so every
@@ -3781,64 +3880,84 @@ def _spec_rows(
     ``catalog`` may be supplied by the caller (for example a validated staged
     catalog during subproject migration); when given it is used as-is and each
     reference path is mapped from ``catalog.root`` onto ``project.root``.
+
+    With a configured non-empty ``history_integrity`` policy the configured
+    view governs this boundary: selection is resolved through the typed
+    history module before the settlement this boundary controls, selected
+    identities are excluded from that settlement and from the strict
+    proposal scan, and selected rows keep their claimed lifecycle carrying
+    their mode-coherent ``history_marker``. ``structural_bounded`` requests
+    the configured structural rendering seam (``True`` for the shared
+    records, an owner slug for one owner's subtree plus the shared records)
+    with no catalog construction; the second element is plain rendering-scope
+    data, never an authority object.
     """
+    policy = project.history_integrity
+    configured = policy is not None and bool(policy.records)
+    if configured and catalog is None:
+        # The configured canonical report is a pure structural view:
+        # selection is resolved before any retrospective reader, no
+        # operational catalog is constructed for reporting, and only
+        # unselected records settle through the narrow integrity reader.
+        # Under a configured strict mode the selected rows carry their actual
+        # per-record strict assessment marker; warn views keep the standing
+        # unverified marker and skip readers entirely.
+        try:
+            if structural_bounded is not None:
+                owner_scope = None if structural_bounded is True else structural_bounded
+                bounded_policy = kosmic_history.bounded_policy(policy, owner_scope)
+                structure = _collect_spec_structure(
+                    project.root,
+                    _SHARED_ONLY if structural_bounded is True else structural_bounded)
+                selected_subjects = kosmic_history.structure_subjects(
+                    structure, bounded_policy)
+                marker_policy = bounded_policy
+            else:
+                structure = _collect_spec_structure(project.root)
+                selected_subjects = kosmic_history.structure_subjects(structure, policy)
+                marker_policy = policy
+        except SpecError as error:
+            if error.code != "MIGRATION_REQUIRED":
+                raise
+            return _flat_rows(project, policy)
+        except kosmic_history.HistoryConfigError as error:
+            raise KosmicError(str(error)) from error
+        selected = frozenset(subject.qualified_id for subject in selected_subjects)
+        facts = {
+            ref.qualified_id: kosmic_dreams.StructuralRecordFacts(
+                ref.qualified_id, ref.path, ref.metadata)
+            for ref in structure.records
+        }
+        markers = kosmic_history.strict_history_markers(
+            project.root, marker_policy, selected_subjects, facts)
+        return _structure_history_rows(
+            project, selected, markers, structure, structural_bounded)
+    selected: frozenset[str] = frozenset()
+    markers: dict[str, str] = {}
+    if configured:
+        try:
+            if catalog is not None and getattr(catalog, "bounded", False):
+                subjects = kosmic_history.bounded_subjects(
+                    project.root, policy, catalog.bounded_owner)
+            else:
+                subjects = kosmic_history.selection(project.root, policy)
+        except kosmic_history.HistoryConfigError as error:
+            raise KosmicError(str(error)) from error
+        selected = frozenset(subject.qualified_id for subject in subjects)
+        markers = kosmic_history.strict_history_markers(
+            project.root, policy, subjects)
     if catalog is None:
         catalog = kosmic_dreams.try_project_catalog(project.root)
     rows: dict[str, list[dict[str, Any]]] = {name: [] for name in STATUS_CLASSES}
     if catalog is None:
-        specs = project.root / "specs"
-        classes: dict[str, list[Path]] = {name: [] for name in STATUS_CLASSES}
-        for path in sorted(specs.glob("*.md")) if specs.is_dir() else []:
-            name = path.name.lower()
-            if name == "index.md":
-                continue
-            if name.startswith("prd"):
-                classes["PRD"].append(path)
-            elif name.startswith("architecture"):
-                classes["Architecture"].append(path)
-        for class_name, pattern in (
-            ("Epics", "epics/epic-*.md"),
-            ("Stories", "stories/story-*.md"),
-            ("Quick Tasks", "quick-tasks/*.md"),
-            ("Skill Proposals", "skill-proposals/*.md"),
-        ):
-            classes[class_name].extend(sorted(specs.glob(pattern)))
-        identities: list[tuple[str, str]] = []
-        documents: dict[Path, Any] = {}
-        for class_name, paths in classes.items():
-            for path in paths:
-                document = read_document(project.root, path)
-                documents[path] = document
-                status = str(document.metadata.get("status") or "?")
-                identities.append((_project_relative_identity(project, path), status))
-        pending = kosmic_dreams.pending_terminal_receipts(project.root, identities)
-        for class_name, paths in classes.items():
-            for path in paths:
-                document = documents[path]
-                title = path.stem
-                for line in document.body.splitlines():
-                    if line.startswith("# "):
-                        title = line[2:].strip()
-                        break
-                status = str(document.metadata.get("status") or "?")
-                identity = _project_relative_identity(project, path)
-                rows[class_name].append(
-                    {
-                        "path": path,
-                        "title": title,
-                        "status": status,
-                        "updated": str(document.metadata.get("updated") or "?"),
-                        "decision": str(document.metadata.get("decision") or ""),
-                        "owner": None,
-                        "record": None,
-                        "receipt_pending": identity in pending,
-                    }
-                )
-        return rows, None
+        return _flat_rows(project, policy)
     records = [
         (ref.qualified_id, ref.status)
         for ref in catalog.records
-        if ref.kind in STATUS_CLASS_BY_RECORD_KIND
+        # Selected history records never reach this reporting settlement
+        # call: warn mode skips their audit instead of running and
+        # downgrading it, and strict mode audits them separately.
+        if ref.kind in STATUS_CLASS_BY_RECORD_KIND and ref.qualified_id not in selected
     ]
     staged = Path(catalog.root).resolve() != Path(project.root).expanduser().resolve()
     pending = kosmic_dreams.pending_terminal_receipts(
@@ -3869,10 +3988,135 @@ def _spec_rows(
                 "decision": str(ref.metadata.get("decision") or ""),
                 "owner": ref.subproject_id,
                 "record": ref.qualified_id,
-                "receipt_pending": ref.qualified_id in pending,
+                "receipt_pending": (
+                    ref.qualified_id in pending and ref.qualified_id not in selected
+                ),
+                "history_marker": markers.get(ref.qualified_id, ""),
             }
         )
-    return rows, catalog
+    return rows, _StatusScope(catalog.bounded, catalog.bounded_owner)
+
+
+@dataclass(frozen=True)
+class _StatusScope:
+    """Plain rendering scope of a ``_spec_rows`` result; never an authority."""
+
+    bounded: bool
+    bounded_owner: str | None
+
+
+def _flat_rows(
+    project: Project, policy: "kosmic_history.HistoryPolicy | None"
+) -> tuple[dict[str, list[dict[str, Any]]], "_StatusScope | None"]:
+    """Bootstrap-flat STATUS rows; configured selection excluded from settlement."""
+    selected: frozenset[str] = frozenset()
+    markers: dict[str, str] = {}
+    if policy is not None and policy.records:
+        subjects = kosmic_history.flat_selection(project.root, policy)
+        selected = frozenset(subject.qualified_id for subject in subjects)
+        markers = kosmic_history.strict_history_markers(project.root, policy, subjects)
+    rows: dict[str, list[dict[str, Any]]] = {name: [] for name in STATUS_CLASSES}
+    specs = project.root / "specs"
+    classes: dict[str, list[Path]] = {name: [] for name in STATUS_CLASSES}
+    for path in sorted(specs.glob("*.md")) if specs.is_dir() else []:
+        name = path.name.lower()
+        if name == "index.md":
+            continue
+        if name.startswith("prd"):
+            classes["PRD"].append(path)
+        elif name.startswith("architecture"):
+            classes["Architecture"].append(path)
+    for class_name, pattern in (
+        ("Epics", "epics/epic-*.md"),
+        ("Stories", "stories/story-*.md"),
+        ("Quick Tasks", "quick-tasks/*.md"),
+        ("Skill Proposals", "skill-proposals/*.md"),
+    ):
+        classes[class_name].extend(sorted(specs.glob(pattern)))
+    identities: list[tuple[str, str]] = []
+    documents: dict[Path, Any] = {}
+    for class_name, paths in classes.items():
+        for path in paths:
+            document = read_document(project.root, path)
+            documents[path] = document
+            status = str(document.metadata.get("status") or "?")
+            identity = _project_relative_identity(project, path)
+            # Selected history records never reach this reporting settlement
+            # call: warn mode skips their audit instead of running and
+            # downgrading it.
+            if identity not in selected:
+                identities.append((identity, status))
+    pending = kosmic_dreams.pending_terminal_receipts(project.root, identities)
+    for class_name, paths in classes.items():
+        for path in paths:
+            document = documents[path]
+            title = path.stem
+            for line in document.body.splitlines():
+                if line.startswith("# "):
+                    title = line[2:].strip()
+                    break
+            status = str(document.metadata.get("status") or "?")
+            identity = _project_relative_identity(project, path)
+            rows[class_name].append(
+                {
+                    "path": path,
+                    "title": title,
+                    "status": status,
+                    "updated": str(document.metadata.get("updated") or "?"),
+                    "decision": str(document.metadata.get("decision") or ""),
+                    "owner": None,
+                    "record": None,
+                    "receipt_pending": identity in pending,
+                    "history_marker": markers.get(identity, ""),
+                }
+            )
+    return rows, None
+
+
+def _structure_history_rows(
+    project: Project, selected: frozenset[str], markers: dict[str, str],
+    structure: "_SpecStructure", structural_bounded: "str | None | bool",
+) -> tuple[dict[str, list[dict[str, Any]]], "_StatusScope | None"]:
+    """Configured canonical report rows from the pure structural snapshot.
+
+    Identity, owner, and claimed lifecycle come from the no-follow structural
+    scan; no operational catalog is constructed. Only unselected records
+    settle, through the narrow structural receipt-integrity reader, so valid
+    receipts keep their done rows and invalid or missing receipts stay
+    pending exactly as operational settlement classifies them. Selected rows
+    keep their claimed lifecycle and carry their mode-coherent standing
+    marker (``unverified — not audited`` under warn, the actual strict
+    assessment under configured strict).
+    """
+    rows: dict[str, list[dict[str, Any]]] = {name: [] for name in STATUS_CLASSES}
+    unselected_facts = [
+        kosmic_dreams.StructuralRecordFacts(ref.qualified_id, ref.path, ref.metadata)
+        for ref in structure.records
+        if ref.kind in STATUS_CLASS_BY_RECORD_KIND and ref.qualified_id not in selected
+    ]
+    pending = kosmic_dreams.structural_receipt_pendencies(project.root, unselected_facts)
+    for ref in structure.records:
+        class_name = STATUS_CLASS_BY_RECORD_KIND.get(ref.kind)
+        if class_name is None:
+            continue
+        rows[class_name].append(
+            {
+                "path": ref.path,
+                "title": ref.title,
+                "status": ref.status or "?",
+                "updated": str(ref.metadata.get("updated") or "?"),
+                "decision": str(ref.metadata.get("decision") or ""),
+                "owner": ref.subproject_id,
+                "record": ref.qualified_id,
+                "receipt_pending": (
+                    ref.qualified_id in pending and ref.qualified_id not in selected
+                ),
+                "history_marker": markers.get(ref.qualified_id, ""),
+            }
+        )
+    bounded = structural_bounded is not None
+    bounded_owner = None if structural_bounded in (None, True) else structural_bounded
+    return rows, _StatusScope(bounded, bounded_owner)
 
 
 def _project_relative_identity(project: Project, path: Path) -> str:
@@ -3911,7 +4155,50 @@ def _directory_constraint(project: Project, status_root: Path) -> str:
     return "none (registered working directory without a fixed subproject)"
 
 
-def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = None) -> bytes:
+def _history_status_section(
+    project: Project, rows: dict[str, list[dict[str, Any]]], status_root: Path
+) -> list[str]:
+    """Configuration-derived historical-integrity section for canonical STATUS.
+
+    Lists exactly the configured scope with each selected record's claimed
+    lifecycle and the standing ``unverified — not audited`` marker; it never
+    claims an audit or a completion proof. A bounded render lists its
+    intersection; the bounded scope note already discloses the view limits.
+    """
+    by_path: dict[Path, dict[str, Any]] = {}
+    for class_name in STATUS_CLASSES:
+        for entry in rows[class_name]:
+            by_path[entry["path"]] = entry
+    policy = project.history_integrity
+    if policy is None or not policy.records:
+        return []
+    lines = ["## Historical Integrity", ""]
+    listed = 0
+    for record in policy.records:
+        entry = by_path.get(project.root / record)
+        if entry is None:
+            continue
+        listed += 1
+        link = _status_link(entry["path"], status_root)
+        marker = entry.get("history_marker") or "unverified — not audited"
+        lines.append(f"- [{entry['title']}]({link}) — claimed {entry['status']}: {marker}")
+    if policy.mode == "strict":
+        lines.insert(2, (
+            f"- Policy: strict mode; {listed} configured record(s) under strict "
+            "integrity inspection."
+        ))
+    else:
+        lines.insert(2, (
+            f"- Policy: {policy.mode} mode; {listed} configured record(s) reported "
+            "without retrospective audit."
+        ))
+    return lines
+
+
+def render_status(
+    project: Project, head: str, *, catalog: SpecCatalog | None = None,
+    structural_bounded: "str | None | bool" = None,
+) -> bytes:
     """Render receipt-aware STATUS; unreceipted done is always pending.
 
     Callers may pass a validated staged ``catalog``; its references are
@@ -3920,9 +4207,12 @@ def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = 
     (``bounded``) catalogs are rendered with an explicit scope note instead
     of the Project-wide statement, so a scoped view never poses as a
     full-catalog audit. Existing callers without ``catalog`` are unchanged.
+    With a configured history policy, ``structural_bounded`` renders the
+    bounded structural snapshot seam (degraded fallbacks) instead of
+    constructing any record-bound catalog.
     """
     status_root = (project.status_root or Path(".")).expanduser().resolve()
-    rows, catalog = _spec_rows(project, catalog)
+    rows, scope = _spec_rows(project, catalog, structural_bounded=structural_bounded)
     lines = [
         STATUS_GENERATED_MARKER,
         f"# Status: {project.project_id}",
@@ -3933,14 +4223,19 @@ def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = 
         "",
     ]
     open_items: list[dict[str, Any]] = []
-    if catalog is None:
+    if scope is None:
         for class_name in STATUS_CLASSES:
             entries = rows[class_name]
             lines.extend([f"### {class_name}", "", "| Spec | Status | Updated |", "|------|--------|---------|"])
             if not entries:
                 lines.append("| — | — | — |")
             for entry in entries:
-                status = entry["status"] + (RECEIPT_PENDING_SUFFIX if entry["receipt_pending"] else "")
+                marker = entry.get("history_marker") or ""
+                status = (
+                    entry["status"]
+                    + (RECEIPT_PENDING_SUFFIX if entry["receipt_pending"] else "")
+                    + (f" ({marker})" if marker else "")
+                )
                 link = _status_link(entry["path"], status_root)
                 lines.append(f"| [{entry['title']}]({link}) | {status} | {entry['updated']} |")
                 if _row_is_open(class_name, entry):
@@ -3967,7 +4262,12 @@ def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = 
                     "|------|--------|---------|",
                 ])
                 for entry in entries:
-                    status = entry["status"] + (RECEIPT_PENDING_SUFFIX if entry["receipt_pending"] else "")
+                    marker = entry.get("history_marker") or ""
+                    status = (
+                        entry["status"]
+                        + (RECEIPT_PENDING_SUFFIX if entry["receipt_pending"] else "")
+                        + (f" ({marker})" if marker else "")
+                    )
                     link = _status_link(entry["path"], status_root)
                     lines.append(f"| [{entry['title']}]({link}) | {status} | {entry['updated']} |")
                     if _row_is_open(class_name, entry):
@@ -3979,11 +4279,11 @@ def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = 
     for entry in open_items:
         label = entry["title"] if entry["owner"] is None else f"{entry['owner']}/{entry['title']}"
         lines.append(f"- [{label}]({_status_link(entry['path'], status_root)}) - {entry['status']}")
-    if catalog is not None:
-        if getattr(catalog, "bounded", False):
-            owner = getattr(catalog, "bounded_owner", None)
-            scope = f"subproject {owner} plus shared records" if owner else "shared records only"
-            scope_line = f"- Scope: bounded active-record view ({scope}); not a full-catalog audit."
+    if scope is not None:
+        if scope.bounded:
+            owner = scope.bounded_owner
+            bounded = f"subproject {owner} plus shared records" if owner else "shared records only"
+            scope_line = f"- Scope: bounded active-record view ({bounded}); not a full-catalog audit."
         else:
             scope_line = "- This report is Project-wide; no agent task selection is recorded in this file."
         lines.extend([
@@ -3993,6 +4293,8 @@ def render_status(project: Project, head: str, *, catalog: SpecCatalog | None = 
             f"- Fixed directory constraint: {_directory_constraint(project, status_root)}.",
             "- Work selection is explicit per command (`--work-record`); no shared active-task pointer is stored.",
         ])
+    if project.history_integrity is not None and project.history_integrity.records:
+        lines.extend(_history_status_section(project, rows, status_root))
     return unicodedata.normalize("NFC", "\n".join(lines) + "\n").encode("utf-8")
 
 
@@ -4050,8 +4352,16 @@ def status_drift(project: Project, *, record_scoped: bool = False,
     except SpecError:
         if not record_scoped:
             raise
-        expected = render_status(
-            project, head, catalog=SpecCatalog.bounded(project.root, record_owner))
+        if project.history_integrity is not None and project.history_integrity.records:
+            # The configured degraded fallback renders the bounded structural
+            # snapshot; no record-bound catalog is constructed merely for
+            # configured warn reporting.
+            expected = render_status(
+                project, head,
+                structural_bounded=record_owner if record_owner else True)
+        else:
+            expected = render_status(
+                project, head, catalog=SpecCatalog.bounded(project.root, record_owner))
     return not path.is_file() or path.read_bytes() != expected
 
 
@@ -4187,7 +4497,11 @@ def build_parser() -> argparse.ArgumentParser:
     )
     validate_parser.add_argument("--project", type=path_argument, required=True)
     validate_parser.add_argument("--output", type=path_argument)
-
+    validate_parser.add_argument(
+        "--history-audit",
+        action="store_true",
+        help="force a read-only integrity audit of configured historical records",
+    )
     proposal_parser = subparsers.add_parser(
         "validate-proposal", help="validate one Skill Proposal artifact"
     )
@@ -4827,8 +5141,33 @@ def run(arguments: Sequence[str] | None = None) -> int:
         print(f"published atomic Skill Pair at {output}")
     elif args.command == "validate":
         output = (args.output or project.canonical_root).expanduser().resolve()
+        # Resolve the configured history scope up front: malformed, unknown,
+        # stale, duplicate, noncanonical, uncontained, or wrong-owner
+        # configuration fails hard before any other check runs.
+        try:
+            kosmic_history.resolve_history_policy(project)
+        except kosmic_history.HistoryConfigError as error:
+            raise KosmicError(str(error)) from error
+        if args.history_audit and (
+            project.history_integrity is None or not project.history_integrity.records
+        ):
+            raise KosmicError(
+                "HISTORY_AUDIT_SCOPE_REQUIRED: --history-audit requires a configured "
+                "history_integrity policy with at least one record",
+                exit_code=2,
+            )
         validate_skill_proposals(project)
         validate_current_projection(project, output)
+        history = None
+        if args.history_audit:
+            # A forced historical failure takes precedence over freshness of a
+            # STATUS projection generated before the integrity change.
+            try:
+                history = kosmic_history.audit_history(project, strict_audit=True)
+            except kosmic_history.HistoryConfigError as error:
+                raise KosmicError(str(error)) from error
+            if history is not None and history.failures:
+                raise KosmicError("; ".join(history.failures), exit_code=2)
         if project.status_root is not None:
             if status_drift(project):
                 raise KosmicError(
@@ -4846,6 +5185,21 @@ def run(arguments: Sequence[str] | None = None) -> int:
         if collisions:
             raise KosmicError(
                 "STATUS_ROOT_COLLISION: " + "; ".join(collisions), exit_code=2
+            )
+        if not args.history_audit:
+            try:
+                history = kosmic_history.audit_history(project)
+            except kosmic_history.HistoryConfigError as error:
+                raise KosmicError(str(error)) from error
+        if history is not None:
+            if history.failures:
+                raise KosmicError("; ".join(history.failures), exit_code=2)
+            for diagnostic in history.diagnostics:
+                print(f"warning: {diagnostic}", file=sys.stderr)
+        if args.history_audit:
+            print(
+                "history audit passed for configured records only; this is an "
+                "invocation-time integrity check, not completion proof or authority"
             )
         print(f"valid Skill Pair: {output}")
         print(f"valid Skill Pair: {output}")

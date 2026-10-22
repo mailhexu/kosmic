@@ -33,7 +33,7 @@ Consequence: a `both` note is **not** copied into the Development package. The D
 
 ## Change direction
 
-The route-graph redesign (project `both` notes into Development routes, intent-keyed routers) was drafted and then **abandoned on 2026-09-02** before implementation; see the archived [PRD](/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/specs/archive/2026-09-02-prd-route-graph.md) and [Architecture](/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/specs/archive/2026-09-02-architecture-route-graph.md). The routing behavior described above therefore remains current. The active improvement direction is WikiSkill-style experience compilation (see [PRD](/home/hexu/projects/myagentskills/kosmic-kf-005-d6030fcb/memnotes/Projects/kosmic/subprojects/experience-compilation-adapting-wikiskill-into-kosmic/specs/prd.md)).
+The route-graph redesign (project `both` notes into Development routes, intent-keyed routers) was drafted and then **abandoned on 2026-09-02** before implementation; see the archived [PRD](/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/specs/archive/2026-09-02-prd-route-graph.md) and [Architecture](/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/specs/archive/2026-09-02-architecture-route-graph.md). The routing behavior described above therefore remains current. The active improvement direction is WikiSkill-style experience compilation (see [PRD](/home/hexu/projects/myagentskills/kosmic/memnotes/Projects/kosmic/subprojects/experience-compilation-adapting-wikiskill-into-kosmic/specs/prd.md)).
 
 
 ## Related

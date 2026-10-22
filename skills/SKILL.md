@@ -159,7 +159,7 @@ Optional curation: outside the task table, a manual or externally scheduled cura
 | Research memos | `draft`, `done` (no approval gate) |
 | Notes | `draft`, `stable`, `deprecated` (currentness is `stale_after`, not a fourth status) |
 
-Lifecycle: `draft → approved → in_progress → review → done`, with `changes requested` returning to `approved` from `in_progress`/`review`.
+Lifecycle: `draft → approved → in_progress → review → done`, with `changes requested` returning to `approved` from `in_progress`/`review`. `review` is a valid legacy status, but checked `work finish` refuses it (`WORK_PHASE_DENIED`): keep the record in an active phase (`approved`/`in_progress`), record the code-review decision in the embedded `completion_review` mapping, and let finish alone write `done`.
 
 ---
 

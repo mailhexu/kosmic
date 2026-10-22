@@ -87,6 +87,7 @@ Use `references/templates/template-quick-task.md`.
 6. **Verify and review**
    - Exercise the actual path with focused checks during the work; run the integrated verification once after the change stabilizes. Rerun only checks whose inputs or contracts changed or that previously failed — never reuse a pass over changed inputs and never skip scientific validation. Record each criterion's observation and source as an entry in the record's `completion_observations` list; exit success alone is not proof.
    - Run Task 7's independent Standards/Spec review against the pinned base. The review packet bounds to the actual delta plus its acceptance context (fixed base, criteria, observations, checks, adverse facts); two distinct independent reviewers, stable finding IDs, and rounds 1–3 always remain, and low risk limits packet scope and depth only. Numerics/scientific claims, methods, security, and API/data/schema/publication/receipt changes receive domain review regardless of line count. Preserve the stable finding ledger, actual decision and reviewed revision in the record's `completion_review` mapping as described in `work_completion.md`. Never manufacture approvals.
+   - Before each routine re-review, apply the Task 7 §2.6 readiness barrier and handoff protocol (`references/task_review_spec.md`): complete worker responses on all unresolved Blocking rows (blocked prerequisites escalate), one frozen identical payload to both axes on the held target, one completed pair = one round; repairs and partial callbacks consume none. `source_revision` excludes nested record bytes and never freezes the payload — see `work_completion.md`.
    - Unchanged inputs receive no fresh audit round; a changed input, changed contract, or failed check reruns only the affected checks. A failed full review escalates within the three-round limit — it never downgrades to a lighter pass.
    - Re-review preserves finding IDs; accept only resolved blockers or explicit recorded human acceptance. Consumer knowledge/projection gates still apply.
 
@@ -107,6 +108,8 @@ draft → approved → in_progress → review → done
          ↑             ↓           │
          └─────────────┴───────────┘ (changes requested)
 ```
+
+`review` remains a valid lifecycle status for legacy records, but checked `work finish` refuses it (`WORK_PHASE_DENIED`): keep the record in `approved`/`in_progress`, record the review decision in `completion_review`, and let finish alone write `done`. A record stranded in `review` returns to `in_progress` before finishing.
 
 ---
 
