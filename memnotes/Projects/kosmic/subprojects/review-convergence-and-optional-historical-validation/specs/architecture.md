@@ -5,10 +5,14 @@ record_kind: architecture
 local_id: architecture
 status: approved
 created: 2026-10-21
-updated: 2026-10-21
+updated: 2026-10-22
 linked_prd: prd.md
 linked_research: []
-linked_stories: []
+linked_stories:
+  - stories/story-001.md
+  - stories/story-002.md
+  - stories/story-003.md
+  - stories/story-004.md
 ---
 # Architecture: Review convergence and optional historical validation
 
@@ -17,7 +21,7 @@ linked_stories: []
 The PRD and this Architecture are approved by the user's continuation to Epic planning. The accepted design separates read-only, configuration-scoped historical reporting from a coordinator-owned re-review barrier on the existing ledger. Historical display grants no authority; review annotations do not authenticate the agent process. Epic and Story approval remain separate, and no implementation is claimed.
 
 Approved input: [PRD](prd.md). Navigation: [owner specs index](INDEX.md).
-Epic drafts awaiting approval: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md).
+Approved Epics: [historical validation](epics/epic-001.md) and [review handoffs](epics/epic-002.md). Their [four Story drafts](INDEX.md#draft-stories) await separate user approval.
 
 
 ## Technical Decisions (ADRs)

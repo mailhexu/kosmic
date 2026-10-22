@@ -3,12 +3,14 @@ project_id: "kosmic"
 subproject_id: "review-convergence-and-optional-historical-validation"
 record_kind: "epic"
 local_id: "001"
-status: "draft"
+status: "approved"
 created: 2026-10-21
-updated: 2026-10-21
+updated: 2026-10-22
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
-linked_stories: []
+linked_stories:
+  - "../stories/story-001.md"
+  - "../stories/story-002.md"
 ---
 
 # Epic 1: Optional historical validation with strict active integrity
@@ -37,12 +39,12 @@ Give Project maintainers a useful, read-only view of explicitly selected legacy-
 
 ## Stories
 
-| Story outline (title only; unreserved) | Dependency |
-|---|---|
-| Configured historical inspection and canonical reporting | None |
-| Read-only strict-audit override and compatibility cutover | Configured historical inspection and canonical reporting |
+| Story | Dependency | Status |
+|---|---|---|
+| [001: Configured historical inspection and canonical reporting](../stories/story-001.md) | None | draft |
+| [002: Read-only strict-audit override and compatibility cutover](../stories/story-002.md) | Story 001 | draft |
 
-The Story titles are planning outlines only: no Story IDs or files are reserved, and `linked_stories` remains empty until after Epic approval.
+The Epic is approved. Both Story drafts require separate user approval before implementation.
 
 ## Requirement and Decision Coverage
 
@@ -65,4 +67,4 @@ Implementation and verification require approved Stories. Each Story owns its de
 
 ## Progress
 
-- Stories: 0/2 done; Story files have not been created and await Epic approval.
+- Stories: 0/2 done; two Story files drafted, awaiting Story approval. Epic approval recorded 2026-10-22.

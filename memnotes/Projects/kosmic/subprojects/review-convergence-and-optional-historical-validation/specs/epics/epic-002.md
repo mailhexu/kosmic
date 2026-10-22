@@ -1,12 +1,15 @@
 ---
 project_id: "kosmic"
 subproject_id: "review-convergence-and-optional-historical-validation"
-status: "draft"
+status: "approved"
 record_kind: "epic"
 local_id: "002"
+updated: 2026-10-22
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
-linked_stories: []
+linked_stories:
+  - "../stories/story-003.md"
+  - "../stories/story-004.md"
 ---
 
 # Complete worker responses and convergent review handoffs
@@ -34,8 +37,12 @@ Make re-review converge on complete worker responses and a coordinator-owned, bo
 
 ## Stories
 
-1. **Compatible finding-response/refutation annotations**
-2. **Coordinator readiness and bounded re-review handoff** — depends on **Compatible finding-response/refutation annotations**.
+| Story | Dependency | Status |
+|---|---|---|
+| [003: Compatible finding-response and refutation annotations](../stories/story-003.md) | None | draft |
+| [004: Coordinator readiness and bounded re-review handoff](../stories/story-004.md) | Story 003 | draft |
+
+The Epic is approved. Both Story drafts require separate user approval before implementation.
 
 ## Requirement Coverage
 
@@ -63,4 +70,4 @@ Make re-review converge on complete worker responses and a coordinator-owned, bo
 
 ## Progress
 
-- Story outlines: 0/2 reserved; no Story files created. Awaiting Epic approval.
+- Stories: 0/2 done; two Story files drafted, awaiting Story approval. Epic approval recorded 2026-10-22.
