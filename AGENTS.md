@@ -17,6 +17,8 @@ The `kosmic` skill/workflow is available to the coding agent. If the agent suppo
 
 ### When to Use Kosmic Tasks
 
+Direct read-only questions inspect authoritative notes/specs without initialization, migration, installation or generated-state repair. Missing Project knowledge is reported, not created. This authorizes no execution/mutation and does not bypass its prerequisites. Read-only or no-discovery sessions create no note, log, index update or validation chore.
+
 #### Use Task: Initialize
 **When**: First time working on this project (no Kosmic structure exists)
 **Reference**: `references/task_init.md`
@@ -46,24 +48,18 @@ The `kosmic` skill/workflow is available to the coding agent. If the agent suppo
 
 #### Use Task: Add Note
 **When**:
-- **Any time knowledge is found** (new OR existing - document what you learn)
-- Reading code to understand a system, algorithm, or pattern
-- Writing documentation (capture core concepts as notes too)
-- Made an architectural decision
-- Found a solution worth remembering
-- Validating or re-verifying existing knowledge
-- At end of session to log progress
+- A verified durable, reusable finding or correction is not already represented.
+- Existing knowledge needs a substantive correction, not merely a reread or reconfirmation.
 
-**Key Principle**: Document knowledge whenever you FIND it, not just when you CREATE it.
+**Key Principle**: Update the owning atomic note instead of duplicating it. Understanding existing material or reaching session end alone creates no note/log obligation; dataset-only metadata stays beside its data.
 
 **Reference**: `references/task_add_note.md`
 
 #### Use Task: Review
 **When**:
-- End of work session (quick daily review)
-- End of week (weekly review)
-- Knowledge seems outdated
-- Returning to project after absence
+- Explicitly requested or scheduled knowledge maintenance.
+
+Outdated knowledge or returning after an absence may justify suggesting a targeted review; neither pre-empts the foreground request automatically.
 
 **Reference**: `references/task_review.md`
 
@@ -102,6 +98,6 @@ When planning a task, always integrate knowledge retrieval:
 ### Typical Session
 
 1. **Start**: Search for relevant knowledge
-2. **Plan**: Check notes, research if needed, add new notes, include in plan
-3. **During**: Add notes whenever you understand something
-4. **End**: Review and log progress
+2. **Plan**: Reuse relevant notes/specs and resolve factual questions before asking for decisions.
+3. **During**: Capture only durable additions/corrections not already represented.
+4. **End**: Finish-owned completion bookkeeping covers changed work. Maintenance is requested/scheduled separately; read-only or no-discovery sessions require no durable cleanup.

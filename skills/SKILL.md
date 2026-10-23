@@ -16,7 +16,7 @@ Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages author
 
 ## Entry Process (MANDATORY ORDER)
 
-Resolve bootstrap BEFORE loading any audience skill or searching.
+**Read-only inspection fast path:** to answer a question from authoritative notes/specs, resolve their configured paths and read them directly. Missing or stale identity/projections/router are observations, not permission to initialize, migrate, install or repair anything. A missing Project has no recorded knowledge. This path authorizes no execution, publication or mutation; operations that consume generated skills or routed material follow the entry process below.
 
 1. **Resolve the vault.**
    - Search project instructions for Kosmic Vault, Target, and Project ID fields.
@@ -41,7 +41,7 @@ Resolve bootstrap BEFORE loading any audience skill or searching.
    - **Knowledge/spec maintenance** → use Kosmic tasks and load the Project skill matching the knowledge audience.
    - Missing, stale, mismatched, or unresolved skill pair → stop and run validation or migration. Never continue contributor work without Project guidance.
 
-**STOP**: Do not proceed past step 2 until the vault Project, immutable Project Identifier, and Usage/Development skill pair resolve; contributor workflows must also resolve a valid Shared Skill Library.
+**STOP (outside direct read-only inspection):** do not load generated guidance or execute Project operations until the Project identity and required Skill Pair resolve; contributor workflows and routed-library operations must also resolve their required Shared Skill Library. Read-only inspection above does not satisfy or bypass these operational prerequisites.
 
 ---
 
@@ -103,6 +103,8 @@ Before constructing any proof of finish or running `work finish`, load [Work Com
 
 **Justified delegation.** Use a subagent checkpoint only for genuine independence, useful parallelism, or context isolation, and only with a concrete bounded question or slice, explicit input/output, and a named integration owner in the existing launch trace. No phase-default fanout, tiny clerical delegation, nested exploration without benefit, or authority expansion; coupled work keeps one owner. Mandatory fresh-context proposer/reviewer independence and host-mandated delegation are unchanged, and no new delegation artifact is created.
 
+**Stopping rule.** After the approved scope and required checks/review pass, finish it. Non-blocking suggestions remain advisory in the existing ledger; they do not automatically cause extra edits, tasks, review rounds or publication. Any chosen source change still requires the applicable revision-bound review.
+
 **Verification cadence.** Focused checks run during the work; the integrated suite runs once after the affected changes stabilize. Rerun only checks whose inputs or contracts changed or that previously failed — never reuse a pass over changed inputs, and never skip scientific validation to save time.
 
 ---
@@ -129,11 +131,11 @@ Pick exactly one task per unit of work; the linked reference is authoritative fo
 
 | Task | Trigger | Load | Complete when (observable) |
 |------|---------|------|----------------------------|
-| **0: Quick Task** | Small, low-risk implementation user explicitly requested or clearly below spec-hierarchy scope; concrete scope, obvious acceptance, no new architecture/data models/APIs | [task_quick_task.md](references/task_quick_task.md) · template: [template-quick-task.md](references/templates/template-quick-task.md) | Approved Quick Task record; implemented change verified; review + verification passed; completion = successful `work finish` receipt (`status: done` only with receipt); log/notes updated |
+| **0: Quick Task** | Small, low-risk implementation user explicitly requested or clearly below spec-hierarchy scope; concrete scope, obvious acceptance, no new architecture/data models/APIs | [task_quick_task.md](references/task_quick_task.md) · template: [template-quick-task.md](references/templates/template-quick-task.md) | Approved record; implemented change and required review/verification passed; successful `work finish` receipt; capture durable knowledge only when needed, with completion bookkeeping owned by finish |
 | **1: Initialize** | New Project/package, or no Kosmic structure / Project Identifier exists | [task_init.md](references/task_init.md) | Requested structure, real knowledge, Project identity, skills and instructions established; successful CLI result accepted directly; no Quick Task or review |
 | **2: Add Note** | Verified durable, reusable knowledge emerged (root cause, convention, decision, correction) not already represented | [task_add_note.md](references/task_add_note.md) | One atomic note per concept (update, never duplicate); TOC + log updated; one-off activity/session state/error text kept out of notes |
-| **3: Search** | Before ANY implementation or change, or when unsure | [task_search.md](references/task_search.md) | Relevant notes/specs read: TOC first → deep notes search → specs search |
-| **4: Review** | End of session/week, returning to project, knowledge seems outdated | [task_review.md](references/task_review.md) | Notes extracted, stale notes updated, log hygiene done |
+| **3: Search** | Before implementation/change, or a knowledge question | [task_search.md](references/task_search.md) | Question answered from relevant notes/specs; deepen only when needed, and check existing specs before creating records or implementing features |
+| **4: Review** | Requested or scheduled knowledge maintenance | [task_review.md](references/task_review.md) | Requested review complete; durable findings/corrections captured only when present; read-only/no-discovery sessions require no bookkeeping |
 | **5: Create Spec** | New feature/project planning; user requests spec creation | [task_create_spec.md](references/task_create_spec.md) | Draft hierarchy under owner-local `subprojects/{ID}/specs/`: PRD → optional Research → Architecture → Epics → Stories, bidirectionally linked, `draft` status, specs index + log updated; each gate explicitly user-approved |
 | **6: Implement Story** | Story `status: approved` | [task_implement_story.md](references/task_implement_story.md) | Tests + implementation + story/notes updates complete; convergent Task 7 code review passed; completion = successful `work finish` receipt — Task 7 approves the review but never itself marks the story `done` |
 | **7: Review Spec** | Spec review requested, "review"/"approve", or code review after implementation | [task_review_spec.md](references/task_review_spec.md) | Pinned review base; complete Standards + Spec axes; stable finding IDs; decision recorded — `draft → approved` (spec review) or code-review decision recorded, without itself marking `done`; after 3 automated rounds, remaining ledger escalated, never a fresh review |

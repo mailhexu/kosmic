@@ -92,14 +92,18 @@ Before creating ANY spec, the agent MUST:
 
 1. **Search** (Task 3) for existing specs covering the same topic
 2. **Verify prerequisites** exist (see each step below)
-3. **Confirm with user** what they want before writing
+3. **Confirm intent** — an explicit user request for this spec satisfies the
+   confirmation; do not re-ask what the user already decided. Ask only when
+   materially missing requirements block a faithful draft, or when the search
+   found an actual duplicate/conflicting spec.
 
 ```
 STOP CHECK: Have I searched for existing specs?
   → grep -i "keyword" {VAULT}/Projects/{TARGET}/subprojects/*/specs/*.md
   → grep -i "keyword" {VAULT}/Projects/{TARGET}/subprojects/*/specs/**/*.md
   → grep -i "keyword" {VAULT}/Projects/{TARGET}/specs/quick-tasks/*.md
-  If similar spec exists → inform user, ask whether to update or create new
+  If a similar spec exists → surface the actual conflict to the user and ask
+  whether to update it or create a new spec; otherwise proceed without asking.
 ```
 
 ---

@@ -39,6 +39,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Epic | [Optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) | approved 2026-10-22 | 2/2 Stories done; scoped reporting and read-only audit preserve active integrity. |
 | Feature Epic | [Complete review handoffs](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) | approved 2026-10-22 | 2/2 Stories done; compatible finding annotations and bounded coordinator handoffs. |
 | Feature Stories | [Review convergence and historical validation: four completed Stories](../subprojects/review-convergence-and-optional-historical-validation/specs/INDEX.md#completed-stories) | done | Four native receipts; independent two-axis reviews converged; 777 integrated tests passed. |
+| Feature PRD | [Command-owned indexes and completion review context](../subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) | draft | Native index publication and read-only CLI review fingerprints; awaiting PRD approval. |
 
 ## Research Memos
 
@@ -59,6 +60,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | [Publish release and install OMP](quick-tasks/publish-reviewed-kosmic-release-and-install-omp-orchestrator.md) | done | fast-forward origin/main and install the exact reviewed kosmic package into OMP | Remote release SHA observed; 64-file hash/mode match; installed CLI smoke passed |
 | [Publish release and refresh OMP orchestrator](quick-tasks/publish-reviewed-release-and-refresh-omp-orchestrator.md) | done | fast-forward origin/main to the reviewed review/history release and refresh both OMP surfaces | Remote release SHA observed; 66-file hash/mode match; managed pair verified by check-installation; installed CLI smoke passed |
 | [Lean command guidance and routine initialization](quick-tasks/explicit-command-contract-and-lean-verification-guidance.md) | done | documented invocations, trusted success, record/review-free init | Actual init/spec-create smoke; native pair generation and OMP publication |
+| [Remove redundant workflow orchestration](quick-tasks/remove-redundant-workflow-orchestration.md) | done | read-only fast path, bounded questions, conditional maintenance, finish-owned bookkeeping | Agent behavior walkthrough and independent review |
 
 ## Epics
 

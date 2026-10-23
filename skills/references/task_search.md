@@ -4,12 +4,11 @@
 
 Find existing knowledge and specs before implementing new features.
 
-## Bootstrap First, Then Load the Audience Skill
+## Direct Inspection or Operational Routing
 
-- Before routing, check the bootstrap prerequisites: the Project's immutable `project_id`, its canonical projections (`{PROJECT_ID}-usage` and `{PROJECT_ID}-development`), and, when searching through the shared library, its installed router/library state.
-- If any identity, canonical projection, or library artifact is absent or stale, stop routing and run the validation or migration procedure in `references/task_project_skills.md` directly — this is a one-time bootstrap exception and must not re-enter Task Search or any audience-skill routing (no recursion). Resume Step 1 below once the bootstrap completes.
-- Contributor search: load `{PROJECT_ID}-development`; follow its required `{PROJECT_ID}-usage` reference for shared and consumer-facing behavior.
-- Consumer-only search: load `{PROJECT_ID}-usage` directly and do not enter implementation workflow.
+- Direct read-only questions search authoritative notes/specs at their configured paths. Missing/stale generated skills, identity or router do not require bootstrap, migration, installation or repair to read these files; report relevant limitations. If the Project is absent, report no recorded knowledge rather than initializing it.
+- Before loading generated Contributor/Consumer guidance or using the shared router, resolve the required Project identity, Skill Pair and library state through the entry process in `SKILL.md`. Missing/stale prerequisites stop that operation; this read-only path authorizes no execution or mutation.
+- Contributor work loads `{PROJECT_ID}-development` and its required Usage companion; Consumer operations load `{PROJECT_ID}-usage`. Reuse already loaded guidance while its inputs are unchanged.
 
 ## Strategy
 
@@ -48,15 +47,16 @@ grep -rn "tags:.*api" "{VAULT}/Projects/{TARGET}/notes/"
 # Search for file references
 grep -rn "related_files:.*auth.ts" "{VAULT}/Projects/{TARGET}/notes/"
 
-# Cross-project search
-grep -rni "keyword" "{VAULT}/Projects/*/notes/"
+# Cross-project search, only when requested or needed for the question
+grep -rni "keyword" "{VAULT}/Projects/"*/notes/
 
 # Search notation
 grep -n "symbol.*x" "{VAULT}/Projects/{TARGET}/notes/notation.md"
 ```
 
-Only when the vault is verified to be a tracked directory inside the current
-git repository may `git grep` be used as a faster equivalent.
+Use the agent's filesystem search tool when available, including untracked
+and ignored vault files (disable ignore filtering). The shell examples are
+index-independent fallbacks; no Git-tracking probe is needed.
 
 ## 3. Search Specs
 
@@ -65,64 +65,33 @@ git repository may `git grep` be used as a faster equivalent.
 Feature specs live in per-subproject owner roots; Quick Tasks and proposals
 are shared at the Project root.
 
+Search only existing owner/shared spec roots; absent roots mean no records
+there, not a reason to create them. For example:
+
 ```bash
-# Search all specs across subprojects (PRD, architecture, epics, stories, research)
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/"
+# Feature specs, including research, inside an existing subprojects directory
+grep -rni "keyword" "{VAULT}/Projects/{TARGET}/subprojects/"
 
-# Search only stories
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/stories/"
+# Shared Quick Tasks/proposals inside an existing specs directory
+grep -rni "keyword" "{VAULT}/Projects/{TARGET}/specs/"
 
-# Find stories by status
-git grep "status: approved" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/stories/"
-git grep "status: in_progress" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/stories/"
-
-# Find epics
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/epics/"
-
-# Check whether a PRD already covers this feature
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/subprojects/*/specs/prd.md"
-
-# Search shared quick tasks
-git grep -i "keyword" -- "{VAULT}/Projects/{TARGET}/specs/quick-tasks/"
+# Narrow an existing owner root by record status
+grep -rnE "status:.*(approved|in_progress)" "{SPEC_ROOT}/"
 ```
 
 ## 4. Search by Metadata
 
 ```bash
-# Low confidence notes
-git grep "confidence: 0\.[0-5]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
-
-# Draft notes
-git grep "status: draft" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
-
-# Stale or Usage-stale notes
-git grep -E "stale_after:|usage_stale: true" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
-
-# Recently created
-git grep "created: 2025-02" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
+# Low confidence, draft, or stale notes; untracked/ignored notes are included
+grep -rnE "confidence: 0\\.[0-5]|status: draft|stale_after:|usage_stale: true" \
+  "{VAULT}/Projects/{TARGET}/notes/"
 ```
 
 ## Workflow
 
-```
-1. grep -i "keywords" index.md
-   ↓ Found?
-   → Read specific note(s)
-   ↓ Not found?
-2. git grep -i "keywords" notes/
-   ↓ Found?
-   → Read matching notes
-   ↓ Not found?
-3. git grep -i "keywords" subprojects/*/specs/ specs/quick-tasks/
-   ↓ Found?
-   → Read matching specs (avoid duplicating existing work)
-   ↓ Not found?
-4. Knowledge doesn't exist yet - create new note or spec
-```
+1. Search `notes/index.md` and read relevant notes.
+2. If the answer is incomplete, search the notes filesystem by concept, filename or metadata.
+3. Check relevant specs before creating a record or implementing a feature, even if a note answered the knowledge question.
+4. Stop when the requested question and required scope checks are answered. Reuse these results within the unchanged episode; widen only for an unresolved question.
 
-## Why git grep?
-
-- Faster on large repositories
-- Respects `.gitignore`
-- Better formatted output
-- Works with relative paths
+A search miss authorizes no write. Create a note/spec only under its own task and authority; read-only sessions may finish without notes, logs or index updates.

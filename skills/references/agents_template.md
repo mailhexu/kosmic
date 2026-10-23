@@ -71,33 +71,23 @@ The `kosmic` skill is the workflow orchestrator. Contributor work loads `{DEVELO
 
 **Workflow**: Search → Quick Task record → Approval → Implement/verify → Review → Log/notes
 
+A successful `work finish` receipt is sufficient — no post-success re-validation; read-only questions and checks need no record or durable cleanup.
+
 **Reference**: `references/task_quick_task.md`
 
 #### Use Task: Add Note
 **When**:
-- **Any time knowledge is found** (new OR existing - document what you learn)
-- Reading code to understand a system, algorithm, or pattern
-- Writing documentation (capture core concepts as notes too)
-- Made an architectural decision
-- Found a solution worth remembering
-- Validating or re-verifying existing knowledge
-- At end of session to log progress
+- A verified durable, reusable finding or correction is not already represented.
+- Existing knowledge needs a substantive correction, not merely a reread or reconfirmation.
 
-**Key Principle**: Document knowledge whenever you FIND it, not just when you CREATE it.
-
-**Quick Check**:
-- Am I writing documentation? → Also create atomic notes
-- Did I read code and understand it? → Capture the understanding
-- Did I make a decision? → Document it
-
+**Key Principle**: Update the owning atomic note instead of duplicating it. Understanding existing material or reaching session end alone creates no note/log obligation; dataset-only metadata stays beside its data.
 **Reference**: `references/task_add_note.md`
 
 #### Use Task: Review
 **When**:
-- End of work session (quick daily review)
-- End of week (weekly review)
-- Knowledge seems outdated
-- Returning to project after absence
+- Explicitly requested or scheduled knowledge maintenance.
+
+Outdated knowledge or returning after an absence may justify suggesting a targeted review; neither pre-empts the foreground request automatically. Read-only or no-discovery sessions create no note, log, index update or validation chore.
 
 **Reference**: `references/task_review.md`
 
@@ -168,6 +158,6 @@ When planning a task, always integrate knowledge retrieval:
    - Writing docs → also create atomic notes
    - Implementing → document decisions
    - Debugging → document root causes
-4. **End**: Review and log progress
+4. **End**: If durable changes occurred, review, log, and complete; a read-only session has no logging or bookkeeping
 
 **Status file**: `STATUS.md` at the working-directory root is generated from vault spec state (`generate-status --project {VAULT}/Projects/{TARGET}`). Initialization records only the status binding, so the file may not exist until the first normal spec/work event. Read it when present; never edit it by hand.

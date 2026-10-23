@@ -103,7 +103,7 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 | Approved story ready for code | Task 6: Implement Story | Tests, implementation, story updates, notes | Code review required before `done` |
 | Review or approval requested | Task 7: Review Spec | Spec decision, research completeness check, or code review | Required for spec approval and story completion |
 | Durable knowledge learned | Task 2: Add Note | Atomic note, TOC update, log entry | Required after learning durable knowledge |
-| End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene | Periodic maintenance |
+| End/session maintenance | Task 4: Review | Extracted notes, stale note updates, log hygiene (only with actual durable changes) | Scheduled/requested maintenance |
 | Reusable symbolic result or equation defect | Task M: Math Note | Executable derivation, paired note, registry row, source links | Derivation-first; check, review, and completion gates |
 | Implemented work yields a proven executable procedure or reusable deterministic mechanics | Task P: Propose Skill Change | One role-declared skill result plus one routine action per canonical routine ID | Shared targets require fresh context, human authority, behavioral evidence, and review; reuse precedes extension and creation |
 
@@ -153,8 +153,10 @@ Find existing knowledge before implementing.
 ### Task 4: Review
 Periodically review and validate notes.
 
+**When**: explicitly scheduled (daily/weekly/monthly cadence) or requested — not a session-start probe. Read-only or no-discovery sessions are record-free: no note, log entry, index row, or validation chore.
+
 **Schedule**:
-- **Daily**: 5-minute scan at end of session
+- **Daily**: 5-minute scan at end of a session with durable changes
 - **Weekly**: Review week's notes
 - **Monthly**: Check stale notes, notation consistency
 
@@ -253,13 +255,13 @@ Legacy Project Skill Pairs remain migration inputs in their Project vaults, not 
 ### Knowledge Work
 1. **Start**: Search (Task 3) for relevant knowledge
 2. **Work**: Add Note (Task 2) whenever you understand something
-3. **End**: Review (Task 4) session notes, update log
+3. **End**: With durable changes, review (Task 4) session notes and update log; read-only sessions create none
 
 ### Simple Implementation Work (Quick Task)
 1. **Scope**: Create Quick Task (Task 0) with acceptance criteria
 2. **Gate**: Get approval unless the user already gave explicit implementation approval
 3. **Implement**: Make the minimal change, test, and review
-4. **Capture**: Update log and notes for durable knowledge
+4. **Complete**: `work finish` publishes receipt, status, index, and log — a successful receipt ends the task, with no post-success re-validation
 
 ### Feature Development (Spec-Driven)
 1. **Plan**: Create Spec (Task 5) - PRD → optional Research → Architecture → Epic → Story
@@ -361,9 +363,9 @@ In your project's `AGENTS.md`:
 
 ### Daily Workflow
 - **Search before acting**: Check existing knowledge
-- **Log progress**: Update log at end of session
+- **Log progress only with durable changes**: A read-only session adds no log, note, or index row
 - **Extract knowledge**: Move insights from log to notes
-- **Review regularly**: Keep knowledge fresh and accurate
+- **Review on schedule**: Run maintenance when scheduled or requested, not as a session-start probe
 
 
 ## Files

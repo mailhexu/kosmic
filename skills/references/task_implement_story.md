@@ -35,14 +35,15 @@ If the story implements mathematical functionality, load Task M before Phase 1. 
 ```
 ┌─────────────────────────────────────────────────────────┐
 │  PHASE 1: RESEARCH (No unjustified assumptions!)        │
-│  ├── Search memnotes for existing knowledge             │
-│  ├── Explore codebase for patterns                      │
-│  ├── Verify every assumption                            │
-│  └── Ask human if uncertain                             │
+│  ├── Search approved specs, code, and notes for facts   │
+│  ├── Check versioned API docs for external interfaces   │
+│  ├── Verify factual assumptions against sources         │
+│  └── Batch unresolved real choices/risks for the human  │
 └─────────────────────────────────────────────────────────┘
                           │
-                    STOP: All assumptions verified?
-                    Any ❓ left? → Ask user before proceeding.
+                    STOP: Facts verified from sources?
+                    Only genuinely open choices or risks → one batched
+                    question round before proceeding.
                           │
                           ▼
 ┌─────────────────────────────────────────────────────────┐
@@ -85,6 +86,12 @@ If the story implements mathematical functionality, load Task M before Phase 1. 
 ## Step 1: Research Phase
 
 **Goal**: Gather all context needed. NO UNJUSTIFIED ASSUMPTIONS.
+
+Do factual research first: resolve questions from approved specs, existing
+code, project notes, and versioned API docs for external interfaces before
+considering the human. Only unresolved real choices or risks (trade-offs,
+scope decisions, ambiguous requirements) go to the user — never facts a
+source can answer — and they are batched into a single question round.
 
 This is story-level implementation research. It is mandatory for approved stories and is separate from optional pre-architecture Research in `references/task_research.md`.
 
@@ -133,31 +140,37 @@ For each assumption, document in the story's Assumptions table:
 | Config is loaded from env | ✅ | config.py:L12 |
 
 **Rules**:
-- ✅ = Verified with code/notes reference
-- ❓ = Needs human input
+- ✅ = Verified with code/notes/docs reference
+- ❓ = Genuinely open choice or risk (needs human decision)
 - ❌ = Assumption is wrong, adjust plan
+- Facts answerable from approved specs, code, notes, or versioned API docs
+  are never ❓ — resolve them first from the source.
 
-### 1.4 STOP: Ask Human (If Needed)
-
-```
-STOP CHECK: Are there any ❓ in the assumptions table?
-  → If YES: Present questions to user. Do NOT proceed to Phase 2 until resolved.
-  → If NO: Proceed to Phase 2.
-```
-
-If any assumption is ❓ or cannot be verified:
+### 1.4 STOP: Ask Human (Only for Real Choices/Risks, Batched)
 
 ```
-"I need clarification before implementing:
-
-1. {Question 1}?
-   - Context: {why this matters}
-   
-2. {Question 2}?
-   - Context: {why this matters}
-
-Please clarify so I can proceed without assumptions."
+STOP CHECK: Are there unresolved real choices or risks?
+  → If YES: Present ALL of them in ONE batched question round.
+    Do NOT proceed to Phase 2 until resolved.
+  → If NO (only facts, all source-resolved): Proceed to Phase 2.
 ```
+
+If real choices or risks remain after source research, ask once, batched:
+
+```
+"I need decisions before implementing:
+
+1. {Choice or risk 1}?
+   - Context: {why this matters and what the sources leave open}
+
+2. {Choice or risk 2}?
+   - Context: {why this matters and what the sources leave open}
+
+Please decide so I can proceed without unjustified assumptions."
+```
+
+Do not ask about facts already verifiable from specs, code, notes, or
+versioned API docs, and do not drip-feed questions one at a time.
 
 ### 1.5 Document Findings
 
@@ -188,10 +201,10 @@ Update story file's Technical Notes section:
 ```markdown
 ### Phase 1: Research
 
-- [x] Search memnotes for relevant knowledge
+- [x] Search approved specs, code, notes, and versioned API docs
 - [x] Explore codebase for patterns/conventions
-- [x] Identify and verify all assumptions
-- [x] Ask human for clarification if needed
+- [x] Identify and verify all factual assumptions
+- [x] Batch unresolved real choices/risks into one human round (if any)
 - [x] Document findings in Technical Notes
 ```
 
@@ -284,7 +297,11 @@ Use patterns discovered in research phase:
 
 Apply SKILL.md **Managed Run Before Scratch** while implementing. Begin the run before creating disposable output and use only its returned path; terminally succeed or fail it before final status. Keep pending tests under `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` with `MANIFEST.md`, commit those packages before finishing, and preserve durable evidence/spec/log rules.
 
-**Spec-event step**: whenever a spec or work-item status changes, run `generate-status --project ...` so the working-directory STATUS.md stays drift-free (validation and the completion gate fail on `STATUS_STALE`).
+**STATUS refresh**: do not refresh STATUS per status change. Run
+`generate-status --project PROJECT_ROOT` once as a batch, immediately before
+consuming the completion gate, so the gate reads drift-free inputs
+(validation and the gate fail on `STATUS_STALE`). Never refresh after a
+successful `work finish` — finish itself publishes the final STATUS.
 
 **Commit cadence**: retain verified record-owned source, vault outputs and the
 successful receipt in the isolated writer before final reporting. Load
@@ -435,7 +452,7 @@ Execute **all of the following in one pass** — do not skip any item:
 
 ### 5.1 Publish receipt-backed completion
 
-Run `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM` (repeat for every declared scope). Do not set `done` directly. Keep the record in an active phase (`approved`/`in_progress`) when finishing: finish refuses a record set to `review` (`WORK_PHASE_DENIED`), holds the review decision in `completion_review`, and alone publishes `done` — never strand a record in `review`. One ordinary invocation runs embedded proof, primary scope, pinned two-axis review, the shared domain precheck, and the pre-write freshness recheck before publishing. Domain failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`. Keep STATUS current with `generate-status` after record edits; stale inputs are not auto-repaired by the precheck. Standalone `check-completion` is an optional fail-fast diagnostic, never required second choreography.
+Run `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work finish --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD --scope CLAIM --detail "{COMPLETION SUMMARY}"` (repeat for every declared scope). The `--detail` text carries the completion summary; finish owns and writes the completion log from it. Do not append a manual daily-log session block after finish — that would duplicate finish-owned entries. Do not set `done` directly. Keep the record in an active phase (`approved`/`in_progress`) when finishing: finish refuses a record set to `review` (`WORK_PHASE_DENIED`), holds the review decision in `completion_review`, and alone publishes `done` — never strand a record in `review`. One ordinary invocation runs embedded proof, primary scope, pinned two-axis review, the shared domain precheck, and the pre-write freshness recheck before publishing. Domain failures retain their diagnostic through `COMPLETION_PRECHECK_FAILED`. Refresh STATUS with `generate-status` once per coherent batch, immediately BEFORE consuming the completion gate; never refresh after a successful finish, which publishes the final STATUS itself. Stale inputs are not auto-repaired by the precheck. Standalone `check-completion` is an optional fail-fast diagnostic, never a required second choreography.
 
 Finish publishes record status/indexes/log, then the authoritative receipt, then derived STATUS. Publication is stepwise, not cross-file atomic. A successful finish receipt is sufficient — no second receipt validation or STATUS inspection follows it. Only when finish was interrupted or refused, rerun finish: a valid terminal receipt and completion log remain unchanged while only derived reports regenerate. Unreceipted `done` stays pending.
 
@@ -454,13 +471,15 @@ Finish publishes record status/indexes/log, then the authoritative receipt, then
 
 The completion transaction updates only the current Story's owner-local Epic row and associated index/STATUS/log outputs; the successful finish receipt covers these projections — no separate post-success audit. It does not approve or close the entire Epic, rewrite another feature's specs, or authorize unrelated implementation.
 
-### 5.4 Update Daily Log
+### 5.4 Completion Log and Knowledge Entries (finish-owned)
 
-```markdown
-## Session {N}
-- Completed: [Story {N}](../subprojects/{SUBPROJECT_ID}/specs/stories/story-{N}.md) - {brief description}
-- Added notes: [{note}](../notes/{note}.md)   ← only if knowledge notes were created
-```
+No manual daily-log session block after finish: finish publishes the
+completion log, and `--detail` carries the summary. Separately — and only
+for genuinely NEW research or knowledge produced by this story — create or
+update atomic notes (Task 2) per 4.3; a story with no reusable finding adds
+no note and no log entry. Never restate completion bookkeeping (status,
+receipt, epic/index projections) as additional log entries; finish already
+published those.
 
 ### 5.5 Hand off with individual full-absolute-path links
 
@@ -477,7 +496,6 @@ In the human-facing completion report, every receipted finished Story carries it
 - [ ] Progress Log has a "Done" row in the story file
 - [ ] Epic stories table shows `done` for this story (published by finish; no separate audit)
 - [ ] Epic progress count updated (published by finish)
-- [ ] Daily log entry added
 
 ---
 
@@ -543,4 +561,3 @@ In the human-facing completion report, every receipted finished Story carries it
 - [ ] Completion gate passed
 - [ ] Canonical Skill Pair regenerated after eligible knowledge changes
 - [ ] Epic progress updated
-- [ ] Log updated

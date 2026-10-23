@@ -2,7 +2,13 @@
 
 Periodically review log entries and update atomic notes.
 
-Read-only inspection is record-free and performs no durable cleanup. Before editing notes, status decisions or extracted-marker logs, select compatible review/maintenance authority and exact declared outputs. Use the triggering record when its scope covers maintenance, otherwise obtain an approved narrow Quick Task or reviewed expansion; do not claim other agents' pre-existing work. Follow SKILL.md record-first and receipt completion rules.
+Scheduled/requested maintenance is separate from foreground work: it runs
+only when explicitly scheduled or requested — a session does not open with a
+maintenance probe, and ordinary foreground work never triggers maintenance
+side quests. Read-only inspection is record-free: no durable cleanup, no
+log-date check, no note, log, index, or validation chore. Before editing
+notes, status decisions or extracted-marker logs, select compatible
+review/maintenance authority and exact declared outputs. Use the triggering record when its scope covers maintenance, otherwise obtain an approved narrow Quick Task or reviewed expansion; do not claim other agents' pre-existing work. Follow SKILL.md record-first and receipt completion rules.
 
 Batch a maintenance session's outcomes in one pass: extract and update notes, append log entries, and complete any needed Skill Pair regeneration together, with one appropriate canonical refresh for the batch. An actual content change to an already-published note source still counts and refreshes. Extraction stays conditional — a session with nothing durable to extract legitimately produces no note — and the batch never forces a proposal or publication.
 
@@ -125,30 +131,24 @@ Before accepting a `create` or `update`, independently confirm: exact target pin
 
 ## 5. Review Schedule
 
-- **Daily**: Quick scan at end of session
-- **Weekly**: Review all notes from past week
-- **Monthly**: Review stale notes, check notation consistency
-
-### Session-Start Review Check
-
-At the **start** of each session, check when the last review happened:
-
-```bash
-# Check the most recent log entry date
-ls -t {VAULT}/Projects/{TARGET}/log/ | head -1
-
-# If more than 7 days since last review, do a weekly review first
-```
+- **Daily**: Quick scan at end of a session that produced durable changes
+- **Weekly**: Review all notes from past week (only when scheduled/requested)
+- **Monthly**: Review stale notes, check notation consistency (only when scheduled/requested)
 
 ## 6. End-of-Session Checklist
 
-Before finishing:
-- [ ] Log entry exists for today
-- [ ] Discoveries extracted to atomic notes
-- [ ] Knowledge index updated
-- [ ] Log has session summary
-- [ ] Authoritative `notes/` OKF bundle validation passed
-- [ ] Project Skill Pair review passed
+Apply only to sessions with actual durable changes. A read-only session with
+no discovery performs none of these steps — it creates no note, log entry,
+index row, or validation chore:
+
+- [ ] Discoveries extracted to atomic notes (if any)
+- [ ] Knowledge index updated (if notes changed)
+- [ ] Log entry exists only if durable changes occurred
+- [ ] Authoritative `notes/` OKF bundle validation passed (if notes changed)
+- [ ] Project Skill Pair review passed (if eligible notes changed)
+
+Reuse the owning command's own validation for each changed artifact — never
+a duplicate second audit after a successful result.
 
 ## Commands Summary
 
@@ -171,8 +171,9 @@ git grep "confidence: 0\.[0-5]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 
 ## Vault Commit Cadence
 
-Before closing a session with vault changes, commit the verified record-owned
-outputs in the isolated writer so provenance remains available. Load
-[Receipt completion](work_completion.md) for completion and integration.
-Preserve unrelated destination work; use the captured baseline to reconcile
-each owned delta before integrating it.
+Before closing a session that produced durable vault changes, commit the
+verified record-owned outputs in the isolated writer so provenance remains
+available. Load [Receipt completion](work_completion.md) for completion and
+integration. A session with no durable changes has nothing to commit and no
+completion bookkeeping to run. Preserve unrelated destination work; use the
+captured baseline to reconcile each owned delta before integrating it.

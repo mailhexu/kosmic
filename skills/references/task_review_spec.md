@@ -182,6 +182,8 @@ Resolve each prior ledger row as `resolved`, `still-open`, or `regressed`; never
 
 Use the required tests and focused smoke observations for the changed behavior; run diagnostics only for an actual error or unresolved finding. Checked `work finish` runs the Consumer Interface completion gate internally, so review adds no standalone completion precheck or post-success audit. Approve when all Blocking findings are resolved and verification passes, even if Non-blocking suggestions remain.
 
+An approved pair with zero blockers **stops current work**: it closes the review cycle, and the record proceeds only through normal receipt-backed `work finish`. Non-blocking suggestions remain visible but never auto-expand scope, create a new task, trigger another review round, or republish anything. If a source actually changes afterward, the existing rules stay in force: revision binding against the pinned base and re-review of only the affected checks per §2.2.
+
 **Approve**:
 ```markdown
 ## Review Result
@@ -328,6 +330,15 @@ completion are separate; only checked finish publishes the successful receipt.
 - [ ] Story status updated
 - [ ] Log updated
 
+### Bookkeeping ownership
+
+Native `work finish` owns the completion log and status publication: review
+never writes a separate completion log or hand-edits status past the recorded
+decision in `completion_review`. Batch STATUS and derived-report refresh once
+per coherent batch **before** consuming the completion gate; do not refresh
+again after a successful finish. Read-only review sessions (no source change)
+perform no durable bookkeeping.
+
 ## STATUS.md
 
-After changing any spec or work-item status, run `generate-status --project ...`. Validation fails `STATUS_STALE` while the generated file drifts.
+Use the batch-before-gate rule in **Bookkeeping ownership** above. `generate-status` publishes authored record changes; successful `work finish` already publishes final STATUS. Validation still refuses stale STATUS rather than silently repairing it.

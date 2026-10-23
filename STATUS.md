@@ -39,6 +39,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Register the deployment writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-deployment-writer-worktree.md) | approved | 2026-10-22 |
 | [Register the guidance contract writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-guidance-contract-writer-worktree.md) | approved | 2026-10-23 |
 | [Remove missing writer registration](memnotes/Projects/kosmic/specs/quick-tasks/remove-missing-writer-registration.md) | done | ? |
+| [Remove redundant workflow orchestration](memnotes/Projects/kosmic/specs/quick-tasks/remove-redundant-workflow-orchestration.md) | done | 2026-10-23 |
 | [Repair Kosmic skill predictability](memnotes/Projects/kosmic/specs/quick-tasks/repair-kosmic-skill-predictability.md) | done | ? |
 | [Repair malformed completion review gate precedence](memnotes/Projects/kosmic/specs/quick-tasks/repair-malformed-completion-review-gate-precedence.md) | done | 2026-10-20 |
 | [Repair shared-library routine reciprocity without reclassifying knowledge](memnotes/Projects/kosmic/specs/quick-tasks/repair-shared-library-routine-reciprocity-without-reclassifying.md) | done | 2026-10-12 |
@@ -58,6 +59,14 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Proposal: create shared routine kosmic/day-delta-harvest](memnotes/Projects/kosmic/specs/skill-proposals/2026-09-24-day-delta-harvest-routine.md) | draft | 2026-09-24 |
 | [Routine decision: retain migration as its supported command](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-11-migration-routine-decision.md) | draft | 2026-10-11 |
 | [Repair existing ABINIT exchange diagnostic procedure](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-12-debug-abinit-exchange.md) | done (receipt pending) | 2026-10-13 |
+
+### Subproject: command-owned-indexes-and-completion-review-context
+
+#### PRD
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) | draft | 2026-10-23 |
 
 ### Subproject: deterministic-flat-spec-migration
 
@@ -496,7 +505,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 130 open item(s)
+- 131 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -528,6 +537,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Proposal: create shared routine kosmic/day-delta-harvest](memnotes/Projects/kosmic/specs/skill-proposals/2026-09-24-day-delta-harvest-routine.md) - draft
 - [Routine decision: retain migration as its supported command](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-11-migration-routine-decision.md) - draft
 - [Repair existing ABINIT exchange diagnostic procedure](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-12-debug-abinit-exchange.md) - done (receipt pending)
+- [command-owned-indexes-and-completion-review-context/Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) - draft
 - [deterministic-flat-spec-migration/Epic 001: Script-driven flat-spec migration](memnotes/Projects/kosmic/subprojects/deterministic-flat-spec-migration/specs/epics/epic-001.md) - approved
 - [dream-reflection/Epic 26: Dream Reflection Initial Release](memnotes/Projects/kosmic/subprojects/dream-reflection/specs/epics/epic-001-dream-reflection-initial-release.md) - done (receipt pending)
 - [dream-reflection/Story 057: Dream Day-Delta Harvest](memnotes/Projects/kosmic/subprojects/dream-reflection/specs/stories/story-001-dream-day-delta-harvest.md) - done (receipt pending)

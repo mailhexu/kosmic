@@ -42,9 +42,7 @@ completion_review: {}
 
 - [ ] {Concrete expected result}
 - [ ] Tests or verification pass
-- [ ] Log updated
-- [ ] Notes updated if durable knowledge was learned
-- [ ] Specs index updated
+- [ ] Notes updated if durable knowledge was learned (none otherwise)
 
 ## Routine Decision
 
