@@ -1226,14 +1226,14 @@ def record_first_contract(project: Project) -> list[str]:
         "## Work record authority", "",
         f"- Project: `{project.project_id}`; canonical records: `{project.root / 'specs'}` and `{project.root / 'subprojects'}`.",
         f"- Shared knowledge stays at `{project.notes_dir}`, `{project.mathdocs_dir}`, and `{project.canonical_root}`; never copy it into a subproject.",
-        "- Before substantive source, docs, vault, config or experiment changes, select/create a governing record through Kosmic. Feature implementation requires an approved owner-local Story/Epic/Architecture/PRD hierarchy; standalone low-risk work requires an approved Quick Task.",
-        "- Draft planning/initialization creates only its explicitly bounded record and planning outputs. PRD success is not implementation approval. Migration and installation still require their own approved plans.",
-        f"- Register the exact working root; a fixed subproject constrains that directory, never selects an active task. Inspect the current record with `work show --project {project.root} --work-record RECORD_REF`. No shared mutable selection pointer is permitted.",
-        "- Start writable work in a clean dedicated worktree. Pass the approved governing record explicitly as --work-record to each checked mutating command. One record, one worktree, one writer; reconcile concurrent changes through Git.",
+        "- Before substantive source, docs, vault, config or experiment changes, select/create a governing record through Kosmic. Feature implementation requires an approved owner-local Story/Epic/Architecture/PRD hierarchy; standalone low-risk work requires an approved Quick Task. Routine Task 1 initialization is the bounded exception below.",
+        "- Routine Task 1 initialization establishes only its documented setup outputs, without a Quick Task, implementation review, or work start/finish. Changing initialization behavior is development work. Draft planning creates only its bounded hierarchy and planning outputs; PRD success is not implementation approval. Migration, registration and installation retain their explicit approvals.",
+        f"- For record-governed work, register the exact working root; a fixed subproject constrains that directory, never selects an active task. Use `work show --project {project.root} --work-record RECORD_REF` only when record resolution is needed, not to confirm a successful command. No shared mutable selection pointer is permitted.",
+        "- Start record-governed writable work in a clean dedicated worktree. Pass the approved governing record explicitly as --work-record to each checked mutating command. One record, one worktree, one writer; reconcile concurrent changes through Git.",
         "- Every changed worktree path must fit the declared --scope at work finish. Dirty worktrees are refused at start; out-of-scope paths block completion. Raw editors/shell remain agent compliance, not an OS sandbox.",
         "- Questions, searches and unchanged checks are record-free and read-only: no implicit cleanup, generated publication or installation. Read-only maintenance reports instead of deleting.",
-        "- After actual acceptance/smoke evidence and pinned two-axis review, use `work finish --work-record RECORD_REF --worktree PATH --scope worktree:PATH`. It updates status/index/log, publishes the successful receipt, then derives STATUS from that receipt — stepwise, not cross-file atomic. Unreceipted done is pending; rerun finish after interruption, and a retry with a valid existing receipt keeps the receipt and regenerates only the derived reports.",
-        "- Completion reports name the qualified record and canonical path plus actual acceptance/smoke/review results; a command exit code or checkbox alone is not acceptance evidence.", "",
+        "- For implementation completion, record actual acceptance/smoke evidence and pinned two-axis review, then use `work finish --work-record RECORD_REF --worktree PATH --scope worktree:PATH`. It updates status/index/log, publishes the successful receipt, then derives STATUS — stepwise, not cross-file atomic. Unreceipted done is pending; rerun finish after interruption.",
+        "- Trust successful commands for their documented outputs: use returned identities, paths and receipts without administrative read-back or validation. On error follow the diagnostic and documented recovery; failure does not imply rollback. Completion reports still name the qualified record, canonical path and actual acceptance/smoke/review results for changed implementation.", "",
     ]
 
 
@@ -1817,9 +1817,9 @@ class MutationOperation:
 
 MUTATION_INVENTORY: tuple[MutationOperation, ...] = (
     MutationOperation(
-        "init", "bootstrap", "bootstrap Quick Task contract (bounded first write)",
+        "init", "bootstrap", "routine bounded initialization (no work record or review)",
         ("project_id/ProjectEntry", "notes bundle", "canonical Skill Pair"),
-        True, "bootstrap-record"),
+        True, "routine-bootstrap"),
     MutationOperation(
         "migrate", "bootstrap", "approved migration task (bounded first write)",
         ("project identity", "migrated notes bundle", "canonical Skill Pair"),

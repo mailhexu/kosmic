@@ -1,6 +1,7 @@
 {
-  "directories": [],
+  "directories": [
+  ],
   "project_id": "kosmic",
   "schema": "kosmic.workdirs/1",
-  "sequence": 0
+  "sequence": 1
 }

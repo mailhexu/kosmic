@@ -31,7 +31,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 
 | Quick Task | Status | Scope | Verification |
 |------------|--------|-------|--------------|
-| [{title}](quick-tasks/{YYYY-MM-DD}-{slug}.md) | draft | {scope} | {verification} |
+| [{title}](quick-tasks/{returned-local-id}.md) | draft | {scope} | {verification} |
 
 ## Epics
 

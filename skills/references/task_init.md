@@ -2,9 +2,9 @@
 
 Run this once per project or package to set up Kosmic.
 
-## Bounded record-first bootstrap
+## Routine bootstrap
 
-Resolve the Project boundary from the request/instructions, then establish its bounded draft initialization Quick Task before other durable outputs. Initialization may create only the declared identity/knowledge/spec/skill/instruction structure; it grants no unrelated source/config/experiment authority. Obtain explicit registration/install/migration target approval separately. Raw initial-record edits are agent compliance, not an OS sandbox. Read-only discovery does not create records or mutate cleanup state.
+Initialization is routine setup, not implementation work: follow this procedure directly, with no Quick Task, spec hierarchy, reviewer subagent, Task 7 review, or `work start`/`work finish`. Resolve the Project boundary from the request and existing instructions. Authority covers only the identity, knowledge, generated skills, indexes and instruction integration described here; developing initialization behavior or making unrelated changes follows the normal governed workflow. Migration, registration and installation retain their explicit target approvals.
 
 ## Find Vault Path
 
@@ -16,7 +16,7 @@ Determine the vault location in this order:
 
 Ask the user only when multiple plausible vaults or targets exist.
 
-**Bind**: Ask for the working directory and record `status_root: <dir>` in ProjectEntry.md (init `--status-root`); run `generate-status --project ...` to create the first STATUS.md.
+**Bind**: Resolve the working directory from the request/current project; ask only if ambiguous. Pass it as `--status-root` to `init`, which records the binding. Initial STATUS publication occurs with the first normal spec/work event under that record's authority; do not invent an initialization Quick Task merely to run `generate-status`.
 
 **Store**: Record in AGENTS.md:
 ```markdown
@@ -35,10 +35,10 @@ Ask the user only when multiple plausible vaults or targets exist.
 
 ## Verify Required Procedure Skills
 
-Before creating or migrating a Project, verify the active Install Adapter:
+Check the active adapter once if it has not already been verified in the unchanged environment:
 
 ```bash
-python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex}
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex|omp}
 ```
 
 Missing skills or an unsupported adapter stop initialization. Follow the required-procedure-skills section of the installed `README.md`; do not substitute persistent instructions or a native fallback.
@@ -179,10 +179,11 @@ Resolve the Projection CLI from the installed Kosmic skill directory, then run:
 ```bash
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py init \
   --project "{VAULT}/Projects/{TARGET}" \
-  --project-id "{PROJECT_ID}"
+  --project-id "{PROJECT_ID}" \
+  --status-root "{WORKING_DIRECTORY}"
 ```
 
-Initialization succeeds only after it validates and atomically publishes exactly `{PROJECT_ID}-usage` and `{PROJECT_ID}-development`. A failure leaves no partial pair.
+Exit 0 reports the initialized Project and published Skill Pair; accept that result directly. No post-init `validate`, read-back, or review is required. On error, follow the diagnostic; do not claim initialization completed.
 
 ## Update Project Instructions
 
@@ -200,6 +201,10 @@ Add the Kosmic integration section to the Project's persistent instructions.
    - `{PROJECT_ID}` → immutable Project Identifier
    - `{USAGE_SKILL}` → `{PROJECT_ID}-usage`
    - `{DEVELOPMENT_SKILL}` → `{PROJECT_ID}-development`
-5. Install the atomic pair through the selected adapter, or install persistent pointers for an agent without named skills.
+5. Record the canonical Skill Pair paths in the instructions. Adapter installation is a separately requested operation with its own approved targets and record requirements, not an initialization prerequisite; do not create an initialization Quick Task to invoke it.
 
 If no Project instruction file exists, create it with the Kosmic integration section.
+
+## Completion
+
+After successful `init` and instruction integration, report the Project path and command result. Initialization ends here, without a work record or review. Separately requested installation and subsequent coding tasks follow their own workflows and do not reopen initialization.

@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-23T00:33:03Z",
+  "detail": "Documented invocations and trusted success; routine initialization is record/review-free; live init/spec-create smoke passed and independent review approved.",
+  "identity": "kosmic/quick-task/explicit-command-contract-and-lean-verification-guidance",
+  "proof": {
+    "specs/quick-tasks/explicit-command-contract-and-lean-verification-guidance.md": "012b1635b3e7a5238f32c488f5d2d2b5162162a5ffb43aaaeec1a54ebfa515c8"
+  },
+  "record_path": "specs/quick-tasks/explicit-command-contract-and-lean-verification-guidance.md",
+  "record_sha256": "012b1635b3e7a5238f32c488f5d2d2b5162162a5ffb43aaaeec1a54ebfa515c8",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

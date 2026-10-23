@@ -180,7 +180,7 @@ Resolve each prior ledger row as `resolved`, `still-open`, or `regressed`; never
 
 ### 2.7 Preparation and Decision
 
-Run required tests, the Consumer Interface completion gate, diagnostics, and focused smoke checks. Approve when all Blocking findings are resolved and verification passes, even if Non-blocking suggestions remain.
+Use the required tests and focused smoke observations for the changed behavior; run diagnostics only for an actual error or unresolved finding. Checked `work finish` runs the Consumer Interface completion gate internally, so review adds no standalone completion precheck or post-success audit. Approve when all Blocking findings are resolved and verification passes, even if Non-blocking suggestions remain.
 
 **Approve**:
 ```markdown

@@ -123,7 +123,7 @@ Workflow (each stage is a separate command; never combine planning and applicati
 1. **Plan.** `migrate-subprojects-plan --project "{PROJECT}" [--assignments file.json] [--output plan.json]` prints the proposal JSON and optionally saves it exclusively to `plan.json` (exclusive creation, no symlink following). `--output` produces bounded planning output, not unchecked migration authority: a saved plan file authorizes nothing by itself.
 2. **Record and approve.** Create one shared Quick Task governing the migration with `spec-create --project "{PROJECT}" --kind quick-task --title "Subproject flat-spec migration"`, review its plan attachment and declared scope (plan outputs, deletions, and STATUS target), then move it through the standard Quick Task approval gate of `task_quick_task.md`. Approval must record the plan's exact `digest` value. Application re-derives the plan fingerprint under the governing record; the `--approve-digest` value must come from this approved record, never from an unapproved plan print or file.
 3. **Apply.** `migrate-subprojects-apply --project "{PROJECT}" --plan plan.json --approve-digest "{DIGEST}" --work-record "{QUALIFIED_RECORD}"`. The executor recomputes the identical plan deterministically and refuses to run when the recomputed plan or its digest differs from the approved values — including when the vault changed since planning.
-4. **Verify.** Re-run `migrate-subprojects-plan` (read-only; no `--output` needed) and confirm an empty or expected residual proposal, then run the standard validation commands (`validate`, `check-completion`).
+4. **Use the successful apply result.** Apply validates its staged catalog and planned outputs; do not re-plan, run `validate`, or run standalone `check-completion` merely to confirm success. The governing task still records actual observations and uses the ordinary checked finish; its completion gates are not a second migration audit.
 5. **Recover (only after an interrupted apply).** `migrate-subprojects-recover --project "{PROJECT}" --plan plan.json --approve-digest "{DIGEST}" --work-record "{QUALIFIED_RECORD}"` completes the same approved plan idempotently.
 
 Boundaries:
@@ -199,7 +199,7 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py install-library \
   --work-record "{QUALIFIED_RECORD}"
 ```
 
-Verify the installed router and absence of managed legacy pairs:
+Diagnose a pre-existing, interrupted, or failed installation with `check-library-installation`: a successful `install-library` already verifies router bytes and identities and removes managed pairs itself, so it needs no post-success recheck.
 
 ```bash
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-library-installation \

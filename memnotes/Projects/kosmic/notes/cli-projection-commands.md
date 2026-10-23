@@ -4,7 +4,7 @@ title: Projection CLI experience commands
 description: What the Projection CLI validates and enforces for MathDocs, proposals, projections, record-embedded completion, and deterministic flat-spec migration.
 confidence: 0.9
 created: '2026-09-02'
-updated: "2026-10-22T07:14:50.506Z"
+updated: "2026-10-23T00:12:23.668Z"
 skill_candidate: false
 validation_procedure: "python3 -m unittest tests.test_kosmic_migration_apply tests.test_kosmic_migration_plan; kosmic_project_skills.py migrate-subprojects-plan --project PROJECT --output PLAN"
 project: kosmic
@@ -23,6 +23,8 @@ skill_resources: [kosmic/usage/cli-projection-commands]
 How the Projection CLI treats executable MathDocs, Skill Proposals, projections, installation, derived STATUS, and record-embedded completion. Structural commands are deterministic, offline, and stdlib-only; `check-math` executes trusted Project Python and therefore requires the Project derivation environment. The command reference `skills/references/cli-projection-commands.md` owns flags and step-by-step procedures; this note carries the durable invariants.
 
 ## Principles
+- Command success is authoritative for its documented outputs: use returned identities, paths and receipts directly, without a second administrative confirmation. Recovery follows actual errors; failure does not imply rollback, since completion publication is stepwise. This does not replace acceptance verification of newly changed software or scientific claims.
+- Routine Project initialization creates no Quick Task and enters no implementation review or work-finish lifecycle. Its bounded authority covers setup only; changing initialization behavior still follows the development workflow, and migration, registration and installation retain their target approvals.
 - Projected references are package-consistent: a link whose target is outside the rendering package (drafts, other-audience notes) is demoted to bold plain text and `generate` warns on stderr naming each demoted link; code fences, external URLs, and non-Markdown targets are untouched.
 - Notes carry no `evidence:` gate: a stable note is never rejected for missing or unresolved evidence paths, and legacy `evidence:` frontmatter values remain valid historical metadata that current commands neither require nor bless (knowledge-first notes, `docs/adr/0004-knowledge-first-notes.md`). Reproducibility uses plain `sources:` links in the note body.
 - Completion is record-embedded: criterion observations, the independent two-axis review, and scope claims live in the work record; `work finish` publishes a receipt bound to the completed record's bytes. One ordinary finish runs every completion gate — proof, finish-claim scope, review, and the same read-only precheck `check-completion` uses (dependencies, STATUS freshness, `consumer_interface_change`, math/proposal/routine, related notes, projection) — and refuses domain failures as `COMPLETION_PRECHECK_FAILED` with the original diagnostic retained; a pre-write freshness recheck rejects mid-episode record/source/authority drift without repinning. Receipt-bearing retries re-verify only fresh identity, the unchanged record bytes (legacy receipts: their recorded immutable originals), and the declared formal math/proposal/routine contracts, repairing derived STATUS only; unreadable or inconsistent receipts are refused, never re-blessed. There is no `impact.md` ledger and no `evidence_packs:` frontmatter — legacy packs and ledger entries stay untouched historical bytes.

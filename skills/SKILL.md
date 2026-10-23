@@ -25,8 +25,8 @@ Resolve bootstrap BEFORE loading any audience skill or searching.
 2. **Bootstrap or validate.**
    - `{VAULT}/Projects/{TARGET}/` missing → run [Task 1: Initialize](references/task_init.md).
    - Present but `ProjectEntry.md` lacks `project_id`, or the Usage/Development skill pair is missing/stale/mismatched, or the Shared Skill Library is unresolved → run the migration/validation in [Task 8](references/task_project_skills.md).
-   - **Bootstrap exemption**: initialization (Task 1) and migration (Task 8) are exempt ONLY from the prerequisite they themselves establish (Project identity, skill pair, or library). They perform no other prerequisite-free work; after validation, resume all normal checks (remaining required-skills verification, search, audience loading) for any subsequent task.
-3. **Before Contributor work, verify the required procedure-skill set** for the active Install Adapter:
+   - **Routine initialization** follows Task 1 directly, without a Quick Task, implementation review, or `work start`/`work finish`. Its authority covers only initialization outputs; migration and unrelated changes retain their own gates.
+3. **Required procedure skills**: check once at init/migration or before Contributor work if the active adapter environment has not yet been verified. Reuse that result while the adapter and installed skills are unchanged; rerun on an actual skill-resolution error or an environment change:
 
    ```bash
    python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py check-required-skills --adapter {opencode|claude-code|codex|omp}
@@ -67,23 +67,26 @@ Resolve bootstrap BEFORE loading any audience skill or searching.
 
 **CLI invocation**: every command shown here (`work start`, `generate-status`, `validate-library`, …) is a **subcommand of the single Projection CLI** — never a standalone executable. Run it as `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py <subcommand> …`.
 
+**Command contract.** Use the complete invocation in the owning task reference, substituting its path variables; consult `--help` only for an undocumented operation. Exit 0 is authoritative for that command's documented outputs: use the returned identities, paths, and receipts without a second listing, read-back, validation, or confirmation command. Read generated drafts to edit their content, not to check that creation worked.
+
+On error, follow the diagnostic and documented recovery; do not assume failure rolled back writes (`work finish` publishes stepwise). This trusts operation results, not new implementation or scientific claims: their acceptance checks, approvals, and reviews remain required.
+
 **Project Knowledge format**: `notes/` is one authoritative bundle, Obsidian-readable and OKF v0.2 conformant; `index.md` is the reserved progressive-disclosure entry point; every other note starts with YAML frontmatter on line 1, declares a non-empty `type`, uses `status: draft | stable | deprecated`, and links with relative standard Markdown. No separate OKF export tree.
 
 ---
 
 ## Authority & Isolation (apply to every task)
 
-**Record-first authority.** Before a substantive source, docs, vault, configuration, or experiment change, select its governing record — reuse the existing approved record that already authorizes the work, and create a new one only when none covers the scope. Feature implementation needs an approved owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk change needs an approved Quick Task; choose Quick Task versus the full spec hierarchy by actual scope and risk, never by phase or habit. PRD creation/success never approves code. Questions, searches, and unchanged checks need no record and stay read-only — never hide durable cleanup, publication, or installation in them. Planning creates only its draft hierarchy and bounded planning outputs; bootstrap establishes a bounded governing Quick Task whose scope does not authorize unrelated implementation.
+**Record-first authority.** Before a substantive source, docs, vault, configuration, or experiment change, select its governing record — reuse the existing approved record that already authorizes the work, and create a new one only when none covers the scope. Feature implementation needs an approved owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk change needs an approved Quick Task; choose by actual scope and risk. PRD creation never approves code. Questions, searches, and unchanged checks need no record and stay read-only. Planning creates only its draft hierarchy and bounded planning outputs. Routine Task 1 initialization is the bounded record-free exception; developing or changing initialization behavior is not.
 
 **One bounded episode.** A record starts work once: resuming continues inside its recorded scope and the existing worktree — no restart per step, no extra record, no fresh worktree per step, and no silent widening of recorded scope (a real scope change updates and re-approves the record). A mid-episode scope or approval change makes the next mutating command reject the stale or over-broad attempt, because every mutating command re-derives identity, ancestry, scope, and approval live at invocation — context is reused while valid; permission is never cached.
 
 **Owner-aware catalog.** Feature records live under `subprojects/{SUBPROJECT_ID}/specs/` (owner-local); shared Quick Tasks/proposals live under `specs/`. Existing flat feature specs stay bootstrap until separately approved migration. Notes, mathdocs, and canonical skills stay shared at the Project root. Register each exact working directory; a fixed subproject constrains a directory, never selects its task; never persist selection in a shared mutable pointer.
 
-**Isolation.** Start writable changes with:
+**Isolation (record-governed work).** Start writable changes with:
 
 ```bash
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work start --project {PROJECT_ROOT} --worktree {REGISTERED_ROOT} --work-record {QUALIFIED_RECORD}
-python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work show --project {PROJECT_ROOT} --work-record {QUALIFIED_RECORD}
 ```
 
 Each mutating command takes the same explicit `--work-record`, re-resolving authority at invocation time — never cached approval. One clean worktree per record, one writer per worktree. `work start` refuses a dirty worktree and lists conflicting paths; never write in a worktree containing unrelated in-progress work — use a separate clean worktree with a separate writer and leave unrelated work untouched. Raw editor/shell writes remain agent compliance, not an OS sandbox.
@@ -127,7 +130,7 @@ Pick exactly one task per unit of work; the linked reference is authoritative fo
 | Task | Trigger | Load | Complete when (observable) |
 |------|---------|------|----------------------------|
 | **0: Quick Task** | Small, low-risk implementation user explicitly requested or clearly below spec-hierarchy scope; concrete scope, obvious acceptance, no new architecture/data models/APIs | [task_quick_task.md](references/task_quick_task.md) · template: [template-quick-task.md](references/templates/template-quick-task.md) | Approved Quick Task record; implemented change verified; review + verification passed; completion = successful `work finish` receipt (`status: done` only with receipt); log/notes updated |
-| **1: Initialize** | New Project/package, or no Kosmic structure / Project Identifier exists | [task_init.md](references/task_init.md) | Real stable knowledge exists; Project structure, immutable Project Identifier, dual-native OKF/Obsidian notes, AGENTS.md integration, specs index in place |
+| **1: Initialize** | New Project/package, or no Kosmic structure / Project Identifier exists | [task_init.md](references/task_init.md) | Requested structure, real knowledge, Project identity, skills and instructions established; successful CLI result accepted directly; no Quick Task or review |
 | **2: Add Note** | Verified durable, reusable knowledge emerged (root cause, convention, decision, correction) not already represented | [task_add_note.md](references/task_add_note.md) | One atomic note per concept (update, never duplicate); TOC + log updated; one-off activity/session state/error text kept out of notes |
 | **3: Search** | Before ANY implementation or change, or when unsure | [task_search.md](references/task_search.md) | Relevant notes/specs read: TOC first → deep notes search → specs search |
 | **4: Review** | End of session/week, returning to project, knowledge seems outdated | [task_review.md](references/task_review.md) | Notes extracted, stale notes updated, log hygiene done |

@@ -54,7 +54,7 @@ Shared Quick Tasks and Skill Proposals remain Project-level specs:
 ```
 {VAULT}/Projects/{TARGET}/specs/
 ├── quick-tasks/
-│   └── {YYYY-MM-DD}-{slug}.md
+│   └── {returned-local-id}.md
 └── skill-proposals/
     └── {YYYY-MM-DD}-{slug}.md
 ```
@@ -63,6 +63,22 @@ Use `spec-create` to reserve immutable feature-record identities and canonical
 paths. Fill the returned bodies from templates; create bounded Research memos
 inside the linked PRD's owner root (Research has no `spec-create` kind).
 Retain returned identities rather than guessing paths or introducing aliases.
+
+Use the JSON returned by `spec-create` as the identity/path source; creation
+does not approve implementation. Each step below supplies its invocation.
+Read the returned draft to author its content, without a separate existence
+or catalog-validation check. On `RESERVATION_CONFLICT` or interruption, use
+the original inputs and owning operation ID for the documented resume form:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create \
+  --project "{PROJECT_ROOT}" --kind prd --title "{ORIGINAL_TITLE}" \
+  --resume --operation-id "{ORIGINAL_OPERATION_ID}"
+```
+
+For other kinds, retain the original `--kind`, `--subproject` and `--parent`
+arguments as applicable; do not invent an operation ID or retry creation
+after success.
 
 Throughout this task, `{SPEC_ROOT}` denotes the subproject owner root
 `{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/` returned by
@@ -96,14 +112,14 @@ Whenever a PRD, Architecture, Epic, or Story is created or presented for approva
 
 ## Step 1: Create PRD (reserves the subproject)
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind prd --title {TITLE}`
+**Command**: `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create --project "{PROJECT_ROOT}" --kind prd --title "{TITLE}"`
 **Returned owner root**: `{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/`
 **Template**: `references/templates/template-prd.md`
 **Prerequisites**: None (this is the starting point)
 
-`spec-create` reserves the immutable subproject identity and stages
-`prd.md` plus `specs/INDEX.md`. Retain the returned `subproject_id`,
-qualified identity, and canonical paths — never derive them from the title.
+`spec-create` reserves the immutable subproject identity and publishes the
+draft `prd.md` plus owner `specs/INDEX.md`. Retain the returned
+`subproject_id`, qualified identity and canonical paths.
 If creation is interrupted, resume with `--resume --operation-id` and the
 original command inputs; retain the original title and identity.
 
@@ -116,7 +132,7 @@ original command inputs; retain the original title and identity.
 5. Update `specs/INDEX.md` inside the subproject owner root
 6. Present to user for review
 
-**Spec-event step**: after writing the spec and updating `specs/INDEX.md`, run `generate-status --project ...` so the working-directory STATUS.md reflects the new spec.
+**Spec-event step**: after authoring the spec or changing its approval state, refresh the derived STATUS once with `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py generate-status --project "{PROJECT_ROOT}" --work-record "{PRD_QUALIFIED_RECORD}"`, using the owning draft/approved PRD's returned identity. This publishes the new authored state, not a check of `spec-create`.
 
 ### GATE: User Approval Required
 
@@ -154,7 +170,7 @@ After creating or updating a Research memo, update `specs/INDEX.md`.
 
 ## Step 2: Create Architecture
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind architecture --subproject {SUBPROJECT_ID} --title "{TITLE}"`
+**Command**: `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create --project "{PROJECT_ROOT}" --kind architecture --subproject "{SUBPROJECT_ID}" --title "{TITLE}"`
 **File**: `{SPEC_ROOT}/architecture.md`
 **Template**: `references/templates/template-architecture.md`
 **Prerequisites**: PRD must exist and be `approved`
@@ -199,7 +215,7 @@ Link the presented Architecture by its full absolute path per the presenter rule
 
 ## Step 3: Create Epic
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind epic --subproject {SUBPROJECT_ID} --parent architecture --title "{TITLE}"`
+**Command**: `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create --project "{PROJECT_ROOT}" --kind epic --subproject "{SUBPROJECT_ID}" --parent architecture --title "{TITLE}"`
 **File**: `{SPEC_ROOT}/epics/epic-{N}.md`
 **Template**: `references/templates/template-epic.md`
 **Prerequisites**: PRD and Architecture must exist and be `approved`
@@ -238,7 +254,7 @@ Link every presented Epic individually by its full absolute path per the present
 
 ## Step 4: Create Story
 
-**Command**: `spec-create --project {PROJECT_ROOT} --kind story --subproject {SUBPROJECT_ID} --parent epic-{N} --title "{TITLE}"`
+**Command**: `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create --project "{PROJECT_ROOT}" --kind story --subproject "{SUBPROJECT_ID}" --parent "{RETURNED_EPIC_LOCAL_ID}" --title "{TITLE}"`
 **File**: `{SPEC_ROOT}/stories/story-{N}.md`
 **Template**: `references/templates/template-story.md`
 **Prerequisites**: Parent epic must exist

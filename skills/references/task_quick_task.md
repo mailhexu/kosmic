@@ -2,7 +2,7 @@
 
 Use this procedure for small, low-risk implementation work that does not justify the full PRD → optional Research → Architecture → Epics → Stories workflow.
 
-Quick Task is an escape hatch, not a shortcut around quality. Search, acceptance criteria, verification, review, logging, and knowledge capture still apply.
+Quick Task is an escape hatch, not a shortcut around quality. Search, acceptance criteria, verification, review, logging, and knowledge capture still apply — but routine Task 1 initialization is explicitly out of scope: bootstrapping routine initialization needs no Quick Task record, no review, and no `work start`/`work finish` lifecycle. Changing an implementation remains governed and follows the full procedure below.
 
 ---
 
@@ -36,15 +36,20 @@ Deterministic subproject flat-spec migration is such a governed workflow: it use
 
 ## Quick Task File
 
-Create one file per quick task:
+Create the record with the fully qualified `spec-create` invocation and retain the returned canonical path — never guess a `{YYYY-MM-DD}-{slug}.md` filename:
 
-```text
-{VAULT}/Projects/{TARGET}/specs/quick-tasks/{YYYY-MM-DD}-{slug}.md
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create \
+  --project {PROJECT_ROOT} \
+  --kind quick-task \
+  --title "{TITLE}"
 ```
 
 Quick Tasks are shared, Project-level specs — create them without
 `--subproject`; they never live in a subproject owner root. `spec-create`
-creates the `quick-tasks/` directory; do not create it by hand.
+creates the `quick-tasks/` directory; do not create it by hand. Use the
+qualified identity and canonical record path returned in the command output
+everywhere below.
 
 Use `references/templates/template-quick-task.md`.
 
@@ -57,7 +62,7 @@ Use `references/templates/template-quick-task.md`.
    - Read related code before planning the change.
 
 2. **Create Quick Task record**
-   - Establish the draft with `spec-create --project {PROJECT_ROOT} --kind quick-task --title {TITLE}`; retain the returned qualified identity/canonical path. Use the template for its body, not to guess owner/ID fields.
+   - Establish the draft with the fully qualified `spec-create` invocation from *Quick Task File*; retain the returned qualified identity/canonical path. Use the template for its body, not to guess owner/ID fields.
    - Flat legacy feature specs may prevent the owner-aware catalog from loading. Shared Quick Task creation remains a bounded draft bootstrap in that case; it does not migrate feature specs, enable the catalog, or authorize implementation. After explicit approval, `work start` resolves the flat task through the migration fallback.
    - Keep `status: draft` until the compatible approval gate passes.
    - Define exact roots, allowed outputs, out-of-scope work, and observable acceptance criteria.
@@ -79,7 +84,7 @@ Use `references/templates/template-quick-task.md`.
    - Do not complete a symptom-only patch.
 
 5. **Implement**
-   - Before substantive writes, use `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. The start check requires a clean worktree.
+   - Before substantive writes, run `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work start --project {PROJECT_ROOT} --worktree ROOT --work-record QUALIFIED_RECORD`. The start check requires a clean worktree.
    - Use one worktree and one writer per record. Every mutating command re-resolves the approved record with `--work-record`; completion checks the Git diff against its `--scope` claims.
    - The task starts work once: resume continues inside its recorded scope and the existing worktree — no restart per step, no extra record, no fresh worktree per step, and no silent scope widening. Questions, code search, and unchanged-input checks are record-free. A mid-episode scope or approval change makes the next mutating command re-derive authority live and reject the stale attempt.
    - Preserve unrelated work: never commit, stash, discard, or rebase changes you did not make. If the target worktree is dirty with unrelated changes, commit/stash only with the user's work preserved, or select another worktree via `work start`. Raw editors/shell are agent compliance, not OS enforcement.
@@ -92,10 +97,10 @@ Use `references/templates/template-quick-task.md`.
    - Re-review preserves finding IDs; accept only resolved blockers or explicit recorded human acceptance. Consumer knowledge/projection gates still apply.
 
 7. **Complete**
-   - Run `work finish --project PROJECT_ROOT --worktree ROOT --work-record REF --scope CLAIM` (repeat scope). Never hand-edit `done`.
+   - Run `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py work finish --project {PROJECT_ROOT} --worktree ROOT --work-record REF --scope CLAIM` (repeat scope). Never hand-edit `done`. The recorded review must already be materialized in the record's `completion_review`; finish validates it — it does not perform the review.
    - One ordinary finish invocation runs every required completion gate before publishing: record-embedded proof, scope, the pinned two-axis review, and the shared domain precheck (dependencies, STATUS freshness, retired inputs, Consumer Interface change, math/proposal/routine gates, related notes, projection). A standalone `check-completion` stays available as an optional fail-fast diagnostic — never a required second command or second choreography.
    - Finish then publishes record status/index/log and the authoritative receipt, and derives STATUS from that receipt — stepwise, not cross-file atomic; only derived reports are written after a valid receipt. Interruption before the receipt leaves completion pending; interruption after it can leave stale derived reports only. Rerun finish — an already-valid terminal receipt is kept unchanged while only the derived reports regenerate.
-   - Report qualified identity/canonical path and actual acceptance/smoke/review results; terminal authority cannot start new implementation.
+   - Report qualified identity/canonical path and actual acceptance/smoke/review results; a successful finish receipt is sufficient — no post-success re-validation. Terminal authority cannot start new implementation.
    - For the exact proof mechanics — embedded observations, review ledger fields, receipt rules, and `work finish` scope claims — follow `references/work_completion.md`.
    - Capture durable knowledge; classify changes without bulk-committing others' work. Read-only questions/checks need no new record or durable cleanup.
 

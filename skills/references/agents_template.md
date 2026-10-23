@@ -28,8 +28,12 @@ The `kosmic` skill is the workflow orchestrator. Contributor work loads `{DEVELO
   A fixed subproject constrains the directory, never selects an agent task.
 - Before substantive source/docs/vault/config/experiment changes, select/create
   an approved owner-local Story hierarchy or standalone approved Quick Task.
-  Planning/initialization has only bounded record-first bootstrap.
-  Inspect the governing record with `work show --project {KOSMIC_VAULT}/Projects/{TARGET} --work-record QUALIFIED_RECORD`; no shared mutable task pointer is used.
+- Routine initialization is record/review-free: it performs only bounded bootstrap
+  (identity and structure scaffold plus status binding) and creates no Quick Task,
+  work record, code review, or work finish; it does not create `STATUS.md` and does
+  not install adapters. Adapter installation is a separately requested, approved
+  operation; substantive changes remain governed by the normal work-record workflow.
+- Inspect the governing record with `work show --project {KOSMIC_VAULT}/Projects/{TARGET} --work-record QUALIFIED_RECORD`; no shared mutable task pointer is used.
 - Start writes with `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. It refuses a dirty worktree; use one clean worktree per record and one writer.
 - Every mutating command takes `--work-record` and rechecks ownership, ancestry and status. Declare scope at `work finish`; out-of-scope Git paths block completion.
 - Read-only queries remain record-free. Raw editor/shell guarantees are agent compliance, not an OS sandbox.
@@ -166,4 +170,4 @@ When planning a task, always integrate knowledge retrieval:
    - Debugging → document root causes
 4. **End**: Review and log progress
 
-**Status file**: `STATUS.md` at the working-directory root is generated from vault spec state (`generate-status --project {VAULT}/Projects/{TARGET}`). Read it first; never edit it by hand.
+**Status file**: `STATUS.md` at the working-directory root is generated from vault spec state (`generate-status --project {VAULT}/Projects/{TARGET}`). Initialization records only the status binding, so the file may not exist until the first normal spec/work event. Read it when present; never edit it by hand.

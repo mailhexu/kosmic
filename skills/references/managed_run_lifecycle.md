@@ -8,7 +8,13 @@ Use a managed run for Kosmic-owned disposable material.
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py scratch begin --project {VAULT}/Projects/{TARGET} --purpose {task-slug} --work-record {QUALIFIED_RECORD}
 ```
 
-Write only inside the returned `scratch_path`. Finalize the same handle with `scratch succeed` or `scratch fail`; both must return `code: OK`. A non-Git vault or a root that does not ignore `.tmp/` fails closed.
+Write only inside the returned `scratch_path`; retain its `handle_file` for finalization:
+
+```bash
+python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py scratch succeed --project {PROJECT_ROOT} --handle-file {HANDLE_FILE}
+```
+
+On failure use `scratch fail --project {PROJECT_ROOT} --handle-file {HANDLE_FILE} --detail "{REASON}"` through the same CLI. Accept `code: OK` as the finalization result without a second status query. A non-Git vault or a root that does not ignore `.tmp/` fails closed.
 
 ## Retention and promotion
 

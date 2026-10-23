@@ -22,6 +22,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Bootstrap thesis-samuel Shared Library access](memnotes/Projects/kosmic/specs/quick-tasks/bootstrap-thesis-samuel-shared-library-access.md) | approved | 2026-10-12 |
 | [Bootstrap working-directory registration for kosmic (Original)](memnotes/Projects/kosmic/specs/quick-tasks/bootstrap-working-directory-registration-for-kosmic-original.md) | approved | ? |
 | [Document the Projection CLI subcommand structure](memnotes/Projects/kosmic/specs/quick-tasks/document-cli-subcommand-structure.md) | approved | 2026-10-13 |
+| [Explicit command contract and lean verification guidance](memnotes/Projects/kosmic/specs/quick-tasks/explicit-command-contract-and-lean-verification-guidance.md) | done | 2026-10-23 |
 | [Keep completion STATUS coherent with terminal receipts](memnotes/Projects/kosmic/specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md) | approved | 2026-10-15 |
 | [Materialize shared skill library inventory](memnotes/Projects/kosmic/specs/quick-tasks/materialize-shared-skill-library-inventory.md) | approved | ? |
 | [Plan Flat Spec Migration Bootstrap](memnotes/Projects/kosmic/specs/quick-tasks/plan-flat-spec-migration-bootstrap.md) | draft | 2026-10-11 |
@@ -36,6 +37,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Register the isolated Story 004 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-004-writer.md) | approved | ? |
 | [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) | approved | ? |
 | [Register the deployment writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-deployment-writer-worktree.md) | approved | 2026-10-22 |
+| [Register the guidance contract writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-guidance-contract-writer-worktree.md) | approved | 2026-10-23 |
 | [Remove missing writer registration](memnotes/Projects/kosmic/specs/quick-tasks/remove-missing-writer-registration.md) | done | ? |
 | [Repair Kosmic skill predictability](memnotes/Projects/kosmic/specs/quick-tasks/repair-kosmic-skill-predictability.md) | done | ? |
 | [Repair malformed completion review gate precedence](memnotes/Projects/kosmic/specs/quick-tasks/repair-malformed-completion-review-gate-precedence.md) | done | 2026-10-20 |
@@ -494,7 +496,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 129 open item(s)
+- 130 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -516,6 +518,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Register the isolated Story 004 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-004-writer.md) - approved
 - [Register the isolated scoped-completion snapshot](memnotes/Projects/kosmic/specs/quick-tasks/register-scoped-completion-snapshot.md) - approved
 - [Register the deployment writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-deployment-writer-worktree.md) - approved
+- [Register the guidance contract writer worktree](memnotes/Projects/kosmic/specs/quick-tasks/register-the-guidance-contract-writer-worktree.md) - approved
 - [Restore evidence inventories for projection hygiene](memnotes/Projects/kosmic/specs/quick-tasks/restore-evidence-inventories-for-projection-hygiene.md) - draft
 - [Subprojects and required work records: wave-2 closure](memnotes/Projects/kosmic/specs/quick-tasks/subprojects-and-required-work-records-wave-2-closure.md) - done (receipt pending)
 - [Skill Proposal: Projection CLI Extension Conventions — Projection Sufficiency](memnotes/Projects/kosmic/specs/skill-proposals/2026-09-06-kosmic-proposer-dogfood.md) - done (receipt pending)

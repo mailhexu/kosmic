@@ -52,7 +52,7 @@ Contributor workflows require a named-skill adapter (opencode, claude-code, code
 
 Install the reviewed Matt Pocock skill set globally in the active adapter: `tdd`, `code-review`, `diagnosing-bugs`, `research`, `domain-modeling`, `codebase-design`, `grill-with-docs`, `grilling`, and `prototype`. Use the upstream standalone named-skill installer; do not use its managed Claude plugin or project-local installation. Pin the upstream revision recorded by your Kosmic release, and review compatibility before updating it.
 
-Verify from this installed Kosmic directory:
+Verify from this installed Kosmic directory. Run this once at initialization or migration (or whenever the adapter environment has not yet been verified); rerun only after a check error or an installed required-skill/adapter change — not for every task:
 
 ```bash
 python3 scripts/kosmic_project_skills.py check-required-skills --adapter opencode
@@ -124,6 +124,8 @@ Set up Kosmic for a new project.
 
 **When**: First time working on a project
 **Check**: Does `{VAULT}/Projects/{TARGET}/` exist?
+
+**Routine init is record/review-free**: first-time initialization performs only bounded bootstrap — identity, structure, status binding, generated canonical Skill Pair, and instruction pointers — with no Quick Task, work record, code review, work finish, or created `STATUS.md` (the first normal spec/work event generates it), and no adapter installation. Adapter installation, when wanted, is a separately requested and approved operation. Substantive implementation changes remain governed by the normal work-record workflow.
 
 ### Task 2: Add Note
 Capture knowledge in atomic notes.
