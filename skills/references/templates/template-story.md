@@ -6,7 +6,7 @@ local_id: "{ALLOCATED_NNN}"
 status: draft
 created: {DATE}
 updated: {DATE}
-linked_epic: ../epics/epic-{N}-{slug}.md
+linked_epic: ../epics/epic-{PARENT_NNN}.md
 linked_architecture: ../architecture.md
 linked_prd: ../prd.md
 related_notes: []

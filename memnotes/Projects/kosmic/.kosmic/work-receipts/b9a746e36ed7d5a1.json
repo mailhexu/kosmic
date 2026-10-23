@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-23T18:48:56Z",
+  "detail": "Native index coordination/caller cutover verified:805 integrated tests and actual CLI smokes; first independent Standards/Spec pair approved, INT-001 fixed.",
+  "identity": "kosmic/command-owned-indexes-and-completion-review-context/story/002",
+  "proof": {
+    "subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-002.md": "c7d134680b31d0a12b95118629ad19abbaf67380a847364bfbf62664748e2ca4"
+  },
+  "record_path": "subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-002.md",
+  "record_sha256": "c7d134680b31d0a12b95118629ad19abbaf67380a847364bfbf62664748e2ca4",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

@@ -26,7 +26,7 @@ Requirements: PRD FR-005–007 and the fingerprint portion of FR-008. Technical 
 - Optional explicit `--worktree` on the existing preparation command. Without it, preserve current arguments, payload and behavior; never infer the writer from the current directory.
 - With it, return top-level `source_revision` from the existing function alongside identity, canonical record path and preserved observation drafts.
 - Preserve every authored observation field and blank unauthored criteria; fabricate no outcome, review decision, approval or evidence.
-- Reuse live record resolution, nonterminal implementation admission, existing error precedence and the current fingerprint algorithm/exclusions.
+- Reuse live record resolution, nonterminal implementation admission, existing error precedence and the current fingerprint algorithm/exclusions, subject only to Architecture's user-approved exact canonical creation-lock amendment implemented during Story 002 integration. Story 003's completed receipt and historical reviewed pins remain unchanged.
 - Leave both Project and writer unchanged on success/refusal. Add no clean/start/registration requirement, state repair, locks, logs, manifests, receipts or STATUS writes.
 - Keep finish's live source/record/authority checks and revision-bound review intact. A preparation result remains a point-in-time observation, not cached permission.
 - Replace the internal-import recipe and migrate relevant command references, canonical knowledge and generated guidance only after exercising the native command.
@@ -43,13 +43,13 @@ Approved by the user. One cohesive Story covers **explicit-writer completion pre
 
 The Story uses TDD and mandatory independent code review. Its implementation record will contain actual acceptance observations and review; no separate evidence sidecar.
 
-[Story 003: Explicit-writer completion preparation and caller cutover](../stories/story-003.md) is draft for approval; it has no functional dependency on Epic 001's Stories.
+[Story 003: Explicit-writer completion preparation and caller cutover](../stories/story-003.md) is user-approved and has no functional dependency on Epic 001's Stories.
 
 ## Success Criteria
 
 - [ ] Existing preparation without `--worktree` preserves its current result and refusal behavior.
 - [ ] Explicit-writer preparation returns the exact current `source_revision` with authored observations preserved field-for-field and unauthored criteria left blank.
-- [ ] Real changed/untracked/deleted source and excluded metadata affect the value exactly as the unchanged algorithm dictates; Git HEAD is not substituted.
+- [ ] Real changed/untracked/deleted source and excluded metadata affect the value as the existing algorithm dictates, with only the approved same-root canonical creation-lock exception; unrelated `.kosmic/` data and an external Project's writer-local lock remain bound. Git HEAD is not substituted.
 - [ ] A matching reviewed fingerprint passes the existing finish binding, while subsequent source drift is refused without automatic repinning or weaker safety gates.
 - [ ] Project and writer bytes remain unchanged after success and refusal; existing record/ancestry/acceptance refusals and invalid-writer diagnostics remain.
 - [ ] All affected callers use the supported CLI output; the obsolete internal-import recipe is removed and canonical projections are regenerated through the normal source path.
@@ -67,5 +67,5 @@ Run the integrated affected suite once related implementation changes stabilize;
 
 - Requires the approved [PRD](../prd.md) and [Architecture](../architecture.md).
 - No functional dependency on Epic 001. Coordinate shared CLI/guidance edits with its integration owner; combine the canonical projection refresh after related note edits.
-- Stories: 0/1 done; the draft awaits approval. Implementation: not started.
-- Next gate: user approval of the linked draft Story before implementation.
+- Receipt-backed status: [owning Story table](../INDEX.md#stories).
+- Completion requires Story 003's native receipt; independent review approval alone is not completion.

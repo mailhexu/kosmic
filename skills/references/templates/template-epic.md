@@ -30,10 +30,10 @@ linked_stories: []
 
 ## Stories
 
+Use each created Story's actual path relative to this Epic; add rows only after the Story exists.
+
 | Story | Title | Status |
 |-------|-------|--------|
-| [story-001](../stories/story-001-{slug}.md) | {title} | draft |
-| [story-002](../stories/story-002-{slug}.md) | {title} | draft |
 
 ## Success Criteria
 

@@ -59,26 +59,23 @@ Shared Quick Tasks and Skill Proposals remain Project-level specs:
     └── {YYYY-MM-DD}-{slug}.md
 ```
 
-Use `spec-create` to reserve immutable feature-record identities and canonical
-paths. Fill the returned bodies from templates; create bounded Research memos
-inside the linked PRD's owner root (Research has no `spec-create` kind).
-Retain returned identities rather than guessing paths or introducing aliases.
+Use `spec-create` for PRD, Architecture, Epic, Story and Quick Task drafts.
+Success publishes the record and its canonical owning-index row, then returns
+the qualified identity, non-null `operation_id`, and Project-relative
+`record_path` / `index_path`. Retain these outputs; never guess paths or
+construct another row. Fill the returned draft from its body template.
+Research has no native creation kind: author bounded memos inside the linked
+PRD's owner root and maintain their Research index entries manually.
 
-Use the JSON returned by `spec-create` as the identity/path source; creation
-does not approve implementation. Each step below supplies its invocation.
-Read the returned draft to author its content, without a separate existence
-or catalog-validation check. On `RESERVATION_CONFLICT` or interruption, use
-the original inputs and owning operation ID for the documented resume form:
+Read a successful draft to author content, not to confirm creation. Creation
+does not approve implementation; each step below supplies its invocation.
 
-```bash
-python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create \
-  --project "{PROJECT_ROOT}" --kind prd --title "{ORIGINAL_TITLE}" \
-  --resume --operation-id "{ORIGINAL_OPERATION_ID}"
-```
-
-For other kinds, retain the original `--kind`, `--subproject` and `--parent`
-arguments as applicable; do not invent an operation ID or retry creation
-after success.
+Recovery is the same for all five kinds: rerun the original incomplete
+invocation with `--resume --operation-id "{ORIGINAL_OPERATION_ID}"` appended.
+Retain its original kind, title, owner and parent arguments. Resume only the
+operation whose ID you retained; conflicting content requires reconciliation,
+not a fresh creation or an invented ID. An already-published operation still
+refuses resume; use its original successful result instead.
 
 Throughout this task, `{SPEC_ROOT}` denotes the subproject owner root
 `{VAULT}/Projects/{TARGET}/subprojects/{SUBPROJECT_ID}/specs/` returned by
@@ -121,11 +118,8 @@ Whenever a PRD, Architecture, Epic, or Story is created or presented for approva
 **Template**: `references/templates/template-prd.md`
 **Prerequisites**: None (this is the starting point)
 
-`spec-create` reserves the immutable subproject identity and publishes the
-draft `prd.md` plus owner `specs/INDEX.md`. Retain the returned
-`subproject_id`, qualified identity and canonical paths.
-If creation is interrupted, resume with `--resume --operation-id` and the
-original command inputs; retain the original title and identity.
+The PRD command also reserves the immutable subproject owner and publishes
+its `SubprojectEntry.md`. Retain the returned `subproject_id` for child records.
 
 ### Process
 
@@ -133,8 +127,7 @@ original command inputs; retain the original title and identity.
 2. Reserve the subproject with `spec-create --kind prd` and retain the returned identity/paths
 3. Fill in the PRD body using the template (templates supply bodies/fields, never identity)
 4. Set `status: draft`
-5. Update `specs/INDEX.md` inside the subproject owner root
-6. Present to user for review
+5. Present to user for review
 
 **Spec-event step**: after authoring the spec or changing its approval state, refresh the derived STATUS once with `python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py generate-status --project "{PROJECT_ROOT}" --work-record "{PRD_QUALIFIED_RECORD}"`, using the owning draft/approved PRD's returned identity. This publishes the new authored state, not a check of `spec-create`.
 
@@ -195,8 +188,7 @@ STOP CHECK: Is PRD approved?
 4. Write Architecture doc with ADRs using the template
 5. Link relevant Research memos in the Architecture frontmatter
 6. Set `status: draft`
-7. Update `specs/INDEX.md`
-8. Present to user for review
+7. Present to user for review
 
 ### GATE: User Approval Required
 
@@ -237,8 +229,7 @@ STOP CHECK: Are PRD and Architecture approved?
 2. Break the work into epics (each delivers standalone value)
 3. Write epic files using the template
 4. Set `status: draft`
-5. Update `specs/INDEX.md`
-6. Present epic breakdown to user
+5. Present epic breakdown to user
 
 ### GATE: User Approval Required
 
@@ -275,8 +266,7 @@ STOP CHECK: Does parent epic exist?
 2. Write story file using the template
 3. Define acceptance criteria (must be testable)
 4. Set `status: draft`
-5. Update `specs/INDEX.md`
-6. Present to user for review
+5. Present to user for review
 
 ### GATE: User Approval Required
 

@@ -162,7 +162,7 @@ Preparation creates no lock, registry edit, run manifest, log, receipt, STATUS r
 ## Fingerprint and Authority Invariants
 
 - Call `source_revision` directly; do not reimplement its digest or exclusions. It hashes the sorted changed-path content map from Git status, including untracked files and non-file/deletion markers, not the commit ID.
-- Preserve the exact current `.tmp`, Git, STATUS and Project/record-path exclusions, including the distinct same-root/nested/external cases. This feature does not repair or broaden those exclusions.
+- Preserve the current `.tmp`, Git, STATUS and Project/record-path exclusions and the distinct same-root/nested/external cases, with one user-approved integration amendment: exactly the canonical Project's `.kosmic/create.lock` is command-owned publication output for finish scope and, only when Project and writer coincide, excluded from the source digest. Other `.kosmic/` data and an external Project's writer-local lock remain source-bound. This makes interrupted lock-creating publication retryable without unlinking a persistent lock, broad metadata exemptions, or a new admission gate.
 - Preparation is a point-in-time read, not a source snapshot, permission cache or review approval. Concurrent edits can invalidate its result; reviewers hold their actual reviewed revision and finish recomputes the live value.
 - Preserve both finish's review-revision comparison and pre-publication record/source/authority rechecks. Do not repin stale reviews automatically.
 - A fingerprint alone cannot bind excluded work-record context. Existing context/scope review rules remain required.
@@ -223,9 +223,11 @@ Dependencies are the existing Python standard library, Git worktree behavior, cr
 
 ## Epics
 
-- [Native indexed spec creation and recovery](epics/epic-001.md) — approved; [Story 001](stories/story-001.md) and dependent [Story 002](stories/story-002.md) are draft.
-- [Read-only completion fingerprints](epics/epic-002.md) — approved; independent [Story 003](stories/story-003.md) is draft.
+- [Native indexed spec creation and recovery](epics/epic-001.md) — approved; [Story 001](stories/story-001.md) supplies creation/recovery and dependent [Story 002](stories/story-002.md) supplies finish coordination and caller cutover.
+- [Read-only completion fingerprints](epics/epic-002.md) — approved; independent [Story 003](stories/story-003.md) supplies the explicit-writer preparation path.
+
+Receipt-backed implementation status lives in the [owning Story table](INDEX.md#stories), not duplicated progress prose.
 
 ## Next Gate
 
-PRD, Architecture and Epics approved by the user. Present each linked draft Story for approval before implementation. Do not implement the two CLI changes under the completed guidance Quick Task.
+PRD, Architecture, Epics and all three Stories are user-approved. Implementation proceeds under each Story, with tests, independent review and receipt-backed native completion; Story 002 follows Story 001's receipt. Do not use the completed guidance Quick Task for these CLI changes.

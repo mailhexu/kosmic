@@ -354,7 +354,7 @@ In your project's `AGENTS.md`:
 ### Spec-Driven Development
 - **Use Quick Task for small work**: Keep simple changes lightweight but traceable
 - **Use Research for uncertainty**: Create a memo when Search is not enough before Architecture
-- **Keep Specs Index current**: Update `specs/INDEX.md` whenever specs, research, stories, or quick tasks change
+- **Keep Specs Index current**: `spec-create` owns new native rows; `work finish` marks them done. Maintain research/non-native navigation manually; historical missing rows are not automatically migrated.
 - **Research first**: No unjustified assumptions
 - **Test-driven**: Write tests before implementation
 - **Code review mandatory**: No story is "done" without review

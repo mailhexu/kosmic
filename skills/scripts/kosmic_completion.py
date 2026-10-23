@@ -34,15 +34,20 @@ from typing import Any, Mapping
 
 try:
     from . import kosmic_work as work
-    from .kosmic_specs import SpecCatalog, SpecError, _table_cells, read_document
+    from .kosmic_specs import (CREATE_LOCK_PARTS, SpecCatalog, SpecError,
+                               _creation_lock, _read_regular_or_none,
+                               _replace_regular_bytes, _table_cells, read_document)
     from .kosmic_dreams import receipt_name
 except ImportError:
     import kosmic_work as work
-    from kosmic_specs import SpecCatalog, SpecError, _table_cells, read_document
+    from kosmic_specs import (CREATE_LOCK_PARTS, SpecCatalog, SpecError,
+                              _creation_lock, _read_regular_or_none,
+                              _replace_regular_bytes, _table_cells, read_document)
     from kosmic_dreams import receipt_name
 
 RECEIPT_SCHEMA = "kosmic.work-receipt/1"
 RECEIPTS_RELATIVE = ".kosmic/work-receipts"
+_CREATION_LOCK_RELATIVE = "/".join(CREATE_LOCK_PARTS)
 
 
 def _deny(condition: bool, code: str, detail: str = "") -> None:
@@ -243,7 +248,8 @@ def source_revision(worktree: Path, root: Path, record) -> str:
     payload: dict[str, str | None] = {}
     for relative in work.changed_worktree_paths(tree):
         project_metadata = same_root and (
-            relative.startswith(("specs/", "evidence/", "log/")) or relative == record_relative
+            relative.startswith(("specs/", "evidence/", "log/"))
+            or relative == record_relative or relative == _CREATION_LOCK_RELATIVE
         )
         if (relative == ".tmp" or relative.startswith(".tmp" + "/")
                 or relative == "STATUS.md" or relative.endswith("/STATUS.md")
@@ -517,37 +523,47 @@ def _checked_review(root: Path, worktree: Path, record, *,
           f"{record.path}: reviewed revision differs from current work")
 
 def _update_indexes(root: Path, record) -> None:
-    indexes = {record.path.parent.parent / "INDEX.md", Path(root) / "specs" / "INDEX.md"}
-    for index in indexes:
-        if not index.is_file():
-            continue
-        try:
-            relative = record.path.relative_to(index.parent).as_posix()
-        except ValueError:
-            # The Project-wide specs index is not an ancestor of owner-local
-            # records; only the corresponding owner index carries this row.
-            continue
-        text = index.read_text(encoding="utf-8")
-        changed = False
-        rows = []
-        status_column: int | None = None
-        for line in text.splitlines(keepends=True):
-            if not line.lstrip().startswith("|"):
-                status_column = None
-                rows.append(line)
-                continue
-            cells = _table_cells(line)
-            header = [cell.strip().casefold() for cell in cells]
-            if "status" in header:
-                status_column = header.index("status")
-            elif status_column is not None and f"]({relative})" in line:
-                if status_column < len(cells):
-                    cells[status_column] = " done "
-                    line = "|".join(cells) + ("\n" if line.endswith("\n") else "")
-                    changed = True
-            rows.append(line)
-        if changed:
-            work._atomic_write(index.parent, index.name, "".join(rows).encode())
+    """Update indexes under one creation lock; caller must not already hold it.
+
+    Refuse detected external drift before replacement. The lock serializes
+    cooperating writers; the expected-content check is not atomic CAS.
+    """
+    try:
+        with _creation_lock(root):
+            indexes = {record.path.parent.parent / "INDEX.md", Path(root) / "specs" / "INDEX.md"}
+            for index in indexes:
+                try:
+                    relative = record.path.relative_to(index.parent).as_posix()
+                except ValueError:
+                    # Only the owner-local index carries an owner record's row.
+                    continue
+                parts = index.relative_to(root).parts
+                current = _read_regular_or_none(root, parts)
+                if current is None:
+                    continue
+                changed = False
+                rows = []
+                status_column: int | None = None
+                for line in current.decode("utf-8").splitlines(keepends=True):
+                    if not line.lstrip().startswith("|"):
+                        status_column = None
+                        rows.append(line)
+                        continue
+                    cells = _table_cells(line)
+                    header = [cell.strip().casefold() for cell in cells]
+                    if "status" in header:
+                        status_column = header.index("status")
+                    elif status_column is not None and f"]({relative})" in line:
+                        if status_column < len(cells):
+                            cells[status_column] = " done "
+                            line = "|".join(cells) + ("\n" if line.endswith("\n") else "")
+                            changed = True
+                    rows.append(line)
+                if changed:
+                    _replace_regular_bytes(root, parts, "".join(rows).encode(), expect=current)
+    except SpecError as error:
+        raise work.WorkdirError(error.code, f"{record.qualified_id}: {error.detail}") from error
+
 
 
 def _append_completion_log(root: Path, record, detail: str) -> None:
@@ -697,7 +713,8 @@ def finish_work(project_root: Path, worktree: Path, record_ref: str,
     validate_completion_proof(root, record)
     import datetime
     candidates = [record.path.parent.parent / "INDEX.md", root / "specs" / "INDEX.md",
-                  root / "log" / f"{datetime.date.today().isoformat()}-work-completion.md"]
+                  root / "log" / f"{datetime.date.today().isoformat()}-work-completion.md",
+                  root.joinpath(*CREATE_LOCK_PARTS)]
     candidates.extend(Path(item["path"]) / "STATUS.md"
                       for item in work.load_registry(root)["directories"])
     cli = _completion_cli()

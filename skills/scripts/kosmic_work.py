@@ -514,8 +514,9 @@ def _normalize_claim(text: str) -> tuple[str, str]:
 
 
 def changed_worktree_paths(worktree: Path) -> list[str]:
-    """Every path changed in the worktree relative to HEAD (porcelain -z)."""
-    out = _run_git(Path(worktree), "status", "--porcelain=v1", "-z", "--untracked-files=all")
+    """Changed paths relative to HEAD, without refreshing the Git index."""
+    out = _run_git(Path(worktree), "--no-optional-locks", "status",
+                   "--porcelain=v1", "-z", "--untracked-files=all")
     paths: list[str] = []
     entries = [item for item in out.split("\0") if item]
     index = 0

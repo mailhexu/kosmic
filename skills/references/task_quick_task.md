@@ -36,7 +36,7 @@ Deterministic subproject flat-spec migration is such a governed workflow: it use
 
 ## Quick Task File
 
-Create the record with the fully qualified `spec-create` invocation and retain the returned canonical path — never guess a `{YYYY-MM-DD}-{slug}.md` filename:
+Create the draft and its canonical index row with this invocation; retain the returned identity, `record_path`, `index_path` and `operation_id` instead of guessing a filename or writing another row:
 
 ```bash
 python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create \
@@ -46,10 +46,13 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py spec-create \
 ```
 
 Quick Tasks are shared, Project-level specs — create them without
-`--subproject`; they never live in a subproject owner root. `spec-create`
-creates the `quick-tasks/` directory; do not create it by hand. Use the
-qualified identity and canonical record path returned in the command output
-everywhere below.
+`--subproject`; they never live in a subproject owner root. The command owns
+directory creation and indexing. Use its returned qualified identity and
+canonical paths everywhere below.
+
+For interrupted creation, rerun the same invocation with the original title
+and `--resume --operation-id "{ORIGINAL_OPERATION_ID}"`. Resume only your
+original incomplete operation; never invent an ID or retry after success.
 
 Use `references/templates/template-quick-task.md`.
 
@@ -119,12 +122,10 @@ draft → approved → in_progress → review → done
 
 ---
 
-## Log Entry
+## Completion Bookkeeping
 
-Add a log entry with:
-
-- Quick Task file path
-- Summary of the change
-- Verification performed
-- Specs index update — `work finish` flips existing index rows, but a missing row for this task is still created manually until native code handles it
-- Links to any notes created or updated
+`work finish` writes the completion log, marks the existing native-created row
+`done`, and publishes receipt-derived STATUS. Keep verification and note links
+in this Quick Task; do not add a second completion entry or refresh STATUS
+after success. Historical missing rows and non-native artifacts are not
+automatically repaired by native creation.

@@ -6,11 +6,16 @@ Consumer projection without coupling to unrelated legacy notes, while full
 """
 
 from __future__ import annotations
+import concurrent.futures
+import contextlib
+import os
+import fcntl
 
 import shutil
 import subprocess
 import unittest
 from pathlib import Path
+from unittest import mock
 
 try:
     from tests.scoped_completion_support import (
@@ -337,6 +342,116 @@ class EmbeddedCompletionFinishTest(ScopedProjectCase):
         if code is not None:
             self.assertIn(code, result.stderr)
         return result
+
+    def native_indexed_record(self):
+        review = self.review_fields()
+        self.record_path.unlink()
+        created = self.run_cli("spec-create", "--project", self.project,
+                               "--kind", "quick-task", "--title", "Fixture task")
+        self.assertEqual(created.returncode, 0, created.stderr)
+        result = json.loads(created.stdout)
+        self.record_path = self.project / result["record_path"]
+        self.write_record(review=review)
+        commit_baseline(self.root)
+        return self.project / result["index_path"]
+
+    def test_creation_lock_exemption_does_not_hide_other_project_metadata(self) -> None:
+        self.native_indexed_record()
+        metadata = self.project / ".kosmic/source-context.txt"
+        metadata.write_text("Unreviewed measurement context.\n", encoding="utf-8")
+        record_bytes = self.record_path.read_bytes()
+        result = self.run_finish()
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("SCOPE_DENIED", result.stderr)
+        self.assertIn("source-context.txt", result.stderr)
+        self.assertEqual(record_bytes, self.record_path.read_bytes())
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+
+    def test_finish_and_native_creation_preserve_interleaved_rows(self) -> None:
+        index = self.native_indexed_record()
+        context = "\nUnrelated experiment context.\n"
+        index.write_text(index.read_text() + context)
+        lock = self.project / ".kosmic/create.lock"
+        with lock.open("rb") as stream, concurrent.futures.ThreadPoolExecutor(2) as pool:
+            fcntl.flock(stream, fcntl.LOCK_EX)
+            finishing = pool.submit(self.run_finish)
+            creating = pool.submit(self.run_cli, "spec-create", "--project", self.project,
+                                   "--kind", "quick-task", "--title", "Neighbor [A] | context")
+            waited_for_writer = False
+            try:
+                finishing.result(timeout=1)
+            except concurrent.futures.TimeoutError:
+                waited_for_writer = True
+            finally:
+                fcntl.flock(stream, fcntl.LOCK_UN)
+            finished = finishing.result(timeout=20)
+            neighbor = creating.result(timeout=20)
+        self.assertEqual(finished.returncode, 0, finished.stderr)
+        self.assertEqual(neighbor.returncode, 0, neighbor.stderr)
+        self.assertTrue(waited_for_writer, "finish bypassed the active index writer")
+        self.assertEqual(json.loads(finished.stdout)["identity"], WORK_RECORD)
+        neighbor_result = json.loads(neighbor.stdout)
+        text = index.read_text()
+        self.assertIn(context, text)
+        self.assertIn("[Fixture task](quick-tasks/fixture-task.md) | done |", text)
+        relative = (self.project / neighbor_result["record_path"]).relative_to(index.parent)
+        self.assertIn(f"]({relative.as_posix()}) | draft |", text)
+        self.assertIn(r"[Neighbor \[A\] \| context]", text)
+
+
+    def test_finish_refuses_external_index_divergence_and_recovers(self) -> None:
+        index = self.native_indexed_record()
+        external = index.read_bytes() + b"\nExternal measurement context.\n"
+        identity = index.stat()
+        real_read_text, real_fdopen = Path.read_text, os.fdopen
+        injected = False
+
+        def external_edit():
+            nonlocal injected
+            if not injected and "\nstatus: done\n" in real_read_text(self.record_path):
+                injected = True
+                index.write_bytes(external)
+
+        def read_text(path, *args, **kwargs):
+            text = real_read_text(path, *args, **kwargs)
+            if path == index:
+                external_edit()
+            return text
+
+        @contextlib.contextmanager
+        def fdopen(fd, mode="r", *args, **kwargs):
+            info = os.fstat(fd)
+            is_index = (info.st_dev, info.st_ino) == (identity.st_dev, identity.st_ino)
+            with real_fdopen(fd, mode, *args, **kwargs) as stream:
+                if not is_index or "r" not in mode:
+                    yield stream
+                else:
+                    class Snapshot:
+                        def read(self, *read_args, **read_kwargs):
+                            data = stream.read(*read_args, **read_kwargs)
+                            external_edit()
+                            return data
+                    yield Snapshot()
+
+        failure = None
+        with mock.patch.object(Path, "read_text", read_text), mock.patch.object(os, "fdopen", fdopen):
+            try:
+                kosmic_completion.finish_work(self.project, self.root, WORK_RECORD,
+                                              ["project:specs/"])
+            except kosmic_work.WorkdirError as error:
+                failure = error
+        self.assertTrue(injected, "external edit must occur after the index snapshot")
+        self.assertEqual(index.read_bytes(), external)
+        self.assertIsInstance(failure, kosmic_work.WorkdirError)
+        self.assertEqual(failure.code, "RESERVATION_CONFLICT")
+        self.assertIn("specs/INDEX.md", str(failure))
+        stored = self.project / ".kosmic/work-receipts" / receipt_name(WORK_RECORD)
+        self.assertFalse(stored.exists())
+        receipt = json.loads(self.finish().stdout)
+        self.assertEqual(receipt["identity"], WORK_RECORD)
+        self.assertIn("External measurement context.", index.read_text())
+        self.assertIn("[Fixture task](quick-tasks/fixture-task.md) | done |", index.read_text())
+
 
     def test_embedded_completion_finish_binds_receipt_to_completed_record(self) -> None:
         receipt = json.loads(self.finish().stdout)

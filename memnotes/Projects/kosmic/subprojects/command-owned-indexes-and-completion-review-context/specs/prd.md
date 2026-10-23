@@ -38,7 +38,7 @@ The user approved removing avoidable orchestration. The related guidance cleanup
 | FR-002 | Entry links resolve to the returned canonical record, with correct title/kind/status. Preserve unrelated index content and avoid duplicate entries during supported resume/recovery. | must |
 | FR-003 | Exit success only after the declared record/index outputs are published. Errors identify incomplete work and deterministic recovery; interrupted recovery preserves unrelated/concurrent edits and never silently blesses a conflicting record. Reuse existing safe publication/resume machinery where applicable. | must |
 | FR-004 | CLI output identifies the owning record/index paths clearly enough for callers to continue without path discovery, manual row construction or a validation round-trip. | must |
-| FR-005 | A supported read-only completion-preparation interface returns the fingerprint for an explicit record and writer using the existing `source_revision` algorithm and exclusions, not Git HEAD or a newly defined hash. Interface details are decided in Architecture. | must |
+| FR-005 | A supported read-only completion-preparation interface returns the fingerprint for an explicit record and writer using the existing `source_revision` algorithm, not Git HEAD or a newly defined hash. User-approved integration amendment: exactly the canonical Project's `.kosmic/create.lock` is command-owned finish output and excluded from the digest only for same-root Projects; all other exclusion and binding rules remain. Interface details are decided in Architecture. | must |
 | FR-006 | Preserve authored observation fields and blank unauthored criteria. Fingerprint/preparation output fabricates no evidence, reviewer decision or approval, writes no Project/writer state, and grants no additional authority. | must |
 | FR-007 | Finish still checks current source/review scope and existing safety gates. Source/context drift must still invalidate stale proof; exposing the calculation never caches permission or weakens revision binding. | must |
 | FR-008 | Migrate all current callers, command references and generated guidance to native index ownership and CLI fingerprint output. Remove obsolete manual index-creation instructions and internal-Python recipes only when their replacements are implemented and exercised. | must |
@@ -61,9 +61,9 @@ The user approved removing avoidable orchestration. The related guidance cleanup
 
 - [Consumer CLI invariants](../../../notes/cli-projection-commands.md)
 - Current owners: `skills/scripts/kosmic_specs.py` record staging, `kosmic_completion.py::_update_indexes` and `source_revision`, and the Projection CLI mutation inventory/parser.
-- [Architecture](architecture.md), [indexed creation Epic](epics/epic-001.md) and [completion fingerprint Epic](epics/epic-002.md) are approved; their linked Stories are draft for approval.
-- Current caller: `skills/references/work_completion.md` embeds the internal-Python fingerprint recipe.
+- [Architecture](architecture.md), [indexed creation Epic](epics/epic-001.md), [completion fingerprint Epic](epics/epic-002.md) and their three linked Stories are user-approved.
+- Baseline caller: `skills/references/work_completion.md` exposed an internal-Python fingerprint recipe; [Story 003](stories/story-003.md) owns its native CLI cutover.
 
 ## Approval Gate
 
-PRD, Architecture and Epics approved by the user in this conversation. Each linked draft Story requires approval before CLI implementation.
+PRD, Architecture, Epics and all three Stories approved by the user in this conversation. Implementation requires each Story's existing tests, independent review and native completion receipt; source approval is not a completion claim.

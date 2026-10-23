@@ -32,6 +32,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
+from unittest import mock
 
 try:
     from tests.scoped_completion_support import (
@@ -196,6 +197,13 @@ class PrepareCompletionPrefillTest(ScopedProjectCase):
         rerun = json.loads(prepare_with_writer().stdout)
         self.assertNotEqual(revision, rerun["source_revision"])
 
+        # The canonical Project is external: this writer-local path is source,
+        # not the Project's derived creation lock.
+        (writer / ".kosmic").mkdir()
+        (writer / ".kosmic/create.lock").write_bytes(b"")
+        writer_lock = json.loads(prepare_with_writer().stdout)["source_revision"]
+        self.assertNotEqual(rerun["source_revision"], writer_lock)
+
         default = json.loads(self.prepare().stdout)
         self.assertEqual(
             {"identity", "record_path", "completion_observations"},
@@ -207,9 +215,9 @@ class PrepareCompletionPrefillTest(ScopedProjectCase):
         )
 
     def test_prepare_completion_same_root_exclusions_match_existing_algorithm(self) -> None:
-        """Story 003: same-root preparation excludes Project metadata exactly
-        as the unchanged algorithm dictates; real staged, deleted and
-        untracked source changes each move the digest."""
+        """Preserve source/metadata boundaries, with only the approved exact
+        canonical creation-lock exception; staged, deleted and untracked
+        source still changes the binding."""
         subprocess.run(["git", "init", "-q", str(self.project)], check=True,
                        capture_output=True)
         (self.project / "src").mkdir()
@@ -246,6 +254,11 @@ class PrepareCompletionPrefillTest(ScopedProjectCase):
         (self.project / ".tmp/kosmic/scratch").mkdir(parents=True)
         (self.project / ".tmp/kosmic/scratch/disposable.txt").write_text("tmp\n")
         self.assertEqual(revision, prepared_revision())
+        (self.project / ".kosmic").mkdir()
+        (self.project / ".kosmic/create.lock").write_bytes(b"")
+        self.assertEqual(revision, prepared_revision())
+        (self.project / ".kosmic/source-context.txt").write_text("source context\n")
+        self.assertNotEqual(revision, prepared_revision())
         # A staged modification of real source changes the digest.
         (self.project / "src/tool.py").write_text("VALUE = 2\n")
         subprocess.run(["git", "add", "src/tool.py"], cwd=str(self.project),
@@ -298,9 +311,13 @@ class PrepareCompletionPrefillTest(ScopedProjectCase):
         writer = self.root / "external-writer"
         (writer / "src").mkdir(parents=True)
         (writer / "src/engine.py").write_text("VALUE = 1\n")
+        steady = writer / "src/steady.py"
+        steady.write_text("CONSTANT = 1\n")
         subprocess.run(["git", "init", "-q", str(writer)], check=True,
                        capture_output=True)
         commit_baseline(writer)
+        stat = steady.stat()
+        os.utime(steady, ns=(stat.st_atime_ns, stat.st_mtime_ns + 2_000_000_000))
         (writer / "src/engine.py").write_text("VALUE = 2\n")
         arguments = (
             "work", "prepare-completion",
@@ -309,7 +326,8 @@ class PrepareCompletionPrefillTest(ScopedProjectCase):
             "--worktree", writer,
         )
         before = (self.project_snapshot(), self.snapshot(writer))
-        success = self.run_cli(*arguments)
+        with mock.patch.dict(os.environ, {"GIT_OPTIONAL_LOCKS": "1"}):
+            success = self.run_cli(*arguments)
         self.assertEqual(
             0,
             success.returncode,

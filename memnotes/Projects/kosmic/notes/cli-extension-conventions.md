@@ -4,7 +4,7 @@ title: Projection CLI extension conventions
 description: Where new vault-layer features hook into the Projection CLI and the failure modes observed extending it.
 confidence: 0.8
 created: '2026-09-02'
-updated: "2026-10-23T07:35:53.656Z"
+updated: "2026-10-23T14:58:50.300Z"
 skill_candidate: true
 validation_procedure: "python3 -m unittest tests.test_project_skills_cli; kosmic_project_skills.py validate --project {VAULT}/Projects/{TARGET}"
 project: kosmic
@@ -29,6 +29,7 @@ Conventions learned while extending `scripts/kosmic_project_skills.py` with gate
 - **Optional frontmatter is absent-compatible.** New keys (`skill_candidate:`, `skill_resources:`) must make absent ≡ no-op so existing vaults regenerate with zero note edits; retired keys (`evidence:`, `evidence_packs:`) likewise read as absent ≡ no-op.
 - **Reservations are data, not authority.** Resume validates the live Project/operation identity and derives canonical owner outputs before opening stored paths or document targets. `O_NOFOLLOW` blocks symlinks, not `..` or absolute traversal; stored coordinates must match the derived outputs.
 - **Pending identities remain allocated.** A reserved operation owns its identity before its record exists. Sequential allocation must include pending slots; fixed-identity fresh creation must refuse an existing reservation rather than take it over.
+- **Read-only Git queries must not refresh metadata.** Ordinary status discovery can rewrite .git/index even when tracked content is unchanged. Disable optional index refresh in the shared changed-path reader, preserving its payload and exclusions; exercise byte-preservation with caller-enabled optional locks so environment defaults cannot hide side effects.
 
 ## Details
 - Projection-affecting note edits pair with regeneration in the same atomic publication; a stable note plus a stale projection fails validation loudly (by design).

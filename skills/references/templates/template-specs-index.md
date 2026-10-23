@@ -10,49 +10,36 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 
 ## Overview
 
-- PRD: [PRD](prd.md)
-- Architecture: [Architecture](architecture.md)
+- Owner: {Project for shared records, or subproject for feature records}
 - Current focus: {current work}
 
-## Active Specs
+## Native Records
 
-| Type | Link | Status | Notes |
-|------|------|--------|-------|
-| PRD | [PRD](prd.md) | draft | {summary} |
-| Architecture | [Architecture](architecture.md) | draft | {summary} |
+`spec-create` owns this table at its returned `index_path`; retain its rows
+instead of transcribing examples, guessing filenames or duplicating links.
+Feature rows stay in their owner-local index; shared Quick Tasks stay in the
+Project index. `work finish` updates existing row statuses, not missing rows.
+
+| Kind | Record | Status |
+| ---- | ------ | ------ |
 
 ## Research Memos
 
-| Research | Status | Linked PRD | Linked Architecture | Recommendation |
-|----------|--------|------------|---------------------|----------------|
-| [Research {topic}](research/{YYYY-MM-DD}-{slug}.md) | draft | [PRD](prd.md) | [Architecture](architecture.md) | {summary} |
+Research has no native creation kind. Add its entries here; PRD/Architecture
+context belongs in the memo rather than duplicate native-record links.
 
-## Quick Tasks
+| Research | Status | Recommendation |
+|----------|--------|----------------|
+| [Research {topic}](research/{YYYY-MM-DD}-{slug}.md) | draft | {summary} |
 
-| Quick Task | Status | Scope | Verification |
-|------------|--------|-------|--------------|
-| [{title}](quick-tasks/{returned-local-id}.md) | draft | {scope} | {verification} |
+## Completed or Archived Research
 
-## Epics
-
-| Epic | Status | Stories | Notes |
-|------|--------|---------|-------|
-| [Epic 001](epics/epic-001-{slug}.md) | draft | 0/{N} done | {summary} |
-
-## Stories
-
-| Story | Status | Epic | Notes |
-|-------|--------|------|-------|
-| [Story 001](stories/story-001-{slug}.md) | draft | [Epic 001](epics/epic-001-{slug}.md) | {summary} |
-
-## Completed or Archived
-
-| Item | Completed | Notes |
-|------|-----------|-------|
-| {link} | {DATE} | {summary} |
+| Research | Completed | Notes |
+|----------|-----------|-------|
+| {research link} | {DATE} | {summary} |
 
 ## Maintenance Notes
 
-- Update this index when creating or changing PRD, Architecture, Research, Quick Task, Epic, or Story files.
-- Keep statuses aligned with the artifact frontmatter.
+- Native creation owns new record rows; finish owns their completion status. Never replace or duplicate a native table to apply this template.
+- Maintain research/non-native navigation manually. Reconcile historical missing rows explicitly when needed; native commands do not migrate them automatically.
 - Link durable knowledge through notes rather than storing it only in this index.
