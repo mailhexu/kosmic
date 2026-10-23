@@ -1,14 +1,14 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "architecture"
 local_id: "architecture"
 linked_prd: "prd.md"
 created: "2026-10-23"
 updated: "2026-10-23"
 linked_research: []
-linked_epics: []
+linked_epics: ["epics/epic-001.md", "epics/epic-002.md"]
 linked_stories: []
 ---
 
@@ -16,7 +16,7 @@ linked_stories: []
 
 ## Scope and Approval
 
-Implements the [approved PRD](prd.md) through two existing modules: spec creation owns record/index publication; completion preparation exposes the existing review fingerprint. This is a draft technical design, not implementation approval. No feature source has been changed. Architecture approval precedes Epics/Stories and their own approval gates.
+Implements the [approved PRD](prd.md) through two existing modules: spec creation owns record/index publication; completion preparation exposes the existing review fingerprint. The user approved this technical design in the conversation. No feature source has been changed. Epic and Story approval gates remain before implementation.
 
 Code inspection resolved the technical questions; no separate research memo or evidence sidecar is needed. Decisions and their supporting code locations remain local to this design.
 
@@ -62,7 +62,7 @@ No generic transaction manager, new persistent record class, dependency or backg
 
 ### ADR-001: Extend Existing Completion Preparation
 
-**Status:** Proposed.
+**Status:** Accepted.
 
 **Decision:** Add optional `--worktree` to `work prepare-completion`. If supplied, the successful JSON additionally contains `source_revision`, computed by the unchanged function. Omission preserves today's arguments, payload and behavior. Never default to the current directory or Git HEAD.
 
@@ -78,7 +78,7 @@ The selected extension retains preparation's existing acceptance-criterion refus
 
 ### ADR-002: Reuse the Existing Creation Operation for Every Kind
 
-**Status:** Proposed.
+**Status:** Accepted.
 
 **Decision:** Extend `.kosmic/create-ops/` and `_creation_lock` to `prd`, `architecture`, `epic`, `story` and `quick-task`. Reserve the immutable identity and all output paths under the lock before publishing the first output. Keep the lifecycle `reserved → published`; no separate recovery journal.
 
@@ -92,7 +92,7 @@ Record publication keeps `_stage_bytes`' existing no-follow, no-overwrite behavi
 
 ### ADR-003: Use the Index Shape Finish Already Consumes
 
-**Status:** Proposed.
+**Status:** Accepted.
 
 **Decision:** For new rows, use a Markdown table with `Kind`, linked `Record`, and `Status` information; the header must contain a `status` column and the row an exact record-relative Markdown link. The stored title, kind and lifecycle state come from the reserved/current record, not an agent-authored summary.
 
@@ -108,7 +108,7 @@ Existing historical bullets and unrelated status rows are not bulk-converted. Ad
 
 ### ADR-004: Serialize Supported Index Writers and Preserve Concurrent Content
 
-**Status:** Proposed.
+**Status:** Accepted.
 
 **Decision:** Both creation's ensure-row operation and finish's existing index-status update use the existing creation lock for index read/merge/publication. Finish acquires it only around index updates; no new finish admission gate or completion lifecycle is introduced.
 
@@ -221,6 +221,11 @@ Final smoke uses the actual documented CLI sequence on disposable governed fixtu
 
 Dependencies are the existing Python standard library, Git worktree behavior, creation lock/staging helpers, live record resolver and fingerprint implementation. No external service or scheduler.
 
+## Epics
+
+- [Native indexed spec creation and recovery](epics/epic-001.md) — draft; creation, recovery, supported index-writer coordination and caller cutover.
+- [Read-only completion fingerprints](epics/epic-002.md) — draft; optional explicit writer, unchanged review binding and caller cutover.
+
 ## Next Gate
 
-Await user Architecture approval. Then create Epics and Stories within this owner hierarchy and present each required approval gate. Do not implement the two CLI changes under the completed guidance Quick Task.
+Architecture approved by the user. Present the draft Epics for approval before creating Stories; each Story requires approval before implementation. Do not implement the two CLI changes under the completed guidance Quick Task.
