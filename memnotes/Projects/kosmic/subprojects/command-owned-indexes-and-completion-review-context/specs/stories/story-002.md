@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "story"
 local_id: "002"
 linked_prd: "../prd.md"
@@ -68,4 +68,4 @@ This changes deterministic coordination used by repeated creation/finish procedu
 
 Require all AC observations, related-note/projection consistency, applicable routine decisions, actual CLI smoke, converged independent review and native completion receipt. Run the affected integrated suite after changes stabilize; rerun only for changed inputs or failures. No evidence sidecar, optional-suggestion scope growth or hand-written `done`.
 
-Draft; awaiting user Story approval. No implementation or verification results are claimed.
+Approved by the user in this conversation. Implementation may proceed after Story 001's receipted completion; no results are claimed yet.

@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "story"
 local_id: "001"
 linked_prd: "../prd.md"
@@ -67,4 +67,4 @@ This materially changes reusable deterministic creation mechanics, so the existi
 
 AC observations, consumer-note/projection consistency, applicable routine decisions, actual CLI smoke, and converged independent review must pass the existing native completion gates. Capture only durable new knowledge; no separate evidence sidecar or duplicate completion log.
 
-Draft; awaiting user Story approval. No implementation or verification results are claimed.
+Approved by the user in this conversation. Implementation and its required verification/review may proceed; no results are claimed yet.

@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "story"
 local_id: "003"
 linked_prd: "../prd.md"
@@ -68,4 +68,4 @@ This exposes reusable deterministic preparation mechanics through a supported CL
 
 Require all AC observations, read-only/binding smoke, related-note/projection consistency, applicable routine decisions, converged independent review and native completion receipt. Use the integrated affected suite after implementation stabilizes. Capture findings locally in this record or the existing durable note, not a new evidence sidecar.
 
-Draft; awaiting user Story approval. No implementation or verification results are claimed.
+Approved by the user in this conversation. Implementation and its required verification/review may proceed; no results are claimed yet.
