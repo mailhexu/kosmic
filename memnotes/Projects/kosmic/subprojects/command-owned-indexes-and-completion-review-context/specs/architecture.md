@@ -9,7 +9,7 @@ created: "2026-10-23"
 updated: "2026-10-23"
 linked_research: []
 linked_epics: ["epics/epic-001.md", "epics/epic-002.md"]
-linked_stories: []
+linked_stories: ["stories/story-001.md", "stories/story-002.md", "stories/story-003.md"]
 ---
 
 # Command-owned indexes and completion review context
@@ -223,9 +223,9 @@ Dependencies are the existing Python standard library, Git worktree behavior, cr
 
 ## Epics
 
-- [Native indexed spec creation and recovery](epics/epic-001.md) — draft; creation, recovery, supported index-writer coordination and caller cutover.
-- [Read-only completion fingerprints](epics/epic-002.md) — draft; optional explicit writer, unchanged review binding and caller cutover.
+- [Native indexed spec creation and recovery](epics/epic-001.md) — approved; [Story 001](stories/story-001.md) and dependent [Story 002](stories/story-002.md) are draft.
+- [Read-only completion fingerprints](epics/epic-002.md) — approved; independent [Story 003](stories/story-003.md) is draft.
 
 ## Next Gate
 
-Architecture approved by the user. Present the draft Epics for approval before creating Stories; each Story requires approval before implementation. Do not implement the two CLI changes under the completed guidance Quick Task.
+PRD, Architecture and Epics approved by the user. Present each linked draft Story for approval before implementation. Do not implement the two CLI changes under the completed guidance Quick Task.

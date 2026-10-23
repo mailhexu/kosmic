@@ -39,7 +39,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Feature Epic | [Optional historical validation](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-001.md) | approved 2026-10-22 | 2/2 Stories done; scoped reporting and read-only audit preserve active integrity. |
 | Feature Epic | [Complete review handoffs](../subprojects/review-convergence-and-optional-historical-validation/specs/epics/epic-002.md) | approved 2026-10-22 | 2/2 Stories done; compatible finding annotations and bounded coordinator handoffs. |
 | Feature Stories | [Review convergence and historical validation: four completed Stories](../subprojects/review-convergence-and-optional-historical-validation/specs/INDEX.md#completed-stories) | done | Four native receipts; independent two-axis reviews converged; 777 integrated tests passed. |
-| Feature PRD | [Command-owned indexes and completion review context](../subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) | approved | PRD and [Architecture](../subprojects/command-owned-indexes-and-completion-review-context/specs/architecture.md) user-approved; [two Epics](../subprojects/command-owned-indexes-and-completion-review-context/specs/INDEX.md) draft awaiting approval. |
+| Feature PRD | [Command-owned indexes and completion review context](../subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) | approved | PRD, Architecture and Epics user-approved; [three Stories](../subprojects/command-owned-indexes-and-completion-review-context/specs/INDEX.md#stories) draft awaiting approval. |
 
 ## Research Memos
 

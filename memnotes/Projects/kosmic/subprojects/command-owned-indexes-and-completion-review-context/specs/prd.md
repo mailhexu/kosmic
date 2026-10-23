@@ -61,9 +61,9 @@ The user approved removing avoidable orchestration. The related guidance cleanup
 
 - [Consumer CLI invariants](../../../notes/cli-projection-commands.md)
 - Current owners: `skills/scripts/kosmic_specs.py` record staging, `kosmic_completion.py::_update_indexes` and `source_revision`, and the Projection CLI mutation inventory/parser.
-- [Architecture](architecture.md) — approved technical design; [indexed creation Epic](epics/epic-001.md) and [completion fingerprint Epic](epics/epic-002.md) are draft for approval.
+- [Architecture](architecture.md), [indexed creation Epic](epics/epic-001.md) and [completion fingerprint Epic](epics/epic-002.md) are approved; their linked Stories are draft for approval.
 - Current caller: `skills/references/work_completion.md` embeds the internal-Python fingerprint recipe.
 
 ## Approval Gate
 
-PRD and Architecture approved by the user in this conversation. Draft Epics require approval before Story creation; each Story requires approval before CLI implementation.
+PRD, Architecture and Epics approved by the user in this conversation. Each linked draft Story requires approval before CLI implementation.

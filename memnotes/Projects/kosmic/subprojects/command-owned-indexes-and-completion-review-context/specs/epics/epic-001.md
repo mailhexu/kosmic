@@ -1,14 +1,14 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "epic"
 local_id: "001"
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
 created: "2026-10-23"
 updated: "2026-10-23"
-linked_stories: []
+linked_stories: ["../stories/story-001.md", "../stories/story-002.md"]
 ---
 
 # Native indexed spec creation and recovery
@@ -40,10 +40,10 @@ Requirements: PRD FR-001–004 and the creation/index portion of FR-008. Technic
 
 ## Planned Story Breakdown
 
-Stories will be created only after Epic approval; these are deliverable slices, not allocated Story identities.
+Approved by the user. The following slices define the Story breakdown; each Story requires its own approval before implementation.
 
-1. **Indexed creation and deterministic recovery:** implement operation-backed record/row publication for all kinds, explicit returned paths, preservation/conflict semantics and interruption/resume coverage. This slice must not claim success before its row exists.
-2. **Finish coordination and workflow cutover:** serialize supported index writers, prove new rows transition through real finish, and migrate all creation callers/references and canonical projections. Integrate against the first slice without leaving a manual fallback for native creation.
+1. [Story 001: Indexed creation and deterministic recovery](../stories/story-001.md) — draft; operation-backed record/row publication for all kinds, explicit returned paths and preservation/conflict/recovery coverage.
+2. [Story 002: Finish coordination and workflow cutover](../stories/story-002.md) — draft; depends on Story 001, serializes index writers, proves actual finish transitions and migrates creation callers/guidance.
 
 Both slices use TDD and mandatory independent code review. Shared CLI and guidance edits have one integration owner; independent investigation does not imply concurrent writes to those files.
 
@@ -69,5 +69,5 @@ The integrated affected suite runs after feature changes stabilize. Record actua
 
 - Requires the approved [PRD](../prd.md) and [Architecture](../architecture.md).
 - No functional dependency on Epic 002; coordinate shared CLI/guidance files and combine the canonical projection refresh after related note edits.
-- Stories created: none. Implementation: not started.
-- Next gate: user Epic approval before Story creation.
+- Stories: 0/2 done; both drafts await approval. Implementation: not started.
+- Next gate: user approval of the linked draft Stories before implementation.

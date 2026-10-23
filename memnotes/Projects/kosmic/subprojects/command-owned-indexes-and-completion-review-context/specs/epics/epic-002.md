@@ -1,14 +1,14 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "epic"
 local_id: "002"
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
 created: "2026-10-23"
 updated: "2026-10-23"
-linked_stories: []
+linked_stories: ["../stories/story-003.md"]
 ---
 
 # Read-only completion fingerprints
@@ -39,9 +39,11 @@ Requirements: PRD FR-005–007 and the fingerprint portion of FR-008. Technical 
 
 ## Planned Story Breakdown
 
-Create one cohesive Story after Epic approval: **explicit-writer completion preparation and caller cutover**. Implement the optional argument/output, read-only and revision-binding behavior, regression coverage, actual CLI smoke, and removal of the obsolete internal-Python recipe together. No thin parser-only Story or temporary compatibility command.
+Approved by the user. One cohesive Story covers **explicit-writer completion preparation and caller cutover**: optional argument/output, read-only and revision-binding behavior, regression coverage, actual CLI smoke, and removal of the obsolete internal-Python recipe together. No thin parser-only Story or temporary compatibility command. The Story requires its own approval before implementation.
 
 The Story uses TDD and mandatory independent code review. Its implementation record will contain actual acceptance observations and review; no separate evidence sidecar.
+
+[Story 003: Explicit-writer completion preparation and caller cutover](../stories/story-003.md) is draft for approval; it has no functional dependency on Epic 001's Stories.
 
 ## Success Criteria
 
@@ -65,5 +67,5 @@ Run the integrated affected suite once related implementation changes stabilize;
 
 - Requires the approved [PRD](../prd.md) and [Architecture](../architecture.md).
 - No functional dependency on Epic 001. Coordinate shared CLI/guidance edits with its integration owner; combine the canonical projection refresh after related note edits.
-- Stories created: none. Implementation: not started.
-- Next gate: user Epic approval before Story creation.
+- Stories: 0/1 done; the draft awaits approval. Implementation: not started.
+- Next gate: user approval of the linked draft Story before implementation.
