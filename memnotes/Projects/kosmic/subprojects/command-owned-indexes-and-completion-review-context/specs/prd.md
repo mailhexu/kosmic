@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "draft"
+status: "approved"
 record_kind: "prd"
 local_id: "prd"
 created: "2026-10-23"
@@ -16,7 +16,7 @@ linked_epics: []
 
 Agents still perform deterministic bookkeeping that belongs in the CLI. The mutation inventory declares that `spec-create` publishes an index entry, but non-PRD creation currently stages only the draft record. Completion changes an existing row's status and does not insert missing rows. Separately, preparing review requires an inline Python program importing `resolve_work_record` and `source_revision`, despite these being deterministic existing mechanics.
 
-The user approved removing avoidable orchestration. The related guidance cleanup is governed by [Remove redundant workflow orchestration](../../../specs/quick-tasks/remove-redundant-workflow-orchestration.md); this PRD covers the two public CLI contract changes and awaits its own approval.
+The user approved removing avoidable orchestration. The related guidance cleanup is governed by [Remove redundant workflow orchestration](../../../specs/quick-tasks/remove-redundant-workflow-orchestration.md); this PRD covers the two public CLI contract changes and is user-approved.
 
 ## Goals
 
@@ -61,8 +61,9 @@ The user approved removing avoidable orchestration. The related guidance cleanup
 
 - [Consumer CLI invariants](../../../notes/cli-projection-commands.md)
 - Current owners: `skills/scripts/kosmic_specs.py` record staging, `kosmic_completion.py::_update_indexes` and `source_revision`, and the Projection CLI mutation inventory/parser.
+- [Architecture](architecture.md) — draft technical design; requires separate user approval.
 - Current caller: `skills/references/work_completion.md` embeds the internal-Python fingerprint recipe.
 
 ## Approval Gate
 
-Draft for user approval. No Architecture, Epics/Stories or CLI implementation is authorized by this draft. After PRD approval, present Architecture for its required approval before planning implementable Stories.
+Approved by the user in this conversation. Approval authorizes Architecture drafting, not CLI implementation. Architecture requires its own approval before Epics/Stories; implementation requires approved Stories.

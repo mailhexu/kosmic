@@ -66,7 +66,13 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 | Spec | Status | Updated |
 |------|--------|---------|
-| [Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) | draft | 2026-10-23 |
+| [Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) | approved | 2026-10-23 |
+
+#### Architecture
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/architecture.md) | draft | 2026-10-23 |
 
 ### Subproject: deterministic-flat-spec-migration
 
@@ -537,7 +543,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Proposal: create shared routine kosmic/day-delta-harvest](memnotes/Projects/kosmic/specs/skill-proposals/2026-09-24-day-delta-harvest-routine.md) - draft
 - [Routine decision: retain migration as its supported command](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-11-migration-routine-decision.md) - draft
 - [Repair existing ABINIT exchange diagnostic procedure](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-12-debug-abinit-exchange.md) - done (receipt pending)
-- [command-owned-indexes-and-completion-review-context/Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/prd.md) - draft
+- [command-owned-indexes-and-completion-review-context/Command-owned indexes and completion review context](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/architecture.md) - draft
 - [deterministic-flat-spec-migration/Epic 001: Script-driven flat-spec migration](memnotes/Projects/kosmic/subprojects/deterministic-flat-spec-migration/specs/epics/epic-001.md) - approved
 - [dream-reflection/Epic 26: Dream Reflection Initial Release](memnotes/Projects/kosmic/subprojects/dream-reflection/specs/epics/epic-001-dream-reflection-initial-release.md) - done (receipt pending)
 - [dream-reflection/Story 057: Dream Day-Delta Harvest](memnotes/Projects/kosmic/subprojects/dream-reflection/specs/stories/story-001-dream-day-delta-harvest.md) - done (receipt pending)
