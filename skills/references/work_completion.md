@@ -38,22 +38,18 @@ completion_observations:
 
 ## 3. Pin reviewed source and decisions
 
-`review_base` is the fixed review baseline; `review_round` is an integer 1..3 recorded in the record frontmatter by the time of finish, after the approved pair — 0 is the pre-review initializer value, never a finish state. `reviewed_revision` is **not Git HEAD**: it is the SHA-256 returned by `kosmic_completion.source_revision(worktree, project, record)`. It binds the current uncommitted writer delta, excluding `.tmp`, `.git` and STATUS output. When Project and writer coincide it also excludes Project metadata directories; when the Project is nested inside the writer it excludes **every path under that Project prefix**, including any Project-local source. With a separate external Project it excludes no writer Project prefix. This is the current validator's boundary, not comprehensive review coverage: reviewers must inspect all owned deltas against the pinned baseline, including excluded or already committed files. An empty source delta has its own hash and does not prove those files were reviewed.
+`review_base` is the fixed review baseline; `review_round` is an integer 1..3 recorded in the record frontmatter by the time of finish, after the approved pair — 0 is the pre-review initializer value, never a finish state. `reviewed_revision` is **not Git HEAD**: it is the SHA-256 reported as `source_revision` by `work prepare-completion` with an explicit `--worktree`. It binds the current uncommitted writer delta, excluding `.tmp`, `.git` and STATUS output. When Project and writer coincide it also excludes Project metadata directories; when the Project is nested inside the writer it excludes **every path under that Project prefix**, including any Project-local source. With a separate external Project it excludes no writer Project prefix. This is the current validator's boundary, not comprehensive review coverage: reviewers must inspect all owned deltas against the pinned baseline, including excluded or already committed files. An empty source delta has its own hash and does not prove those files were reviewed.
 
-After implementation, compute the value using the same installed/source scripts as the CLI. The following is a read-only Python invocation; replace the three absolute paths and the record reference:
+After implementation, obtain the value from the read-only completion preparation command; replace the absolute paths and the record reference:
 
 ```bash
-python3 - /absolute/kosmic/scripts /absolute/Project /absolute/writer specs/quick-tasks/check-export.md <<'PY'
-import sys
-from pathlib import Path
-sys.path.insert(0, sys.argv[1])
-from kosmic_work import resolve_work_record
-from kosmic_completion import source_revision
-project, writer = Path(sys.argv[2]).resolve(), Path(sys.argv[3]).resolve()
-record = resolve_work_record(project, sys.argv[4])
-print(source_revision(writer, project, record))
-PY
+python3 /absolute/kosmic/scripts/kosmic_project_skills.py work prepare-completion \
+  --project /absolute/Project \
+  --work-record example/quick-task/check-export \
+  --worktree /absolute/writer
 ```
+
+The successful JSON keeps the existing `identity`, `record_path` and `completion_observations` payload, preserving every authored observation, and adds the top-level `source_revision` string only because `--worktree` is supplied — that value is the reviewer pin. Preparation resolves the authorized record live, computes the digest through the same unchanged function finish enforces, and writes nothing: the returned digest is a point-in-time observation, never cached permission, evidence, or approval.
 
 Independent Standards and Spec reviewers review the actual delta against the pinned baseline. The review packet bounds to the actual delta plus its acceptance context — the fixed review base, acceptance criteria, embedded observations, checks, and adverse facts. Two distinct independent axes, stable finding IDs, rounds 1–3, and the fixed base never shrink; low risk limits packet scope and depth only, while numerics/scientific claims, methods, security, and API/data/schema/publication/receipt content always receives the stronger domain review, judged from content and blast radius — never from line count. Unchanged inputs receive no fresh audit round; a changed input or contract, or a previously failed check, reruns only the affected checks on the fixed base, and scientific validation is never skipped. Record their real identities and decisions in the embedded `completion_review` frontmatter dict, with stable finding IDs. Preserve the ledger during re-review; after three automated rounds escalate remaining blockers for explicit human acceptance — a failed review never downgrades to a lighter pass.
 

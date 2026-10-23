@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "command-owned-indexes-and-completion-review-context"
-status: "approved"
+status: done
 record_kind: "story"
 local_id: "003"
 linked_prd: "../prd.md"
@@ -15,10 +15,46 @@ consumer_interface_change: true
 proposal_required: false
 routine_edge_change: false
 routine_decision_required: true
-routine_proposals: []
-review_round: 0
-completion_observations: []
-completion_review: {}
+routine_proposals: ["../../../../specs/skill-proposals/2026-10-23-native-cli-routine-decision.md"]
+review_base: "216b709f0f33fd33c25e4fea77ba1c28752d3753"
+review_round: 1
+completion_observations:
+  - criterion: "AC-001: Without `--worktree`, existing `work prepare-completion` arguments, output and refusal behavior remain unchanged; no writer is inferred from the current directory."
+    observation: "Default invocation retained its original three-key payload and refused invalid records as before; the tracer ran from a Git directory and inferred no writer."
+    source: "Focused preparation/record-scoped suites (45 cases; 44 passed initially, one unrelated YAML-spelling assertion corrected and its case passed)."
+  - criterion: "AC-002: With an explicit writer, successful output adds only top-level `source_revision` to the existing payload and computes it through the unchanged function. Preserve authored observation entries field-for-field, including adverse/extra fields, and leave unauthored criteria blank."
+    observation: "Explicit writer output preserved adverse and extra authored fields, kept blank drafts blank, and added only source_revision; the live client also verified unchanged observations."
+    source: "tests.test_prepare_completion_prefill; smoke_completion.py actual CLI, EXIT 0."
+  - criterion: "AC-003: Real staged/unstaged/untracked/deleted source and excluded metadata affect the returned value exactly as the existing algorithm dictates for its same-root, nested and external Project relationships. Do not substitute Git HEAD or introduce new exclusions."
+    observation: "External, same-root and nested layouts exercised staged/unstaged/untracked/deleted source and the existing exclusions; meaningful source changed the digest while excluded metadata did not."
+    source: "Focused tests.test_prepare_completion_prefill behavioral cases passed."
+  - criterion: "AC-004: Preparation leaves Project/writer bytes unchanged on success and refusal, creates no persistent operational outputs, and adds no clean/start/registration requirement, lock, state repair or planning/terminal-record bypass. Existing record/ancestry/acceptance and invalid-writer diagnostics remain."
+    observation: "Project/writer byte snapshots were unchanged on success and WORK_PHASE_DENIED refusal; invalid writer diagnostics passed. Live preparation also left the fixture unchanged."
+    source: "tests.test_prepare_completion_prefill; smoke_completion.py read_only=true."
+  - criterion: "AC-005: Finish accepts a matching actually reviewed revision and refuses subsequent source drift through its existing binding/freshness checks; preparation fabricates no evidence, approval or outcome and never repins a stale review."
+    observation: "The live CLI refused REVIEW_INVALID after source drift without mutating the record, then returned a successful receipt after restoring the actually reviewed source; matching/stale finish regression cases passed."
+    source: "smoke_completion.py EXIT 0 at 2026-10-23T06:31:15Z; corrected drift-refusal case EXIT 0, 0.367s."
+  - criterion: "AC-006: All affected callers use the supported explicit-writer preparation output; the internal-import fingerprint recipe is removed, related canonical knowledge/projections are consistent, and the documented CLI sequence works without an extra administrative confirmation command."
+    observation: "Replaced the internal-import recipe with supported explicit-writer preparation and documented the optional branch. Updated the existing canonical CLI note; native generation published the atomic Skill Pair successfully."
+    source: "Worker manifest: work_completion.md, task_project_skills.md; native generate EXIT 0; live preparation/finish client EXIT 0."
+completion_review:
+  reviewer: "Main"
+  axes:
+    standards: {decision: "approved", reviewer: "PrepStandardsReview"}
+    spec: {decision: "approved", reviewer: "PrepSpecReview"}
+  decision: "approved"
+  review_base: "216b709f0f33fd33c25e4fea77ba1c28752d3753"
+  reviewed_revision: "726aaecc1af1305d0ee32b0238cbdb3f183d11ff033d1500bb8d58e7125cd2ef"
+  findings:
+    - id: "STD-001"
+      axis: "standards"
+      disposition: "Non-blocking"
+      status: "open"
+      introduced_round: 1
+      summary: "Optional snapshot(root) argument annotation consistency."
+      evidence: "tests/test_prepare_completion_prefill.py:119; PrepStandardsReview advisory only."
+      required_resolution: "None; optional suggestion intentionally left unchanged."
+  scope: ["worktree:skills/scripts/kosmic_project_skills.py","worktree:skills/references/work_completion.md","worktree:tests/test_prepare_completion_prefill.py","worktree:tests/test_record_scoped_completion.py","worktree:skills/references/task_project_skills.md","project:subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-003.md","project:notes/cli-projection-commands.md","project:skills/","project:specs/skill-proposals/2026-10-23-native-cli-routine-decision.md","project:specs/skill-proposals/inputs/2026-10-23-native-cli-routine-decision.md"]
 ---
 
 # Explicit-writer completion preparation and caller cutover
@@ -55,7 +91,7 @@ Primary seams: `kosmic_project_skills.py` preparation parser/dispatch, unchanged
 
 ## Routine Decision
 
-This exposes reusable deterministic preparation mechanics through a supported CLI, so the existing routine-decision gate applies. Inspect the generated inventory and record the applicable governed Task P disposition(s) in `routine_proposals` before completion. Existing fingerprint implementation remains the owner; neither classification nor a successful hash authorizes routine publication, automatic review or extra functionality.
+The independent [routine disposition](../../../../specs/skill-proposals/2026-10-23-native-cli-routine-decision.md) is `no_action` / `none`, approved by the user through the required decision prompt. Knowledge-role inputs do not establish executable-reuse eligibility, and the existing fingerprint remains owned by the supported CLI rather than an unrelated shared publisher. No routine or skill is extracted or published. The existing routine gate remains enabled; the proposal is reviewed with this implementation.
 
 ## Technical Notes and Boundaries
 
@@ -68,4 +104,4 @@ This exposes reusable deterministic preparation mechanics through a supported CL
 
 Require all AC observations, read-only/binding smoke, related-note/projection consistency, applicable routine decisions, converged independent review and native completion receipt. Use the integrated affected suite after implementation stabilizes. Capture findings locally in this record or the existing durable note, not a new evidence sidecar.
 
-Approved by the user in this conversation. Implementation and its required verification/review may proceed; no results are claimed yet.
+Both independent axes approved the held implementation and no-action disposition in Round 1. The optional annotation suggestion remains advisory; no source edits followed approval. Native finish alone publishes completion.

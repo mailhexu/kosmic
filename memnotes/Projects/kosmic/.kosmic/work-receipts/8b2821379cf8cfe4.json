@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-23T07:32:49Z",
+  "detail": "Explicit-writer completion preparation, preserved observation drafts and read-only binding implemented. Focused behavioral cases and live CLI matched/stale-source smoke passed; independent Standards and Spec Round1 approved. No-action routine disposition user-approved and reviewed.",
+  "identity": "kosmic/command-owned-indexes-and-completion-review-context/story/003",
+  "proof": {
+    "subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-003.md": "afb384fda71980995579aaa1e2016e17e26e044cecdba67814de2832bd8c86ac"
+  },
+  "record_path": "subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-003.md",
+  "record_sha256": "afb384fda71980995579aaa1e2016e17e26e044cecdba67814de2832bd8c86ac",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

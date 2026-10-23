@@ -374,6 +374,76 @@ class EmbeddedCompletionFinishTest(ScopedProjectCase):
             msg=f"stdout:\n{checked.stdout}\nstderr:\n{checked.stderr}",
         )
 
+    def test_finish_publishes_on_cli_prepared_matching_revision(self) -> None:
+        """Story 003: the reviewer pin comes from the public preparation CLI;
+        the actual reviewed delta publishes a real receipt."""
+        source = self.root / "src/tool.py"
+        source.parent.mkdir(parents=True)
+        source.write_text("VALUE = 1\n")
+        prepared_result = self.run_cli(
+            "work", "prepare-completion",
+            "--project", self.project,
+            "--work-record", WORK_RECORD,
+            "--worktree", self.root,
+        )
+        self.assertEqual(
+            0,
+            prepared_result.returncode,
+            msg=f"stdout:\n{prepared_result.stdout}\nstderr:\n{prepared_result.stderr}",
+        )
+        prepared = json.loads(prepared_result.stdout)
+        review = self.review_fields(
+            reviewed_revision=prepared["source_revision"],
+            scope=["project:specs/", "worktree:src/"],
+        )
+        self.write_record(review=review)
+        result = self.run_finish("project:specs/", "worktree:src/")
+        self.assertEqual(
+            0,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertEqual("successful", json.loads(result.stdout)["status"])
+        self.assertTrue(
+            (self.project / ".kosmic/work-receipts" / receipt_name(WORK_RECORD)).exists())
+        self.assertIn("status: done", self.record_path.read_text(encoding="utf-8"))
+
+    def test_finish_refuses_source_drift_after_cli_prepared_pin(self) -> None:
+        """Story 003: real source drift after the CLI-prepared review pin
+        refuses completion and publishes nothing."""
+        source = self.root / "src/tool.py"
+        source.parent.mkdir(parents=True)
+        source.write_text("VALUE = 1\n")
+        prepared_result = self.run_cli(
+            "work", "prepare-completion",
+            "--project", self.project,
+            "--work-record", WORK_RECORD,
+            "--worktree", self.root,
+        )
+        self.assertEqual(
+            0,
+            prepared_result.returncode,
+            msg=f"stdout:\n{prepared_result.stdout}\nstderr:\n{prepared_result.stderr}",
+        )
+        prepared = json.loads(prepared_result.stdout)
+        source.write_text("VALUE = 2\n")
+        review = self.review_fields(
+            reviewed_revision=prepared["source_revision"],
+            scope=["project:specs/", "worktree:src/"],
+        )
+        self.write_record(review=review)
+        record_bytes = self.record_path.read_bytes()
+        result = self.run_finish("project:specs/", "worktree:src/")
+        self.assertEqual(
+            2,
+            result.returncode,
+            msg=f"stdout:\n{result.stdout}\nstderr:\n{result.stderr}",
+        )
+        self.assertIn("REVIEW_INVALID", result.stderr)
+        self.assertIn("reviewed revision differs", result.stderr)
+        self.assertFalse((self.project / ".kosmic/work-receipts").exists())
+        self.assertEqual(record_bytes, self.record_path.read_bytes())
+
     def test_missing_criterion_coverage_refuses_without_receipt(self) -> None:
         result = self.refusal(
             criteria=(self.CRITERION, "Fixture follow-up verified"),

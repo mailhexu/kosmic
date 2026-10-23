@@ -4486,6 +4486,7 @@ def build_parser() -> argparse.ArgumentParser:
         help="draft completion observations from an authorized record (read-only)")
     prepare_command.add_argument("--project", type=path_argument, required=True)
     prepare_command.add_argument("--work-record", required=True)
+    prepare_command.add_argument("--worktree", type=path_argument)
 
 
     generate_parser = subparsers.add_parser("generate", help="generate an atomic Skill Pair")
@@ -4813,6 +4814,9 @@ def _run_work(args: argparse.Namespace) -> int:
                    "record_path": record.path.relative_to(project_root).as_posix(),
                    "completion_observations": kosmic_completion.prepare_completion(
                        project_root, record)}
+        if args.worktree is not None:
+            payload["source_revision"] = kosmic_completion.source_revision(
+                args.worktree, project_root, record)
     else:
         raise KosmicError(f"unknown work operation: {operation}", exit_code=2)
     _print_json(payload)
