@@ -519,6 +519,53 @@ MAX_SUBPROJECT_ID = 64
 OPERATION_ID = re.compile(r"[0-9a-f]{32}\Z")
 CREATE_LOCK_PARTS = (".kosmic", "create.lock")
 OPERATIONS_PARTS = (".kosmic", "create-ops")
+_INDEX_TABLE_HEADER = "| Kind | Record | Status |\n| ---- | ------ | ------ |\n"
+_LINK_CELL = re.compile(r"\[((?:\\.|[^\\\]])*)\]\(([^()\s]+)\)")
+
+
+def _index_link_text(title: str) -> str:
+    """Markdown-safe link text for a record title (escapes structural chars)."""
+    return (title.replace("\\", "\\\\").replace("[", "\\[").replace("]", "\\]")
+            .replace("|", "\\|"))
+
+
+def _table_cells(line: str) -> list[str]:
+    """Split unescaped table pipes, preserving every cell's bytes for finish."""
+    text = line.rstrip("\n")
+    cells: list[str] = []
+    start = 0
+    escaped = False
+    for index, char in enumerate(text):
+        if escaped:
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        elif char == "|":
+            cells.append(text[start:index])
+            start = index + 1
+    cells.append(text[start:])
+    return cells
+
+
+
+def _plain_link_text(text: str) -> str:
+    """Inverse of :func:`_index_link_text` for record-fact comparison."""
+    out: list[str] = []
+    escaped = False
+    for char in text:
+        if escaped:
+            out.append(char)
+            escaped = False
+        elif char == "\\":
+            escaped = True
+        else:
+            out.append(char)
+    return "".join(out)
+
+
+def _index_row(kind: str, title: str, link_relative: str, state: str) -> str:
+    """Canonical finish-compatible index row for one record."""
+    return f"| {kind} | [{_index_link_text(title)}]({link_relative}) | {state} |\n"
 
 
 def normalize_subproject_title(title: str) -> str:
@@ -644,6 +691,231 @@ def _read_bytes(root: Path, parts: tuple[str, ...]) -> bytes:
         raise SpecError("SCOPE_DENIED", f"{'/'.join(parts)}: {error.strerror}") from error
     finally:
         os.close(fd)
+
+
+def _read_regular_or_none(root: Path, parts: tuple[str, ...]) -> bytes | None:
+    """No-follow read of a regular file; ``None`` when absent, conflict when unsafe."""
+    fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        try:
+            for part in parts[:-1]:
+                next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+                os.close(fd)
+                fd = next_fd
+            try:
+                file_fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                                  dir_fd=fd)
+            except FileNotFoundError:
+                return None
+        except FileNotFoundError:
+            return None
+        try:
+            info = os.fstat(file_fd)
+            if not stat.S_ISREG(info.st_mode):
+                raise SpecError("RESERVATION_CONFLICT", "/".join(parts))
+            with os.fdopen(file_fd, "rb") as stream:
+                file_fd = -1
+                return stream.read()
+        finally:
+            if file_fd >= 0:
+                os.close(file_fd)
+    except OSError as error:
+        raise SpecError("SCOPE_DENIED", f"{'/'.join(parts)}: {error.strerror}") from error
+    finally:
+        os.close(fd)
+
+
+def _replace_regular_bytes(root: Path, parts: tuple[str, ...], data: bytes,
+                           *, expect: bytes) -> None:
+    """Atomically replace regular-file bytes without following symlinks.
+
+    Refuses any existing non-regular target; directory components are opened
+    no-follow exactly like :func:`_stage_bytes`. ``expect`` is the caller's
+    read snapshot: immediately before publication the current bytes are
+    re-read no-follow and any divergence (changed or vanished target) is
+    refused so externally edited content is preserved for reconciliation.
+    The lock serializes supported writers, never arbitrary editors: a
+    non-cooperating editor can still race after this check, which is
+    explicitly not a cross-process transaction guarantee."""
+    fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        for part in parts[:-1]:
+            next_fd = os.open(part, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=fd)
+            os.close(fd)
+            fd = next_fd
+        try:
+            check_fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=fd)
+        except FileNotFoundError:
+            check_fd = -1
+        if check_fd >= 0:
+            try:
+                info = os.fstat(check_fd)
+                if not stat.S_ISREG(info.st_mode):
+                    raise SpecError("RESERVATION_CONFLICT", "/".join(parts))
+                with os.fdopen(check_fd, "rb") as stream:
+                    check_fd = -1
+                    current = stream.read()
+            finally:
+                if check_fd >= 0:
+                    os.close(check_fd)
+            if current != expect:
+                raise SpecError("RESERVATION_CONFLICT",
+                                f"{'/'.join(parts)}: changed during publication")
+        else:
+            raise SpecError("RESERVATION_CONFLICT",
+                            f"{'/'.join(parts)}: removed during publication")
+        unique = f".stage-{os.getpid()}-{os.urandom(6).hex()}"
+        temp_fd = os.open(unique, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW,
+                          0o600, dir_fd=fd)
+        published = False
+        try:
+            with os.fdopen(temp_fd, "wb") as stream:
+                temp_fd = -1
+                stream.write(data)
+                stream.flush()
+                os.fsync(stream.fileno())
+            os.rename(unique, parts[-1], src_dir_fd=fd, dst_dir_fd=fd)
+            published = True
+            dir_fd_tmp = os.open(".", os.O_RDONLY | os.O_DIRECTORY, dir_fd=fd)
+            try:
+                os.fsync(dir_fd_tmp)
+            finally:
+                os.close(dir_fd_tmp)
+        finally:
+            if temp_fd >= 0:
+                os.close(temp_fd)
+            if not published:
+                try:
+                    os.unlink(unique, dir_fd=fd)
+                except OSError:
+                    pass
+    except OSError as error:
+        raise SpecError("SCOPE_DENIED", f"{'/'.join(parts)}: {error.strerror}") from error
+    finally:
+        os.close(fd)
+
+
+def _scan_index_tables(lines: list[str]) -> list[tuple[int, int, list[str]]]:
+    """Contiguous ``(start, end, columns)`` blocks of status tables, in order.
+
+    Mirrors finish's row matcher: every pipe line whose cells declare a
+    ``status`` column starts a table, pipe lines continue it, any other line
+    closes it."""
+    tables: list[tuple[int, int, list[str]]] = []
+    start: int | None = None
+    columns: list[str] = []
+    for index, line in enumerate(lines):
+        if not line.lstrip().startswith("|"):
+            if start is not None:
+                tables.append((start, index, columns))
+            start = None
+            continue
+        cells = [cell.strip().casefold() for cell in _table_cells(line)]
+        if "status" in cells:
+            if start is not None:
+                tables.append((start, index, columns))
+            start, columns = index, cells
+    if start is not None:
+        tables.append((start, len(lines), columns))
+    return tables
+
+
+def _line_link_text(line: str, link_relative: str) -> str | None:
+    """Link text of the first exact ``[text](link)`` match on this line."""
+    for match in _LINK_CELL.finditer(line):
+        if match.group(2) == link_relative:
+            return match.group(1)
+    return None
+
+
+def _row_record_facts(line: str, columns: list[str],
+                      link_relative: str) -> tuple[str, str, str] | None:
+    """``(kind, link text, state)`` of one matching index row, or ``None``
+    when the row does not carry all three declared facts for this link."""
+    cells = [cell.strip() for cell in _table_cells(line)]
+    values: dict[str, str] = {}
+    for name in ("kind", "record", "status"):
+        if name not in columns:
+            return None
+        at = columns.index(name)
+        if at >= len(cells):
+            return None
+        values[name] = cells[at]
+    link_text = _line_link_text(values["record"], link_relative)
+    if link_text is None:
+        return None
+    return (values["kind"].casefold(), _plain_link_text(link_text),
+            values["status"].casefold())
+
+
+def _ensure_index_row(root: Path, index_parts: tuple[str, ...], *, kind: str,
+                      title: str, link_relative: str, state: str, heading: str,
+                      operation_id: str, allow_legacy_entry: bool) -> None:
+    """Merge only this operation's row into the index's current content.
+
+    Caller holds the creation lock. Match by the exact canonical link, never
+    by title substring: a compatible existing row is retained (never
+    duplicated), incompatible or repeated entries conflict, and all
+    unrelated prose, rows and legacy sections are preserved verbatim. The
+    non-table (historical bullet) compatibility exemption applies only to
+    literal pre-indexed operations via ``allow_legacy_entry``; current
+    operations always demand a canonical table row and refuse any
+    non-table entry for their record."""
+    needle = f"]({link_relative})"
+    row = _index_row(kind, title, link_relative, state)
+
+    def conflict(reason: str) -> SpecError:
+        return SpecError("RESERVATION_CONFLICT",
+                         f"{'/'.join(index_parts)}: {link_relative}: {reason}")
+
+    current = _read_regular_or_none(root, index_parts)
+    if current is None:
+        _stage_bytes(root, index_parts, (heading + _INDEX_TABLE_HEADER + row).encode("utf-8"))
+        return
+    lines = current.decode("utf-8").splitlines(keepends=True)
+    tables = _scan_index_tables(lines)
+    table_lines = {index for start, end, _ in tables for index in range(start, end)}
+    compatible = 0
+    for start, end, columns in tables:
+        for index in range(start + 1, end):
+            line = lines[index]
+            if needle not in line:
+                continue
+            facts = _row_record_facts(line, columns, link_relative)
+            if facts != (kind.casefold(), title, state.casefold()):
+                raise conflict("row facts disagree with the reserved record")
+            compatible += 1
+    for index, line in enumerate(lines):
+        if index in table_lines or needle not in line:
+            continue
+        raw = _line_link_text(line, link_relative)
+        link_text = None if raw is None else _plain_link_text(raw)
+        if link_text is not None and allow_legacy_entry and (
+                link_text.casefold() == title.casefold()
+                or (kind == "prd" and link_text.casefold() == "prd")):
+            compatible += 1
+            continue
+        raise conflict("non-table entry is not a canonical row")
+    if compatible > 1:
+        raise conflict("multiple entries for this record")
+    if compatible == 1:
+        return
+    for _, end, columns in tables:
+        if columns != ["", "kind", "record", "status", ""]:
+            continue
+        if not lines[end - 1].endswith("\n"):
+            lines[end - 1] += "\n"
+        lines.insert(end, row)
+        merged = "".join(lines)
+        break
+    else:
+        text = current.decode("utf-8")
+        if text and not text.endswith("\n"):
+            text += "\n"
+        if text and not text.endswith("\n\n"):
+            text += "\n"
+        merged = text + _INDEX_TABLE_HEADER + row
+    _replace_regular_bytes(root, index_parts, merged.encode("utf-8"), expect=current)
 
 
 @contextlib.contextmanager
@@ -868,6 +1140,8 @@ def _project_id(root: Path) -> str:
 
 
 def _subproject_documents(root: Path, owner: str, title: str) -> dict[tuple[str, ...], bytes]:
+    """Immutable bootstrap outputs; the owning index is a mutable output that
+    ``_ensure_index_row`` alone publishes and merges into current content."""
     pid = _project_id(root)
     common = {"project_id": pid, "subproject_id": owner, "status": "draft"}
     return {
@@ -877,16 +1151,281 @@ def _subproject_documents(root: Path, owner: str, title: str) -> dict[tuple[str,
         ("subprojects", owner, "specs", "prd.md"): _document_bytes(
             {**common, "record_kind": "prd", "local_id": "prd"}, title,
             "## Purpose\n\n(draft)\n"),
-        ("subprojects", owner, "specs", "INDEX.md"): (
-            f"# {title} Specs\n\n- [PRD](prd.md)\n").encode("utf-8"),
     }
+
+
+def _reserved_operation(root: Path, *, kind: str, title: str,
+                        subproject_id: str | None, local_id: str,
+                        record_parts: tuple[str, ...], index_parts: tuple[str, ...],
+                        index_relative: str, state: str,
+                        documents: dict[tuple[str, ...], bytes]) -> dict[str, Any]:
+    """Immutable reservation: identity plus every deterministic output path
+    and byte source, stored before the first output is published."""
+    return {
+        "schema": "kosmic.create-op/2",
+        "operation_id": uuid.uuid4().hex,
+        "project_id": _project_id(root),
+        "kind": kind,
+        "title": title,
+        "subproject_id": subproject_id,
+        "local_id": local_id,
+        "status": "reserved",
+        "state": state,
+        "record_parts": list(record_parts),
+        "index_parts": list(index_parts),
+        "index_relative": index_relative,
+        "documents": {"/".join(parts): data.decode("utf-8")
+                      for parts, data in documents.items()},
+    }
+
+
+def _reserved_documents(operation: dict[str, Any]) -> dict[tuple[str, ...], bytes]:
+    """Immutable document bytes of a freshly reserved operation; stored
+    (resume) operations are validated and derived by
+    :func:`_validated_reservation` instead of trusting these keys."""
+    documents = operation["documents"]
+    if not isinstance(documents, dict) or not all(
+            isinstance(key, str) and isinstance(value, str)
+            for key, value in documents.items()):
+        raise SpecError("RESERVATION_CONFLICT",
+                        f"{operation.get('operation_id')}: malformed reservation")
+    return {tuple(key.split("/")): value.encode("utf-8")
+            for key, value in documents.items()}
+
+
+def _validated_reservation(root: Path, operation: dict[str, Any],
+                           operation_id: str) -> dict[str, Any]:
+    """Containment validation of one loaded reservation, before any staging.
+
+    The payload must carry the requested operation id and the live Project
+    identity, and every output must equal what the validated recorded
+    identity (project/owner/kind/local_id) canonically derives: record and
+    index paths, the index-relative link, and the immutable document set.
+    Literal pre-indexed PRD operations (no recorded documents or paths)
+    derive those outputs from their validated slug owner and recorded title.
+    Tampered stored paths, document keys, or identities are refused without
+    rewriting the stored operation; no hash framework or new authorization
+    tier is introduced."""
+    if operation.get("operation_id") != operation_id:
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: operation id mismatch")
+    kind = operation.get("kind")
+    if kind not in CREATED_KINDS:
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: unknown record kind")
+    project_id = _project_id(root)
+    if operation.get("project_id") != project_id:
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: project identity mismatch")
+    owner = operation.get("subproject_id")
+    if owner is not None and (not isinstance(owner, str) or not SLUG.fullmatch(owner)):
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: invalid recorded owner")
+    title = operation.get("title")
+    if not isinstance(title, str) or not title.strip():
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: invalid recorded title")
+    stored_local = operation.get("local_id")
+    if kind in {"prd", "architecture"}:
+        local_id = kind
+        if stored_local is not None and stored_local != local_id:
+            raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: invalid recorded identity")
+    elif kind in {"epic", "story"}:
+        local_id = stored_local
+        if not isinstance(local_id, str) or not local_id.isdecimal():
+            raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: invalid recorded identity")
+    else:
+        local_id = stored_local
+        if not isinstance(local_id, str) or not SLUG.fullmatch(local_id):
+            raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: invalid recorded identity")
+    if kind != "quick-task" and owner is None:
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: missing recorded owner")
+    if kind == "quick-task" and owner is None:
+        specs: tuple[str, ...] = ("specs",)
+    else:
+        specs = ("subprojects", owner, "specs")
+    if kind == "prd":
+        record_parts: tuple[str, ...] = specs + ("prd.md",)
+    elif kind == "architecture":
+        record_parts = specs + ("architecture.md",)
+    elif kind == "epic":
+        record_parts = specs + ("epics", f"epic-{local_id}.md")
+    elif kind == "story":
+        record_parts = specs + ("stories", f"story-{local_id}.md")
+    else:
+        record_parts = specs + ("quick-tasks", f"{local_id}.md")
+    index_parts = specs + ("INDEX.md",)
+    index_relative = Path(*record_parts[len(index_parts) - 1:]).as_posix()
+    state = operation.get("state")
+    if state is None:
+        state = "draft"
+    elif not isinstance(state, str) or not state:
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: invalid recorded state")
+    stored_documents = operation.get("documents")
+    if stored_documents is None:
+        # Literal pre-indexed reservations are prd-only by history; their
+        # immutable outputs derive from the validated recorded identity.
+        if kind != "prd":
+            raise SpecError("RESERVATION_CONFLICT",
+                            f"{operation_id}: legacy operations are prd-only")
+        documents = _subproject_documents(root, owner, title)
+    else:
+        if not isinstance(stored_documents, dict) or not all(
+                isinstance(key, str) and isinstance(value, str)
+                for key, value in stored_documents.items()):
+            raise SpecError("RESERVATION_CONFLICT",
+                            f"{operation_id}: malformed reservation")
+        if kind == "prd":
+            expected = {"/".join(("subprojects", owner, "SubprojectEntry.md")),
+                        "/".join(specs + ("prd.md",))}
+        else:
+            expected = {"/".join(record_parts)}
+        if set(stored_documents) != expected:
+            raise SpecError("RESERVATION_CONFLICT",
+                            f"{operation_id}: documents do not match canonical outputs")
+        # Containment is identity/path/key-set equality only: stored document
+        # bytes stay authoritative for v2 replay, and the existing
+        # byte-identical/differing staging rules govern publication.
+        documents = {tuple(key.split("/")): value.encode("utf-8")
+                     for key, value in stored_documents.items()}
+    for key, derived in (("record_parts", list(record_parts)),
+                         ("index_parts", list(index_parts)),
+                         ("index_relative", index_relative)):
+        if key in operation and operation[key] != derived:
+            raise SpecError("RESERVATION_CONFLICT",
+                            f"{operation_id}: stored paths do not match canonical outputs")
+    return {"project_id": project_id, "owner": owner, "title": title,
+            "local_id": local_id, "state": state,
+            "record_parts": record_parts, "index_parts": index_parts,
+            "index_relative": index_relative, "documents": documents}
+
+
+def _index_heading(root: Path, operation: dict[str, Any]) -> str:
+    """Minimal heading for a missing owning index; existing indexes keep theirs."""
+    owner = operation.get("subproject_id")
+    if owner is None:
+        return "# Specs\n\n"
+    try:
+        entry = read_document(root, root / "subprojects" / owner / "SubprojectEntry.md")
+        title = str(entry.metadata.get("title") or owner)
+    except SpecError:
+        title = owner
+    return f"# {title} Specs\n\n"
+
+
+def _pending_reservations(root: Path) -> list[dict[str, Any]]:
+    """Reserved (unpublished) creation operations; caller holds the lock.
+
+    Pending identities keep occupying their reserved slots: sequential
+    allocation skips them and fresh fixed-identity creations conflict
+    against them until the owning operation resumes or is reconciled.
+    Malformed or unreadable entries are skipped, matching the existing
+    reservation scanner's tolerance."""
+    pending: list[dict[str, Any]] = []
+    fd = os.open(root, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW)
+    try:
+        try:
+            control_fd = os.open(".kosmic", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                 dir_fd=fd)
+        except FileNotFoundError:
+            return pending
+        try:
+            try:
+                ops_fd = os.open("create-ops", os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW,
+                                 dir_fd=control_fd)
+            except FileNotFoundError:
+                return pending
+            try:
+                for name in os.listdir(ops_fd):
+                    if not name.endswith(".json"):
+                        continue
+                    try:
+                        entry_fd = os.open(name, os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK,
+                                           dir_fd=ops_fd)
+                    except OSError:
+                        continue
+                    try:
+                        info = os.fstat(entry_fd)
+                        if not stat.S_ISREG(info.st_mode):
+                            continue
+                        with os.fdopen(entry_fd, "rb") as stream:
+                            entry_fd = -1
+                            payload = json.loads(stream.read().decode("utf-8"))
+                        if isinstance(payload, dict) and payload.get("status") == "reserved":
+                            pending.append(payload)
+                    except (OSError, ValueError, json.JSONDecodeError):
+                        continue
+                    finally:
+                        if entry_fd >= 0:
+                            os.close(entry_fd)
+            finally:
+                os.close(ops_fd)
+        finally:
+            os.close(control_fd)
+    except OSError as error:
+        raise SpecError("SCOPE_DENIED", f"create-ops: {error.strerror}") from error
+    finally:
+        os.close(fd)
+    return pending
+
+
+def _publish_reservation(root: Path, operation: dict[str, Any], *,
+                         record_parts: tuple[str, ...], index_parts: tuple[str, ...],
+                         index_relative: str, state: str,
+                         documents: dict[tuple[str, ...], bytes],
+                         allow_existing: bool) -> None:
+    """Publish reserved drafts, ensure the owning row, mark published last.
+
+    Publication is per-path and recoverable, never cross-file atomic: an
+    interrupted run leaves earlier outputs visible while the operation stays
+    ``reserved``, so resume with the returned ID replays exactly these
+    outputs under the existing creation lock. Conflicts name the operation
+    and the incomplete or conflicting path; current bytes are preserved.
+    Fresh creation refuses any existing target, byte-identical included;
+    byte-identical replay is reserved to resuming the owning operation. The
+    owning index is never staged here: ``_ensure_index_row`` merges this
+    operation's row into the index's current content under the lock."""
+    operation_id = operation["operation_id"]
+    # Only literal pre-indexed reservations (no recorded documents) may keep
+    # a historical non-table entry; every current operation demands the
+    # canonical table row for its record.
+    allow_legacy_entry = "documents" not in operation
+    try:
+        for parts, data in sorted(documents.items()):
+            if not _stage_bytes(root, parts, data) and not allow_existing:
+                raise SpecError("RESERVATION_CONFLICT", "/".join(parts))
+        heading = _index_heading(root, operation)
+        with _creation_lock(root):
+            _ensure_index_row(root, index_parts, kind=operation["kind"],
+                              title=operation["title"], link_relative=index_relative,
+                              state=state, heading=heading, operation_id=operation_id,
+                              allow_legacy_entry=allow_legacy_entry)
+            operation["status"] = "published"
+            _store_operation(root, operation, replace=True)
+    except SpecError as error:
+        raise SpecError(error.code, f"{error.detail}: operation {operation_id}") from error
 
 
 def _create_subproject(root: Path, title: str, *, resume: bool,
                        operation_id: str | None) -> dict[str, Any]:
     display = title.strip() or "Subproject"
     slug = normalize_subproject_title(title)
-    resumed = False
+
+    def result(operation: dict[str, Any], owner: str, resumed: bool,
+               documents: dict[tuple[str, ...], bytes]) -> dict[str, Any]:
+        record_parts = ("subprojects", owner, "specs", "prd.md")
+        index_parts = ("subprojects", owner, "specs", "INDEX.md")
+        paths = {"/".join(parts): parts for parts in sorted(documents)}
+        paths["/".join(index_parts)] = index_parts
+        return {
+            "operation_id": operation["operation_id"],
+            "project_id": operation["project_id"],
+            "kind": "prd",
+            "subproject_id": owner,
+            "local_id": "prd",
+            "title": operation["title"],
+            "status": "published",
+            "resumed": resumed,
+            "record_path": "/".join(record_parts),
+            "index_path": "/".join(index_parts),
+            "paths": paths,
+        }
+
     if resume:
         if not operation_id:
             raise SpecError("RESUME_REQUIRED", "explicit operation_id is required to resume")
@@ -895,45 +1434,42 @@ def _create_subproject(root: Path, title: str, *, resume: bool,
             raise SpecError("OPERATION_NOT_FOUND", f"{operation_id}: kind mismatch")
         if operation.get("status") == "published":
             raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: already published")
-        owner = operation["subproject_id"]
-        resumed = True
-    else:
-        with _creation_lock(root):
-            owner = _reserve_subproject_id(root, slug)
-            operation = {
-                "operation_id": uuid.uuid4().hex,
-                "project_id": _project_id(root),
-                "kind": "prd",
-                "title": display,
-                "subproject_id": owner,
-                "status": "reserved",
-            }
-            _store_operation(root, operation, replace=False)
-        _reserve_owner_directory(root, owner)
-    staged = _subproject_documents(root, owner, operation["title"])
-    for parts, data in sorted(staged.items()):
-        _stage_bytes(root, parts, data)
-    operation["status"] = "published"
+        reservation = _validated_reservation(root, operation, operation_id)
+        _publish_reservation(
+            root, operation, record_parts=reservation["record_parts"],
+            index_parts=reservation["index_parts"],
+            index_relative=reservation["index_relative"],
+            state=reservation["state"], documents=reservation["documents"],
+            allow_existing=True)
+        return result(operation, reservation["owner"], True, reservation["documents"])
     with _creation_lock(root):
-        _store_operation(root, operation, replace=True)
-    return {
-        "operation_id": operation["operation_id"],
-        "project_id": operation["project_id"],
-        "kind": "prd",
-        "subproject_id": owner,
-        "local_id": "prd",
-        "title": operation["title"],
-        "status": "published",
-        "resumed": resumed,
-        "paths": {"/".join(parts): parts for parts in staged},
-    }
+        owner = _reserve_subproject_id(root, slug)
+        operation = _reserved_operation(
+            root, kind="prd", title=display, subproject_id=owner, local_id="prd",
+            record_parts=("subprojects", owner, "specs", "prd.md"),
+            index_parts=("subprojects", owner, "specs", "INDEX.md"),
+            index_relative="prd.md", state="draft",
+            documents=_subproject_documents(root, owner, display))
+        _store_operation(root, operation, replace=False)
+    _reserve_owner_directory(root, owner)
+    documents = _reserved_documents(operation)
+    _publish_reservation(
+        root, operation,
+        record_parts=tuple(operation["record_parts"]),
+        index_parts=tuple(operation["index_parts"]),
+        index_relative=operation["index_relative"], state=operation["state"],
+        documents=documents, allow_existing=False)
+    return result(operation, owner, False, documents)
 
 
 def _create_owned_record(root: Path, kind: str, title: str, owner: str | None,
-                         parent: str | Path | None) -> dict[str, Any]:
+                         parent: str | Path | None, *, resume: bool = False,
+                         operation_id: str | None = None) -> dict[str, Any]:
     shared = owner is None
     if kind in {"architecture", "epic", "story"} and shared:
         raise SpecError("OWNER_MISMATCH", f"{kind} requires a subproject owner")
+    if resume:
+        return _resume_owned_operation(root, kind, owner, operation_id)
     with _creation_lock(root):
         try:
             catalog = SpecCatalog(root)
@@ -957,12 +1493,16 @@ def _create_owned_record(root: Path, kind: str, title: str, owner: str | None,
             specs = root / "subprojects" / owner / "specs"
             common = {"project_id": pid, "subproject_id": owner, "status": "draft"}
             owner_key = owner
+        pending = _pending_reservations(root)
         parent_ref: SpecRef | None = None
         if kind == "architecture":
             local_id, relative, chain = "architecture", Path("architecture.md"), {}
         elif kind == "epic":
             parent_ref = catalog.resolve(parent, owner=owner_key, kind="architecture")
             number = catalog.next_local_id("epic", owner)
+            while any(entry.get("kind") == "epic" and entry.get("subproject_id") == owner
+                      and entry.get("local_id") == number for entry in pending):
+                number = str(int(number) + 1).zfill(3)
             local_id = number
             relative = Path("epics") / f"epic-{number}.md"
             chain = {"linked_architecture": parent_ref}
@@ -970,6 +1510,9 @@ def _create_owned_record(root: Path, kind: str, title: str, owner: str | None,
             parent_ref = catalog.resolve(parent, owner=owner_key, kind="epic")
             architecture = catalog._parent(parent_ref, "linked_architecture", "architecture")
             number = catalog.next_local_id("story", owner)
+            while any(entry.get("kind") == "story" and entry.get("subproject_id") == owner
+                      and entry.get("local_id") == number for entry in pending):
+                number = str(int(number) + 1).zfill(3)
             local_id = number
             relative = Path("stories") / f"story-{number}.md"
             chain = {"linked_epic": parent_ref, "linked_architecture": architecture}
@@ -977,6 +1520,11 @@ def _create_owned_record(root: Path, kind: str, title: str, owner: str | None,
             local_id = normalize_subproject_title(title)
             relative = Path("quick-tasks") / f"{local_id}.md"
             chain = {}
+        for entry in pending:
+            if (entry.get("kind") == kind and entry.get("subproject_id") == owner
+                    and entry.get("local_id") == local_id):
+                raise SpecError("RESERVATION_CONFLICT",
+                                f"{entry.get('operation_id')}: pending reservation")
         path = specs / relative
         if catalog is None:
             # The legacy work-record resolver also identifies flat tasks by
@@ -998,21 +1546,80 @@ def _create_owned_record(root: Path, kind: str, title: str, owner: str | None,
             if kind == "story":
                 metadata["depends_on"] = []
         parts = tuple(os.path.relpath(path, root).replace(os.sep, "/").split("/"))
-        created = _stage_bytes(root, parts, _document_bytes(metadata, title.strip()))
-        if not created:
-            raise SpecError("RESERVATION_CONFLICT", str(path))
-        qualified = f"{pid}/{owner}/{kind}/{local_id}" if owner else f"{pid}/{kind}/{local_id}"
-        return {
-            "operation_id": None,
-            "project_id": pid,
-            "kind": kind,
-            "subproject_id": owner,
-            "local_id": local_id,
-            "title": title.strip(),
-            "status": "draft",
-            "resumed": False,
-            "paths": {"/".join(parts): qualified},
-        }
+        index_parts = (("specs", "INDEX.md") if shared
+                       else ("subprojects", owner, "specs", "INDEX.md"))
+        index_relative = Path(*parts[len(index_parts) - 1:]).as_posix()
+        operation = _reserved_operation(
+            root, kind=kind, title=title.strip(), subproject_id=owner,
+            local_id=local_id, record_parts=parts, index_parts=index_parts,
+            index_relative=index_relative, state="draft",
+            documents={parts: _document_bytes(metadata, title.strip())})
+        _store_operation(root, operation, replace=False)
+    _publish_reservation(
+        root, operation, record_parts=parts, index_parts=index_parts,
+        index_relative=index_relative, state="draft",
+        documents=_reserved_documents(operation), allow_existing=False)
+    qualified = f"{pid}/{owner}/{kind}/{local_id}" if owner else f"{pid}/{kind}/{local_id}"
+    return {
+        "operation_id": operation["operation_id"],
+        "project_id": pid,
+        "kind": kind,
+        "subproject_id": owner,
+        "local_id": local_id,
+        "title": title.strip(),
+        "status": "draft",
+        "resumed": False,
+        "record_path": "/".join(parts),
+        "index_path": "/".join(index_parts),
+        "paths": {"/".join(parts): qualified},
+    }
+
+
+def _resume_owned_operation(root: Path, kind: str, owner_argument: str | None,
+                            operation_id: str | None) -> dict[str, Any]:
+    """Resume one reserved non-PRD creation using only recorded identity.
+
+    The recorded owner, identity and output paths are replayed exactly;
+    retyped arguments never select or reallocate an identity. Published
+    operations keep their refusal, and conflicting current bytes remain
+    conflicts instead of being overwritten."""
+    if not operation_id:
+        raise SpecError("RESUME_REQUIRED", "explicit operation_id is required to resume")
+    operation = _load_operation(root, operation_id)
+    if operation.get("kind") != kind:
+        raise SpecError("OPERATION_NOT_FOUND", f"{operation_id}: kind mismatch")
+    if operation.get("status") == "published":
+        raise SpecError("RESERVATION_CONFLICT", f"{operation_id}: already published")
+    owner = operation.get("subproject_id")
+    if owner is not None:
+        if owner_argument is not None and owner_argument != owner:
+            raise SpecError("OWNER_MISMATCH", f"{operation_id}: recorded owner {owner}")
+    elif owner_argument is not None:
+        raise SpecError("OWNER_MISMATCH", f"{operation_id}: recorded owner is shared")
+    reservation = _validated_reservation(root, operation, operation_id)
+    _publish_reservation(
+        root, operation, record_parts=reservation["record_parts"],
+        index_parts=reservation["index_parts"],
+        index_relative=reservation["index_relative"], state=reservation["state"],
+        documents=reservation["documents"], allow_existing=True)
+    pid = reservation["project_id"]
+    local_id = reservation["local_id"]
+    owner = reservation["owner"]
+    qualified = (f"{pid}/{owner}/{kind}/{local_id}" if owner
+                 else f"{pid}/{kind}/{local_id}")
+    return {
+        "operation_id": operation_id,
+        "project_id": pid,
+        "kind": kind,
+        "subproject_id": owner,
+        "local_id": local_id,
+        "title": reservation["title"],
+        "status": "draft",
+        "resumed": True,
+        "record_path": "/".join(reservation["record_parts"]),
+        "index_path": "/".join(reservation["index_parts"]),
+        "paths": {"/".join(reservation["record_parts"]): qualified},
+    }
 
 
 def create_spec(project_root: str | os.PathLike[str], kind: str, title: str, *,
@@ -1021,9 +1628,9 @@ def create_spec(project_root: str | os.PathLike[str], kind: str, title: str, *,
     """Reserve and publish one specification record under an immutable identity.
 
     kind="prd" with subproject=None bootstraps a new subproject. Resume uses
-    the explicit operation_id; titles never select, reuse, or overwrite an
-    existing feature. Spec creation is bounded record bootstrap, not a work
-    authorization mechanism.
+    the explicit operation_id for every kind; titles never select, reuse, or
+    overwrite an existing record. Spec creation is bounded record bootstrap,
+    not a work authorization mechanism.
     """
     root = Path(project_root).expanduser().resolve()
     if not isinstance(title, str):
@@ -1039,7 +1646,8 @@ def create_spec(project_root: str | os.PathLike[str], kind: str, title: str, *,
         return _create_subproject(root, title, resume=resume, operation_id=operation_id)
     if subproject is None and kind != "quick-task":
         raise SpecError("OWNER_REQUIRED", kind)
-    return _create_owned_record(root, kind, title, subproject, parent)
+    return _create_owned_record(root, kind, title, subproject, parent,
+                                resume=resume, operation_id=operation_id)
 
 
 def _legacy_spec_inventory(root: Path) -> dict[str, dict[str, Any]]:

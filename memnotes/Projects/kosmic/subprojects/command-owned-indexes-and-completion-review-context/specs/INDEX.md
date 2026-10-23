@@ -9,8 +9,8 @@
 
 | Story | Status | Dependency | Scope |
 |-------|--------|------------|-------|
-| [Story 001: Indexed spec creation and deterministic recovery](stories/story-001.md) | draft | none | All kinds, canonical rows, returned paths and safe resume. |
-| [Story 002: Finish index coordination and native workflow cutover](stories/story-002.md) | draft | Story 001 | Coordinated index writers, finish behavior and caller migration. |
-| [Story 003: Explicit-writer completion preparation and caller cutover](stories/story-003.md) | draft | none | Optional explicit writer, unchanged fingerprint and read-only preparation. |
+| [Story 001: Indexed spec creation and deterministic recovery](stories/story-001.md) | done | none | Native creation/recovery implemented; verification and independent review precede receipt-backed completion. |
+| [Story 002: Finish index coordination and native workflow cutover](stories/story-002.md) | approved | Story 001 | Awaiting Story 001 receipt before its isolated implementation starts. |
+| [Story 003: Explicit-writer completion preparation and caller cutover](stories/story-003.md) | done | none | Explicit writer and caller cutover implemented; verification and independent review precede receipt-backed completion. |
 
-Each Story awaits user approval before implementation; no completion is claimed.
+All three Stories are user-approved. Only successful native finish receipts establish completion.

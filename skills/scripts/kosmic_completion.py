@@ -34,11 +34,11 @@ from typing import Any, Mapping
 
 try:
     from . import kosmic_work as work
-    from .kosmic_specs import SpecCatalog, SpecError, read_document
+    from .kosmic_specs import SpecCatalog, SpecError, _table_cells, read_document
     from .kosmic_dreams import receipt_name
 except ImportError:
     import kosmic_work as work
-    from kosmic_specs import SpecCatalog, SpecError, read_document
+    from kosmic_specs import SpecCatalog, SpecError, _table_cells, read_document
     from kosmic_dreams import receipt_name
 
 RECEIPT_SCHEMA = "kosmic.work-receipt/1"
@@ -536,7 +536,7 @@ def _update_indexes(root: Path, record) -> None:
                 status_column = None
                 rows.append(line)
                 continue
-            cells = line.rstrip("\n").split("|")
+            cells = _table_cells(line)
             header = [cell.strip().casefold() for cell in cells]
             if "status" in header:
                 status_column = header.index("status")

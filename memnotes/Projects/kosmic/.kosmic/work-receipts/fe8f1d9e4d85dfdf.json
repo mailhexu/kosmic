@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-23T14:30:56Z",
+  "detail": "Five-kind indexed creation and recoverable reservation implemented.33 focused tests and actual CLI creation/resume/finish smokes passed; independent two-axis review converged, all Blocking fixes accepted. Third pair confirmed unchanged authored bytes and restored baseline caches at clean binding3cbbe670. User-approved no-action routine disposition.",
+  "identity": "kosmic/command-owned-indexes-and-completion-review-context/story/001",
+  "proof": {
+    "subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-001.md": "46c7fb458df544ebe44e4b149e1d7bfd547886a1d2a874c8bfe424a32ea33198"
+  },
+  "record_path": "subprojects/command-owned-indexes-and-completion-review-context/specs/stories/story-001.md",
+  "record_sha256": "46c7fb458df544ebe44e4b149e1d7bfd547886a1d2a874c8bfe424a32ea33198",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}
