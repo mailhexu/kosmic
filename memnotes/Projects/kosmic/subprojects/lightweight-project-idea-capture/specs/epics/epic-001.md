@@ -17,7 +17,7 @@ linked_stories: []
 
 Deliver one lightweight `kosmic idea` action for ideas belonging to a Project and ideas belonging to no Project. The command creates the selected missing destination, saves one title-named Markdown note with dated in-note history, and returns its full-path link without launching an implementation workflow.
 
-Requirements: [PRD FR-001–007](../prd.md). Design: [Architecture ADR-001–002 and storage/publication contract](../architecture.md). The initial Project-only Architecture was approved; the user subsequently requested title-only filenames, dated history and vault-root `GeneralIdeas/`. The expanded Architecture amendment awaits approval. This Epic remains a draft, not implementation authority.
+Requirements: [PRD FR-001–007](../prd.md). Design: [approved Architecture ADR-001–002 and storage/publication contract](../architecture.md), including title-only filenames, dated history and vault-root `GeneralIdeas/`. This Epic remains a draft and is the next approval gate, not implementation authority.
 
 ## Scope
 
@@ -66,4 +66,4 @@ Use one integration owner for shared CLI and guidance edits. Classify new determ
 
 ## Approval and Progress
 
-Zero Story records created; two proposed slices. First approve the Project/general Architecture amendment, then approve this Epic before Story creation. Each Story requires its own approval before implementation. This draft creates no source, runtime data, installed package or automatic publication.
+Zero Story records created; two proposed slices. The Project/general Architecture is approved. Approve this Epic before Story creation; each Story then requires its own approval before implementation. This draft creates no source, runtime data, installed package or automatic publication.

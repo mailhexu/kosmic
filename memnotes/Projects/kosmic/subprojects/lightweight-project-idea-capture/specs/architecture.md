@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "lightweight-project-idea-capture"
-status: "draft"
+status: "approved"
 record_kind: "architecture"
 local_id: "architecture"
 linked_prd: "prd.md"
@@ -15,13 +15,13 @@ linked_stories: []
 
 ## Scope and Status
 
-Implements the [PRD](prd.md). The user approved the initial Project capture design on 2026-10-24, then requested title-only filenames, dated in-note history and vault-root `GeneralIdeas/`. This draft incorporates those instructions; the expanded Project/general target and authority contract awaits approval. No feature code or installed skill has changed. Existing code and knowledge resolved the design questions; no research memo or evidence sidecar is needed.
+Implements the [approved PRD](prd.md). The user approved the initial Project capture design on 2026-10-24, then requested title-only filenames, dated history and vault-root `GeneralIdeas/`. At the explicit Architecture-amendment approval gate, the user's “next” was taken as permission to advance this amended design. No feature code or installed skill has changed. Existing code and knowledge resolved the design questions; no research memo or evidence sidecar is needed.
 
 A Project Idea is tentative input, not Project Knowledge or a Work Record. Capturing one does not verify its claims, select work, or authorize implementation.
 
 ## ADR-001: One Capture Operation
 
-**Status:** Proposed amendment. The original one-operation decision was accepted; this amendment adds mutually exclusive Project and general targets without another command or arbitrary output-path interface.
+**Status:** Accepted. The amended one-operation interface has mutually exclusive Project and general targets without another command or arbitrary output-path interface.
 
 Use one `idea` subcommand of the existing Projection CLI:
 
@@ -77,7 +77,7 @@ No audience, confidence, skill-resource metadata, approval fields, generated ind
 
 ## ADR-002: Capture-Only Authority
 
-**Status:** Proposed amendment. The approved capture-only exception extends to general ideas without a synthetic Project. Applying implementation-record gates to either destination contradicts the lightweight capture requirement; a named, output-limited exception avoids weakening other workflows.
+**Status:** Accepted. Capture-only authority extends to general ideas without a synthetic Project. Applying implementation-record gates to either destination contradicts the lightweight capture requirement; a named, output-limited exception avoids weakening other workflows.
 
 Add `idea` as a specifically named bounded mutation in `MUTATION_INVENTORY` and `MUTATION_GATE_EXEMPTIONS`: explicit capture authorizes one note in the selected Project's `ideas/` or the selected vault's `GeneralIdeas/`, plus that missing child directory only. It is not read-only or authority for other commands, another Project, an arbitrary path, or a new vault.
 
@@ -122,5 +122,5 @@ Keep permanent tests for consumer-visible collision, isolation, refusal and publ
 
 Standard-library Python and the existing Projection CLI/document parsing conventions only. No new runtime package or scheduled process.
 
-The initial Architecture was approved; this Project/general amendment returns to Architecture approval. The already-created [Epic draft](epics/epic-001.md) is updated for the requested scope but is not approved. Approve the amended Architecture, then the Epic before Story creation, and each Story before implementation. Planning outputs remain specs, approval/navigation, glossary, log and derived STATUS only; no feature source, generated guidance or installed package changes at this gate.
+The Project/general Architecture amendment is approved. The [Epic draft](epics/epic-001.md) is the next approval gate: approve it before Story creation, then approve each Story before implementation. Planning outputs remain specs, approval/navigation, glossary, log and derived STATUS only; no feature source, generated guidance or installed package changes at this gate.
 

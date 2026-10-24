@@ -66,8 +66,8 @@ Users need to save ideas while coding or doing research without turning a tentat
 - [Current CLI conventions](../../../notes/cli-projection-commands.md): trust successful command outputs and preserve explicit Project identity.
 - [Existing dream workflow](../../../notes/dream-reflection-workflow.md): its vault-level idea backlog remains unchanged; explicit general capture uses `GeneralIdeas/`, not dreams.
 - Directories are created lazily, not through eager initialization or vault-wide migration. Captured ideas remain tentative; canonical knowledge and approved work retain separate authority.
-- [Architecture](architecture.md) contains the previously approved design, title/history amendment, and the proposed explicit Project-versus-general target amendment.
+- [Approved Architecture](architecture.md) defines the Project/general target interface, title-only filenames, dated History content, safe publication and bounded capture authority.
 
 ## Approval Gate
 
-The user approved the PRD and initial Architecture on 2026-10-24, then explicitly requested title-only filenames, dated history and vault-root `GeneralIdeas/`. These product requirements incorporate those instructions. The expanded Project/general command contract returns to Architecture approval; Epic approval remains required before Story creation. Planning authorizes no implementation or installation.
+The PRD and amended Project/general Architecture are approved. The user's “next” at the Architecture-amendment gate was taken as permission to advance. Epic approval is required before Story creation; each Story requires approval before implementation. Planning authorizes no implementation or installation.
