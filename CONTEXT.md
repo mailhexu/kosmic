@@ -16,6 +16,10 @@ _Avoid_: Target, directory basename, display name
 The authoritative body of durable knowledge about a Project, shared as the source for its audience-specific guidance.
 _Avoid_: Skill content, generated documentation
 
+**Project Idea**:
+A tentative proposal, possibility, or open question captured for later consideration within a Project; neither verified Project Knowledge nor an approved Work Record.
+_Avoid_: Approved task, established knowledge, skill nomination
+
 **Development Skill**:
 A per-Project agent skill containing Contributor-only guidance; it refers to the paired Usage Skill for consumer and shared guidance rather than repeating it.
 _Avoid_: Developer docs, internal skill

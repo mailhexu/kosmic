@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "lightweight-project-idea-capture"
-status: "draft"
+status: "approved"
 record_kind: "prd"
 local_id: "prd"
 created: "2026-10-24"
@@ -66,7 +66,8 @@ Users need to save project ideas while coding or doing research without turning 
 - [Current CLI conventions](../../../notes/cli-projection-commands.md): trust successful command outputs and preserve explicit Project identity.
 - [Existing dream workflow](../../../notes/dream-reflection-workflow.md): its idea backlog is vault-level and remains unchanged; this feature handles explicit Project-local capture.
 - This PRD proposes lazy directory creation, not eager initialization or a vault-wide migration. Captured ideas remain tentative; canonical knowledge and approved work retain their existing separate authority.
+- [Proposed Architecture](architecture.md) defines the single capture interface, bounded authority and safe publication design; its approval is a separate gate.
 
 ## Approval Gate
 
-Draft requirements only. User approval is required before Architecture; this record authorizes no feature implementation or installation.
+The user approved this PRD in the conversation on 2026-10-24. Architecture is the next approval gate; this approval authorizes planning, not feature implementation or installation.

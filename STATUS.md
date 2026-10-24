@@ -299,7 +299,13 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 | Spec | Status | Updated |
 |------|--------|---------|
-| [Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/prd.md) | draft | 2026-10-24 |
+| [Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/prd.md) | approved | 2026-10-24 |
+
+#### Architecture
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/architecture.md) | draft | 2026-10-24 |
 
 ### Subproject: migration-compatible-skill-proposal-validation
 
@@ -621,7 +627,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [feature-prd-procedure-compilation-and-routine-reuse/Story 041: Atomic Publication Compilation](memnotes/Projects/kosmic/subprojects/feature-prd-procedure-compilation-and-routine-reuse/specs/stories/story-005-atomic-publication-compilation.md) - done (receipt pending)
 - [feature-prd-procedure-compilation-and-routine-reuse/Story 042: Procedure Compilation Dogfood and Release](memnotes/Projects/kosmic/subprojects/feature-prd-procedure-compilation-and-routine-reuse/specs/stories/story-006-procedure-compilation-dogfood-release.md) - done (receipt pending)
 - [knowledge-first-notes-and-evidence-retirement/Knowledge-first workflow and incremental skill curation](memnotes/Projects/kosmic/subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) - approved
-- [lightweight-project-idea-capture/Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/prd.md) - draft
+- [lightweight-project-idea-capture/Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/architecture.md) - draft
 - [prd-math-derivation-layer-mathdocs/Epic 6: Mathdocs Substrate](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-001-mathdocs-substrate.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 7: Math Execution and Verification](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-002-math-execution-verification.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 8: Math Linkage Gates](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-003-math-linkage-gates.md) - done (receipt pending)
