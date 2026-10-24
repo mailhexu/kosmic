@@ -293,6 +293,14 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Story 004: Incremental manual and scheduled curation routine](memnotes/Projects/kosmic/subprojects/knowledge-first-notes-and-evidence-retirement/specs/stories/story-004.md) | done | 2026-10-18 |
 | [Story 005: Coherent consumer cutover, legacy authority resolution, and bounded knowledge demonstrations](memnotes/Projects/kosmic/subprojects/knowledge-first-notes-and-evidence-retirement/specs/stories/story-005.md) | done | 2026-10-18 |
 
+### Subproject: lightweight-project-idea-capture
+
+#### PRD
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/prd.md) | draft | 2026-10-24 |
+
 ### Subproject: migration-compatible-skill-proposal-validation
 
 #### PRD
@@ -528,7 +536,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 133 open item(s)
+- 134 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -613,6 +621,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [feature-prd-procedure-compilation-and-routine-reuse/Story 041: Atomic Publication Compilation](memnotes/Projects/kosmic/subprojects/feature-prd-procedure-compilation-and-routine-reuse/specs/stories/story-005-atomic-publication-compilation.md) - done (receipt pending)
 - [feature-prd-procedure-compilation-and-routine-reuse/Story 042: Procedure Compilation Dogfood and Release](memnotes/Projects/kosmic/subprojects/feature-prd-procedure-compilation-and-routine-reuse/specs/stories/story-006-procedure-compilation-dogfood-release.md) - done (receipt pending)
 - [knowledge-first-notes-and-evidence-retirement/Knowledge-first workflow and incremental skill curation](memnotes/Projects/kosmic/subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) - approved
+- [lightweight-project-idea-capture/Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/prd.md) - draft
 - [prd-math-derivation-layer-mathdocs/Epic 6: Mathdocs Substrate](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-001-mathdocs-substrate.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 7: Math Execution and Verification](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-002-math-execution-verification.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 8: Math Linkage Gates](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-003-math-linkage-gates.md) - done (receipt pending)
