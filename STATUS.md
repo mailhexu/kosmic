@@ -21,6 +21,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Apply reviewed flat-spec migration](memnotes/Projects/kosmic/specs/quick-tasks/apply-reviewed-flat-spec-migration.md) | done | 2026-10-11 |
 | [Bootstrap thesis-samuel Shared Library access](memnotes/Projects/kosmic/specs/quick-tasks/bootstrap-thesis-samuel-shared-library-access.md) | approved | 2026-10-12 |
 | [Bootstrap working-directory registration for kosmic (Original)](memnotes/Projects/kosmic/specs/quick-tasks/bootstrap-working-directory-registration-for-kosmic-original.md) | approved | ? |
+| [Quick Task: Bound completion STATUS publication and ancestry rendering](memnotes/Projects/kosmic/specs/quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md) | approved | 2026-10-24 |
 | [Document the Projection CLI subcommand structure](memnotes/Projects/kosmic/specs/quick-tasks/document-cli-subcommand-structure.md) | approved | 2026-10-13 |
 | [Explicit command contract and lean verification guidance](memnotes/Projects/kosmic/specs/quick-tasks/explicit-command-contract-and-lean-verification-guidance.md) | done | 2026-10-23 |
 | [Keep completion STATUS coherent with terminal receipts](memnotes/Projects/kosmic/specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md) | approved | 2026-10-15 |
@@ -307,6 +308,12 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 |------|--------|---------|
 | [Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/architecture.md) | draft | 2026-10-24 |
 
+#### Epics
+
+| Spec | Status | Updated |
+|------|--------|---------|
+| [Lightweight Project and general idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/epics/epic-001.md) | draft | 2026-10-24 |
+
 ### Subproject: migration-compatible-skill-proposal-validation
 
 #### PRD
@@ -542,7 +549,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 134 open item(s)
+- 136 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -552,6 +559,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Quick Task: Managed-skill consolidation (phase 2, all domains)](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-25-managed-skill-consolidation-phase2.md) - done (receipt pending)
 - [Bootstrap thesis-samuel Shared Library access](memnotes/Projects/kosmic/specs/quick-tasks/bootstrap-thesis-samuel-shared-library-access.md) - approved
 - [Bootstrap working-directory registration for kosmic (Original)](memnotes/Projects/kosmic/specs/quick-tasks/bootstrap-working-directory-registration-for-kosmic-original.md) - approved
+- [Quick Task: Bound completion STATUS publication and ancestry rendering](memnotes/Projects/kosmic/specs/quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md) - approved
 - [Document the Projection CLI subcommand structure](memnotes/Projects/kosmic/specs/quick-tasks/document-cli-subcommand-structure.md) - approved
 - [Keep completion STATUS coherent with terminal receipts](memnotes/Projects/kosmic/specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md) - approved
 - [Materialize shared skill library inventory](memnotes/Projects/kosmic/specs/quick-tasks/materialize-shared-skill-library-inventory.md) - approved
@@ -628,6 +636,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [feature-prd-procedure-compilation-and-routine-reuse/Story 042: Procedure Compilation Dogfood and Release](memnotes/Projects/kosmic/subprojects/feature-prd-procedure-compilation-and-routine-reuse/specs/stories/story-006-procedure-compilation-dogfood-release.md) - done (receipt pending)
 - [knowledge-first-notes-and-evidence-retirement/Knowledge-first workflow and incremental skill curation](memnotes/Projects/kosmic/subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) - approved
 - [lightweight-project-idea-capture/Lightweight Project idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/architecture.md) - draft
+- [lightweight-project-idea-capture/Lightweight Project and general idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/epics/epic-001.md) - draft
 - [prd-math-derivation-layer-mathdocs/Epic 6: Mathdocs Substrate](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-001-mathdocs-substrate.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 7: Math Execution and Verification](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-002-math-execution-verification.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 8: Math Linkage Gates](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-003-math-linkage-gates.md) - done (receipt pending)

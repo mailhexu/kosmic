@@ -15,13 +15,13 @@ linked_stories: []
 
 ## Scope and Status
 
-Implements the [approved PRD](prd.md). This Architecture is proposed, not implementation approval. No feature code or installed skill has changed. Existing code and knowledge resolved the design questions; no research memo or evidence sidecar is needed.
+Implements the [PRD](prd.md). The user approved the initial Project capture design on 2026-10-24, then requested title-only filenames, dated in-note history and vault-root `GeneralIdeas/`. This draft incorporates those instructions; the expanded Project/general target and authority contract awaits approval. No feature code or installed skill has changed. Existing code and knowledge resolved the design questions; no research memo or evidence sidecar is needed.
 
 A Project Idea is tentative input, not Project Knowledge or a Work Record. Capturing one does not verify its claims, select work, or authorize implementation.
 
 ## ADR-001: One Capture Operation
 
-**Status:** Proposed. The common case is one description saved once; a generic note interface or agent-only editor would expose unnecessary choices or duplicate safety mechanics.
+**Status:** Proposed amendment. The original one-operation decision was accepted; this amendment adds mutually exclusive Project and general targets without another command or arbitrary output-path interface.
 
 Use one `idea` subcommand of the existing Projection CLI:
 
@@ -32,9 +32,9 @@ python3 {KOSMIC_SKILL_DIR}/scripts/kosmic_project_skills.py idea \
   --title "Symmetry-reduced sampling"
 ```
 
-`--project` and non-blank `--text` are required. `--title` is optional. Text may contain multiple lines in the argument. There is no interactive prompt, alternate input-file mode, output-path override, overwrite flag, work-record argument, or new executable.
+Exactly one of `--project PROJECT_ROOT` or `--vault VAULT_ROOT` is required, together with non-blank `--text`; `--title` is optional. `--project` selects that Project's `ideas/`. `--vault` selects that vault's `GeneralIdeas/` and needs no Project. For general capture, replace the example's `--project ...` with `--vault /absolute/memnotes`. Text may contain multiple lines in the argument. There is no interactive prompt, input-file mode, output-path override, overwrite flag, work-record argument, or new executable.
 
-The skill recognizes `kosmic idea <description>` or an equivalent explicit capture request, resolves the configured Project, and supplies this command's explicit Project path. An explicit Project selection wins; ambiguity is clarified rather than guessed. It preserves the supplied text and relevant supplied context, without inventing research or evidence.
+The skill recognizes `kosmic idea <description>` or an equivalent explicit capture request. For a Project idea it resolves the configured or explicitly selected Project; for an explicit general idea it resolves the configured or explicitly selected vault. It never silently classifies an unclear destination or invents a Project for general capture. Clarify ambiguity before invoking the command. Preserve supplied text/context without inventing research or evidence.
 
 Three designs were considered:
 
@@ -46,22 +46,22 @@ Three designs were considered:
 
 | Location | Responsibility |
 |----------|----------------|
-| `skills/scripts/kosmic_ideas.py` | One deep operation, `capture_idea(project_root, text, *, title=None) -> dict`: validate inputs and Project identity, render the note, allocate a safe name, publish without replacement, and return the saved path. Private filesystem helpers stay local. |
+| `skills/scripts/kosmic_ideas.py` | One deep operation, `capture_idea(text, *, project_root=None, vault_root=None, title=None) -> dict`: require exactly one target, validate inputs and target identity/directory, render the note, allocate a safe name, publish without replacement, and return the saved path. Private filesystem helpers stay local. |
 | `kosmic_project_skills.py` | Argparse entry, early capture dispatch, existing JSON/error rendering, and explicit mutation-inventory/exemption classification. No generic work-record or managed-run wrapper for individual captures. |
 | `skills/references/task_idea.md` | One compact owning capture procedure with the complete invocation, output contract and refusal handling. The orchestrator routes explicit capture before development/bootstrap prerequisites. |
 | Existing skill/README/layout references, `record_first_contract()`, canonical CLI note and generated Skill Pair | Explain the narrow capture exception and tentative-data separation consistently. Developing this feature still uses approved Stories, verification and review. |
 
-Reuse existing no-follow `read_document` and Project Identifier slug syntax to read the selected root's regular `ProjectEntry.md`; require its valid non-empty `project_id`. Do not enumerate specs, inspect receipts/history policy, load projections/library packets, invoke Git, register a writer, or initialize a missing Project. The selected Project path is resolved once, never inferred from a basename or a feature entry.
+For Project capture, reuse no-follow `read_document` and Project Identifier slug syntax to read that root's regular `ProjectEntry.md`; require a valid non-empty `project_id`. For general capture, require only the explicitly selected existing vault directory: do not read, require or create a Project entry, or assign a fake Project Identifier. Resolve the selected root once, never infer it from a basename or feature entry.
 
-Capture therefore works without a clean Git worktree, a current work item, or complete generated guidance. Missing or malformed Project identity is a refusal, not permission to repair it. Other commands keep their existing loaders and gates unchanged.
+Neither path enumerates specs, inspects receipts/history policy, loads projections/library packets, invokes Git, registers a writer, or initializes a missing Project/vault. Capture works without a clean Git worktree, a current work item, or complete generated guidance. An invalid Project identity or missing selected root is a refusal, not permission to repair it. Other commands keep their existing loaders and gates unchanged.
 
 ## Storage Contract
 
-Store each note at `ideas/YYYY-MM-DD-<slug>.md`, relative to the selected Project root. Use UTC date and creation instant from the same real clock read. The title-derived slug follows the existing bounded lowercase ASCII/hyphen normalization convention; use `idea` if no usable slug remains. Keep the slug at most80 characters so the date and collision suffix fit ordinary filename limits.
+Store Project notes at `PROJECT_ROOT/ideas/<slug>.md` and general notes at `VAULT_ROOT/GeneralIdeas/<slug>.md`. Preserve the exact `GeneralIdeas` directory spelling. Do not put a date in the filename. The title-derived slug follows the existing bounded lowercase ASCII/hyphen normalization convention; use `idea` if no usable slug remains. Keep the slug at most80 characters so the collision suffix fits ordinary filename limits.
 
 For existing regular-file collisions try `-2`, `-3`, and subsequent suffixes. Every explicit capture creates a distinct note, even when its title or text repeats. There is no deduplication or idempotent replay promise.
 
-The file has only these frontmatter fields:
+Both scopes use the following minimal frontmatter; `project_id` is present only on Project ideas and omitted entirely on general ideas:
 
 ```yaml
 type: idea
@@ -71,24 +71,24 @@ title: "Symmetry-reduced sampling"
 created: "2026-10-24T12:34:56.123456Z"
 ```
 
-The timestamp above illustrates the format, not an asserted capture time. Render a top-level title followed by the supplied idea text. If the title is omitted, derive it deterministically from the first non-empty text line, collapsing heading/whitespace decoration and limiting it to80 characters. Preserve the complete body, including Unicode, equations and uncertainty; title/filename shortening never truncates the idea. Use existing quoted YAML-scalar conventions, not raw user text interpolated into frontmatter.
+The timestamp above illustrates the format, not an asserted capture time. Render a top-level title and a `## History` section. Its initial `### YYYY-MM-DD` entry contains the complete supplied idea text, using the UTC day from the same real clock read as `created`. The dated entries are the idea content, not a duplicate changelog or a second copy of the body. Later explicit additions belong under another dated entry in the same note and preserve earlier entries; no automatic title-based merge or append command is introduced by this format rule. If the title is omitted, derive it deterministically from the first non-empty text line, collapsing heading/whitespace decoration and limiting it to80 characters. Preserve the complete text, including Unicode, equations and uncertainty; title/filename shortening never truncates the idea. Use existing quoted YAML-scalar conventions, not raw user text interpolated into frontmatter.
 
-No audience, confidence, skill-resource metadata, approval fields, generated index, log entry, receipt or evidence file is required. `ideas/` remains a sibling of `notes/`, so existing notes-only validation, projection and curation stay structurally separate. No automatic promotion, lifecycle management or dream-backlog migration is added.
+No audience, confidence, skill-resource metadata, approval fields, generated index, log entry, receipt or evidence file is required. Project `ideas/` is a sibling of `notes/`; vault-root `GeneralIdeas/` is outside every Project. Existing notes-only validation, projection and curation therefore stay structurally separate. No automatic promotion, lifecycle management or dream-backlog migration is added.
 
 ## ADR-002: Capture-Only Authority
 
-**Status:** Proposed. Applying the usual implementation-record gate to each idea contradicts the approved lightweight capture requirement. A named, output-limited exception avoids weakening the rest of the workflow.
+**Status:** Proposed amendment. The approved capture-only exception extends to general ideas without a synthetic Project. Applying implementation-record gates to either destination contradicts the lightweight capture requirement; a named, output-limited exception avoids weakening other workflows.
 
-Add `idea` as a specifically named bounded mutation in `MUTATION_INVENTORY` and `MUTATION_GATE_EXEMPTIONS`: explicit idea capture authorizes only one note and creation of its missing `ideas/` directory. It is not read-only and not an exemption for other commands or arbitrary paths.
+Add `idea` as a specifically named bounded mutation in `MUTATION_INVENTORY` and `MUTATION_GATE_EXEMPTIONS`: explicit capture authorizes one note in the selected Project's `ideas/` or the selected vault's `GeneralIdeas/`, plus that missing child directory only. It is not read-only or authority for other commands, another Project, an arbitrary path, or a new vault.
 
-The orchestrator's capture fast path resolves the configured Project and runs this operation without a Quick Task, Story, required-procedure-skill check, router/pair repair, `work start`, review, `work finish`, STATUS generation or session bookkeeping. No capture-specific approval flag is needed: the explicit request is its bounded authority. No automatic action follows the save.
+The orchestrator's capture fast path resolves the selected Project or general vault destination and runs this operation without a Quick Task, Story, required-procedure-skill check, router/pair repair, `work start`, review, `work finish`, STATUS generation or session bookkeeping. No capture-specific approval flag is needed: the explicit request is its bounded authority. No automatic action follows the save.
 
 This exception must be reflected in the record-first and entry-process guidance, not merely in one CLI branch. Feature development, subsequent implementation of an idea, knowledge promotion and installation keep their normal separate authority.
 
 ## Safe Publication and Failure
 
-1. Reject blank input, an explicitly blank title, invalid identity or invalid text encoding before creating the directory.
-2. Retain no-follow Project/`ideas` directory descriptors. Create only the literal `ideas` child if absent. Refuse a symlink, non-directory child or unsafe target; never follow them or create other parent directories.
+1. Require exactly one target; reject blank input, an explicitly blank title, invalid Project identity, a missing selected Project/vault directory, or invalid text encoding before creating the child directory.
+2. Retain no-follow root/destination directory descriptors. Create only the literal `ideas` or `GeneralIdeas` child selected by the command. Refuse a symlink, non-directory child or unsafe target; never follow them or create other parent directories.
 3. Write the complete UTF-8 note into an exclusive destination-sibling staging file and flush/fsync it before publication.
 4. Publish with descriptor-relative, no-replace linking, following the existing spec writer's pattern. On a regular-file name collision choose the next suffix; on a symlink, directory or other unsafe candidate refuse. Concurrent captures cannot overwrite one another.
 5. Remove owned temporary staging and fsync the containing directory before returning success. No lock, reservation registry, global counter, managed-run manifest or journal is written.
@@ -99,7 +99,7 @@ This is local no-replace publication, not an OS sandbox or a transaction against
 
 ## Result and Error Contract
 
-On success, print JSON containing `project_id`, `idea_path` (the actual full absolute file path), `title`, and `created`, then exit0. No status receipt or operation ID is returned.
+On success, print JSON containing `scope` (`project` or `general`), `idea_path` (the actual full absolute file path), `title`, and `created`, then exit0. Include `project_id` only for Project capture; general output omits it. No status receipt or operation ID is returned.
 
 The agent uses that returned path for an individual Markdown link whose visible label is the full absolute path, then stops. No help lookup, listing or read-back follows success.
 
@@ -109,12 +109,12 @@ Input, identity and unsafe-target refusals use an idea-specific diagnostic and n
 
 | Observable behavior | Verification |
 |---------------------|--------------|
-| First and subsequent captures | Actual CLI against disposable Projects with and without `ideas/`; observe saved title/body/time and the returned path. |
+| First and subsequent captures | Actual CLI against Project/vault roots with and without their destination directories; observe title-only filename, complete content under a dated History entry, creation time and the returned path. |
 | Same-title and concurrent requests | Distinct complete notes retain both bodies; existing bytes remain unchanged, including identical-content requests. |
-| Project isolation and scope | Capture for A leaves B and unrelated paths unchanged; use an identity-only Project without Git, specs, notes, router or projections. |
-| Unsafe targets and failures | Exercise symlink/non-directory `ideas`, unsafe candidate files and controlled write/publication failure; no overwritten existing bytes or false success. |
+| Target isolation and identity | Project A capture leaves B and `GeneralIdeas/` unchanged; general capture leaves every Project and dreams unchanged and works without any Project entry. Refuse both/neither selector and missing roots; use minimal roots without Git, specs, notes, router or projections. |
+| Unsafe targets and failures | Exercise symlink/non-directory `ideas` and `GeneralIdeas`, unsafe candidate files and controlled write/publication failure; no overwritten existing bytes or false success. |
 | No workflow overhead | Real capture succeeds with no work record; unrelated gated mutation still refuses absent authority. Inspect the actual capture footprint, not implementation call counts. |
-| Conversational procedure | Walk through an explicit `kosmic idea` request: resolve Project, invoke once, return the full-path link, stop. |
+| Conversational procedure | Walk through explicit Project and general `kosmic idea` requests: resolve the requested destination, invoke once, return the full-path link, stop. |
 
 Keep permanent tests for consumer-visible collision, isolation, refusal and publication invariants; use throwaway smoke for procedural/result wiring. Reuse existing test conventions. After implementation stabilizes, run affected integration once, update canonical guidance through normal governed generation, obtain independent Standards/Spec review, and finish the approved Stories natively.
 
@@ -122,5 +122,5 @@ Keep permanent tests for consumer-visible collision, isolation, refusal and publ
 
 Standard-library Python and the existing Projection CLI/document parsing conventions only. No new runtime package or scheduled process.
 
-After user approval, create the owner-local Epic and implementable Stories. Until then, only this Architecture, its approval/navigation, the Idea glossary term, planning log and derived STATUS are planning outputs. No source, generated guidance or installed package is changed at this gate.
+The initial Architecture was approved; this Project/general amendment returns to Architecture approval. The already-created [Epic draft](epics/epic-001.md) is updated for the requested scope but is not approved. Approve the amended Architecture, then the Epic before Story creation, and each Story before implementation. Planning outputs remain specs, approval/navigation, glossary, log and derived STATUS only; no feature source, generated guidance or installed package changes at this gate.
 

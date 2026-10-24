@@ -20,6 +20,10 @@ _Avoid_: Skill content, generated documentation
 A tentative proposal, possibility, or open question captured for later consideration within a Project; neither verified Project Knowledge nor an approved Work Record.
 _Avoid_: Approved task, established knowledge, skill nomination
 
+**General Idea**:
+A tentative proposal, possibility, or open question captured for later consideration without belonging to a particular Project; neither verified Project Knowledge nor an approved Work Record.
+_Avoid_: Synthetic Project, Project-specific idea
+
 **Development Skill**:
 A per-Project agent skill containing Contributor-only guidance; it refers to the paired Usage Skill for consumer and shared guidance rather than repeating it.
 _Avoid_: Developer docs, internal skill
