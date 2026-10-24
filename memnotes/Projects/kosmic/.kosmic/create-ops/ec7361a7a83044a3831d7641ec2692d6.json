@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/register-idea-guidance-writer.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"register-idea-guidance-writer\"\n---\n\n# Register idea guidance writer\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/register-idea-guidance-writer.md",
+  "kind": "quick-task",
+  "local_id": "register-idea-guidance-writer",
+  "operation_id": "ec7361a7a83044a3831d7641ec2692d6",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "register-idea-guidance-writer.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Register idea guidance writer"
+}

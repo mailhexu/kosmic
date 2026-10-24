@@ -6,4 +6,4 @@
 | architecture | [Lightweight Project idea capture](architecture.md) | approved |
 | epic | [Lightweight Project and general idea capture](epics/epic-001.md) | approved |
 | story | [Native Project and general idea capture](stories/story-001.md) | done |
-| story | [Conversational idea capture and guidance cutover](stories/story-002.md) | approved |
+| story | [Conversational idea capture and guidance cutover](stories/story-002.md) | done |

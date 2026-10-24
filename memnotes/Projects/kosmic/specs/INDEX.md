@@ -153,3 +153,4 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | ---- | ------ | ------ |
 | quick-task | [Publish native-index release and refresh OMP](quick-tasks/publish-native-index-release-and-refresh-omp.md) | done |
 | quick-task | [Register native idea capture writer](quick-tasks/register-native-idea-capture-writer.md) | approved |
+| quick-task | [Register idea guidance writer](quick-tasks/register-idea-guidance-writer.md) | approved |

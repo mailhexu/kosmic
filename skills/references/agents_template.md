@@ -33,9 +33,10 @@ The `kosmic` skill is the workflow orchestrator. Contributor work loads `{DEVELO
   work record, code review, or work finish; it does not create `STATUS.md` and does
   not install adapters. Adapter installation is a separately requested, approved
   operation; substantive changes remain governed by the normal work-record workflow.
+- Explicit `kosmic idea` capture is also record-free and precedes bootstrap/Contributor prerequisites: follow `references/task_idea.md` in the Kosmic skill. Resolve a Project for Project ideas or the vault for explicit general ideas; clarify ambiguity. Capture writes only one note and its missing `ideas/` or `GeneralIdeas/` child, then returns the full-path link and stops. No Project identity is required for general ideas; no Git, repair, review, STATUS or note/log/index publication follows capture. Implementing an idea retains normal approval gates.
 - Inspect the governing record with `work show --project {KOSMIC_VAULT}/Projects/{TARGET} --work-record QUALIFIED_RECORD`; no shared mutable task pointer is used.
-- Start writes with `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. It refuses a dirty worktree; use one clean worktree per record and one writer.
-- Every mutating command takes `--work-record` and rechecks ownership, ancestry and status. Declare scope at `work finish`; out-of-scope Git paths block completion.
+- Start record-governed writes with `work start --project PROJECT_ROOT --worktree ROOT --work-record REF`. It refuses a dirty worktree; use one clean worktree per record and one writer.
+- Record-governed mutating commands take `--work-record` and recheck ownership, ancestry and status. Declare scope at `work finish`; out-of-scope Git paths block completion.
 - Read-only queries remain record-free. Raw editor/shell guarantees are agent compliance, not an OS sandbox.
 - Complete with `work finish --work-record REF --worktree ROOT --scope worktree:PATH` after actual acceptance and review. A successful receipt marks completion; after interruption, rerun finish.
 - Installation/migration require their own approved target plans. Do not edit installed user-authored skills.
@@ -45,6 +46,11 @@ The `kosmic` skill is the workflow orchestrator. Contributor work loads `{DEVELO
 `{KOSMIC_VAULT}/Projects/{TARGET}/notes/` is the authoritative Obsidian-compatible OKF v0.2 bundle. Use `index.md` for discovery. Concept notes require YAML frontmatter on line 1, non-empty `type`, `status: draft | stable | deprecated`, and relative Markdown links. Do not create or hand-maintain a second OKF export.
 
 ### When to Use Kosmic Tasks
+
+#### Capture an idea
+**When**: Explicit request to save a tentative thought, not implement it.
+**Reference**: `references/task_idea.md`
+**Stores**: Project-root `ideas/` or vault-root `GeneralIdeas/`, created lazily; title-only filenames with numeric collision suffixes and complete content once under dated History. Never merge or promote automatically.
 
 #### Use Task: Initialize
 **When**: The vault Project, immutable Project Identifier, conformant Knowledge bundle, or canonical Skill Pair is missing

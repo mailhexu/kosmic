@@ -29,6 +29,7 @@ Kosmic creates or uses a Markdown vault, defaults to `./memnotes`, assigns an im
 ```text
 {VAULT}/Projects/{TARGET}/
 ├── ProjectEntry.md
+├── ideas/                 # lazy <title-slug>.md, not an initialization output
 ├── notes/                 # index.md + line-1 YAML concept notes
 ├── log/
 ├── specs/                 # shared Quick Tasks/proposals
@@ -37,6 +38,8 @@ Kosmic creates or uses a Markdown vault, defaults to `./memnotes`, assigns an im
     ├── {PROJECT_ID}-usage/
     └── {PROJECT_ID}-development/
 ```
+
+For lightweight capture, use `kosmic idea <description>` (Project) or explicitly request a general idea (vault-root `GeneralIdeas/`, without a Project). Both stores are created lazily; title-only filenames use numeric collision suffixes, and dated History holds the complete content once. Follow the [owning procedure](../skills/references/task_idea.md): invoke once, return the saved full-path link, stop. This path precedes bootstrap and needs no work record, Git, review, STATUS or knowledge bookkeeping; it grants no implementation approval.
 
 For normal work, use this loop:
 

@@ -17,7 +17,7 @@ Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages author
 ## Entry Process (MANDATORY ORDER)
 
 **Read-only inspection fast path:** to answer a question from authoritative notes/specs, resolve their configured paths and read them directly. Missing or stale identity/projections/router are observations, not permission to initialize, migrate, install or repair anything. A missing Project has no recorded knowledge. This path authorizes no execution, publication or mutation; operations that consume generated skills or routed material follow the entry process below.
-**Idea capture fast path:** an explicit request to save one idea uses the Projection CLI's `idea` command directly. It writes one note in the selected Project's `ideas/` or the selected vault's `GeneralIdeas/` without bootstrap, a governing record, worktree registration, review, or work start/finish.
+**Idea capture fast path:** for `kosmic idea <description>` or an equivalent explicit save request, follow [Idea capture](references/task_idea.md) before any bootstrap/Contributor prerequisites. Resolve the configured or explicitly selected Project; for an explicit general idea resolve the vault instead, without requiring a Project. Clarify an ambiguous destination before writing. The bounded capture creates one note and its missing child directory only, with no work record, registration, clean-Git check, review, repair or session bookkeeping; return the saved full-path link and stop.
 
 1. **Resolve the vault.**
    - Search project instructions for Kosmic Vault, Target, and Project ID fields.
@@ -62,6 +62,8 @@ Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages author
 | Legacy migration pair | `{VAULT}/Projects/{TARGET}/skills/` |
 | Projection CLI | `scripts/kosmic_project_skills.py` in the installed Kosmic skill |
 | Notes / Index / Notation | `{VAULT}/Projects/{TARGET}/notes/{TOPIC}.md`, `index.md`, `notation.md` |
+| Project ideas (lazy) | `{PROJECT_ROOT}/ideas/<title-slug>.md` |
+| General ideas (lazy, no Project) | `{VAULT}/GeneralIdeas/<title-slug>.md` |
 | Log | `{VAULT}/Projects/{TARGET}/log/{TARGET}-{YYYY-MM-DD}.md` |
 | Research memo | feature-linked: `subprojects/{SUBPROJECT_ID}/specs/research/{YYYY-MM-DD}-{slug}.md`; shared-authority only: `specs/research/{YYYY-MM-DD}-{slug}.md` |
 | Pending tests | `pending_tests/<project>/<YYYY-MM-DD>-<slug>/original-paths/<original-path>` |
@@ -132,6 +134,7 @@ Pick exactly one task per unit of work; the linked reference is authoritative fo
 
 | Task | Trigger | Load | Complete when (observable) |
 |------|---------|------|----------------------------|
+| **Idea: Capture** | Explicit `kosmic idea` or equivalent save request | [task_idea.md](references/task_idea.md) | One Project/general idea saved; return its full-path Markdown link and stop; no implementation workflow |
 | **0: Quick Task** | Small, low-risk implementation user explicitly requested or clearly below spec-hierarchy scope; concrete scope, obvious acceptance, no new architecture/data models/APIs | [task_quick_task.md](references/task_quick_task.md) · template: [template-quick-task.md](references/templates/template-quick-task.md) | Approved record; implemented change and required review/verification passed; successful `work finish` receipt; capture durable knowledge only when needed, with completion bookkeeping owned by finish |
 | **1: Initialize** | New Project/package, or no Kosmic structure / Project Identifier exists | [task_init.md](references/task_init.md) | Requested structure, real knowledge, Project identity, skills and instructions established; successful CLI result accepted directly; no Quick Task or review |
 | **2: Add Note** | Verified durable, reusable knowledge emerged (root cause, convention, decision, correction) not already represented | [task_add_note.md](references/task_add_note.md) | One atomic note per concept (update, never duplicate); TOC + log updated; one-off activity/session state/error text kept out of notes |

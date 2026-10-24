@@ -5,6 +5,7 @@ Spec-driven Project knowledge for reliable AI-assisted development and usage acr
 ## Features
 
 - **Knowledge Management**: Atomic notes for capturing patterns, decisions, and learnings
+- **Idea Capture**: `kosmic idea` saves tentative Project/general ideas without a work record or review
 - **Quick Tasks**: Lightweight path for small, low-risk implementation work
 - **Optional Research**: Discovery memo for uncertain features before Architecture
 - **Spec-Driven Development**: PRD → optional Research → Architecture → Epics → Stories workflow 
@@ -65,6 +66,7 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
 ```
 {VAULT}/Projects/{TARGET}/
 ├── ProjectEntry.md              # overview + immutable project_id
+├── ideas/                       # lazy capture-only store; <title-slug>.md
 ├── notes/                       # authoritative Obsidian + OKF v0.2 bundle
 │   ├── index.md                 # reserved OKF progressive-disclosure index
 │   ├── notation.md
@@ -88,12 +90,15 @@ python3 scripts/kosmic_project_skills.py check-required-skills --adapter codex
     └── {PROJECT_ID}-development/
 ```
 
+General ideas live outside every Project at `{VAULT}/GeneralIdeas/<title-slug>.md`. Both idea directories are created on first capture, not required by initialization. Files have title-only names (numeric suffixes for collisions), with the complete supplied text once under a dated History entry. Ideas are tentative input, not canonical notes or implementation approval; no append, merge or automatic promotion is provided.
+
 ## Tasks
 
 ### Task Selection Matrix
 
 | Situation | Use Task | Required Output | Gate Behavior |
 |-----------|----------|-----------------|---------------|
+| Explicit Project/general idea to save | [Idea capture](references/task_idea.md) | One note plus its returned full-path link | Capture-only; no bootstrap, work record, review or bookkeeping |
 | New project/package or missing Kosmic structure | Task 1: Initialize | Project identity, real audience-scoped notes, canonical Skill Pair, instructions, specs index | Block publication until useful Usage exists |
 | Existing Project missing identity, Audience Scope, or canonical pair | Task 8: Migrate Project Skills | Immutable identity, classification report, valid pair when Usage exists | Unscoped Knowledge remains Development-only |
 | Need existing knowledge or context | Task 3: Search | Relevant notes/specs read | Mandatory before implementation |

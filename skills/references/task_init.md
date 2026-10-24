@@ -67,6 +67,8 @@ Create the following:
     └── {PROJECT_ID}-development/
 ```
 
+Idea stores are optional lazy siblings: `{PROJECT_ROOT}/ideas/<title-slug>.md` for Project ideas, and `{VAULT}/GeneralIdeas/<title-slug>.md` outside every Project for general ideas. Do not create them as initialization outputs: [Idea capture](task_idea.md) creates the selected child on first save. Idea filenames omit dates; complete content lives once under dated History, with safe numeric collision suffixes. General capture does not require Project initialization.
+
 ### ProjectEntry.md
 
 ```markdown

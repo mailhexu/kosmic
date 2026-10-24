@@ -88,7 +88,18 @@ python3 skills/scripts/kosmic_project_skills.py <subcommand> --help
 
 The script is committed with executable mode 100755, so direct invocation works too: `skills/scripts/kosmic_project_skills.py --help` renders the same help as the `python3`-prefixed form.
 
-Subcommand groups: `work`, `generate`, `validate`, `validate-proposal`, `init`, `migrate`, `review`, `check-completion`, `spec-create`, `workdir-register`, `migrate-subprojects-{plan,apply,recover}`, `check-math`, `provenance`, `install`, `check-installation`, `check-required-skills`, `generate-library`, `validate-library`, `query-routines`, `migrate-routines`, `resolve-library`, `load-library`, `migrate-library`, `install-library`, `check-library-installation`, `scratch`, `validate-dreams`, `dream-*`, `generate-status`.
+### Capture an idea
+
+Ask the agent `kosmic idea <description>` for a Project idea, or explicitly request a general idea. The [capture procedure](skills/references/task_idea.md) resolves the configured/selected destination and asks only if it is ambiguous. Native invocations:
+
+```bash
+python3 skills/scripts/kosmic_project_skills.py idea --project /absolute/memnotes/Projects/example --text "Try symmetry reduction" --title "Symmetry sampling"
+python3 skills/scripts/kosmic_project_skills.py idea --vault /absolute/memnotes --text "A cross-project research idea"
+```
+
+Exactly one existing root is required. Capture lazily creates Project `ideas/` or vault-root `GeneralIdeas/` and one title-named Markdown file; same-title requests use numeric suffixes rather than merging or overwriting. The complete content appears once under dated History. General capture needs no Project identity. The command returns the absolute `idea_path`; use it directly without a help lookup/read-back, then stop. No Git, work record, bootstrap/repair, review, log, STATUS or knowledge publication is needed, and capture does not authorize implementation.
+
+Subcommand groups: `idea`, `work`, `generate`, `validate`, `validate-proposal`, `init`, `migrate`, `review`, `check-completion`, `spec-create`, `workdir-register`, `migrate-subprojects-{plan,apply,recover}`, `check-math`, `provenance`, `install`, `check-installation`, `check-required-skills`, `generate-library`, `validate-library`, `query-routines`, `migrate-routines`, `resolve-library`, `load-library`, `migrate-library`, `install-library`, `check-library-installation`, `scratch`, `validate-dreams`, `dream-*`, `generate-status`.
 
 Optional convenience: create a personal launcher so `kosmic <subcommand>` works from any directory (not tracked by this repository):
 
