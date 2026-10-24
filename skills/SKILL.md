@@ -17,6 +17,7 @@ Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages author
 ## Entry Process (MANDATORY ORDER)
 
 **Read-only inspection fast path:** to answer a question from authoritative notes/specs, resolve their configured paths and read them directly. Missing or stale identity/projections/router are observations, not permission to initialize, migrate, install or repair anything. A missing Project has no recorded knowledge. This path authorizes no execution, publication or mutation; operations that consume generated skills or routed material follow the entry process below.
+**Idea capture fast path:** an explicit request to save one idea uses the Projection CLI's `idea` command directly. It writes one note in the selected Project's `ideas/` or the selected vault's `GeneralIdeas/` without bootstrap, a governing record, worktree registration, review, or work start/finish.
 
 1. **Resolve the vault.**
    - Search project instructions for Kosmic Vault, Target, and Project ID fields.
@@ -41,7 +42,7 @@ Knowledge-oriented, spec-driven infrastructure for coding. Kosmic manages author
    - **Knowledge/spec maintenance** → use Kosmic tasks and load the Project skill matching the knowledge audience.
    - Missing, stale, mismatched, or unresolved skill pair → stop and run validation or migration. Never continue contributor work without Project guidance.
 
-**STOP (outside direct read-only inspection):** do not load generated guidance or execute Project operations until the Project identity and required Skill Pair resolve; contributor workflows and routed-library operations must also resolve their required Shared Skill Library. Read-only inspection above does not satisfy or bypass these operational prerequisites.
+**STOP (outside direct read-only inspection and explicit capture-only `idea`):** do not load generated guidance or execute Project operations until the Project identity and required Skill Pair resolve; contributor workflows and routed-library operations must also resolve their required Shared Skill Library. Neither fast path authorizes other operations or bypasses their prerequisites.
 
 ---
 
@@ -77,7 +78,7 @@ On error, follow the diagnostic and documented recovery; do not assume failure r
 
 ## Authority & Isolation (apply to every task)
 
-**Record-first authority.** Before a substantive source, docs, vault, configuration, or experiment change, select its governing record — reuse the existing approved record that already authorizes the work, and create a new one only when none covers the scope. Feature implementation needs an approved owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk change needs an approved Quick Task; choose by actual scope and risk. PRD creation never approves code. Questions, searches, and unchanged checks need no record and stay read-only. Planning creates only its draft hierarchy and bounded planning outputs. Routine Task 1 initialization is the bounded record-free exception; developing or changing initialization behavior is not.
+**Record-first authority.** Before a substantive source, docs, vault, configuration, or experiment change, select its governing record — reuse the existing approved record that already authorizes the work, and create a new one only when none covers the scope. Feature implementation needs an approved owner-local Story → Epic → Architecture → PRD chain. A standalone low-risk change needs an approved Quick Task; choose by actual scope and risk. PRD creation never approves code. Questions, searches, and unchanged checks need no record and stay read-only. Planning creates only its draft hierarchy and bounded planning outputs. Routine Task 1 initialization is a bounded record-free exception; explicit idea capture is also bounded to one selected Project/general idea note and its destination directory. Developing or changing initialization behavior and all other mutations retain their normal gates.
 
 **One bounded episode.** A record starts work once: resuming continues inside its recorded scope and the existing worktree — no restart per step, no extra record, no fresh worktree per step, and no silent widening of recorded scope (a real scope change updates and re-approves the record). A mid-episode scope or approval change makes the next mutating command reject the stale or over-broad attempt, because every mutating command re-derives identity, ancestry, scope, and approval live at invocation — context is reused while valid; permission is never cached.
 

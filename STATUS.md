@@ -33,6 +33,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Publish reviewed Kosmic release and install OMP orchestrator](memnotes/Projects/kosmic/specs/quick-tasks/publish-reviewed-kosmic-release-and-install-omp-orchestrator.md) | done | ? |
 | [Publish reviewed release and refresh OMP orchestrator](memnotes/Projects/kosmic/specs/quick-tasks/publish-reviewed-release-and-refresh-omp-orchestrator.md) | done | 2026-10-22 |
 | [Record scoped completion validation](memnotes/Projects/kosmic/specs/quick-tasks/record-scoped-completion-validation.md) | done (receipt pending) | 2026-10-12 |
+| [Register native idea capture writer](memnotes/Projects/kosmic/specs/quick-tasks/register-native-idea-capture-writer.md) | approved | 2026-10-24 |
 | [Register the isolated Story 001 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-001-writer.md) | approved | ? |
 | [Register the isolated Story 002 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-002-writer.md) | approved | ? |
 | [Register the isolated Story 003 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-003-writer.md) | approved | ? |
@@ -62,6 +63,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Routine decision: retain migration as its supported command](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-11-migration-routine-decision.md) | draft | 2026-10-11 |
 | [Repair existing ABINIT exchange diagnostic procedure](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-12-debug-abinit-exchange.md) | done (receipt pending) | 2026-10-13 |
 | [Routine decision: retain native CLI draft-creation and completion mechanics as Project knowledge](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-23-native-cli-routine-decision.md) | done (receipt pending) | 2026-10-23 |
+| [Routine decision: native idea capture](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-24-native-idea-capture-routine-decision.md) | done (receipt pending) | 2026-10-24 |
 
 ### Subproject: command-owned-indexes-and-completion-review-context
 
@@ -318,8 +320,8 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 | Spec | Status | Updated |
 |------|--------|---------|
-| [Native Project and general idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-001.md) | draft | 2026-10-24 |
-| [Conversational idea capture and guidance cutover](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-002.md) | draft | 2026-10-24 |
+| [Native Project and general idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-001.md) | done | 2026-10-24 |
+| [Conversational idea capture and guidance cutover](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-002.md) | approved | 2026-10-24 |
 
 ### Subproject: migration-compatible-skill-proposal-validation
 
@@ -556,7 +558,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 
 ## Open Work
 
-- 137 open item(s)
+- 138 open item(s)
 - [Quick Task: Package-consistent link rewriting in projection](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-02-projected-link-rewriting.md) - done (receipt pending)
 - [Quick Task: Manifest code provenance](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-03-manifest-code-provenance.md) - done (receipt pending)
 - [Quick Task: Failure-Derived Procedure Proposals](memnotes/Projects/kosmic/specs/quick-tasks/2026-09-08-failure-derived-proposals.md) - done (receipt pending)
@@ -573,6 +575,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Plan Flat Spec Migration Bootstrap](memnotes/Projects/kosmic/specs/quick-tasks/plan-flat-spec-migration-bootstrap.md) - draft
 - [Preserve missing MathDoc knowledge as drafts](memnotes/Projects/kosmic/specs/quick-tasks/preserve-missing-mathdoc-knowledge-as-drafts.md) - approved
 - [Record scoped completion validation](memnotes/Projects/kosmic/specs/quick-tasks/record-scoped-completion-validation.md) - done (receipt pending)
+- [Register native idea capture writer](memnotes/Projects/kosmic/specs/quick-tasks/register-native-idea-capture-writer.md) - approved
 - [Register the isolated Story 001 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-001-writer.md) - approved
 - [Register the isolated Story 002 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-002-writer.md) - approved
 - [Register the isolated Story 003 writer](memnotes/Projects/kosmic/specs/quick-tasks/register-review-history-story-003-writer.md) - approved
@@ -590,6 +593,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [Routine decision: retain migration as its supported command](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-11-migration-routine-decision.md) - draft
 - [Repair existing ABINIT exchange diagnostic procedure](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-12-debug-abinit-exchange.md) - done (receipt pending)
 - [Routine decision: retain native CLI draft-creation and completion mechanics as Project knowledge](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-23-native-cli-routine-decision.md) - done (receipt pending)
+- [Routine decision: native idea capture](memnotes/Projects/kosmic/specs/skill-proposals/2026-10-24-native-idea-capture-routine-decision.md) - done (receipt pending)
 - [command-owned-indexes-and-completion-review-context/Native indexed spec creation and recovery](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/epics/epic-001.md) - approved
 - [command-owned-indexes-and-completion-review-context/Read-only completion fingerprints](memnotes/Projects/kosmic/subprojects/command-owned-indexes-and-completion-review-context/specs/epics/epic-002.md) - approved
 - [deterministic-flat-spec-migration/Epic 001: Script-driven flat-spec migration](memnotes/Projects/kosmic/subprojects/deterministic-flat-spec-migration/specs/epics/epic-001.md) - approved
@@ -643,8 +647,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 - [feature-prd-procedure-compilation-and-routine-reuse/Story 042: Procedure Compilation Dogfood and Release](memnotes/Projects/kosmic/subprojects/feature-prd-procedure-compilation-and-routine-reuse/specs/stories/story-006-procedure-compilation-dogfood-release.md) - done (receipt pending)
 - [knowledge-first-notes-and-evidence-retirement/Knowledge-first workflow and incremental skill curation](memnotes/Projects/kosmic/subprojects/knowledge-first-notes-and-evidence-retirement/specs/epics/epic-001.md) - approved
 - [lightweight-project-idea-capture/Lightweight Project and general idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/epics/epic-001.md) - approved
-- [lightweight-project-idea-capture/Native Project and general idea capture](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-001.md) - draft
-- [lightweight-project-idea-capture/Conversational idea capture and guidance cutover](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-002.md) - draft
+- [lightweight-project-idea-capture/Conversational idea capture and guidance cutover](memnotes/Projects/kosmic/subprojects/lightweight-project-idea-capture/specs/stories/story-002.md) - approved
 - [prd-math-derivation-layer-mathdocs/Epic 6: Mathdocs Substrate](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-001-mathdocs-substrate.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 7: Math Execution and Verification](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-002-math-execution-verification.md) - done (receipt pending)
 - [prd-math-derivation-layer-mathdocs/Epic 8: Math Linkage Gates](memnotes/Projects/kosmic/subprojects/prd-math-derivation-layer-mathdocs/specs/epics/epic-003-math-linkage-gates.md) - done (receipt pending)

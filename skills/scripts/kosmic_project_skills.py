@@ -75,6 +75,10 @@ except ImportError:
     import kosmic_runs
     import kosmic_dreams
 try:
+    from . import kosmic_ideas
+except ImportError:
+    import kosmic_ideas
+try:
     from . import kosmic_work
     from . import kosmic_history
     from .kosmic_specs import (
@@ -1228,6 +1232,7 @@ def record_first_contract(project: Project) -> list[str]:
         f"- Shared knowledge stays at `{project.notes_dir}`, `{project.mathdocs_dir}`, and `{project.canonical_root}`; never copy it into a subproject.",
         "- Before substantive source, docs, vault, config or experiment changes, select/create a governing record through Kosmic. Feature implementation requires an approved owner-local Story/Epic/Architecture/PRD hierarchy; standalone low-risk work requires an approved Quick Task. Routine Task 1 initialization is the bounded exception below.",
         "- Routine Task 1 initialization establishes only its documented setup outputs, without a Quick Task, implementation review, or work start/finish. Changing initialization behavior is development work. Draft planning creates only its bounded hierarchy and planning outputs; PRD success is not implementation approval. Migration, registration and installation retain their explicit approvals.",
+        "- Explicit idea capture is a bounded exception: `idea` writes exactly one note in the selected Project's `ideas/` or the selected vault's `GeneralIdeas/`, plus that missing child directory only, without a governing record, bootstrap, review, or work start/finish. It authorizes no other change.",
         f"- For record-governed work, register the exact working root; a fixed subproject constrains that directory, never selects an active task. Use `work show --project {project.root} --work-record RECORD_REF` only when record resolution is needed, not to confirm a successful command. No shared mutable selection pointer is permitted.",
         "- Start record-governed writable work in a clean dedicated worktree. Pass the approved governing record explicitly as --work-record to each checked mutating command. One record, one worktree, one writer; reconcile concurrent changes through Git.",
         "- Every changed worktree path must fit the declared --scope at work finish. Dirty worktrees are refused at start; out-of-scope paths block completion. Raw editors/shell remain agent compliance, not an OS sandbox.",
@@ -1635,6 +1640,7 @@ MUTATION_GATE_EXEMPTIONS: dict[str, str] = {
     # later gates consume; they keep bounded first-write contracts.
     "migrate": "bootstrap first write: records identity and migrates the notes "
                "bundle under the approved migration task",
+    "idea": "capture-only mutation: writes one idea note in the selected Project's ideas/ or selected vault's GeneralIdeas/, plus that missing child directory only",
     "assign_project_id": "bootstrap: records Project identity only",
     "spec-create": "bounded governing-record creation: reserves and publishes "
                    "exactly one draft spec record plus its index entry; "
@@ -1817,6 +1823,11 @@ class MutationOperation:
 
 
 MUTATION_INVENTORY: tuple[MutationOperation, ...] = (
+    MutationOperation(
+        "idea", "capture",
+        "explicit capture request; no governing record or bootstrap",
+        ("one note in selected Project ideas/ or vault GeneralIdeas/", "missing destination child directory only"),
+        False, "capture-only"),
     MutationOperation(
         "init", "bootstrap", "routine bounded initialization (no work record or review)",
         ("project_id/ProjectEntry", "notes bundle", "canonical Skill Pair"),
@@ -4463,6 +4474,13 @@ def generate_status(project: Project, *, work_record: str | None = None) -> Path
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="kosmic-project-skills")
     subparsers = parser.add_subparsers(dest="command", required=True)
+    idea_parser = subparsers.add_parser(
+        "idea", help="capture one idea with --text and exactly one --project or --vault")
+    idea_parser.add_argument("--project", type=path_argument)
+    idea_parser.add_argument("--vault", type=path_argument)
+    idea_parser.add_argument("--text")
+    idea_parser.add_argument("--title")
+
     work_parser = subparsers.add_parser(
         "work", help="record-bound operations (Revision 2: explicit references)")
     work_commands = work_parser.add_subparsers(dest="work_command", required=True)
@@ -4897,6 +4915,15 @@ def _run_scratch(args: argparse.Namespace) -> int:
 def run(arguments: Sequence[str] | None = None) -> int:
     parser = build_parser()
     args = parser.parse_args(arguments)
+    if args.command == "idea":
+        try:
+            payload = kosmic_ideas.capture_idea(
+                args.text, project_root=args.project, vault_root=args.vault, title=args.title)
+        except kosmic_ideas.IdeaError as error:
+            print(f"error: {error}", file=sys.stderr)
+            return 2
+        _print_json(payload)
+        return 0
     if args.command == "work":
         return _run_work(args)
 

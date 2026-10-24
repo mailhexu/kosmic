@@ -152,3 +152,4 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | Kind | Record | Status |
 | ---- | ------ | ------ |
 | quick-task | [Publish native-index release and refresh OMP](quick-tasks/publish-native-index-release-and-refresh-omp.md) | done |
+| quick-task | [Register native idea capture writer](quick-tasks/register-native-idea-capture-writer.md) | approved |

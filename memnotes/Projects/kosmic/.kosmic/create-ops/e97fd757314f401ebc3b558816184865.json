@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/register-native-idea-capture-writer.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"register-native-idea-capture-writer\"\n---\n\n# Register native idea capture writer\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/register-native-idea-capture-writer.md",
+  "kind": "quick-task",
+  "local_id": "register-native-idea-capture-writer",
+  "operation_id": "e97fd757314f401ebc3b558816184865",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "register-native-idea-capture-writer.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Register native idea capture writer"
+}

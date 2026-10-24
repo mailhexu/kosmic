@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: "lightweight-project-idea-capture"
-status: "draft"
+status: "approved"
 record_kind: "story"
 local_id: "002"
 linked_prd: "../prd.md"
@@ -66,4 +66,4 @@ Installation, Git push, router replacement, new CLI arguments, append/overwrite 
 
 ## Completion
 
-All AC observations, consistent current guidance/projections, actual walkthrough evidence and converged independent review are required before native `work finish`. No new runtime package, installation or shared-router action is part of this Story. This draft authorizes no implementation.
+The user approved this Story; implementation waits for Story001's successful receipt. All AC observations, consistent current guidance/projections, actual walkthrough evidence and converged independent review are required before native `work finish`. No new runtime package, installation or shared-router action is part of this Story.

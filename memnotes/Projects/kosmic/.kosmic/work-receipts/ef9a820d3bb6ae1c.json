@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-24T08:42:54Z",
+  "detail": "",
+  "identity": "kosmic/lightweight-project-idea-capture/story/001",
+  "proof": {
+    "subprojects/lightweight-project-idea-capture/specs/stories/story-001.md": "26ad0db8b765e38a4d029b21b4e224597cc75f1db7921f4ebb68f1e5ad9bb264"
+  },
+  "record_path": "subprojects/lightweight-project-idea-capture/specs/stories/story-001.md",
+  "record_sha256": "26ad0db8b765e38a4d029b21b4e224597cc75f1db7921f4ebb68f1e5ad9bb264",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}
