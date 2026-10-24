@@ -148,3 +148,7 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 - [Shared Domain Skill Library](../subprojects/shared-domain-skill-library/specs/INDEX.md) — approved
 - [Skill Proposal Loop](../subprojects/skill-proposal-loop/specs/INDEX.md) — approved
 <!-- kosmic:migration-owners:end -->
+
+| Kind | Record | Status |
+| ---- | ------ | ------ |
+| quick-task | [Publish native-index release and refresh OMP](quick-tasks/publish-native-index-release-and-refresh-omp.md) | done |
