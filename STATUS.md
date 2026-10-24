@@ -24,6 +24,7 @@ Vault HEAD: 906c0ab716dc3da33d9ddeaee21bf3b9db5b413c
 | [Quick Task: Bound completion STATUS publication and ancestry rendering](memnotes/Projects/kosmic/specs/quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md) | approved | 2026-10-24 |
 | [Document the Projection CLI subcommand structure](memnotes/Projects/kosmic/specs/quick-tasks/document-cli-subcommand-structure.md) | approved | 2026-10-13 |
 | [Explicit command contract and lean verification guidance](memnotes/Projects/kosmic/specs/quick-tasks/explicit-command-contract-and-lean-verification-guidance.md) | done | 2026-10-23 |
+| [Install and publish idea capture release](memnotes/Projects/kosmic/specs/quick-tasks/install-and-publish-idea-capture-release.md) | done | ? |
 | [Keep completion STATUS coherent with terminal receipts](memnotes/Projects/kosmic/specs/quick-tasks/keep-completion-status-coherent-with-terminal-receipts.md) | approved | 2026-10-15 |
 | [Materialize shared skill library inventory](memnotes/Projects/kosmic/specs/quick-tasks/materialize-shared-skill-library-inventory.md) | approved | ? |
 | [Plan Flat Spec Migration Bootstrap](memnotes/Projects/kosmic/specs/quick-tasks/plan-flat-spec-migration-bootstrap.md) | draft | 2026-10-11 |

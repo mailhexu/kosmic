@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/install-and-publish-idea-capture-release.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"install-and-publish-idea-capture-release\"\n---\n\n# Install and publish idea capture release\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/install-and-publish-idea-capture-release.md",
+  "kind": "quick-task",
+  "local_id": "install-and-publish-idea-capture-release",
+  "operation_id": "4494cec452c342b2907f33df7fd5c918",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "install-and-publish-idea-capture-release.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Install and publish idea capture release"
+}
