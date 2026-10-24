@@ -8,7 +8,7 @@ linked_prd: "prd.md"
 created: "2026-10-24"
 updated: "2026-10-24"
 linked_research: []
-linked_stories: []
+linked_stories: ["stories/story-001.md", "stories/story-002.md"]
 ---
 
 # Lightweight Project idea capture
@@ -122,5 +122,5 @@ Keep permanent tests for consumer-visible collision, isolation, refusal and publ
 
 Standard-library Python and the existing Projection CLI/document parsing conventions only. No new runtime package or scheduled process.
 
-The Project/general Architecture amendment is approved. The [Epic draft](epics/epic-001.md) is the next approval gate: approve it before Story creation, then approve each Story before implementation. Planning outputs remain specs, approval/navigation, glossary, log and derived STATUS only; no feature source, generated guidance or installed package changes at this gate.
+The Project/general Architecture and [Epic](epics/epic-001.md) are approved. Actual Story records are linked in the [owner index](INDEX.md); each requires approval before implementation. Planning outputs remain specs, approval/navigation, glossary, log and derived STATUS only; no feature source, generated guidance or installed package changes at this gate.
 

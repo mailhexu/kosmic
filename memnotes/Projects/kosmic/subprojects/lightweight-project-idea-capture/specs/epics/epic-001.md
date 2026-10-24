@@ -1,14 +1,14 @@
 ---
 project_id: "kosmic"
 subproject_id: "lightweight-project-idea-capture"
-status: "draft"
+status: "approved"
 record_kind: "epic"
 local_id: "001"
 linked_prd: "../prd.md"
 linked_architecture: "../architecture.md"
 created: "2026-10-24"
 updated: "2026-10-24"
-linked_stories: []
+linked_stories: ["../stories/story-001.md", "../stories/story-002.md"]
 ---
 
 # Lightweight Project and general idea capture
@@ -17,7 +17,7 @@ linked_stories: []
 
 Deliver one lightweight `kosmic idea` action for ideas belonging to a Project and ideas belonging to no Project. The command creates the selected missing destination, saves one title-named Markdown note with dated in-note history, and returns its full-path link without launching an implementation workflow.
 
-Requirements: [PRD FR-001–007](../prd.md). Design: [approved Architecture ADR-001–002 and storage/publication contract](../architecture.md), including title-only filenames, dated history and vault-root `GeneralIdeas/`. This Epic remains a draft and is the next approval gate, not implementation authority.
+Requirements: [PRD FR-001–007](../prd.md). Design: [approved Architecture ADR-001–002 and storage/publication contract](../architecture.md), including title-only filenames, dated history and vault-root `GeneralIdeas/`. The user approved this Epic in the conversation. Each Story still requires separate approval before implementation.
 
 ## Scope
 
@@ -38,9 +38,9 @@ Requirements: [PRD FR-001–007](../prd.md). Design: [approved Architecture ADR-
 - Eager directory backfill, historical idea/note/dream migration, idea indexes, logs, evidence packs, receipts, scheduled jobs or review rounds per capture.
 - A new database, journal, lock registry, reservation protocol or generic filesystem framework.
 
-## Proposed Story Slices
+## Story Responsibilities
 
-These are responsibilities, not allocated Story identities or approval claims. Create actual Story records only after the amended Architecture and this Epic are approved.
+The responsibilities below map to the actual records linked in Story Records. Each Story needs its own approval; Story002 starts after Story001's successful receipt.
 
 | Slice | Deliverable | Dependency |
 |-------|-------------|------------|
@@ -51,8 +51,10 @@ Use one integration owner for shared CLI and guidance edits. Classify new determ
 
 ## Story Records
 
-| Story | Title | Status |
-|-------|-------|--------|
+| Story | Title | Dependency |
+|-------|-------|------------|
+| [001](../stories/story-001.md) | Native Project and general idea capture | None |
+| [002](../stories/story-002.md) | Conversational idea capture and guidance cutover | Story001 receipt |
 
 ## Success Criteria
 
@@ -66,4 +68,4 @@ Use one integration owner for shared CLI and guidance edits. Classify new determ
 
 ## Approval and Progress
 
-Zero Story records created; two proposed slices. The Project/general Architecture is approved. Approve this Epic before Story creation; each Story then requires its own approval before implementation. This draft creates no source, runtime data, installed package or automatic publication.
+The Epic is approved; the actual Story records are linked above. Current lifecycle navigation is maintained in the [owner index](../INDEX.md), not duplicated as another mutable progress ledger here. Each Story requires approval before implementation; its native receipt is the completion authority. Planning creates no feature source, runtime data, installed package or automatic publication.

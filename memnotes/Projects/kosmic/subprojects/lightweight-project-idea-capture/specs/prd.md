@@ -70,4 +70,4 @@ Users need to save ideas while coding or doing research without turning a tentat
 
 ## Approval Gate
 
-The PRD and amended Project/general Architecture are approved. The user's “next” at the Architecture-amendment gate was taken as permission to advance. Epic approval is required before Story creation; each Story requires approval before implementation. Planning authorizes no implementation or installation.
+The PRD, amended Project/general Architecture and Epic are approved. Each Story requires separate approval before implementation; actual Story records and lifecycle navigation are linked from the [owner index](INDEX.md). Planning authorizes no implementation or installation.
