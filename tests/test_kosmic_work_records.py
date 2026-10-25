@@ -273,14 +273,14 @@ class WorkRecordTest(unittest.TestCase):
         self.assertEqual(log_bytes.decode().count(f"- `{self.identity}` — "), 1)
         self.assertFalse(kosmic_project_skills.status_drift(
             kosmic_project_skills.load_project(self.root)))
-        for status_path in (bound_status, registered / "STATUS.md"):
-            rows = [line for line in status_path.read_text().splitlines()
-                    if "Alpha Story One" in line]
-            self.assertTrue(rows, str(status_path))
-            for row in rows:
-                self.assertIn("| done |", row)
-                self.assertNotIn("(receipt pending)", row)
-
+        rows = [line for line in bound_status.read_text().splitlines()
+                if "Alpha Story One" in line]
+        self.assertTrue(rows, str(bound_status))
+        for row in rows:
+            self.assertIn("| done |", row)
+            self.assertNotIn("(receipt pending)", row)
+        self.assertEqual((registered / "STATUS.md").read_text(),
+                         "stale registered projection\n")
     def test_stale_embedded_reviewed_revision_denies_completion(self):
         source = self.tree / "src/result.txt"
         source.parent.mkdir(parents=True, exist_ok=True)

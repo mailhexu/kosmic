@@ -18,6 +18,18 @@ explicit `--work-record` authority is re-resolved at invocation time and
 never cached; the only mutated path is the bound `<status-root>/STATUS.md` —
 records, receipts, and sources are never written by this command.
 
+Completion and valid-receipt retries likewise publish only to the already
+configured `ProjectEntry.status_root`; registered directories are not
+additional STATUS destinations, and without a bound root completion writes no
+external STATUS file. On `generate-status`, a healthy catalog still renders in
+full. If unrelated catalog or ancestry defects prevent that render, the
+command can use a clearly labeled bounded view of the current record's owner
+only after the explicit record's identity, authority, and applicable ancestry have passed validation.
+Defects in the current record's authority or applicable ancestry still refuse
+in every case. Without a configured history policy, a defect in any retained
+owner/shared hierarchy refuses as well; a configured history policy keeps its
+existing structural bounded rendering. `validate` remains strict.
+
 **Record authority (ADR-E).** Implementation records keep their exact legacy
 grants at this command: a `story` or `quick-task` with `approved` or
 `in_progress` status authorizes the refresh unchanged, including

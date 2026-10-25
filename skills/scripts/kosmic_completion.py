@@ -581,14 +581,14 @@ def _append_completion_log(root: Path, record, detail: str) -> None:
 
 
 def _write_status_reports(root: Path, record_owner: str | None = None) -> None:
-    """Regenerate STATUS.md for the Project and every registered directory.
+    """Regenerate only the Project's configured bound STATUS.md.
 
-    Publication prefers the strict full-catalog projection. When the whole
-    catalog cannot be enumerated (for example an unrelated subproject entry
-    is broken), completion falls back to the record-bound bounded view for
-    the completed record's owner: the bounded report carries an explicit
-    scope note instead of posing as a full-catalog audit, and a directory
-    fixed to an unrelated subproject keeps its own report bytes untouched.
+    Publication prefers the strict full-catalog projection. If the catalog
+    cannot be enumerated because of an unrelated owner's defect, completion
+    falls back to the record-bound view for the completed record's owner. The
+    bounded report carries an explicit scope note instead of posing as a
+    full-catalog audit. No registered directory is an additional destination;
+    without a configured status root, completion writes no external STATUS.
     """
     if __package__:
         from . import kosmic_project_skills as cli
@@ -596,40 +596,27 @@ def _write_status_reports(root: Path, record_owner: str | None = None) -> None:
         import kosmic_project_skills as cli
     from dataclasses import replace
     project = cli.load_project(root)
-    entries = {str(Path(item["path"])): item
-               for item in work.load_registry(root)["directories"]}
-    directories = set(entries)
-    if project.status_root:
-        directories.add(str(project.status_root))
+    if project.status_root is None:
+        return
+    status_root = project.status_root.expanduser().resolve()
     snapshot = work._run_git(root, "rev-parse", "HEAD").strip() or "no-head"
-    bounded = None
-    for base in sorted(directories):
-        scoped = replace(project, status_root=Path(base))
-        try:
-            rendered = cli.render_status(scoped, snapshot)
-        except SpecError:
-            configured_history = (
-                project.history_integrity is not None
-                and bool(project.history_integrity.records)
-            )
-            # The full-catalog outcome is identical for every output
-            # directory, so the bounded fallback is decided once and reused.
-            # Configured history never constructs a record-bound catalog
-            # merely for warn reporting: it renders the bounded structural
-            # snapshot per directory instead.
-            if bounded is None and not configured_history:
-                bounded = SpecCatalog.bounded(root, record_owner)
-            fixed = entries.get(base, {}).get("fixed_subproject_id")
-            if fixed is not None and fixed != record_owner:
-                # This completion never deletes an unrelated directory's report.
-                continue
-            if configured_history:
-                rendered = cli.render_status(
-                    scoped, snapshot,
-                    structural_bounded=record_owner if record_owner else True)
-            else:
-                rendered = cli.render_status(scoped, snapshot, catalog=bounded)
-        work._atomic_write(Path(base), "STATUS.md", rendered)
+    scoped = replace(project, status_root=status_root)
+    try:
+        rendered = cli.render_status(scoped, snapshot)
+    except SpecError:
+        configured_history = (
+            project.history_integrity is not None
+            and bool(project.history_integrity.records)
+        )
+        if configured_history:
+            rendered = cli.render_status(
+                scoped, snapshot,
+                structural_bounded=record_owner if record_owner else True)
+        else:
+            rendered = cli.render_status(
+                scoped, snapshot,
+                catalog=SpecCatalog.bounded(root, record_owner))
+    work._atomic_write(status_root, "STATUS.md", rendered)
 
 
 def _completion_cli():

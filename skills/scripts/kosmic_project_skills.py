@@ -4431,6 +4431,30 @@ def _generate_status_denial(
     return None
 
 
+
+def _validate_bounded_status_ancestry(
+    project_root: Path, catalog: SpecCatalog,
+) -> None:
+    """Keep every retained owner/shared ancestry invariant on bounded fallback.
+
+    Full-catalog validation is unavailable for a bounded catalog, so mirror
+    its owner binding and per-record ancestry checks without enumerating other
+    subprojects whose unrelated defects caused the fallback.
+    """
+    for owner, metadata in catalog.subprojects.items():
+        reference = metadata.get("linked_prd")
+        if not isinstance(reference, str) or not reference:
+            raise SpecError("ANCESTRY_INVALID", f"{owner}: missing linked_prd")
+        try:
+            catalog.resolve(
+                project_root / "subprojects" / owner / reference,
+                owner=owner, kind="prd")
+        except SpecError as error:
+            raise SpecError("ANCESTRY_INVALID", f"{owner}: {error}") from error
+    for retained_record in catalog.records:
+        catalog.ancestry(retained_record)
+
+
 def generate_status(project: Project, *, work_record: str | None = None) -> Path:
     """Generate STATUS.md into the bound working directory.
 
@@ -4463,7 +4487,23 @@ def generate_status(project: Project, *, work_record: str | None = None) -> Path
     except OSError:
         completed = None
     head = completed.stdout.strip() if completed is not None and completed.returncode == 0 else "no-head"
-    payload = render_status(project, head)
+    # Record identity, authority, and applicable ancestry passed above; only
+    # an unrelated catalog defect is eligible for the bounded rendering.
+    try:
+        payload = render_status(project, head)
+    except SpecError:
+        configured_history = (
+            project.history_integrity is not None
+            and bool(project.history_integrity.records)
+        )
+        if configured_history:
+            payload = render_status(
+                project, head,
+                structural_bounded=record.subproject_id if record.subproject_id else True)
+        else:
+            catalog = SpecCatalog.bounded(project.root, record.subproject_id)
+            _validate_bounded_status_ancestry(project.root, catalog)
+            payload = render_status(project, head, catalog=catalog)
     try:
         atomic_write(status_root / "STATUS.md", payload.decode("utf-8"))
     except OSError as error:

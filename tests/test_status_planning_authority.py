@@ -515,6 +515,156 @@ class StatusPlanningAuthorityTest(unittest.TestCase):
             self.assertIn("WORK_PHASE_DENIED", result.stderr)
 
 
+    def test_active_story_falls_back_to_bounded_view_for_unrelated_ancestry(self) -> None:
+        with self.sandbox() as (worktree, project_root, status_root):
+            _write_subproject(
+                project_root, "active", prd_status="approved",
+                architecture_status="approved", epic_status="approved")
+            _write_subproject(
+                project_root, "other", prd_status="approved",
+                architecture_status="approved")
+            _write_story(project_root, "active", "001", "in_progress", chained=True)
+
+            # The healthy path remains the full Project catalog.
+            self.refresh(project_root, "foo/active/story/001")
+            full = (status_root / "STATUS.md").read_text(encoding="utf-8")
+            self.assertIn("subprojects/active/specs/stories/story-001.md", full)
+            self.assertIn("subprojects/other/specs/architecture.md", full)
+            self.assertNotIn("bounded active-record view", full)
+
+            broken_record = (
+                project_root / "subprojects/other/specs/architecture.md")
+            broken = broken_record.read_text(encoding="utf-8").replace(
+                "linked_prd: prd.md", "linked_prd: foo/active/prd/prd")
+            broken_record.write_text(broken, encoding="utf-8")
+            broken_bytes = broken_record.read_bytes()
+            self.refresh(project_root, "foo/active/story/001")
+
+            bounded = (status_root / "STATUS.md").read_text(encoding="utf-8")
+            self.assertIn("subprojects/active/specs/stories/story-001.md", bounded)
+            self.assertEqual(
+                "in_progress",
+                status_column(self.row(bounded, "story-001.md")))
+            self.assertNotIn("subprojects/other/specs/architecture.md", bounded)
+            # The bounded view is labeled; the scope contract itself is
+            # behavioral (owner records in, unrelated records out, bytes kept).
+            self.assertIn("- Scope: bounded", bounded)
+            self.assertEqual(broken_bytes, broken_record.read_bytes())
+            self.assertEqual(
+                self._before_tree, tree_digest(worktree, status_root / "STATUS.md"))
+
+    def test_current_story_ancestry_and_authority_still_refuse_with_unrelated_defect(self) -> None:
+        with self.sandbox() as (worktree, project_root, status_root):
+            _write_subproject(
+                project_root, "active", prd_status="approved",
+                architecture_status="approved", epic_status="approved")
+            _write_subproject(
+                project_root, "other", prd_status="approved",
+                architecture_status="approved")
+            _write_story(project_root, "active", "001", "in_progress", chained=True)
+            broken_record = (
+                project_root / "subprojects/other/specs/architecture.md")
+            broken_record.write_text(
+                broken_record.read_text(encoding="utf-8").replace(
+                    "linked_prd: prd.md", "linked_prd: foo/active/prd/prd"),
+                encoding="utf-8")
+            active_story = (
+                project_root / "subprojects/active/specs/stories/story-001.md")
+            active_story.write_text(
+                active_story.read_text(encoding="utf-8").replace(
+                    "linked_epic: foo/active/epic/001",
+                    "linked_epic: foo/other/epic/001"),
+                encoding="utf-8")
+            active_bytes = active_story.read_bytes()
+            broken_bytes = broken_record.read_bytes()
+            target = status_root / "STATUS.md"
+            before = target.read_bytes()
+
+            result = self.refresh(
+                project_root, "foo/active/story/001", expected=2)
+            self.assertIn("ANCESTRY_INVALID", result.stderr)
+            self.assertEqual(before, target.read_bytes())
+            self.assertEqual(active_bytes, active_story.read_bytes())
+            self.assertEqual(broken_bytes, broken_record.read_bytes())
+            self.assertEqual(
+                self._before_tree, tree_digest(worktree, target))
+
+            unauthorized = project_root / "specs/quick-tasks/unauthorized.md"
+            _write(
+                unauthorized,
+                "---\nproject_id: foo\nsubproject_id: null\nrecord_kind: quick-task\n"
+                "local_id: unauthorized\nstatus: draft\nupdated: " + TODAY
+                + "\n---\n\n# Unauthorized\n\nDraft only.\n")
+            before = target.read_bytes()
+            denied = self.refresh(
+                project_root, "foo/quick-task/unauthorized", expected=2)
+            self.assertIn("WORK_PHASE_DENIED", denied.stderr)
+            self.assertEqual(before, target.read_bytes())
+            self.assertEqual(
+                self._before_tree, tree_digest(worktree, target))
+
+
+    def test_bounded_fallback_refuses_same_owner_sibling_missing_epic(self) -> None:
+        with self.sandbox() as (worktree, project_root, status_root):
+            _write_subproject(
+                project_root, "active", prd_status="approved",
+                architecture_status="approved", epic_status="approved")
+            _write_story(project_root, "active", "001", "in_progress", chained=True)
+            _write_story(project_root, "active", "002", "draft", chained=False)
+            sibling = (
+                project_root / "subprojects/active/specs/stories/story-002.md")
+            sibling.write_text(
+                sibling.read_text(encoding="utf-8").replace(
+                    "status: draft\n",
+                    "status: draft\n"
+                    "linked_prd: foo/active/prd/prd\n"
+                    "linked_architecture: foo/active/architecture/architecture\n"),
+                encoding="utf-8")
+
+            active = (
+                project_root / "subprojects/active/specs/stories/story-001.md")
+            active_bytes = active.read_bytes()
+            sibling_bytes = sibling.read_bytes()
+            target = status_root / "STATUS.md"
+            status_bytes = target.read_bytes()
+
+            result = self.refresh(
+                project_root, "foo/active/story/001", expected=2)
+            self.assertIn("ANCESTRY_INVALID", result.stderr)
+            self.assertEqual(status_bytes, target.read_bytes())
+            self.assertEqual(active_bytes, active.read_bytes())
+            self.assertEqual(sibling_bytes, sibling.read_bytes())
+            self.assertEqual(self._before_tree, tree_digest(worktree, target))
+
+    def test_bounded_fallback_refuses_owner_linked_prd_defect(self) -> None:
+        with self.sandbox() as (worktree, project_root, status_root):
+            _write_subproject(
+                project_root, "active", prd_status="approved",
+                architecture_status="approved", epic_status="approved")
+            _write_story(project_root, "active", "001", "in_progress", chained=True)
+            owner = project_root / "subprojects/active/SubprojectEntry.md"
+            owner.write_text(
+                owner.read_text(encoding="utf-8").replace(
+                    "linked_prd: specs/prd.md",
+                    "linked_prd: specs/architecture.md"),
+                encoding="utf-8")
+
+            active = (
+                project_root / "subprojects/active/specs/stories/story-001.md")
+            active_bytes = active.read_bytes()
+            owner_bytes = owner.read_bytes()
+            target = status_root / "STATUS.md"
+            status_bytes = target.read_bytes()
+
+            result = self.refresh(
+                project_root, "foo/active/story/001", expected=2)
+            self.assertIn("ANCESTRY_INVALID", result.stderr)
+            self.assertEqual(status_bytes, target.read_bytes())
+            self.assertEqual(active_bytes, active.read_bytes())
+            self.assertEqual(owner_bytes, owner.read_bytes())
+            self.assertEqual(self._before_tree, tree_digest(worktree, target))
+
+
 def _write_base(base: Path) -> Path:
     worktree = base / "worktree"
     worktree.mkdir(parents=True)

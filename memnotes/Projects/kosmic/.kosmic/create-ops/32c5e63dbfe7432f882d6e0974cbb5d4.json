@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"bound-completion-status-publication-and-ancestry-rendering\"\n---\n\n# Bound completion STATUS publication and ancestry rendering\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md",
+  "kind": "quick-task",
+  "local_id": "bound-completion-status-publication-and-ancestry-rendering",
+  "operation_id": "32c5e63dbfe7432f882d6e0974cbb5d4",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "bound-completion-status-publication-and-ancestry-rendering.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Bound completion STATUS publication and ancestry rendering"
+}

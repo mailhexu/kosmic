@@ -861,13 +861,60 @@ class EmbeddedCompletionFinishTest(ScopedProjectCase):
         self.assertIn("COMPLETION_PENDING", unreceipted.stderr)
 
     def test_retried_finish_keeps_receipt_without_duplicating_log(self) -> None:
+        entry = self.project / "ProjectEntry.md"
+        entry.write_text(
+            entry.read_text(encoding="utf-8").replace(
+                "working_state: working-tree\n",
+                f"working_state: working-tree\nstatus_root: {self.root.resolve()}\n"),
+            encoding="utf-8")
+        foreign_status = {}
+        entries = []
+        for index in range(2):
+            directory = self.root / f"registered-status-{index}"
+            directory.mkdir()
+            status_path = directory / "STATUS.md"
+            sentinel = f"foreign status sentinel {index}\n".encode("utf-8")
+            status_path.write_bytes(sentinel)
+            foreign_status[status_path] = sentinel
+            entries.append({
+                "schema": "kosmic.workdir/1",
+                "path": str(directory.resolve()),
+                "directory_id": kosmic_work.directory_id(directory),
+                "fixed_subproject_id": None,
+                "authority": {"record": WORK_RECORD, "run_id": f"status-fixture-{index}"},
+            })
+        registry = {
+            "schema": "kosmic.workdirs/1",
+            "project_id": "scope-demo",
+            "sequence": len(entries),
+            "directories": entries,
+        }
+        registry_path = self.project / ".kosmic" / "working-directories.json"
+        registry_path.parent.mkdir(parents=True, exist_ok=True)
+        registry_path.write_text(json.dumps(registry, sort_keys=True), encoding="utf-8")
+        commit_baseline(self.root, "fixture bound status and registered directories")
+        self.write_record()
+        generated = self.run_cli(
+            "generate-status", "--project", self.project, "--work-record", WORK_RECORD)
+        self.assertEqual(
+            0, generated.returncode,
+            msg=f"stdout:\n{generated.stdout}\nstderr:\n{generated.stderr}")
+        self.assertTrue((self.root / "STATUS.md").is_file())
+        for status_path, sentinel in foreign_status.items():
+            self.assertEqual(sentinel, status_path.read_bytes())
+
         receipt = json.loads(self.finish().stdout)
+        self.assertTrue((self.root / "STATUS.md").is_file())
+        for status_path, sentinel in foreign_status.items():
+            self.assertEqual(sentinel, status_path.read_bytes())
         stored = self.project / ".kosmic/work-receipts" / receipt_name(WORK_RECORD)
         receipt_bytes = stored.read_bytes()
         logs = sorted((self.project / "log").glob("*-work-completion.md"))
         self.assertEqual(len(logs), 1)
         rerun = json.loads(self.finish().stdout)
         self.assertEqual(rerun, receipt)
+        for status_path, sentinel in foreign_status.items():
+            self.assertEqual(sentinel, status_path.read_bytes())
         self.assertEqual(stored.read_bytes(), receipt_bytes)
         self.assertEqual(sorted((self.project / "log").glob("*-work-completion.md")), logs)
 

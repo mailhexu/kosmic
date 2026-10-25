@@ -323,6 +323,42 @@ class UnifiedFinishCompletionTest(ScopedProjectCase):
             msg=f"stdout:\n{checked.stdout}\nstderr:\n{checked.stderr}",
         )
 
+    def test_finish_and_terminal_retry_do_not_create_foreign_status_without_binding(self) -> None:
+        directories = []
+        entries = []
+        for index in range(2):
+            directory = self.root / f"unbound-status-{index}"
+            directory.mkdir()
+            directories.append(directory)
+            entries.append({
+                "schema": "kosmic.workdir/1",
+                "path": str(directory.resolve()),
+                "directory_id": kosmic_work.directory_id(directory),
+                "fixed_subproject_id": None,
+                "authority": {"record": WORK_RECORD, "run_id": f"unbound-fixture-{index}"},
+            })
+        registry = {
+            "schema": "kosmic.workdirs/1",
+            "project_id": PROJECT_ID,
+            "sequence": len(entries),
+            "directories": entries,
+        }
+        registry_path = self.project / ".kosmic" / "working-directories.json"
+        registry_path.parent.mkdir(parents=True, exist_ok=True)
+        registry_path.write_text(json.dumps(registry, sort_keys=True), encoding="utf-8")
+        commit_baseline(self.root, "fixture unbound registered directories")
+        self.write_record()
+
+        receipt = json.loads(self.finish().stdout)
+        receipt_bytes = self.stored_receipt_path().read_bytes()
+        for directory in directories:
+            self.assertFalse((directory / "STATUS.md").exists())
+        retry = json.loads(self.finish().stdout)
+        self.assertEqual(retry, receipt)
+        self.assertEqual(self.stored_receipt_path().read_bytes(), receipt_bytes)
+        for directory in directories:
+            self.assertFalse((directory / "STATUS.md").exists())
+
     def test_finish_refuses_retired_input_declaration(self) -> None:
         self.write_record(extra={"acceptance_evidence": ["evidence/old.json"]})
         result = self.run_finish()

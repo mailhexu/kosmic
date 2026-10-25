@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-24T07:22:59Z",
+  "detail": "",
+  "identity": "kosmic/quick-task/bound-completion-status-publication-and-ancestry-rendering",
+  "proof": {
+    "specs/quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md": "fe9df18ead26e241e4f505313ece37d1de4fbe7f31525a7e9cc0a72c60a399d2"
+  },
+  "record_path": "specs/quick-tasks/bound-completion-status-publication-and-ancestry-rendering.md",
+  "record_sha256": "fe9df18ead26e241e4f505313ece37d1de4fbe7f31525a7e9cc0a72c60a399d2",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}
