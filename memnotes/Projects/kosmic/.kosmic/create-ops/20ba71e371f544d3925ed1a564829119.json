@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/prototype-sketches-in-spec-templates.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"prototype-sketches-in-spec-templates\"\n---\n\n# Prototype sketches in spec templates\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/prototype-sketches-in-spec-templates.md",
+  "kind": "quick-task",
+  "local_id": "prototype-sketches-in-spec-templates",
+  "operation_id": "20ba71e371f544d3925ed1a564829119",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "prototype-sketches-in-spec-templates.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Prototype sketches in spec templates"
+}
