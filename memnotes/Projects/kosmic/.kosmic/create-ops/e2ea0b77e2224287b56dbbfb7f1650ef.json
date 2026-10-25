@@ -1,0 +1,28 @@
+{
+  "documents": {
+    "subprojects/lightweight-project-idea-capture/specs/stories/story-002.md": "---\nproject_id: \"kosmic\"\nsubproject_id: \"lightweight-project-idea-capture\"\nstatus: \"draft\"\nrecord_kind: \"story\"\nlocal_id: \"002\"\nlinked_prd: \"../prd.md\"\nlinked_epic: \"../epics/epic-001.md\"\nlinked_architecture: \"../architecture.md\"\ndepends_on: []\n---\n\n# Conversational idea capture and guidance cutover\n"
+  },
+  "index_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "stories/story-002.md",
+  "kind": "story",
+  "local_id": "002",
+  "operation_id": "e2ea0b77e2224287b56dbbfb7f1650ef",
+  "project_id": "kosmic",
+  "record_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "stories",
+    "story-002.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": "lightweight-project-idea-capture",
+  "title": "Conversational idea capture and guidance cutover"
+}

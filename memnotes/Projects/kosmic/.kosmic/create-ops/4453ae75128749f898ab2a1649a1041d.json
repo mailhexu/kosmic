@@ -1,0 +1,27 @@
+{
+  "documents": {
+    "subprojects/lightweight-project-idea-capture/specs/architecture.md": "---\nproject_id: \"kosmic\"\nsubproject_id: \"lightweight-project-idea-capture\"\nstatus: \"draft\"\nrecord_kind: \"architecture\"\nlocal_id: \"architecture\"\nlinked_prd: \"prd.md\"\n---\n\n# Lightweight Project idea capture\n"
+  },
+  "index_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "architecture.md",
+  "kind": "architecture",
+  "local_id": "architecture",
+  "operation_id": "4453ae75128749f898ab2a1649a1041d",
+  "project_id": "kosmic",
+  "record_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "architecture.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": "lightweight-project-idea-capture",
+  "title": "Lightweight Project idea capture"
+}

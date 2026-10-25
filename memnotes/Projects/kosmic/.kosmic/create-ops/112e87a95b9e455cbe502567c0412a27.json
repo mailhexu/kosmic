@@ -1,0 +1,28 @@
+{
+  "documents": {
+    "subprojects/lightweight-project-idea-capture/specs/epics/epic-001.md": "---\nproject_id: \"kosmic\"\nsubproject_id: \"lightweight-project-idea-capture\"\nstatus: \"draft\"\nrecord_kind: \"epic\"\nlocal_id: \"001\"\nlinked_prd: \"../prd.md\"\nlinked_architecture: \"../architecture.md\"\n---\n\n# Lightweight idea capture with title-only notes and dated history\n"
+  },
+  "index_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "epics/epic-001.md",
+  "kind": "epic",
+  "local_id": "001",
+  "operation_id": "112e87a95b9e455cbe502567c0412a27",
+  "project_id": "kosmic",
+  "record_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "epics",
+    "epic-001.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": "lightweight-project-idea-capture",
+  "title": "Lightweight idea capture with title-only notes and dated history"
+}

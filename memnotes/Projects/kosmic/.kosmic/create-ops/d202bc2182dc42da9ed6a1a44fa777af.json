@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/publish-native-index-release-and-refresh-omp.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"publish-native-index-release-and-refresh-omp\"\n---\n\n# Publish native-index release and refresh OMP\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/publish-native-index-release-and-refresh-omp.md",
+  "kind": "quick-task",
+  "local_id": "publish-native-index-release-and-refresh-omp",
+  "operation_id": "d202bc2182dc42da9ed6a1a44fa777af",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "publish-native-index-release-and-refresh-omp.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Publish native-index release and refresh OMP"
+}

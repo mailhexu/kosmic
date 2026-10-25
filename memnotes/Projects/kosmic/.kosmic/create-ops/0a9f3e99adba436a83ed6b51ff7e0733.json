@@ -1,0 +1,28 @@
+{
+  "documents": {
+    "subprojects/lightweight-project-idea-capture/SubprojectEntry.md": "---\nschema: \"kosmic.subproject/1\"\nproject_id: \"kosmic\"\nsubproject_id: \"lightweight-project-idea-capture\"\ntitle: \"Lightweight Project idea capture\"\nlinked_prd: \"specs/prd.md\"\nstatus: \"draft\"\n---\n\n# Lightweight Project idea capture\n",
+    "subprojects/lightweight-project-idea-capture/specs/prd.md": "---\nproject_id: \"kosmic\"\nsubproject_id: \"lightweight-project-idea-capture\"\nstatus: \"draft\"\nrecord_kind: \"prd\"\nlocal_id: \"prd\"\n---\n\n# Lightweight Project idea capture\n\n## Purpose\n\n(draft)\n"
+  },
+  "index_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "prd.md",
+  "kind": "prd",
+  "local_id": "prd",
+  "operation_id": "0a9f3e99adba436a83ed6b51ff7e0733",
+  "project_id": "kosmic",
+  "record_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "prd.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": "lightweight-project-idea-capture",
+  "title": "Lightweight Project idea capture"
+}

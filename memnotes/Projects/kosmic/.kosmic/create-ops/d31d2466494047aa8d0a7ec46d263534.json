@@ -1,0 +1,28 @@
+{
+  "documents": {
+    "subprojects/lightweight-project-idea-capture/specs/stories/story-001.md": "---\nproject_id: \"kosmic\"\nsubproject_id: \"lightweight-project-idea-capture\"\nstatus: \"draft\"\nrecord_kind: \"story\"\nlocal_id: \"001\"\nlinked_prd: \"../prd.md\"\nlinked_epic: \"../epics/epic-001.md\"\nlinked_architecture: \"../architecture.md\"\ndepends_on: []\n---\n\n# Native Project and general idea capture\n"
+  },
+  "index_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "stories/story-001.md",
+  "kind": "story",
+  "local_id": "001",
+  "operation_id": "d31d2466494047aa8d0a7ec46d263534",
+  "project_id": "kosmic",
+  "record_parts": [
+    "subprojects",
+    "lightweight-project-idea-capture",
+    "specs",
+    "stories",
+    "story-001.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": "lightweight-project-idea-capture",
+  "title": "Native Project and general idea capture"
+}
