@@ -157,3 +157,4 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | quick-task | [Register idea guidance writer](quick-tasks/register-idea-guidance-writer.md) | approved |
 | quick-task | [Install and publish idea capture release](quick-tasks/install-and-publish-idea-capture-release.md) | done |
 | quick-task | [Default governed work to the current checkout](quick-tasks/default-governed-work-to-the-current-checkout.md) | done |
+| quick-task | [Advise instead of blocking on extra related notes](quick-tasks/advise-instead-of-blocking-on-extra-related-notes.md) | draft |

@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/advise-instead-of-blocking-on-extra-related-notes.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"advise-instead-of-blocking-on-extra-related-notes\"\n---\n\n# Advise instead of blocking on extra related notes\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/advise-instead-of-blocking-on-extra-related-notes.md",
+  "kind": "quick-task",
+  "local_id": "advise-instead-of-blocking-on-extra-related-notes",
+  "operation_id": "98c00a7731be4f48964e57fbfa15783e",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "advise-instead-of-blocking-on-extra-related-notes.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Advise instead of blocking on extra related notes"
+}
