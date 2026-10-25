@@ -1,0 +1,24 @@
+{
+  "documents": {
+    "specs/quick-tasks/default-governed-work-to-the-current-checkout.md": "---\nproject_id: \"kosmic\"\nsubproject_id: null\nstatus: \"draft\"\nrecord_kind: \"quick-task\"\nlocal_id: \"default-governed-work-to-the-current-checkout\"\n---\n\n# Default governed work to the current checkout\n"
+  },
+  "index_parts": [
+    "specs",
+    "INDEX.md"
+  ],
+  "index_relative": "quick-tasks/default-governed-work-to-the-current-checkout.md",
+  "kind": "quick-task",
+  "local_id": "default-governed-work-to-the-current-checkout",
+  "operation_id": "9819459ee87b413696f0336d133772c7",
+  "project_id": "kosmic",
+  "record_parts": [
+    "specs",
+    "quick-tasks",
+    "default-governed-work-to-the-current-checkout.md"
+  ],
+  "schema": "kosmic.create-op/2",
+  "state": "draft",
+  "status": "published",
+  "subproject_id": null,
+  "title": "Default governed work to the current checkout"
+}
