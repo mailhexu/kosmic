@@ -97,7 +97,7 @@ This is story-level implementation research. It is mandatory for approved storie
 
 If the Story corrects a defect, invoke `diagnosing-bugs` before Phase 2. Establish and minimize a reproducible failure, discriminate cause hypotheses with evidence, and add the regression test at the agreed seam before implementation can complete.
 
-Before the first implementation write, run `work start --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD`. It re-resolves the approved Story and requires a clean worktree. Use one record, one worktree, one writer; scope expansion requires an updated reviewed Story/Quick Task. Follow SKILL.md Record-first authority; code review is evidence, not permission to expand the slice. The story starts work once: a resumed session continues inside its recorded scope and the existing worktree — no restart, no extra record, no fresh worktree per step, and no silent recorded-scope widening. Questions, code search, and unchanged-input checks are record-free; a mid-episode scope or approval change makes the next mutating command re-derive authority live and reject the stale attempt.
+Before the first implementation write, run `work start --project PROJECT_ROOT --worktree ROOT --work-record QUALIFIED_RECORD`. It re-resolves the approved Story and requires a clean worktree. Work in the current checkout; create a separate worktree only when the user asks. Use one record, one writer; scope expansion requires an updated reviewed Story/Quick Task. Follow SKILL.md Record-first authority; code review is evidence, not permission to expand the slice. The story starts work once: a resumed session continues inside its recorded scope and the existing worktree — no restart, no extra record, no fresh worktree per step, and no silent recorded-scope widening. Questions, code search, and unchanged-input checks are record-free; a mid-episode scope or approval change makes the next mutating command re-derive authority live and reject the stale attempt.
 ```yaml
 status: in_progress
 updated: {DATE}
@@ -304,7 +304,7 @@ consuming the completion gate, so the gate reads drift-free inputs
 successful `work finish` — finish itself publishes the final STATUS.
 
 **Commit cadence**: retain verified record-owned source, vault outputs and the
-successful receipt in the isolated writer before final reporting. Load
+successful receipt in the writer checkout before final reporting. Load
 [Receipt completion](work_completion.md) for scope, proof and integration.
 Preserve unrelated changes in destination checkouts; integrate only owned,
 baseline-checked deltas.

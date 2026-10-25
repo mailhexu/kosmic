@@ -114,4 +114,4 @@ Receipts published before this contract recorded their proof against acceptance/
 
 ## 5. Preserve the writer and integrate
 
-Commit the verified record-owned source, review-bound record, log and receipt in the isolated writer. Preserve unrelated work in every destination. Before integration compare destination bytes with the captured baseline for each owned path; source drift requires reconciliation, not overwrite. Integrate only those owned deltas. Installation has its own approved adapter plan and validation; canonical skill edits do not authorize editing installed user-authored skills.
+Commit the verified record-owned source, review-bound record, log and receipt in the writer checkout. When a separate worktree was used, preserve unrelated work in every destination and compare destination bytes with the captured baseline for each owned path before integrating; source drift requires reconciliation, not overwrite. Integrate only those owned deltas. Installation has its own approved adapter plan and validation; canonical skill edits do not authorize editing installed user-authored skills.

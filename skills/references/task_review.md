@@ -172,7 +172,7 @@ git grep "confidence: 0\.[0-5]" -- "{VAULT}/Projects/{TARGET}/notes/*.md"
 ## Vault Commit Cadence
 
 Before closing a session that produced durable vault changes, commit the
-verified record-owned outputs in the isolated writer so provenance remains
+verified record-owned outputs in the writer checkout so provenance remains
 available. Load [Receipt completion](work_completion.md) for completion and
 integration. A session with no durable changes has nothing to commit and no
 completion bookkeeping to run. Preserve unrelated destination work; use the

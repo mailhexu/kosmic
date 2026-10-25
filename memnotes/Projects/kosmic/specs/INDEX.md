@@ -156,4 +156,4 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | quick-task | [Register native idea capture writer](quick-tasks/register-native-idea-capture-writer.md) | approved |
 | quick-task | [Register idea guidance writer](quick-tasks/register-idea-guidance-writer.md) | approved |
 | quick-task | [Install and publish idea capture release](quick-tasks/install-and-publish-idea-capture-release.md) | done |
-| quick-task | [Default governed work to the current checkout](quick-tasks/default-governed-work-to-the-current-checkout.md) | draft |
+| quick-task | [Default governed work to the current checkout](quick-tasks/default-governed-work-to-the-current-checkout.md) | done |
