@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-25T14:40:19Z",
+  "detail": "",
+  "identity": "kosmic/quick-task/advise-instead-of-blocking-on-extra-related-notes",
+  "proof": {
+    "specs/quick-tasks/advise-instead-of-blocking-on-extra-related-notes.md": "6a17a5faeb65878fcb1af2f08109cedabcf3ccc15ecc73a1aa3f6c1c6d3fca19"
+  },
+  "record_path": "specs/quick-tasks/advise-instead-of-blocking-on-extra-related-notes.md",
+  "record_sha256": "6a17a5faeb65878fcb1af2f08109cedabcf3ccc15ecc73a1aa3f6c1c6d3fca19",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

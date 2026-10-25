@@ -203,6 +203,34 @@ class RecordScopedCompletionTest(ScopedProjectCase):
                 self.note("using.md", USAGE_BODY)
                 self.completion(item)
 
+    def test_consumer_completion_accepts_advisory_related_notes_with_anchor(self) -> None:
+        self.seed_pair()
+        (self.project / "notes" / "drafting.md").write_text(
+            "---\ntype: reference\nstatus: draft\naudience: both\n"
+            "artifact_role: knowledge\n---\n\n" + USAGE_BODY,
+            encoding="utf-8",
+        )
+        item = self.item(
+            "consumer_interface_change: true\nrelated_notes: [using, drafting]\n"
+        )
+        result = self.completion(item)
+        self.assertIn("drafting", result.stderr)
+        self.assertIn("advisory", result.stderr)
+
+    def test_consumer_completion_still_requires_one_stable_anchor(self) -> None:
+        self.seed_pair()
+        (self.project / "notes" / "drafting.md").write_text(
+            "---\ntype: reference\nstatus: draft\naudience: both\n"
+            "artifact_role: knowledge\n---\n\n" + USAGE_BODY,
+            encoding="utf-8",
+        )
+        item = self.item(
+            "consumer_interface_change: true\nrelated_notes: [drafting]\n"
+        )
+        result = self.completion(item, expected=2)
+        self.assertIn("drafting", result.stderr)
+        self.assertIn("at least one related stable", result.stderr)
+
     def test_consumer_completion_requires_current_declared_projection(self) -> None:
         self.seed_pair()
         item = self.consumer_item()

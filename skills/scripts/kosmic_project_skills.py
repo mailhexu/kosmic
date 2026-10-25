@@ -3663,24 +3663,40 @@ def _check_existing_completion(
         raise KosmicError(
             "Consumer Interface changes require at least one related stable usage or both note"
         )
+    anchors: list[str] = []
+    advisories: list[str] = []
     for reference in references:
         note_path = resolve_related_note(project, reference)
         if not note_path.is_file():
             raise KosmicError(f"related Consumer knowledge is missing: {reference}")
         note = parse_markdown(note_path.read_text(encoding="utf-8"))
-        if str(note.metadata.get("status") or "").lower() != "stable":
-            raise KosmicError(f"related Consumer knowledge is not stable: {reference}")
         stale_after = validated_stale_after(note.metadata.get("stale_after"), reference)
-        if stale_after is not None and date.today() >= stale_after:
-            raise KosmicError(f"related Consumer knowledge is stale: {reference}")
-        if note.metadata.get("usage_stale") is True:
-            raise KosmicError(f"related Consumer knowledge is Usage-stale: {reference}")
         audience, unscoped = normalize_audience(note.metadata.get("audience"), reference)
+        problems: list[str] = []
+        if str(note.metadata.get("status") or "").lower() != "stable":
+            problems.append("not stable")
+        if stale_after is not None and date.today() >= stale_after:
+            problems.append("stale")
+        if note.metadata.get("usage_stale") is True:
+            problems.append("Usage-stale")
         if unscoped or audience not in {"usage", "both"}:
-            raise KosmicError(
-                f"related note is not Consumer-visible knowledge: {reference}"
-            )
-    _validate_record_projection(project, references)
+            problems.append("not Consumer-visible")
+        if problems:
+            advisories.append(f"{reference} ({', '.join(problems)})")
+        else:
+            anchors.append(reference)
+    if not anchors:
+        raise KosmicError(
+            "Consumer Interface changes require at least one related stable usage or both note; "
+            + "; ".join(advisories)
+        )
+    if advisories:
+        print(
+            "warning: related notes beyond the stable Consumer anchor are advisory only: "
+            + "; ".join(advisories),
+            file=sys.stderr,
+        )
+    _validate_record_projection(project, anchors)
 
 def check_completion(
     project: Project, work_item: Path, source_root: Path = Path.cwd(), *,
