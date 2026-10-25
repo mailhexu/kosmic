@@ -148,6 +148,10 @@ Link the presented PRD by its full absolute path per the presenter rule above.
 - **Measurable**: Success criteria must be verifiable
 - **Prioritized**: Use MoSCoW (must/should/could/won't)
 - **Bounded**: Non-goals are as important as goals
+- **Sketch at every level**: the PRD's Prototype section shows the experience,
+  the Architecture's API Design owns the exact interface contract, and each
+  Story's test phase opens with the execution scenario; specify each fact in
+  one home only
 
 ---
 

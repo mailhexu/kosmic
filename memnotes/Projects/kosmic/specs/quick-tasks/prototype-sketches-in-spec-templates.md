@@ -1,7 +1,7 @@
 ---
 project_id: "kosmic"
 subproject_id: null
-status: "approved"
+status: done
 approved_by: user
 approved_on: "2026-10-25"
 approval_provenance: "User picked 'next' after comparing variants; recommended option A + explicit B adopted."
@@ -16,6 +16,42 @@ routine_decision_required: false
 routine_proposals: []
 created: "2026-10-25"
 updated: "2026-10-25"
+review_base: 066ea188bbb57aa1c124d8d785eaf7a986086236
+review_round: 1
+completion_observations:
+  - criterion: "The PRD template carries the Prototype section with filling guidance that excludes exact flags, module names, and schemas."
+    observation: "template-prd.md gained '## Prototype (what the user sees)' between Non-Goals and Functional Requirements, with filling guidance that shows the experience at shape level and explicitly defers exact flags, module names, and schemas to the Architecture."
+    source: "The episode diff for skills/references/templates/template-prd.md."
+  - criterion: "The Architecture template's API Design section states the interface-sketch convention and the one-home-per-fact rule."
+    observation: "The API Design placeholder now describes the exact interface sketch — flags/parameters, destinations, output shape, refusal list, module/file map — and states that the PRD shows the experience at shape level only while this section is the contract implementers and reviewers work from."
+    source: "The episode diff for skills/references/templates/template-architecture.md."
+  - criterion: "The Story template's test phase opens with the execution-scenario convention."
+    observation: "Phase 2 now opens with SCENARIO-001: write the execution scenario first — one bounded session with expected outcomes and refusals — which becomes the disposable smoke; the retained TEST items keep test-first practice."
+    source: "The episode diff for skills/references/templates/template-story.md."
+  - criterion: "The templates remain consistent with task_create_spec.md's workflow description, and the installed OMP release package matches the committed tree after reinstall."
+    observation: "task_create_spec.md's Principles gained the matching Sketch-at-every-level bullet, and both review axes approved the four-file diff as coherent; the release package was reinstalled from this episode's tree before finish, with the previous installation backed up and diff -r (excluding __pycache__) clean against the working tree that becomes the commit."
+    source: "Both review-axis approvals for the episode diff; backup /home/hexu/.omp/agent/skill-backups/kosmic-before-066ea18-20261025T192948Z; diff -r result."
+completion_review:
+  reviewer: main-assistant-coordinator
+  axes:
+    standards:
+      decision: approved
+      reviewer: TemplateSketchStandards
+    spec:
+      decision: approved
+      reviewer: TemplateSketchSpec
+  decision: approved
+  review_base: 066ea188bbb57aa1c124d8d785eaf7a986086236
+  reviewed_revision: a3822596f75804e609f4500a9c8827d6a2666c6371bafb1797ca931c499f6e6f
+  scope:
+    - worktree:skills/references/templates/template-prd.md
+    - worktree:skills/references/templates/template-architecture.md
+    - worktree:skills/references/templates/template-story.md
+    - worktree:skills/references/task_create_spec.md
+    - project:specs/quick-tasks/prototype-sketches-in-spec-templates.md
+    - project:specs/INDEX.md
+    - project:log/kosmic-2026-10-25.md
+  findings: []
 ---
 
 # Prototype sketches in spec templates
@@ -38,11 +74,58 @@ The user asked where a "prototype description" (a CLI invocation with parameters
 
 ## Acceptance Criteria
 
-- [ ] The PRD template carries the Prototype section with filling guidance that excludes exact flags, module names, and schemas.
-- [ ] The Architecture template's API Design section states the interface-sketch convention and the one-home-per-fact rule.
-- [ ] The Story template's test phase opens with the execution-scenario convention.
-- [ ] The templates remain consistent with task_create_spec.md's workflow description, and the installed OMP release package matches the committed tree after reinstall.
+- [x] The PRD template carries the Prototype section with filling guidance that excludes exact flags, module names, and schemas.
+- [x] The Architecture template's API Design section states the interface-sketch convention and the one-home-per-fact rule.
+- [x] The Story template's test phase opens with the execution-scenario convention.
+- [x] The templates remain consistent with task_create_spec.md's workflow description, and the installed OMP release package matches the committed tree after reinstall.
 
 ## Routine Decision
 
 No new deterministic procedure mechanics: template text only.
+
+## Verification
+
+- Both review axes approved the four-file diff in round 1 with no findings; the full suite ran 825 tests OK on this tree (template text only; no test exercises templates).
+- The release package was reinstalled from the episode tree with the previous installation backed up; the installed copy matches the working tree excluding `__pycache__`, and no bytecode ships in the install.
+
+## Links
+
+- Related notes: none; this Quick Task is the governing record.
+- Related specs: none.
+- Related files: `skills/references/templates/template-prd.md`,
+  `skills/references/templates/template-architecture.md`,
+  `skills/references/templates/template-story.md`,
+  `skills/references/task_create_spec.md`.
+
+## Review
+
+Round 1 reviewed the episode packet against base `066ea18` on both axes; both
+approved with no findings. `review_round` is 1 and `completion_review` records
+the actual approvals.
+
+## Code Review
+
+**Review Base**: `066ea188bbb57aa1c124d8d785eaf7a986086236`  
+**Current Round**: 1  
+**Reviewed Revision**: `a3822596f75804e609f4500a9c8827d6a2666c6371bafb1797ca931c499f6e6f`  
+**Decision**: approved  
+**Standards Reviewer**: `TemplateSketchStandards` — approved  
+**Spec Reviewer**: `TemplateSketchSpec` — approved
+
+### Standards
+
+| ID | Disposition | Evidence | Required Resolution | Introduced | Status | Resolution | Worker Response |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| (none) | — | No Standards finding: placement, fidelity boundaries, and TDD consistency all approved; the diff changes only the four declared guidance files. | — | — | — | — | — |
+
+### Spec
+
+| ID | Disposition | Evidence | Required Resolution | Introduced | Status | Resolution | Worker Response |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| (none) | — | No Spec finding: the diff stays inside the declared scope and satisfies every acceptance criterion. | — | — | — | — | — |
+
+### Re-review History
+
+| Round | Reviewed Revision | Findings Checked | New REG/LATE Evidence | Decision |
+| --- | --- | --- | --- | --- |
+| 1 | `a3822596f75804e609f4500a9c8827d6a2666c6371bafb1797ca931c499f6e6f` | Complete first-pass inventory | n/a | Approved |

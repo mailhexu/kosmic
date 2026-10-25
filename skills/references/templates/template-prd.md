@@ -26,6 +26,12 @@ linked_epics: []
 - Out of scope item 1
 - Out of scope item 2
 
+## Prototype (what the user sees)
+
+{One annotated invocation plus its output sample, and the workflow in a few
+lines — at shape-level fidelity. Show what the user will see and do; exact
+flags, module names, and schemas belong to the Architecture.}
+
 ## Functional Requirements
 
 | ID | Requirement | Priority |

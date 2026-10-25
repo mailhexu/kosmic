@@ -1,0 +1,12 @@
+{
+  "completed_at": "2026-10-25T19:30:37Z",
+  "detail": "",
+  "identity": "kosmic/quick-task/prototype-sketches-in-spec-templates",
+  "proof": {
+    "specs/quick-tasks/prototype-sketches-in-spec-templates.md": "2a415b612bc3b2c02a25db2334ffc78c7fb05a191626bd5040c7892379ce22ca"
+  },
+  "record_path": "specs/quick-tasks/prototype-sketches-in-spec-templates.md",
+  "record_sha256": "2a415b612bc3b2c02a25db2334ffc78c7fb05a191626bd5040c7892379ce22ca",
+  "schema": "kosmic.work-receipt/1",
+  "status": "successful"
+}

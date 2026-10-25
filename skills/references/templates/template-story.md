@@ -54,6 +54,8 @@ So that {benefit}.
 
 ### Phase 2: Tests (TDD - Write First!)
 
+- [ ] SCENARIO-001: Write the execution scenario first — one bounded session
+      with expected outcomes and refusals; it becomes the disposable smoke.
 - [ ] TEST-001: Write test for {scenario}
 - [ ] TEST-002: Write test for {scenario}
 

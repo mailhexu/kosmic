@@ -65,7 +65,10 @@ flowchart TD
 
 ## API Design
 
-{Endpoints, request/response formats if applicable}
+{The interface sketch: exact flags/parameters, destinations or endpoints,
+output shape, and the refusal list, plus the module/file map that implements
+it. One home per fact — the PRD shows the experience at shape level only;
+this section is the contract implementers and reviewers work from.}
 
 ## Test Strategy
 

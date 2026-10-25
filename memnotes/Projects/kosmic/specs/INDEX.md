@@ -158,4 +158,4 @@ This index is navigational only. It does not replace PRD, Architecture, Story, Q
 | quick-task | [Install and publish idea capture release](quick-tasks/install-and-publish-idea-capture-release.md) | done |
 | quick-task | [Default governed work to the current checkout](quick-tasks/default-governed-work-to-the-current-checkout.md) | done |
 | quick-task | [Advise instead of blocking on extra related notes](quick-tasks/advise-instead-of-blocking-on-extra-related-notes.md) | done |
-| quick-task | [Prototype sketches in spec templates](quick-tasks/prototype-sketches-in-spec-templates.md) | approved |
+| quick-task | [Prototype sketches in spec templates](quick-tasks/prototype-sketches-in-spec-templates.md) | done |
